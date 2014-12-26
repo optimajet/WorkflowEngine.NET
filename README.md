@@ -13,7 +13,6 @@ WorkflowEngine.NET - component that adds workflow in your application. It can be
 <li>Serialization and saving of parameters on demand</li>
 <li>Support SQL/NoSQL databases</li>
 </ul>
-<br/>
 
 <h2>Workflow Engine NET includes a html5 designer:</h2>
 <img src="http://workflowenginenet.com/Cms_Data/Contents/WFE/Media/content_images/graph.jpg" alt="graph.jpg" width="580" style="
@@ -26,3 +25,12 @@ WorkflowEngine.NET - component that adds workflow in your application. It can be
 <b>Designer</b> - <a href="http://workflowenginenet.com/Designer">http://workflowenginenet.com/Designer</a><br/>
 For technical questions, please contact <a href="mailto:wf@optimajet.com?subject=Qustion from hithub">wf@optimajet.com<a><br/>
 For commercial use, please contact <a href="mailto:sales@optimajet.com?subject=Qustion from hithub">sales@optimajet.com</a><br/>
+
+<b>Free limits:</b>
+<ul>
+<li>Activity	15</li>
+<li>Transition	25</li>
+<li>Command	    5</li>
+<li>Schema	    1</li>
+<li>Thread	    1</li>
+</ul>
