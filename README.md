@@ -28,9 +28,9 @@ For commercial use, please contact <a href="mailto:sales@optimajet.com?subject=Q
 
 <b>Free limits:</b>
 <ul>
-<li>Activity	15</li>
-<li>Transition	25</li>
-<li>Command	    5</li>
-<li>Schema	    1</li>
-<li>Thread	    1</li>
+<li>Activity: 15</li>
+<li>Transition: 25</li>
+<li>Command: 5</li>
+<li>Schema: 1</li>
+<li>Thread: 1</li>
 </ul>
