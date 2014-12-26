@@ -15,25 +15,14 @@ WorkflowEngine.NET - component that adds workflow in your application. It can be
 </ul>
 <br/>
 
-<b>Official web site</b> - <a href="http://workflowenginenet.com">http://workflowenginenet.com</a><br/>
-<b>Official web site</b> - <a href="http://workflowenginenet.com">http://workflowenginenet.com</a><br/>
-<b>Official web site</b> - <a href="http://workflowenginenet.com">http://workflowenginenet.com</a><br/>
-Documentation - http://workflowenginenet.com/Documentation
-Demo - http://demo.workflowenginenet.com
-Designer - http://workflowenginenet.com/Designer
-For technical questions, please contact wf@optimajet.com
-For commercial use, please contact sales@optimajet.com
+<h2>Workflow Engine NET includes a html5 designer:</h2>
+<img src="http://workflowenginenet.com/Cms_Data/Contents/WFE/Media/content_images/graph.jpg" alt="graph.jpg" width="580" style="
+    border: 1px solid;
+    border-color: #3e4d5c;">
 
-Workflow process scheme include:
-
-Verification of the current status
-Determine the authority of users
-Executing condition script
-Timers
-Actors (Business Rules that can execute commands)
-Parameters (That can be temporary or persistance)
-Commands
-Actions(external methods call)
-Activities
-Transitions
-Workflow Engine NET includes a html5 designer:
+<b>Official web site</b> - <a href="http://workflowenginenet.com">http://workflowenginenet.com</a><br/>
+<b>Documentation</b> - <a href="http://workflowenginenet.com/Documentation">http://workflowenginenet.com/Documentation</a><br/>
+<b>Demo</b> - <a href="http://demo.workflowenginenet.com">http://demo.workflowenginenet.com</a><br/>
+<b>Designer</b> - <a href="http://workflowenginenet.com/Designer">http://workflowenginenet.com/Designer</a><br/>
+For technical questions, please contact <a href="mailto:wf@optimajet.com?subject=Qustion from hithub">wf@optimajet.com<a><br/>
+For commercial use, please contact <a href="mailto:sales@optimajet.com?subject=Qustion from hithub">sales@optimajet.com</a><br/>
