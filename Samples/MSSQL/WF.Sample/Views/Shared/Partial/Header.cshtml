@@ -1,0 +1,43 @@
+﻿@using System.Linq
+@using WF.Sample.Business
+@using WF.Sample.Business.Helpers
+@using WF.Sample.Helpers
+@{
+    Guid currentEmployeeId = CurrentUserSettings.GetCurrentUser();
+    if(currentEmployeeId == Guid.Empty)
+    {
+        IList<Employee> list = EmployeeHelper.GetAll();
+        if(list != null && list.Count > 0)
+        {
+            currentEmployeeId = list[0].Id;
+            CurrentUserSettings.SetUserInCookies(currentEmployeeId);
+        }
+    }
+    
+    var htmlAtt = new Dictionary<string, object>();
+    htmlAtt.Add("style", "width:100%");
+    htmlAtt.Add("onchange", "CurrentEmployee_OnChange(this);");
+}
+<table width="100%">
+    <tr>
+        <td style="width:120px">
+            <label for="CurrentEmployee"><b>Current employee:</b></label>
+        </td>
+        <td>
+            @Html.DropDownList("CurrentEmployee",
+                EmployeeHelper.GetAll().Select(item => new SelectListItem()
+                {
+                    Text = string.Format("Name: {0}; StructDivision: {1}; Roles: {2}", item.Name, item.StructDivision.Name, EmployeeHelper.GetListRoles(item)),
+                    Value = item.Id.ToString(),
+                    Selected = item.Id == currentEmployeeId
+                }).ToList(),
+               htmlAtt) 
+        </td>
+    </tr>
+</table>
+
+<script>
+    function CurrentEmployee_OnChange(sender) {
+        window.location.search = "CurrentEmployee=" + sender.value;
+    }
+</script>

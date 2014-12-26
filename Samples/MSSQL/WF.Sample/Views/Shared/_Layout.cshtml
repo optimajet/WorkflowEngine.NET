@@ -1,0 +1,48 @@
+﻿@{
+    ViewBag.Title = string.Format("WorkfolowEngine NET 1.4 :: {0}", ViewBag.Title);
+}
+<!DOCTYPE html>
+<html lang="en">
+    <head>
+        <meta charset="utf-8" />
+        <title>@ViewBag.Title</title>
+        <link href="@Url.Content("~/Content/Style.css")" rel="stylesheet" type="text/css" />
+        <link href="@Url.Content("~/Content/themes/base/jquery-ui.min.css")" rel="stylesheet" type="text/css" />
+        <script src="@Url.Content("~/Scripts/jquery.js")" type="text/javascript"></script>
+        <script src="@Url.Content("~/Scripts/jquery-ui.js")" type="text/javascript"></script>
+        <meta name="viewport" content="width=device-width">
+    </head>
+    <body>
+         <div style="text-align: center; position:fixed;left:50%;margin-left: -200px; z-index:1000 ">
+            <a class="button2" target="_blank" href="http://demo.workflowenginenet.com/Designer?schemeName=SimpleWF">Workflow Designer</a>
+            <a class="button2" target="_blank" href="http://workflowenginenet.com/Documentation">Documentation</a>
+            <a class="button2" target="_blank" href="http://workflowenginenet.com/Purchase">Purchase</a>
+        </div>
+        <div class="container">
+            <header class="header clearfix">
+                
+                <a style="text-decoration:none" href="/"><div class="logo" style="color:red">WorkfolowEngine NET 1.4</div></a>
+               
+                @Html.Partial("Partial/MainMenu")
+                
+            </header>
+            <div class="info">
+                <article class="hero clearfix">
+                    <div class="col_100">
+                        @Html.Partial("Partial/Header")
+                    </div>
+                </article>
+                <article class="hero clearfix">
+                    <div class="col_100">
+                        @Html.Partial("Partial/Folders")
+                    </div>
+                </article>
+                <article class="article clearfix">
+                    <div class="clearfix"></div>
+                    @RenderBody()
+                </article>
+            </div>
+            @Html.Partial("Partial/Footer")
+        </div>
+    </body>
+</html>

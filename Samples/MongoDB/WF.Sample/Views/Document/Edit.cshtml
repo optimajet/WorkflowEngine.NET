@@ -1,0 +1,139 @@
+﻿@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@using WF.Sample.Business
+@using WF.Sample.Business.Models
+@using WF.Sample.Business.Helpers
+@model WF.Sample.Business.Models.Document
+
+@{
+    var designerUrl = "/Designer?schemeName=SimpleWF";
+    DocumentCommandModel[] commands = new DocumentCommandModel[0];
+    Dictionary<string, string> states = new Dictionary<string, string>();
+    if (Model.Id != Guid.Empty)
+    {
+        designerUrl = "/Designer?processid=" + Model.Id.ToString();
+        commands = DocumentHelper.GetCommands(Model.Id, WF.Sample.Helpers.CurrentUserSettings.GetCurrentUser().ToString("N"));
+        states = DocumentHelper.GetStates(Model.Id);
+    }
+}
+
+@using (Html.BeginForm("Edit", "Document", FormMethod.Post))
+{
+    @Html.HiddenFor(model => model.Id)
+    if (commands.Length > 0 || states.Count > 0)
+    {
+    <div>
+        @if(commands.Length == 0)
+            {
+                var nextStep = Model.TransitionHistories.FirstOrDefault(c => !c.TransitionTime.HasValue);
+
+                if(nextStep != null)
+                {
+            <span style="color: #CC3300">
+                For the current user commands are not available.
+                @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedToEmployeeNames))
+            </span>
+                }
+            }
+            else
+            {
+                foreach (var command in commands)
+                {
+                    if (command.Classifier == OptimaJet.Workflow.Core.Model.TransitionClassifier.Direct) {
+            <button name="button" value="@command.key" class="button">@command.value</button>
+                    }
+                    else if (command.Classifier == OptimaJet.Workflow.Core.Model.TransitionClassifier.Reverse)
+                    {
+            <button name="button" style="background: linear-gradient(#FF0033, #FF9999);" value="@command.key" class="button">@command.value</button>
+                    }
+                    else
+                    {
+            <button name="button" style="background: linear-gradient(#666666, #CCCCCC);" value="@command.key" class="button">@command.value</button>
+                    }
+                }
+            }
+        &nbsp;&nbsp;
+
+        <button name="button" value="SetState" class="button">Set This State</button>
+        @{
+            var stateList = new List<SelectListItem>();
+            stateList.AddRange(states.Select(s => new SelectListItem { Selected = false, Text = s.Value, Value = s.Key }));
+        }
+        @Html.DropDownListFor(model => model.StateNameToSet, stateList, new { style = "width:15%" })
+
+        <a class="button" target="_blank" style="text-align:right" href="@designerUrl">Open in Workflow Designer</a>
+    </div>
+    }
+    <table class="table">
+        <tbody>
+            <tr>
+                <td>@Html.LabelFor(model => model.Number)</td>
+                <td>
+                    @Html.HiddenFor(model => model.Number)
+                    @Html.DisplayFor(model => model.Number)
+                </td>
+            </tr>
+            <tr>
+                <td><b>@Html.LabelFor(model => model.Name)</b></td>
+                <td>
+                    @Html.EditorFor(model => model.Name, new { style = "width:98%" })
+                    @Html.ValidationMessageFor(model => model.Name)
+                </td>
+            </tr>
+            <tr>
+                <td>@Html.LabelFor(model => model.StateName)</td>
+                <td>
+                    @Html.HiddenFor(model => model.StateName)
+                    @Html.DisplayFor(model => model.StateName)
+                </td>
+            </tr>
+            <tr>
+                <td>@Html.LabelFor(model => model.AuthorName)</td>
+                <td>
+                    @Html.HiddenFor(model => model.AuthorId)
+                    @Html.HiddenFor(model => model.AuthorName)
+                    @Html.DisplayFor(model => model.AuthorName)
+                </td>
+            </tr>
+            <tr>
+                <td>@Html.LabelFor(model => model.EmloyeeControlerId)</td>
+                <td>
+                    @{
+    List<SelectListItem> employeeList = new List<SelectListItem>();
+    employeeList.Add(new SelectListItem());
+    employeeList.AddRange(EmployeeHelper.GetAll().Select(item => new SelectListItem()
+    {
+        Text = string.Format("Name: {0}; StructDivision: {1}; Roles: {2}", item.Name, item.StructDivisionName, EmployeeHelper.GetListRoles(item)),
+        Value = item.Id.ToString()
+    }).ToList());
+                    }
+
+                    @Html.DropDownListFor(model => model.EmloyeeControlerId, employeeList, new { style = "width:98%" })
+                    @Html.ValidationMessageFor(model => model.EmloyeeControlerId)
+                </td>
+            </tr>
+            <tr>
+                <td><b>@Html.LabelFor(model => model.Sum)</b></td>
+                <td>
+                    @Html.EditorFor(model => model.Sum)
+                    @Html.ValidationMessageFor(model => model.Sum)
+                </td>
+            </tr>
+            <tr>
+                <td>@Html.LabelFor(model => model.Comment)</td>
+                <td>
+                    @Html.TextAreaFor(model => model.Comment, 6, 100, new { style = "width:98%" })
+                    @Html.ValidationMessageFor(model => model.Sum)
+                </td>
+            </tr>
+        </tbody>
+    </table>
+    
+    @Html.Partial("DocumentHistory", Model);
+    <div>
+        <button name="button" value="Save" class="button">Save</button>
+        <button name="button" value="SaveAndExit" class="button">Save & Exit</button>
+    </div>
+}

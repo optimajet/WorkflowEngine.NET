@@ -1,0 +1,283 @@
+﻿@{
+    ViewBag.Title = "Load testing";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    
+     Dictionary<string, string> labels = new Dictionary<string, string>();
+    labels.Add("CreatingWorkflow", "Creating workflow of document");
+    labels.Add("CreatingDocument", "Creating document");
+    labels.Add("GetAvailableCommands", "Getting available commands of document for employee");
+    labels.Add("ExecuteCommand", "Executing command of workflow");
+}
+
+@model List<WF.Sample.Models.LoadTestingStatisticsModel>
+
+<script src="@Url.Content("~/Scripts/jquery.flot.js")" type="text/javascript"> </script>
+<script src="@Url.Content("~/Scripts/jquery.flot.selection.js")" type="text/javascript"> </script>
+
+<div id="resultTop" style="color: tomato; font-size: 16px;"></div>
+
+<h2>Load testing</h2>
+
+<table>
+    <tr>
+        <td>Create document & process of workflow:</td>
+        <td><input id="doccount" value="100" /></td>
+    </tr>
+    <tr>
+        <td>Thread:</td>
+        <td><input id="threadcount" value="1" /></td>
+    </tr>
+    <tr>
+        <td>Execution of workflow command:</td>
+        <td><input id="wfcommandcount" value="100" /></td>
+    </tr>
+    <tr>
+        <td>Thread:</td>
+        <td><input id="wfthreadcount" value="1" /></td>
+    </tr>
+</table>
+
+<a class="button" href="javascript:LoadTestingRun()">Run!</a> 
+<script>
+    function LoadTestingRun(){
+        var data = new Array();
+        data.push({ name: 'doccount', value: $('#doccount')[0].value });
+        data.push({ name: 'threadcount', value: $('#threadcount')[0].value });
+        data.push({ name: 'wfcommandcount', value: $('#wfcommandcount')[0].value });
+        data.push({ name: 'wfthreadcount', value: $('#wfthreadcount')[0].value });
+        
+        $('#resultTop').load('/LoadTesting/Run', data, function () { setTimeout(function () { $('#resultTop')[0].innerHTML = ''; }, 2000); });
+    }
+
+    function LoadTestingCleanStatistics() {
+        var data = new Array();
+        $('#resultTop').load('/LoadTesting/Clean', data, function () { location.reload(); });
+    }
+</script>
+
+<h2>Statistics</h2>
+<a class="button" href="javascript:location.reload()">Refresh</a>
+<a class="button" href="javascript:LoadTestingCleanStatistics()">Clean</a>
+
+<table class="table" style="max-width:900px;">
+<tbody>
+    <tr>
+        <th></th>
+        <th>Type of operation</th>
+        <th>Average duration (milliseconds)</th>
+        <th>Min duration (milliseconds)</th>
+        <th>Max duration (milliseconds)</th>
+        <th>Count of operation</th>
+        <th>Sum Duration (milliseconds)</th>
+    </tr>
+    @foreach(var item in WF.Sample.Models.LoadTestingStatisticsModel.GetByType(Model).OrderBy(c=>c.Type))
+    {
+        <tr>
+            <td><input class="StatOperationType" type="checkbox" checked="checked" name="@item.Type" onclick="GraphRedraw()" /></td>
+            <td>@(labels.ContainsKey(item.Type) ? labels[item.Type] : item.Type)</td>
+            <td style="text-align:right">@item.AverageDuration.ToString("n0")</td>
+            <td style="text-align:right">@(item.MinDuration.HasValue ? item.MinDuration.Value.ToString("n0") : "")</td>
+            <td style="text-align:right">@(item.MaxDuration.HasValue ? item.MaxDuration.Value.ToString("n0") : "")</td>
+            <td>@item.Count.ToString()</td>
+            <td style="text-align:right">@item.Duration.ToString("n0")</td>
+        </tr>
+    }   
+</table>
+<br /><br />
+
+Unit:
+<select id="selectionGraphUnit" onchange="GraphSettingChange()">
+    <option value="1">1 seconds</option>
+    <option value="5">5 seconds</option>
+    <option value="10">10 seconds</option>
+    <option value="30">30 seconds</option>
+    <option value="60">1 minute</option>
+    <option value="300">5 minutes</option>
+    <option value="600">10 minutes</option>
+    <option value="1800">30 minutes</option>
+    <option value="3600">1 hour</option>
+    <option value="43200">12 hours</option>
+    <option value="86400">1 day</option>
+</select>
+
+@{
+    var valueType = HttpContext.Current.Request.Params.AllKeys.Contains("Type") ? HttpContext.Current.Request.Params["Type"] : "";
+}
+
+Type:
+<select id="selectionGraphType" onchange="GraphSettingChange()">
+    <option value="0">Average duration</option>
+    <option value="1">Min duration</option>
+    <option value="2">Max duration</option>
+</select>
+
+<script>
+    function GraphSettingChange()
+    {
+        var unit = $('#selectionGraphUnit')[0].value;
+        var type = $('#selectionGraphType')[0].value;
+        location.href = '/LoadTesting?GraphUnit=' + unit + "&Type=" + type;
+    }
+</script>
+
+<form>
+    <fieldset>
+        <label></label>
+        <div>
+            <div id="placeholder" style="width:600px;height:400px; margin:10px;"></div>
+            <p id="choices" style="float:right; width:135px;"></p>
+            <div id="overview" style="margin-left:60px;margin-top:20px;width:500px;height:50px;"></div>
+        </div>
+
+    </fieldset>
+</form>
+
+<script id="source">
+
+    var data = {};
+    @{  
+        List<string> types = new List<string>();
+        foreach(var stat in Model.OrderBy(c=>c.Date))
+        {   
+            foreach(var item in stat.Items)
+            {
+                if (!types.Contains(item.Type))
+                {
+                    @Html.Raw(string.Format("data.{0} = {{}}; data.{0}.label = '{1}'; data.{0}.data = new Array();", item.Type,
+                    labels.ContainsKey(item.Type) ? labels[item.Type] : item.Type));
+                    types.Add(item.Type);
+                }
+
+                double value;
+                switch(valueType)
+                {
+                    case "1":
+                        value = item.MinDuration ?? 0; break;
+                    case "2":
+                        value = item.MaxDuration ?? 0; break;
+                    default:
+                        value = item.AverageDuration; break;
+                }
+              
+                @Html.Raw(string.Format("data.{0}.data.push([{1}, {2}]);",
+                                    item.Type, WF.Sample.Helpers.WebPageHelpers.ToJavascriptTimestamp(stat.Date), value.ToString(System.Globalization.CultureInfo.InvariantCulture)));
+            }
+        }
+    }
+
+
+    function GraphRedraw() {
+        var types = $('input.StatOperationType:checked');
+        var dataArray = new Array();
+        for (var i = 0; i < types.length; i++)
+            dataArray.push(data[types[i].name]);
+        
+        function weekendAreas(axes) {
+            var markings = [];
+            var d = new Date(axes.xaxis.min);
+            d.setUTCDate(d.getUTCDate() - ((d.getUTCDay() + 1) % 7))
+            d.setUTCSeconds(0);
+            d.setUTCMinutes(0);
+            d.setUTCHours(0);
+
+            var unit = $('#selectionGraphUnit')[0].value;
+            var i = d.getTime();
+            do {
+                markings.push({ xaxis: { from: i, to: i + 2 * 24 * 60 * 60 * 1000 } });
+                i += 7 * 24 * 60 * 60 * 1000;
+            } while (i < axes.xaxis.max);
+
+            return markings;
+        }
+
+        var options = {
+            xaxis: { mode: "time", tickLength: 5 },
+            selection: { mode: "x" },
+            grid: {
+                markings: weekendAreas,
+                hoverable: true,
+                clickable: true
+            }
+        };
+
+        var plot = $.plot($("#placeholder"), dataArray, options);
+
+        var overview = $.plot($("#overview"), dataArray, {
+            series: {
+                lines: { show: true, lineWidth: 1 },
+                shadowSize: 0
+            },
+            xaxis: { ticks: [], mode: "time" },
+            yaxis: { ticks: [], min: 0, autoscaleMargin: 0.1 },
+            selection: { mode: "x" },
+            legend: { show: false }
+        });
+
+        $("#placeholder").bind("plotselected", function (event, ranges) {
+            plot = $.plot($("#placeholder"), dataArray,
+                          $.extend(true, {}, options, {
+                              xaxis: { min: ranges.xaxis.from, max: ranges.xaxis.to }
+                          }));
+            overview.setSelection(ranges, true);
+        });
+
+        $("#overview").bind("plotselected", function (event, ranges) {
+            plot.setSelection(ranges);
+        });
+
+
+        $("#placeholder").bind("plothover", function (event, pos, item) {
+        if (item) {
+            var x = item.datapoint[0].toFixed(0),
+		        y = item.datapoint[1].toFixed(0);
+
+            $("#tooltip").html("Duration: " + y + "ms")
+		        .css({ top: item.pageY + 5, left: item.pageX + 5 })
+		        .fadeIn(200);
+        } else {
+            $("#tooltip").hide();
+        }
+            
+        });
+    }
+
+    function getQueryParams(qs) {
+        qs = qs.split("+").join(" ");
+
+        var params = {}, tokens,
+            re = /[?&]?([^=]+)=([^&]*)/g;
+
+        while (tokens = re.exec(qs)) {
+            params[decodeURIComponent(tokens[1])]
+                = decodeURIComponent(tokens[2]);
+        }
+
+        return params;
+    }
+
+    $(function () {
+        var unit = getQueryParams(location.search).GraphUnit;
+        if (unit == undefined)
+            unit = 60;
+
+        var type = getQueryParams(location.search).Type;
+        if (type == undefined)
+            type = 0;
+
+        $("<div id='tooltip'></div>").css({
+            position: "absolute",
+            display: "none",
+            border: "1px solid #fdd",
+            padding: "2px",
+            "background-color": "#fee",
+            opacity: 0.80
+        }).appendTo("body");
+
+        $('#selectionGraphUnit')[0].value = unit;
+        $('#selectionGraphType')[0].value = type;
+
+        GraphRedraw();
+    });
+
+</script>
+

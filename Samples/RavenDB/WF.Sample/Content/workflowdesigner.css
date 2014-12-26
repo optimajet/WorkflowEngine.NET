@@ -1,0 +1,110 @@
+﻿body {
+}
+
+.we-input {
+    width: 98%;
+   
+}
+
+#simplemodal-overlay {background-color:#000;}
+
+#simplemodal-container {background-color:white; border:4px solid #444; padding:12px;}
+#simplemodal-container .simplemodal-data {padding:8px;}
+#simplemodal-container a.modalCloseImg {background:url(../Images/x.png) no-repeat; width:25px; height:29px; display:inline; z-index:3200; position:absolute; top:-15px; right:-16px; cursor:pointer;}
+
+#simplemodal-container .Commands {
+    display:none
+}
+
+div.mombomenu {
+    width: 250px;
+    border: solid 1px #000;
+    height: 200px;
+    overflow: auto;
+    position:absolute;
+    background-color: #fff;
+}
+div.mombomenu .item {
+    display: block;
+    text-decoration: none;
+    color: #000;
+    padding: 1px;
+}
+div.mombomenu .item.selected {
+    color: #fff;
+    background-color: #007;
+}
+div.mombomenu .item.match {
+    font-weight: bold;
+}
+div.mombobutton {
+    border: solid 1px #ccc;
+    background-color: #eee;
+    width: 16px;
+    height: 17px;
+    float:left;
+    text-align: center;
+    border-left: none
+}
+
+div.base {
+	overflow: hidden;
+	white-space: nowrap;
+	font-family: Arial;
+	font-size: 8pt;
+}
+
+.WorkflowDesignerdragRow{
+    background-color:#FFC310;
+}
+
+.WorkflowDesignerRowCopy{
+    background-color:#FFFFCC;
+}
+
+table.WorkflowDesignerTable {
+    border-top: 1px solid #E7E7E7;
+    border-left: 1px solid #E7E7E7;
+    border-bottom: 1px solid #E7E7E7;
+    border-spacing: 0px;
+    width: 100%;
+}
+    
+table.WorkflowDesignerTable td.ColumnChecked {
+    text-align: center; 
+}
+    
+table.WorkflowDesignerTable th{
+padding-left: 5px;   
+padding-right: 5px;
+border-right: 1px solid #E7E7E7;
+}
+    
+table.WorkflowDesignerTable td{
+padding-left: 5px;   
+padding-right: 5px;
+border-top: 1px solid #E7E7E7; 
+border-right: 1px solid #E7E7E7;         
+}
+    
+table.WorkflowDesignerTable td.columnTree{
+    padding-left: 20px;   
+}
+        
+table.WorkflowDesignerTable tr:hover td,
+table.WorkflowDesignerTable tr.even:hover td.active,
+table.WorkflowDesignerTable tr.odd:hover td.active {
+    background: #CCCCCC;
+}
+    
+.span-validation-error {
+    color: #FF0033;
+    background:url('/images/error.png');
+    width:16px; 
+    height:16px;
+    display: inline-block;
+}
+
+.field-validation-error {
+    border-color:#FF0033;
+}  

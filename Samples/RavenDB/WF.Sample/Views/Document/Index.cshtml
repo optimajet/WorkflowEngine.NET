@@ -1,0 +1,83 @@
+﻿@{
+    ViewBag.Title = "Documents";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model WF.Sample.Models.DocumentListModel
+
+<a href="@Url.Action("Edit", "Document")">Create</a>
+<a onclick="DeleteSelected()" href="#">Delete</a>
+
+<table class="table">
+    <tbody>
+    <tr>
+        <th style="width:20px">#</th>
+        <th style="width:20px">Number</th>
+        <th>State</th>
+        <th>Name</th>
+        <th>Comment </th>
+        <th>Author</th>
+        <th>Controler</th>
+        <th>Sum</th>
+    </tr>
+    @foreach(var item in Model.Docs)
+    {
+        <tr>
+            <td><input type="checkbox" name="checkedbox" class="selectedValues" value="@item.Id"/> </td>
+            <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Number</a></td>
+            <td>@item.StateName </td>
+            <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Name</a></td>
+            <td>@item.Comment </td>
+            <td>@item.AuthorName </td>
+            <td>@item.EmloyeeControlerName</td>
+            <td>@item.Sum.ToString("n2")</td>
+        </tr>
+    }   
+</table>
+Current Page: @Html.Raw(Model.Page + 1)<br />
+Items count: @Model.Count <br />
+
+@if (Model.Page != 0)
+{
+    @Html.Raw(Html.ActionLink("fist page", "Index", new { page = 0 }));
+}
+
+@if(Model.Page > 0)
+{
+    @Html.Raw(Html.ActionLink("prev page", "Index", new { page = Model.Page - 1 }));
+}
+
+@if ((Model.Page + 1) * Model.PageSize < Model.Count)
+{
+    @Html.Raw(Html.ActionLink("next page", "Index", new { page = Model.Page + 1 }));
+}
+
+@if ((Model.Page + 2) * Model.PageSize < Model.Count)
+{
+    @Html.Raw(Html.ActionLink("last page", "Index", new { page = (int)(Model.Count / Model.PageSize) }));
+}
+
+<script>
+    function DeleteSelected() {
+        var data = new Array();
+        var selectedValues = $('.selectedValues:checked');
+
+        if (selectedValues.length < 1) {
+            alert('Items not selected');
+            return;
+        }    
+
+        for (var i = 0; i < selectedValues.length; i++) {
+            data.push({ name: 'ids', value: selectedValues[i].value });
+        }
+        
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DeleteRows", "Document")",
+            data: data,
+            success: function(msg) {
+                alert(msg);
+                location.reload();
+            }
+        });
+    }
+</script>

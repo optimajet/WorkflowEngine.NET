@@ -1,0 +1,83 @@
+﻿<?xml version="1.0" encoding="utf-8"?><Database Name="SampleWorkflowEngineNET" Class="WorkflowPersistenceModelDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
+  <Connection Mode="AppSettings" ConnectionString="Data Source=(local)\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Security=True;User ID=sa" SettingsObjectName="OptimaJet.Workflow.DbPersistence.Properties.Settings" SettingsPropertyName="SampleWorkflowEngineNETConnectionString" Provider="System.Data.SqlClient" />
+  <Table Name="dbo.WorkflowProcessInstancePersistence" Member="WorkflowProcessInstancePersistences">
+    <Type Name="WorkflowProcessInstancePersistence">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="ProcessId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="ParameterName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="Value" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessInstanceStatus" Member="WorkflowProcessInstanceStatus">
+    <Type Name="WorkflowProcessInstanceStatus">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Status" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="Lock" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowRuntime" Member="WorkflowRuntimes">
+    <Type Name="WorkflowRuntime">
+      <Column Name="RuntimeId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Timer" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessScheme" Member="WorkflowProcessSchemes">
+    <Type Name="WorkflowProcessScheme">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Scheme" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="DefiningParameters" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="DefiningParametersHash" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="SchemeCode" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="IsObsolete" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessInstance" Member="WorkflowProcessInstances">
+    <Type Name="WorkflowProcessInstance">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="StateName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="ActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="SchemeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="PreviousState" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousStateForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousStateForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivity" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivityForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivityForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="IsDeterminingParametersChanged" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowScheme" Member="WorkflowSchemes">
+    <Type Name="WorkflowScheme">
+      <Column Name="Code" Type="System.String" DbType="NVarChar(256) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Scheme" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessTimer" Member="WorkflowProcessTimers">
+    <Type Name="WorkflowProcessTimer">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="ProcessId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="NextExecutionDateTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="Ignore" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessTransitionHistory" Member="WorkflowProcessTransitionHistories">
+    <Type Name="WorkflowProcessTransitionHistory">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="ProcessId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="ExecutorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="ActorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="FromActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="ToActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="ToStateName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="TransitionTime" Type="System.DateTime" DbType="DateTime NOT NULL" CanBeNull="false" />
+      <Column Name="TransitionClassifier" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="IsFinalised" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="FromStateName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="TriggerName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Function Name="dbo.spWorkflowProcessResetRunningStatus" Method="spWorkflowProcessResetRunningStatus">
+    <Return Type="System.Int32" />
+  </Function>
+</Database>
