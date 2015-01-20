@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 using System.Transactions;
 using Budget2.DAL;
@@ -15,9 +16,17 @@ namespace Budget2.Server.Security.AuthorizationValidators
         public IAuthorizationService AuthorizationService { get; set; }
         
         public IEmployeeService EmployeeService { get; set; }
-     
 
-        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType)
+        public ISecurityEntityService SecurityEntityService { get; set; }
+
+        public IBillDemandBuinessService BillDemandBuinessService { get; set; }
+        public List<WorkflowCommandType> AddAdditionalCommand(ServiceIdentity getCurrentIdentity, IEnumerable<ServiceIdentity> identities, WorkflowState currentState, Guid instanceUid, List<WorkflowCommandType> allowedOperations)
+        {
+            return allowedOperations;
+        }
+
+
+        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType, Guid instanceId)
         {
             if (state == null)
             {
@@ -78,6 +87,7 @@ namespace Budget2.Server.Security.AuthorizationValidators
             return false;
         }
 
+        
         private bool ValidateTargetDemandLimitManager(ServiceIdentity identity, Guid instanceId)
         {
 

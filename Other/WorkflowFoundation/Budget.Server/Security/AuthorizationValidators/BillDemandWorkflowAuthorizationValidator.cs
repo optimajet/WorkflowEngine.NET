@@ -18,9 +18,17 @@ namespace Budget2.Server.Security.AuthorizationValidators
         public IAuthorizationService AuthorizationService { get; set; }
 
         public IEmployeeService EmployeeService { get; set; }
-        
 
-        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType)
+        public ISecurityEntityService SecurityEntityService  { get; set; }
+        
+        public IBillDemandBuinessService BillDemandBuinessService { get; set; }
+
+        public List<WorkflowCommandType> AddAdditionalCommand(ServiceIdentity getCurrentIdentity, IEnumerable<ServiceIdentity> identities, WorkflowState currentState, Guid instanceUid, List<WorkflowCommandType> allowedOperations)
+        {
+            return allowedOperations;
+        }
+
+        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType, Guid instanceId)
         {
             if (state == null)
             {
@@ -64,7 +72,7 @@ namespace Budget2.Server.Security.AuthorizationValidators
                 (state == WorkflowState.BillDemandPostingAccounting))
                 return true;
 
-            if ((commandType == WorkflowCommandType.Export) && (state == WorkflowState.BillDemandInAccountingWithExport))
+            if ((commandType == WorkflowCommandType.Export) && (state == WorkflowState.BillDemandInAccountingWithExport) && BillDemandBuinessService.IsBillDemandFilialSupportsExport(instanceId))
                 return true;
 
             if ((commandType == WorkflowCommandType.SetPaidStatus || commandType == WorkflowCommandType.SetDenialStatus) && (state == WorkflowState.BillDemandInAccountingWithExport))
@@ -118,31 +126,43 @@ namespace Budget2.Server.Security.AuthorizationValidators
                 return ValidateLimitExecutor(identity, instanceId);
 
             if (state == WorkflowState.BillDemandHeadInitiatorSighting)
-                return AuthorizationService.IsInRole(identity.Id, BudgetRole.DivisionHead) &&
-                       ValidateInitiatorHead(identity, instanceId);
+                return ValidateInitiatorHead(identity, instanceId);
 
             return false;
         }
 
         private bool ValidateInitiatorHead(ServiceIdentity identity, Guid instanceId)
         {
-             using (var scope = new TransactionScope())
-             using (var context = CreateContext())
-             {
-                 var initiatorDivisionId =
-                     context.BillDemands.Where(p => p.Id == instanceId).Select(
-                         p => p.Author.Employees.First().StructDivisionId).First();
-                 var identityDivisionId =
-                     context.SecurityTrustees.Where(p => p.Id == identity.Id).Select(
-                         p => p.Employees.First().StructDivisionId).First();
-                 return initiatorDivisionId == identityDivisionId;
-             }
+            var billDemand = BillDemandBuinessService.GetBillDemand(instanceId);
+
+                 if (!billDemand.AuthorId.HasValue)
+                     return false;
+                 var heads = SecurityEntityService.GetHeadIds(billDemand.AuthorId.Value, billDemand.BudgetId);
+
+            return heads.Contains(identity.Id);
         }
 
 
         private bool ValidateLimitManager(ServiceIdentity identity, Guid instanceId)
         {
-            return CheckLimitSighting(identity, instanceId, SightingType.BillDemandLimitManagerSighting);
+            var bd = BillDemandBuinessService.GetBillDemand(instanceId);
+            if (bd.BudgetPartId == 0)
+                return CheckLimitSighting(identity, instanceId, SightingType.BillDemandLimitManagerSighting);
+            else
+            {
+               var sighters =  BillDemandBuinessService.GetLimitManagerSighters(instanceId, true);
+               var sightings = BillDemandBuinessService.GetLimitManagerSightings(instanceId);
+               foreach (var sighter in sighters)
+               {
+                   if (sightings.Count(s=>s.LimitId == sighter.LimitId) < 1)
+                   {
+                       if (SecurityEntityService.GetHeadIdsByDivision(sighter.LimitId, bd.BudgetId).Contains(identity.Id))
+                           return true;
+                   }
+               }
+
+                return false;
+            }
         }
 
         private bool CheckLimitSighting(ServiceIdentity identity, Guid instanceId, SightingType type)
@@ -151,7 +171,6 @@ namespace Budget2.Server.Security.AuthorizationValidators
             dlo.LoadWith<BillDemandDistribution>(p => p.Demand);
             dlo.LoadWith<Demand>(p => p.Limit);
 
-            using (var scope = new TransactionScope())
             using (var context = CreateContext())
             {
                 context.LoadOptions = dlo;

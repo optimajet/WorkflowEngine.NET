@@ -1,21 +1,25 @@
 ﻿using System;
-using System.ComponentModel;
-using System.ComponentModel.Design;
-using System.Collections;
-using System.Linq;
-using System.Workflow.ComponentModel.Compiler;
-using System.Workflow.ComponentModel.Serialization;
-using System.Workflow.ComponentModel;
-using System.Workflow.ComponentModel.Design;
-using System.Workflow.Runtime;
+using System.Collections.Generic;
 using System.Workflow.Activities;
-using System.Workflow.Activities.Rules;
 using Budget2.DAL.DataContracts;
 
 namespace Budget2.Workflow
 {
     public sealed partial class DemandAdjustment : BudgetWorkflow
     {
+        public new Dictionary<string, object> WorkflowPersistanceParameters
+        {
+            set
+            {
+                base.WorkflowPersistanceParameters = value;
+            }
+            get
+            {
+                return base.WorkflowPersistanceParameters;
+            }
+
+        }
+
         public DemandAdjustment()
         {
             InitializeComponent();
@@ -54,6 +58,8 @@ namespace Budget2.Workflow
         private void Check_DemanAdjustmentTypeIsNotRedistrubution(object sender, ConditionalEventArgs e)
         {
             e.Result = Budget2WorkflowRuntime.DemandAdjustmentBusinessService.GetDemandAdjustmentType(WorkflowInstanceId) != DemandAdjustmentType.Redistribution;
+            if (e.Result)
+                LastCommand = WorkflowCommand.Sighting;
         }
 
         private void DraftInitCode_ExecuteCode(object sender, EventArgs e)
@@ -78,6 +84,7 @@ namespace Budget2.Workflow
         {
             WriteTransitionToHistory(WorkflowState.DemandAdjustmentAgreed);
             PreviousWorkflowState = WorkflowState.DemandAdjustmentAgreed;
+            Budget2WorkflowRuntime.DemandAdjustmentBusinessService.SetAgreedDate(WorkflowInstanceId);
         }
 
         private void TargetDemandLimitExecutorSightingInitCode_ExecuteCode(object sender, EventArgs e)
@@ -97,6 +104,9 @@ namespace Budget2.Workflow
 
         private void WriteTransitionToHistory(WorkflowState current)
         {
+            if (DontWriteToWorkflowHistory)
+                return;
+
             SetStateIfParcelExists();
 
             if (PreviousWorkflowState == null || PreviousWorkflowState.WorkflowStateName == WorkflowState.DemandAdjustmentDraft.WorkflowStateName)
@@ -150,10 +160,11 @@ namespace Budget2.Workflow
 
         }
 
-        protected void startProcessingEventInvoked(object sender, ExternalDataEventArgs e)
+        private void StartProcessingEventInvoked(object sender, ExternalDataEventArgs e)
         {
             forvadTransitionEventInvoked(sender, e);
             Budget2WorkflowRuntime.DemandAdjustmentBusinessService.SetStartProcessingDate(WorkflowInstanceId);
+            LastCommand = WorkflowCommand.StartProcessing;
         }
     }
 }

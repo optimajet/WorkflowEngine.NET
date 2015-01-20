@@ -9,6 +9,10 @@ namespace Common.WF
 {
     public class WorkflowSync : IDisposable
     {
+        public bool WasTerminated { get; private set; }
+        public bool WasIdled { get; private set; }
+        public bool WasCompleted { get; private set; }
+
         public WorkflowSync(WorkflowRuntime runtime, Guid workflowInstanceId)
         {
             if (runtime == null) throw new ArgumentNullException("runtime cannot be null", "runtime");
@@ -20,8 +24,8 @@ namespace Common.WF
             this.WorkflowInstanceId = workflowInstanceId;
 
             this.Runtime.WorkflowIdled += Runtime_WorkflowIdled;
-            this.Runtime.WorkflowCompleted += Runtime_WorkflowIdled; // Runtime_WorkflowCompleted;
-            this.Runtime.WorkflowTerminated += Runtime_WorkflowIdled; // Runtime_WorkflowTerminated;
+            this.Runtime.WorkflowCompleted += Runtime_WorkflowCompleted; // Runtime_WorkflowCompleted;
+            this.Runtime.WorkflowTerminated += Runtime_WorkflowTerminated; // Runtime_WorkflowTerminated;
 
             this.WaitHandle = new AutoResetEvent(false);
         }
@@ -43,6 +47,21 @@ namespace Common.WF
 
         void Runtime_WorkflowIdled(object sender, WorkflowEventArgs e)
         {
+            WasIdled = true;
+            if (e.WorkflowInstance.InstanceId == this.WorkflowInstanceId)
+                this.RaiseWorkflowIdled();
+        }
+
+        void Runtime_WorkflowCompleted(object sender, WorkflowEventArgs e)
+        {
+            WasCompleted = true;
+            if (e.WorkflowInstance.InstanceId == this.WorkflowInstanceId)
+                this.RaiseWorkflowIdled();
+        }
+
+        void Runtime_WorkflowTerminated(object sender, WorkflowEventArgs e)
+        {
+            WasTerminated = true;
             if (e.WorkflowInstance.InstanceId == this.WorkflowInstanceId)
                 this.RaiseWorkflowIdled();
         }
@@ -59,8 +78,8 @@ namespace Common.WF
             if (!this.IsDisposed)
             {
                 this.Runtime.WorkflowIdled -= Runtime_WorkflowIdled;
-                this.Runtime.WorkflowCompleted -= Runtime_WorkflowIdled;
-                this.Runtime.WorkflowTerminated -= Runtime_WorkflowIdled;
+                this.Runtime.WorkflowCompleted -= Runtime_WorkflowCompleted;
+                this.Runtime.WorkflowTerminated -= Runtime_WorkflowTerminated;
 
                 this.IsDisposed = true;
             }

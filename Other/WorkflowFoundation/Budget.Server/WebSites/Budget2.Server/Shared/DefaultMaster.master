@@ -3,7 +3,7 @@
 <!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
 <html xmlns="http://www.w3.org/1999/xhtml" >
 <head id="Head" runat="server">
-    <title>Budget2 - Система бюджетирования</title>
+    <title>Budget - Система бюджетирования</title>
 </head>
 <body>
     <form id="mainForm" runat="server">
@@ -15,7 +15,7 @@
 				<table style="width:100%">
 					<tr>
 						<td>
-							Budget 2
+							Budget
 							<div id="header-bottom">Система бюджетирования
 							</div>
 						</td>

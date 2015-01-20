@@ -17,7 +17,7 @@ namespace Budget2.Server.Business.Interface
         public long CounteragentId { get; set; }
         public decimal SumWIthNDS {get;set;}
         public decimal NDSTaxValue { get; set; }
-        public int ContractId { get; set; }
+        public string ContractId { get; set; }
         public DateTime DocumentDate { get; set; }
         public string FirmCode { get; set; }
         public DateTime? AccountDate { get; set; }
@@ -25,5 +25,6 @@ namespace Budget2.Server.Business.Interface
         public string ProjectCode { get; set; }
         public string PPCode { get; set; }
         public string SmetaCode { get; set; }
+        public byte BudgetPartId { get; set; }
     }
 }

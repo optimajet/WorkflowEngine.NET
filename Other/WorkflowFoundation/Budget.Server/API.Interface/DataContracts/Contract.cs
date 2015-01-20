@@ -10,7 +10,7 @@ namespace Budget2.Server.API.Interface.DataContracts
     public class Contract
     {
         [DataMember(IsRequired = true)]
-        public int Id { get; set; }
+        public string Id { get; set; }
         [DataMember]
         public string Prefix { get; set; }
         [DataMember]

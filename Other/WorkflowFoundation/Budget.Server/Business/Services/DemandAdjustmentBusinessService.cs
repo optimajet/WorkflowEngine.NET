@@ -22,7 +22,7 @@ namespace Budget2.Server.Business.Services
 
         public void CreateDemandAdjustmentPreHistory(Guid demandAdjustmentId, WorkflowState state)
         {
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = this.CreateContext())
                 { 
@@ -30,7 +30,7 @@ namespace Budget2.Server.Business.Services
                     
                     var existingNotUsedItems =
                     context.DemandAdjustmentTransitionHistories.Where(
-                        dath => dath.DemandAdjustmentId == demandAdjustmentId && !dath.TransitionTime.HasValue).ToList();
+                        dath => dath.DemandAdjustmentId == demandAdjustmentId && !dath.TransitionTime.HasValue && dath.InitialState.Order >= state.Order).ToList();
 
                     context.DemandAdjustmentTransitionHistories.DeleteAllOnSubmit(existingNotUsedItems);
 
@@ -44,7 +44,7 @@ namespace Budget2.Server.Business.Services
 
                         WritePreHistory(demandAdjustmentId, context, WorkflowState.DemandAdjustmentDraft,
                                         WorkflowState.DemandAdjustmentSourceDemandLimitExecutorSighting,
-                                        demand.CreatorId, state);
+                                        demand.CreatorId, WorkflowCommand.StartProcessing, state);
 
                         WritePreHistory(demandAdjustmentId, context,
                                         WorkflowState.DemandAdjustmentSourceDemandLimitExecutorSighting,
@@ -95,7 +95,7 @@ namespace Budget2.Server.Business.Services
                     else
                     {
                         WritePreHistory(demandAdjustmentId, context, WorkflowState.DemandAdjustmentDraft,
-                                        WorkflowState.DemandAdjustmentUPKZHeadSighting, demand.CreatorId, state);
+                                        WorkflowState.DemandAdjustmentUPKZHeadSighting, demand.CreatorId, WorkflowCommand.StartProcessing, state);
                         WritePreHistory(demandAdjustmentId, context, WorkflowState.DemandAdjustmentUPKZHeadSighting,
                                         WorkflowState.DemandAdjustmentAgreed, null, state);
                     }
@@ -111,7 +111,7 @@ namespace Budget2.Server.Business.Services
 
 
         private void WritePreHistory(Guid demandAdjustmentId, Budget2DataContext context, WorkflowState initialState,
-                                   WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
+                                   WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowCommand command, WorkflowState startState)
         {
             if (initialState.Order < startState.Order)
                 return;
@@ -122,11 +122,18 @@ namespace Budget2.Server.Business.Services
                 DestinationStateId = destinationState.DbStateId.Value,
                 InitialStateId = initialState.DbStateId.Value,
                 TransitionExpectedInitiatorId = expectedInitiatorId,
-                CommandId = WorkflowCommand.Sighting.Id,
+                CommandId = command.Id,
                 Comment = string.Empty,
                 Description = string.Empty
             };
             context.DemandAdjustmentTransitionHistories.InsertOnSubmit(billDemndHistoryItem);
+        }
+
+        private void WritePreHistory(Guid demandAdjustmentId, Budget2DataContext context, WorkflowState initialState,
+                                  WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
+        {
+            WritePreHistory(demandAdjustmentId,  context,  initialState,
+                                   destinationState,  expectedInitiatorId, WorkflowCommand.Sighting, startState);
         }
 
 
@@ -138,7 +145,7 @@ namespace Budget2.Server.Business.Services
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию DemandAdjustment", "state");
 
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
@@ -177,7 +184,7 @@ namespace Budget2.Server.Business.Services
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию DemandAdjustment",
                     "destinationState");
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
@@ -224,8 +231,8 @@ namespace Budget2.Server.Business.Services
 
         private bool CheckLimitIsContingency (DemandAdjustment demandAdjustment)
         {
-            return (demandAdjustment.SourceDemandId.HasValue && demandAdjustment.SourceDemand.Limit.TypeId == 1) ||
-                   (demandAdjustment.TargetDemandId.HasValue && demandAdjustment.TargetDemand.Limit.TypeId == 1);
+            return (demandAdjustment.SourceDemandId.HasValue && demandAdjustment.SourceDemand.Limit != null  && demandAdjustment.SourceDemand.Limit.TypeId == 1) ||
+                   (demandAdjustment.TargetDemandId.HasValue && demandAdjustment.TargetDemand.Limit != null && demandAdjustment.TargetDemand.Limit.TypeId == 1);
         }
 
         public bool CheckLimitIsContingency(Guid demandAdjustmentId)
@@ -416,6 +423,23 @@ namespace Budget2.Server.Business.Services
                     var da = GetDemandAdjustment(context, demnadAdjustmentId);
 
                     da.TransferDate = DateTime.Now;
+
+                    context.SubmitChanges();
+                }
+
+                scope.Complete();
+            }
+        }
+
+        public void SetAgreedDate(Guid demnadAdjustmentId)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    var da = GetDemandAdjustment(context, demnadAdjustmentId);
+
+                    da.AgreedDate = DateTime.Now;
 
                     context.SubmitChanges();
                 }

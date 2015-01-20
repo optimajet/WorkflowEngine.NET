@@ -1,4 +1,6 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Workflow.Activities;
 
 namespace Budget2.Server.Workflow.Interface.DataContracts
 {
@@ -15,6 +17,17 @@ namespace Budget2.Server.Workflow.Interface.DataContracts
         public DenialCommandEventArgs(Guid instanceId, Guid initiatorId, Guid? impersonatedIdentityId)
             : base(instanceId, initiatorId, impersonatedIdentityId)
         {
+        }
+    }
+     [Serializable]
+    public class SetWorkflowInternalParametersEventArgs : ExternalDataEventArgs
+    {
+        public Dictionary<string, object> Parameters { get; private set; } 
+
+        public SetWorkflowInternalParametersEventArgs(Guid instanceId,Dictionary<string,object> parameters)
+            : base(instanceId)
+        {
+            Parameters = parameters;
         }
     }
 }

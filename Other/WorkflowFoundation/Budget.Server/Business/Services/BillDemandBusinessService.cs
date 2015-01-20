@@ -16,112 +16,180 @@ namespace Budget2.Server.Business.Services
 {
     public class BillDemandBusinessService : Budget2DataContextService, IBillDemandBuinessService
     {
-      
+
         [ServiceDependency]
         public ISecurityEntityService SecurityEntityService { get; set; }
+
+        [ServiceDependency]
+        public IEmployeeService EmployeeService { get; set; }
 
         [ServiceDependency]
         public IWorkflowStateService WorkflowStateService { get; set; }
 
         public void CreateBillDemandPreHistory(Guid billDemandUid, WorkflowState state)
         {
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
+                  
+                    //удаляем последующие этапы
                     var existingNotUsedItems =
                         context.BillDemandTransitionHistories.Where(
-                            bdth => bdth.BillDemandId == billDemandUid && !bdth.TransitionTime.HasValue).ToList();
+                            bdth => bdth.BillDemandId == billDemandUid && !bdth.TransitionInitiatorId.HasValue).ToList();
+                    
+                    context.BillDemandTransitionHistories.DeleteAllOnSubmit(existingNotUsedItems.Where(bdth=> bdth.InitialState.Order >= state.Order));
 
-                    context.BillDemandTransitionHistories.DeleteAllOnSubmit(existingNotUsedItems);
+                    foreach (var historyitem in existingNotUsedItems.Where(bdth => bdth.InitialState.Order < state.Order && !bdth.TransitionTime.HasValue))
+                        historyitem.TransitionTime = DateTime.Now;
 
                     Guid? expectedInitiatorId = GetInitiatorId(billDemandUid, context);
 
                     WritePreHistory(billDemandUid, context, WorkflowState.BillDemandDraft,
-                                    WorkflowState.BillDemandUPKZCntrollerSighting, expectedInitiatorId, state);
+                                    WorkflowState.BillDemandUPKZCntrollerSighting, expectedInitiatorId, WorkflowCommand.StartProcessing, state);
 
-                    if (this.CheckInitiatorHeadMustSign(billDemandUid))
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
-                                        WorkflowState.BillDemandHeadInitiatorSighting, null, state);
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandHeadInitiatorSighting,
-                                        WorkflowState.BillDemandLimitExecutorSighting, null, state);
-                    }
-                    else
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
-                                        WorkflowState.BillDemandLimitExecutorSighting, null, state);
+                      var billDemand = GetBillDemandWithFilialAndContract(billDemandUid);
+                      var isBillDemandFilialSupportExport = this.IsBillDemandSupportExport(billDemand);
+                      var isSkipInAccountingState = this.IsBillDemandSkipInAccountingState(billDemand);
 
-                    var executors = GetLimitsExecutors(context, billDemandUid);
+                      if (billDemand.BudgetPartId > 0)
+                      {
+                          if (this.CheckInitiatorHeadMustSign(billDemandUid))
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
+                                              WorkflowState.BillDemandHeadInitiatorSighting, null, state);
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandHeadInitiatorSighting,
+                                              WorkflowState.BillLimitManagerSighting, null, state);
+                          }
+                          else
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
+                                              WorkflowState.BillLimitManagerSighting, null, state);
 
-                    if (executors.Count > 0)
-                    {
-                        foreach (var executorId in executors)
-                        {
-                            WritePreHistory(billDemandUid, context, WorkflowState.BillDemandLimitExecutorSighting,
-                                            WorkflowState.BillLimitManagerSighting, executorId, state);
-                        }
-                    }
-                    else
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandLimitExecutorSighting,
-                                        WorkflowState.BillLimitManagerSighting, null, state);
-                    }
+                          var limitManagerSighters = GetLimitManagerSightersOperative(context, billDemand);
 
-                    var managers = GetLimitManagers(context, billDemandUid);
+                          if (limitManagerSighters.Count > 0)
+                          {
+                              foreach (var sighter in limitManagerSighters)
+                              {
+                                  //Определить руководителя, прописать руководителя
+                                  WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
+                                                 isSkipInAccountingState
+                                                  ? WorkflowState.BillDemandInitiatorConfirmation
+                                                  : WorkflowState.BillDemandPostingAccounting, null, state);
+                              }
+                          }
+                          else
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
+                                              isSkipInAccountingState
+                                                  ? WorkflowState.BillDemandInitiatorConfirmation
+                                                  : WorkflowState.BillDemandPostingAccounting, null, state);
+                          }
 
-                    if (managers.Count > 0)
-                    {
-                        foreach (var managerId in managers)
-                        {
-                            WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
-                                            WorkflowState.BillDemandUPKZCuratorSighting, managerId, state);
-                        }
-                    }
-                    else
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
-                                        WorkflowState.BillDemandUPKZCuratorSighting, null, state);
-                    }
 
-                    bool uPKZHeadMustSight = CheckUPKZHeadMustSight(billDemandUid); 
-                    
-                    var isBillDemandFilialSupportExport = this.IsBillDemandFilialSupportExport(billDemandUid);
 
-                    if (uPKZHeadMustSight)
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCuratorSighting,
-                                        WorkflowState.BillDemandUPKZHeadSighting, null, state);
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZHeadSighting,
-                                        isBillDemandFilialSupportExport
-                                            ? WorkflowState.BillDemandPostingAccounting
-                                            : WorkflowState.BillDemandInitiatorConfirmation, null, state);
-                    }
-                    else
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCuratorSighting,
-                                        WorkflowState.BillDemandPostingAccounting, null, state);
-                    }
+                          WriteInAccountingPreHistory(billDemandUid, state, expectedInitiatorId, context, isSkipInAccountingState, isBillDemandFilialSupportExport);
+                      }
+                      else
+                      {
+                          if (this.CheckInitiatorHeadMustSign(billDemandUid))
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
+                                              WorkflowState.BillDemandHeadInitiatorSighting, null, state);
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandHeadInitiatorSighting,
+                                              WorkflowState.BillDemandLimitExecutorSighting, null, state);
+                          }
+                          else
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCntrollerSighting,
+                                              WorkflowState.BillDemandLimitExecutorSighting, null, state);
 
-                    if (isBillDemandFilialSupportExport)
-                    {
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandPostingAccounting,
-                                    WorkflowState.BillDemandInAccountingWithExport, expectedInitiatorId, state);
+                          var executors = GetLimitsExecutors(context, billDemandUid);
 
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandInAccountingWithExport,
-                                   WorkflowState.BillDemandOnPayment, null, WorkflowCommand.Export, state); 
-                    }
-                    else
-                    {
+                          if (executors.Count > 0)
+                          {
+                              foreach (var executorId in executors)
+                              {
+                                  WritePreHistory(billDemandUid, context, WorkflowState.BillDemandLimitExecutorSighting,
+                                                  WorkflowState.BillLimitManagerSighting, executorId, state);
+                              }
+                          }
+                          else
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandLimitExecutorSighting,
+                                              WorkflowState.BillLimitManagerSighting, null, state);
+                          }
 
-                        WritePreHistory(billDemandUid, context, WorkflowState.BillDemandInitiatorConfirmation,
-                                    WorkflowState.BillDemandPaid, expectedInitiatorId, state);
-                    }
+                          var managers = GetLimitManagers(context, billDemandUid);
 
-                 
+                          if (managers.Count > 0)
+                          {
+                              foreach (var managerId in managers)
+                              {
+                                  WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
+                                                  WorkflowState.BillDemandUPKZCuratorSighting, managerId, state);
+                              }
+                          }
+                          else
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillLimitManagerSighting,
+                                              WorkflowState.BillDemandUPKZCuratorSighting, null, state);
+                          }
 
+                          bool UPKZHeadMustSight = CheckUPKZHeadMustSight(billDemandUid);
+                          
+                          if (UPKZHeadMustSight)
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCuratorSighting,
+                                              WorkflowState.BillDemandUPKZHeadSighting, null, state);
+
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZHeadSighting,
+                                              isSkipInAccountingState
+                                                  ? WorkflowState.BillDemandInitiatorConfirmation
+                                                  : WorkflowState.BillDemandPostingAccounting, null, state);
+                          }
+                          else
+                          {
+                              WritePreHistory(billDemandUid, context, WorkflowState.BillDemandUPKZCuratorSighting,
+                                              isSkipInAccountingState
+                                                  ? WorkflowState.BillDemandInitiatorConfirmation
+                                                  : WorkflowState.BillDemandPostingAccounting, null, state);
+                          }
+
+                          WriteInAccountingPreHistory(billDemandUid, state, expectedInitiatorId, context, isSkipInAccountingState, isBillDemandFilialSupportExport);
+
+                      }
                     context.SubmitChanges();
                 }
                 scope.Complete();
+            }
+        }
+
+        private void WriteInAccountingPreHistory(Guid billDemandUid, WorkflowState state, Guid? expectedInitiatorId,
+                                                 Budget2DataContext context, bool isSkipInAccountingState,
+                                                 bool isBillDemandFilialSupportExport)
+        {
+            if (!isSkipInAccountingState)
+            {
+                if (isBillDemandFilialSupportExport)
+                {
+                    WritePreHistory(billDemandUid, context, WorkflowState.BillDemandPostingAccounting,
+                                    WorkflowState.BillDemandInAccountingWithExport, expectedInitiatorId,
+                                    state);
+
+                    WritePreHistory(billDemandUid, context, WorkflowState.BillDemandInAccountingWithExport,
+                                    WorkflowState.BillDemandOnPayment, null, WorkflowCommand.Export, state);
+                }
+                else
+                {
+                    WritePreHistory(billDemandUid, context, WorkflowState.BillDemandPostingAccounting,
+                                    WorkflowState.BillDemandInAccountingWithExport, expectedInitiatorId,
+                                    state);
+                }
+            }
+            else
+            {
+                WritePreHistory(billDemandUid, context, WorkflowState.BillDemandInitiatorConfirmation,
+                                WorkflowState.BillDemandPaid, expectedInitiatorId, state);
             }
         }
 
@@ -129,7 +197,7 @@ namespace Budget2.Server.Business.Services
         {
             using (var scope = ReadCommittedSupressedScope)
             {
-                using (var context = this.CreateContext())
+                using (var context = CreateContext())
                 {
                     BillDemand billDemand = GetBillDemand(context, billDemandUid);
                     billDemand.AllocationDate = DateTime.Now;
@@ -191,7 +259,7 @@ namespace Budget2.Server.Business.Services
                 using (var context = this.CreateContext())
                 {
                     var billDemand = GetBillDemand(context, billDemandUid);
-                    byte paymentKindId = (byte)(billDemand.PaymentKindId.HasValue ? billDemand.PaymentKindId.Value : 0);
+                    var paymentKindId = (byte)(billDemand.PaymentKindId.HasValue ? billDemand.PaymentKindId.Value : 0);
                     return PaymentKind.All.Single(p => p.Id == paymentKindId);
                 }
             }
@@ -204,12 +272,12 @@ namespace Budget2.Server.Business.Services
 
 
 
-         private void WritePreHistory(Guid billDemandUid, Budget2DataContext context, WorkflowState initialState,
-                                     WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
-         {
-             WritePreHistory(billDemandUid, context, initialState, destinationState, expectedInitiatorId, WorkflowCommand.Sighting, startState);
-             
-         }
+        private void WritePreHistory(Guid billDemandUid, Budget2DataContext context, WorkflowState initialState,
+                                    WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
+        {
+            WritePreHistory(billDemandUid, context, initialState, destinationState, expectedInitiatorId, WorkflowCommand.Sighting, startState);
+
+        }
 
         private void WritePreHistory(Guid billDemandUid, Budget2DataContext context, WorkflowState initialState,
                                      WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowCommand command, WorkflowState startState)
@@ -238,7 +306,7 @@ namespace Budget2.Server.Business.Services
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию BillDemand", "state");
 
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
@@ -255,18 +323,16 @@ namespace Budget2.Server.Business.Services
             }
         }
 
-        public void UpdateBillDemandState(WorkflowState initialState, WorkflowState destinationState,
-                                          WorkflowCommand command, Guid billDemandUid,
-                                          Guid initiatorId, Guid? impesonatedIdentityId, string comment)
+        public void UpdateBillDemandState(UpdateBillDemandStateParams updateBillDemandStateParams)
         {
-            if (!initialState.DbStateId.HasValue)
+            if (!updateBillDemandStateParams.InitialState.DbStateId.HasValue)
                 throw new ArgumentException(
-                    "Не определено соттветствие состояния Workflow отображаемому состоянию BillDemand", "initialState");
-            if (!destinationState.DbStateId.HasValue)
+                    "Не определено соттветствие состояния Workflow отображаемому состоянию BillDemand", "updateBillDemandStateParams.InitialState");
+            if (!updateBillDemandStateParams.DestinationState.DbStateId.HasValue)
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию BillDemand",
-                    "destinationState");
-            using (var scope = ReadCommittedSupressedScope)
+                    "updateBillDemandStateParams.DestinationState");
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
@@ -274,15 +340,15 @@ namespace Budget2.Server.Business.Services
 
                     var billDemndHistoryItems = context.BillDemandTransitionHistories.Where(
                         p =>
-                        p.BillDemandId == billDemandUid && p.InitialStateId == initialState.DbStateId.Value
-                        && (p.CommandId == command.Id || command.SkipCheckCommandId) && !p.TransitionInitiatorId.HasValue).ToList();
+                        p.BillDemandId == updateBillDemandStateParams.BillDemandUid && p.InitialStateId == updateBillDemandStateParams.InitialState.DbStateId.Value
+                        && (p.CommandId == updateBillDemandStateParams.Command.Id || updateBillDemandStateParams.Command.SkipCheckCommandId) && !p.TransitionInitiatorId.HasValue).ToList();
 
                     if (billDemndHistoryItems.Count == 1)
                         billDemndHistoryItem = billDemndHistoryItems.First();
                     else if (billDemndHistoryItems.Count > 1)
                     {
-                        billDemndHistoryItem = GetBillDemndHistoryItem(billDemndHistoryItems, impesonatedIdentityId,
-                                                                       initiatorId);
+                        billDemndHistoryItem = GetBillDemndHistoryItem(billDemndHistoryItems, updateBillDemandStateParams.ImpesonatedIdentityId,
+                                                                       updateBillDemandStateParams.InitiatorId);
                     }
 
                     if (billDemndHistoryItem == null)
@@ -290,31 +356,35 @@ namespace Budget2.Server.Business.Services
                         billDemndHistoryItem = new BillDemandTransitionHistory
                                                    {
                                                        Id = Guid.NewGuid(),
-                                                       BillDemandId = billDemandUid,
-                                                       DestinationStateId = destinationState.DbStateId.Value,
-                                                       InitialStateId = initialState.DbStateId.Value,
+                                                       BillDemandId = updateBillDemandStateParams.BillDemandUid,
+                                                       DestinationStateId = updateBillDemandStateParams.DestinationState.DbStateId.Value,
+                                                       InitialStateId = updateBillDemandStateParams.InitialState.DbStateId.Value,
                                                        CommandId =
-                                                           (command.Id == WorkflowCommand.Unknown.Id
+                                                           (updateBillDemandStateParams.Command.Id == WorkflowCommand.Unknown.Id
                                                                 ? (Guid?)null
-                                                                : command.Id)
+                                                                : updateBillDemandStateParams.Command.Id)
                                                    };
                         context.BillDemandTransitionHistories.InsertOnSubmit(billDemndHistoryItem);
                     }
-                    billDemndHistoryItem.DestinationStateId = destinationState.DbStateId.Value;
-                    billDemndHistoryItem.TransitionInitiatorId = initiatorId;
+                    billDemndHistoryItem.DestinationStateId = updateBillDemandStateParams.DestinationState.DbStateId.Value;
+                    billDemndHistoryItem.TransitionInitiatorId = updateBillDemandStateParams.InitiatorId;
                     billDemndHistoryItem.TransitionTime = DateTime.Now;
-                    billDemndHistoryItem.Comment = comment;
-                    var info = WorkflowStateService.GetWorkflowStateInfo(destinationState);
-                    billDemndHistoryItem.Description = WorkflowCommand.GetCommandDescription(command,
+                    billDemndHistoryItem.Comment = updateBillDemandStateParams.Comment;
+                    var info = WorkflowStateService.GetWorkflowStateInfo(updateBillDemandStateParams.DestinationState);
+                    billDemndHistoryItem.Description = WorkflowCommand.GetCommandDescription(updateBillDemandStateParams.Command,
                                                                                              info == null
                                                                                                  ? string.Empty
                                                                                                  : info.StateVisibleName);
+
+                    billDemndHistoryItem.SightingTime = updateBillDemandStateParams.SightingTime.HasValue ? updateBillDemandStateParams.SightingTime.Value : billDemndHistoryItem.TransitionTime;
+
                     context.SubmitChanges();
                 }
 
                 scope.Complete();
             }
         }
+
 
         private BillDemandTransitionHistory GetBillDemndHistoryItem(
             List<BillDemandTransitionHistory> billDemndHistoryItems, Guid? impesonatedIdentityId, Guid initiatorId)
@@ -331,6 +401,67 @@ namespace Budget2.Server.Business.Services
             return billDemndHistoryItem;
         }
 
+        private bool OperativeSight(Guid billDemandUid, Guid sighterId, Guid initiatorId)
+        {
+            bool retval = false;
+
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    var bd = GetBillDemand(context, billDemandUid);
+
+                    if (bd == null)
+                        return false;
+
+                    var sdId = EmployeeService.GetIdentityStructDivisionId(sighterId, bd.BudgetId);
+
+                    if (!sdId.HasValue)
+                        return false;
+
+                    var sighters = GetLimitManagerSightersOperative(context, bd);
+
+                    if (sighters.Count(p => p.LimitId == sdId.Value) == 0)
+                        return false;
+
+                    List<LimitSighter> currentSighters = GetCurrentSighters(context, billDemandUid, SightingType.BillDemandLimitManagerSighting).ConvertAll<LimitSighter>(p => p);
+
+                    foreach (var limitSighter in sighters.Where(p => p.LimitId == sdId.Value))
+                    {
+                        var sighter = limitSighter;
+                        if (currentSighters.Count(p => p.LimitId == sighter.LimitId) == 0)
+                        {
+                            var newSighting = new WorkflowSighting
+                            {
+                                EntityId = billDemandUid,
+                                Id = Guid.NewGuid(),
+                                SighterId = sighterId,
+                                InitiatorId = initiatorId,
+                                SightingType = SightingType.BillDemandLimitManagerSighting.Id,
+                                SightingTime = DateTime.Now,
+                                ItemId = sighter.LimitId
+                            };
+                            context.WorkflowSightings.InsertOnSubmit(newSighting);
+                            currentSighters.Add(sighter);
+                        }
+                    }
+
+
+                    retval =
+                     sighters.TrueForAll(
+                         p =>
+                         currentSighters.FirstOrDefault(s => s.LimitId == p.LimitId ) !=
+                         null);
+                    context.SubmitChanges();
+
+                }
+
+                scope.Complete();
+            }
+
+            return retval;
+        }
+
         private bool LimitSight(Guid billDemandUid, Guid sighterId, Guid initiatorId, SightingType sightingType,
                                 Func<Budget2DataContext, Guid, List<LimitSighter>> sighterSelector)
         {
@@ -344,7 +475,7 @@ namespace Budget2.Server.Business.Services
                     if (sighters.Count(p => p.SighterId == sighterId) == 0)
                         return false;
 
-                    List<LimitSighter> currentSighters = GetCurrentSighters(context, billDemandUid, sightingType);
+                    List<LimitSighter> currentSighters = GetCurrentSighters(context, billDemandUid, sightingType).ConvertAll<LimitSighter>(p => p);
 
                     foreach (var limitSighter in sighters.Where(p => p.SighterId == sighterId))
                     {
@@ -379,13 +510,13 @@ namespace Budget2.Server.Business.Services
             return retval;
         }
 
-        private List<LimitSighter> GetCurrentSighters(Budget2DataContext context, Guid billDemandUid, SightingType sightingType)
+        private List<LimitSighting> GetCurrentSighters(Budget2DataContext context, Guid billDemandUid, SightingType sightingType)
         {
             return context.WorkflowSightings.Where(
                 p =>
                 p.EntityId == billDemandUid &&
                 p.SightingType == sightingType.Id).Select(
-                    p => new LimitSighter { LimitId = p.ItemId, SighterId = p.SighterId, InitiatorId = p.InitiatorId})
+                    p => new LimitSighting { LimitId = p.ItemId, SighterId = p.SighterId, InitiatorId = p.InitiatorId, SightingTime = p.SightingTime })
                 .Distinct().ToList();
         }
 
@@ -398,19 +529,45 @@ namespace Budget2.Server.Business.Services
                   p => new LimitSighter { LimitId = p.Demand.LimitId.Value, SighterId = p.Demand.Limit.ExecutorId.Value }).Distinct().ToList();
         }
 
+        private List<LimitSighter> GetLimitManagerSightersOperative (Budget2DataContext context, BillDemand billDemand)
+        {
+            return  billDemand.BillDemandDistributions.Where(
+                  p =>
+                  p.DemandId.HasValue && p.Demand.ExecutorStructId.HasValue).Select(
+                      p =>
+                      new LimitSighter { LimitId = p.Demand.ExecutorStructId.Value, SighterId = null }).
+                  Distinct().ToList();
+        }
+
 
         private List<LimitSighter> GetLimitManagerSighters(Budget2DataContext context, Guid billDemandUid)
         {
             return context.BillDemands.Single(p => p.Id == billDemandUid).BillDemandDistributions.Where(
-                p =>
-                p.DemandId.HasValue && p.Demand.LimitId.HasValue &&
-                p.Demand.Limit.ManagerId.HasValue).Select(
                     p =>
-                    new LimitSighter { LimitId = p.Demand.LimitId.Value, SighterId = p.Demand.Limit.ManagerId.Value }).
-                Distinct().ToList();
+                    p.DemandId.HasValue && p.Demand.LimitId.HasValue &&
+                    p.Demand.Limit.ManagerId.HasValue).Select(
+                        p =>
+                        new LimitSighter { LimitId = p.Demand.LimitId.Value, SighterId = p.Demand.Limit.ManagerId.Value }).
+                    Distinct().ToList();
+            //var bd = context.BillDemands.Single(p => p.Id == billDemandUid);
+            //if (bd.BudgetPartId < 1)
+            //    return bd.BillDemandDistributions.Where(
+            //        p =>
+            //        p.DemandId.HasValue && p.Demand.LimitId.HasValue &&
+            //        p.Demand.Limit.ManagerId.HasValue).Select(
+            //            p =>
+            //            new LimitSighter { LimitId = p.Demand.LimitId.Value, SighterId = p.Demand.Limit.ManagerId.Value }).
+            //        Distinct().ToList();
+
+            //return bd.BillDemandDistributions.Where(
+            //       p =>
+            //       p.DemandId.HasValue && p.Demand.ExecutorStructId.HasValue).Select(
+            //           p =>
+            //           new LimitSighter { LimitId = p.Demand.ExecutorStructId.Value, SighterId = null }).
+            //       Distinct().ToList();   
         }
 
-        public List<LimitSighter> GetLimitManagerSightings(Guid billDemandUid)
+        public List<LimitSighting> GetLimitManagerSightings(Guid billDemandUid)
         {
             using (var scope = ReadCommittedSupressedScope)
             {
@@ -434,15 +591,25 @@ namespace Budget2.Server.Business.Services
             }
         }
 
-        public List<LimitSighter> GetLimitManagerSighters(Guid billDemandUid)
+        public List<LimitSighter> GetLimitManagerSighters(Guid billDemandUid, bool isOperative)
         {
-             using (var scope = ReadCommittedSupressedScope)
-             {
-                 using (var context = this.CreateContext())
-                 {
-                    return GetLimitManagerSighters(context, billDemandUid);
-                 }
-             }
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    if (!isOperative)
+                        return GetLimitManagerSighters(context, billDemandUid);
+                    else
+                    {
+                        var bd = GetBillDemand(context, billDemandUid);
+
+                        if (bd == null)
+                            return new List<LimitSighter>();
+
+                         return  GetLimitManagerSightersOperative(context, bd);
+                    }
+                }
+            }
         }
 
 
@@ -461,10 +628,14 @@ namespace Budget2.Server.Business.Services
                     p => p.Demand.Limit.ExecutorId.Value).Distinct().ToList();
         }
 
-        public bool LimitManagerSight(Guid billDemandUid, Guid sighterId, Guid initiatorId)
+        public bool LimitManagerSight(Guid billDemandUid, Guid sighterId, Guid initiatorId, bool isOperative)
         {
-            return LimitSight(billDemandUid, sighterId, initiatorId, SightingType.BillDemandLimitManagerSighting,
-                              GetLimitManagerSighters);
+            if (!isOperative)
+                return LimitSight(billDemandUid, sighterId, initiatorId, SightingType.BillDemandLimitManagerSighting,
+                                  GetLimitManagerSighters);
+            else
+                return OperativeSight(billDemandUid, sighterId, initiatorId);
+
         }
 
         private List<Guid> GetLimitManagers(Budget2DataContext context, Guid billDemandUid)
@@ -531,7 +702,7 @@ namespace Budget2.Server.Business.Services
 
                     var initiatorDivisionId =
                         context.BillDemands.Where(p => p.Id == billDemandUid).Select(
-                            p => p.Author.Employees.First().StructDivisionId).First();
+                            p => p.AuthorStructDivisionId).First();
                     return executorStructDivisionCodes.Count(p => p == initiatorDivisionId) <= 0;
                 }
             }
@@ -579,45 +750,50 @@ namespace Budget2.Server.Business.Services
             }
         }
 
-        public BillDemand GetBillDemand (Guid billDemandUid)
+        public BillDemand GetBillDemand(Guid billDemandUid)
         {
             using (var scope = ReadCommittedSupressedScope)
             {
                 using (var context = this.CreateContext())
                 {
                     var dlo = new DataLoadOptions();
-                    dlo.LoadWith<BillDemand>(p=>p.Author);
+                    dlo.LoadWith<BillDemand>(p => p.Author);
                     context.LoadOptions = dlo;
                     return GetBillDemand(context, billDemandUid);
                 }
             }
         }
 
-        //private bool IsBillDemandFilialSupportExport(BillDemand billDemand)
-        //{
-        //    return true;
-        //    //return billDemand.Filial.IsBillDemandExportable && billDemand.Contract != null && billDemand.Contract.CustomerCounteragent != null
-        //    //            && billDemand.Contract.CustomerCounteragent.Number.ToString(CultureInfo.InvariantCulture) == BossAvailiableExecutorCode;
-        //}
-
-        public bool IsBillDemandFilialSupportExport(Guid billDemandUid)
+        public BillDemand GetBillDemand(Guid billDemandUid, DataLoadOptions loadWith)
         {
-            return true;
-            //using (var scope = ReadCommittedSupressedScope)
-            //{
-            //    using (var context = this.CreateContext())
-            //    {
-            //        var dlo = new DataLoadOptions();
-            //        dlo.LoadWith<BillDemand>(p => p.Filial);
-            //        dlo.LoadWith<BillDemand>(p => p.Contract);
-            //        context.LoadOptions = dlo;
-            //        var billDemand = GetBillDemand(context, billDemandUid);
-            //        return IsBillDemandFilialSupportExport(billDemand);
-            //    }
-            //}
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    context.LoadOptions = loadWith;
+                    return GetBillDemand(context, billDemandUid);
+                }
+            }
         }
 
-        private string BossAvailiableExecutorCode
+        public bool IsOperative(Guid billDemandUid)
+        {
+            return GetBillDemand(billDemandUid).BudgetPartId == 1;
+        }
+
+        public BudgetDocumentKind GetDocumentKind(Guid billDemandUid)
+        {
+            return GetDocumentKind(GetBillDemand(billDemandUid));
+        }
+
+        private BudgetDocumentKind GetDocumentKind(BillDemand billDemand)
+        {
+            if (!billDemand.DocKindId.HasValue)
+                return BudgetDocumentKind.InBudget;
+            return BudgetDocumentKind.All.First(p => p.Id == billDemand.DocKindId);
+        }
+
+        private static string BossAvailiableExecutorCode
         {
             get { return ConfigurationManager.AppSettings.Get("BossAvailiableExecutorCode"); }
         }
@@ -634,7 +810,7 @@ namespace Budget2.Server.Business.Services
                     dlo.LoadWith<BillDemand>(p => p.Currency1);
                     dlo.LoadWith<BillDemand>(p => p.Filial);
                     dlo.LoadWith<BillDemand>(p => p.Counteragent);
-                    dlo.LoadWith<BillDemand>(p=>p.BillDemandContractMoneys);
+                    dlo.LoadWith<BillDemand>(p => p.BillDemandContractMoneys);
                     dlo.LoadWith<Currency>(p => p.CurrencyRateActual);
                     dlo.LoadWith<Contract>(p => p.ContractMoneys);
                     dlo.LoadWith<Contract>(p => p.CustomerCounteragent);
@@ -693,11 +869,11 @@ namespace Budget2.Server.Business.Services
                             string.Format(
                                 "Невозможно выгрузить контракт не загруженный из БОСС  BillDemandId = {0} (ExternalId = {1}) ",
                                 billDemand.Id, billDemand.Contract.ExternalId));
-                    
+
                     var billDemandForExport = new BillDemandForExport()
                                                   {
                                                       Id = billDemand.Id,
-                                                      ContractId = billDemand.Contract.ExternalId.Value,
+                                                      ContractId = billDemand.Contract.ExternalId,
                                                       CurrencyCode = billDemand.Currency1.IsBase ? billDemand.Currency.Code : billDemand.Currency1.Code,
                                                       CurrencyRevisionDate =
                                                           ((billDemand.CurrencyRateTypeId.HasValue &&
@@ -712,16 +888,17 @@ namespace Budget2.Server.Business.Services
                                                       NDSTaxValue = billDemand.Currency1.IsBase ? (billDemand.NDSValue.HasValue ? billDemand.NDSValue.Value : (billDemand.Sum - (billDemand.SumWithoutNDS.HasValue ? billDemand.SumWithoutNDS.Value : 0))) : (billDemand.CurrencySum.HasValue ? billDemand.CurrencySum.Value : 0),
                                                       DocumentDate = billDemand.AllocationDate.Value,
                                                       AccountDate = billDemand.AccountDate,
-                                                      FirmCode = billDemand.Filial.Code
+                                                      FirmCode = billDemand.Filial.Code,
+                                                      BudgetPartId = billDemand.BudgetPartId
                                                   };
 
                     billDemandForExport.PaymentPlanItemIds =
-                        billDemand.Contract.ContractMoneys.Where(p => p.ExternalId.HasValue && billDemand.BillDemandContractMoneys.Count(bdcm => bdcm.Month == p.MonthId && bdcm.Year == p.Year && bdcm.ToPayment) > 0).Select(
+                        billDemand.Contract.ContractMoneys.Where(p => p.ExternalId.HasValue && billDemand.BillDemandContractMoneys.Count(bdcm => bdcm.ContractMoneyId == p.Id && bdcm.ToPayment) > 0).Select(
                             p => p.ExternalId.Value).Distinct().ToList();
 
 
                     var firstDistribution = billDemand.BillDemandDistributions.FirstOrDefault();
-                    if (firstDistribution!= null && firstDistribution.Demand != null)
+                    if (firstDistribution != null && firstDistribution.Demand != null)
                     {
                         if (firstDistribution.Demand.Project != null)
                             billDemandForExport.ProjectCode = firstDistribution.Demand.Project.Code;
@@ -766,9 +943,72 @@ namespace Budget2.Server.Business.Services
                         demandPermission.EndPermissionDate = DateTime.Now;
                     }
                     context.SubmitChanges();
-                   // context.BillDemands.Where(p=>p.Id = billDemandUid && p.BillDemandDistributions.Where(d=>d.) )
+                    // context.BillDemands.Where(p=>p.Id = billDemandUid && p.BillDemandDistributions.Where(d=>d.) )
                 }
                 scope.Complete();
+            }
+        }
+
+        private bool IsBillDemandSupportExport(BillDemand billDemand)
+        {
+            return billDemand.Filial.IsBillDemandExportable && billDemand.Contract != null && billDemand.Contract.CustomerCounteragent != null
+                   && billDemand.Contract.CustomerCounteragent.Number.ToString(CultureInfo.InvariantCulture) == BossAvailiableExecutorCode;
+        }
+
+        private bool IsBillDemandSkipInAccountingState(BillDemand billDemand)
+        {
+            return billDemand.Filial != null && billDemand.Filial.IsSkipInAccountingState;
+        }
+
+        public bool IsBillDemandSupportExport(Guid billDemandUid)
+        {
+            return IsBillDemandSupportExport(GetBillDemandWithFilialAndContract(billDemandUid));
+        }
+
+        public bool IsBillDemandFilialSupportsExport(Guid billDemandUid)
+        {
+            var billDemand = GetBillDemandWithFilial(billDemandUid);
+
+            return billDemand.Filial != null && billDemand.Filial.IsBillDemandExportable;
+               
+        }
+
+        public bool IsBillDemandSkipInAccountingState(Guid billDemandUid)
+        {
+            return IsBillDemandSkipInAccountingState(GetBillDemandWithFilial(billDemandUid));
+        }
+
+        private BillDemand GetBillDemandWithFilial (Guid billDemandUid)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    var dlo = new DataLoadOptions();
+                    dlo.LoadWith<BillDemand>(p => p.Filial);
+                    context.LoadOptions = dlo;
+                    return GetBillDemand(context, billDemandUid);
+
+                }
+
+            }
+        }
+
+        private BillDemand GetBillDemandWithFilialAndContract(Guid billDemandUid)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    var dlo = new DataLoadOptions();
+                    dlo.LoadWith<BillDemand>(p => p.Filial);
+                    dlo.LoadWith<BillDemand>(p => p.Contract);
+                    dlo.LoadWith<Contract>(c=>c.CustomerCounteragent);
+                    context.LoadOptions = dlo;
+                    return GetBillDemand(context, billDemandUid);
+
+                }
+
             }
         }
     }

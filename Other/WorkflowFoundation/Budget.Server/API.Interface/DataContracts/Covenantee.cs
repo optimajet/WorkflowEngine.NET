@@ -32,6 +32,6 @@ namespace Budget2.Server.API.Interface.DataContracts
         [DataMember]
         public string Currency { get; set; }
         [DataMember]
-        public long? IdCft { get; set; }
+        public string IdCft { get; set; }
     }
 }

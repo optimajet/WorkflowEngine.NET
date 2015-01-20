@@ -16,6 +16,9 @@ namespace Budget2.Server.API.Interface.Services
         void Denial(ApiCommandArgument arg);
 
         [OperationContract]
+        void Rollback(ApiCommandArgument arg);
+
+        [OperationContract]
         void DenialByTechnicalCauses(ApiCommandArgument arg);
 
         [OperationContract]
@@ -44,7 +47,7 @@ namespace Budget2.Server.API.Interface.Services
 
         [OperationContract]
         [FaultContract(typeof (BaseFault))]
-        IEnumerable<CommandExecutionStatus> MassApproveDemands(ApiMassCommandEventArg arg);
+        IEnumerable<CommandExecutionStatus> MassExecuteCommand(ApiMassCommandEventArg arg);
 
         [OperationContract]
         List<WorkflowCommandType> GetListOfAllowedOperations(ApiCommandArgument arg);
@@ -54,6 +57,11 @@ namespace Budget2.Server.API.Interface.Services
 
         [OperationContract]
         void SetWorkflowState(SetStateApiCommandArgument arg);
+
+
+        [OperationContract]
+        [FaultContract(typeof(BaseFault))]
+        IEnumerable<CommandExecutionStatus> MassExecuteSetState(ApiMassSetStateCommandEventArg arg);
 
 
     }

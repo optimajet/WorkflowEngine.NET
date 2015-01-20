@@ -12,6 +12,7 @@ namespace Budget2.Server.API.Interface.Faults
     /// </summary>
     public enum ErrorCodes : int
     {      
+        Empty = -1,
         BillDemandUploadError = 101,
         CurrencyUploadError = 201,
         RateUploadError = 202,

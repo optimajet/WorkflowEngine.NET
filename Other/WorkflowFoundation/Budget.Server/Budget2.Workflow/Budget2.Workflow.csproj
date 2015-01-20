@@ -7,7 +7,7 @@
     <ProjectGuid>{21260753-1AA2-4F06-BA90-1B77E9582E0A}</ProjectGuid>
     <OutputType>Library</OutputType>
     <RootNamespace>Budget2.Workflow</RootNamespace>
-    <AssemblyName>Budget2.Workflow</AssemblyName>
+    <AssemblyName>Budget2.Workflow.2.0.0.0</AssemblyName>
     <ProjectTypeGuids>{14822709-B5A1-4724-98CA-57A101D1B079};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
     <WarningLevel>4</WarningLevel>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
@@ -26,6 +26,12 @@
     <OutputPath>.\bin\Release\</OutputPath>
     <DefineConstants>TRACE</DefineConstants>
     <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>budget2.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="log4net">
@@ -72,6 +78,7 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Tracking\Budget2TrackingChannel.cs" />
     <Compile Include="Tracking\Budget2TrackingService.cs" />
+    <None Include="budget2.snk" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.cs</LastGenOutput>
@@ -90,6 +97,9 @@
       <DependentUpon>BillDemand.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="Demand.layout">
+      <DependentUpon>Demand.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Demand.rules">
       <DependentUpon>Demand.cs</DependentUpon>
     </EmbeddedResource>
     <EmbeddedResource Include="DemandAdjustment.layout">

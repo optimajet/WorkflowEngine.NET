@@ -12,7 +12,7 @@ namespace Budget2.Server.API.Interface.DataContracts
         [DataMember(IsRequired = true)]
         public int Id { get; set; }
         [DataMember]
-        public int DogId { get; set; }
+        public string DogId { get; set; }
         [DataMember]
         public string Prefix { get; set; }
         [DataMember]

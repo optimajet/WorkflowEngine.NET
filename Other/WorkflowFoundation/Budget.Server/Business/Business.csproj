@@ -51,7 +51,8 @@
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="log4net">
+    <Reference Include="log4net, Version=1.2.10.0, Culture=neutral, PublicKeyToken=1b44e1d426115821, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\Library\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.CompositeWeb">
@@ -112,6 +113,7 @@
     <Compile Include="Services\EmailService.cs" />
     <Compile Include="Services\EmployeeService.cs" />
     <Compile Include="Services\SecurityEntityService.cs" />
+    <Compile Include="Services\SettingsService.cs" />
     <Compile Include="Services\UpdateRatesService.cs" />
     <Compile Include="Services\WorkflowStateService.cs" />
     <Compile Include="Services\WorkflowTicketService.cs" />

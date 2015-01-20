@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.Linq;
 using System.Linq;
 using System.Text;
 using System.Transactions;
@@ -18,7 +19,33 @@ namespace Budget2.Server.Security.AuthorizationValidators
 
         public IEmployeeService EmployeeService { get; set; }
 
-        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType)
+        public ISecurityEntityService SecurityEntityService { get; set; }
+    
+        public IBillDemandBuinessService BillDemandBuinessService { get; set; }
+        
+        public List<WorkflowCommandType> AddAdditionalCommand(ServiceIdentity getCurrentIdentity, IEnumerable<ServiceIdentity> identities, WorkflowState currentState, Guid instanceUid, List<WorkflowCommandType> allowedOperations)
+        {
+            if (currentState == WorkflowState.DemandDraft || currentState == WorkflowState.DemandAgreed || currentState == WorkflowState.DemandRollbackRequested || currentState == null)
+                return allowedOperations;
+
+            if (ValidateInitiatorForRollback(getCurrentIdentity, instanceUid))
+                allowedOperations.Add(WorkflowCommandType.Rollback);
+            else if (!getCurrentIdentity.IsImpersonated)
+            {
+                var identity = identities.FirstOrDefault(i => ValidateInitiatorForRollback(i, instanceUid));
+                    if (identity != null)
+                    {
+                        getCurrentIdentity.TryImpersonate(identity.Id);
+                        allowedOperations.Add(WorkflowCommandType.Rollback);
+                    }
+
+            }
+
+            return allowedOperations;
+        }
+
+
+        public bool IsCommandSupportsInState(WorkflowState state, WorkflowCommandType commandType, Guid instanceId)
         {
             if (state == null)
             {
@@ -30,12 +57,16 @@ namespace Budget2.Server.Security.AuthorizationValidators
             if (state.Type != WorkflowType.DemandWorkflow)
                 return false;
 
+            
             if ((commandType == WorkflowCommandType.Sighting) &&
                 ((state == WorkflowState.DemandInitiatorHeadSighting) ||
                  (state == WorkflowState.DemandOPExpertSighting) ||
                  (state == WorkflowState.DemandOPHeadSighting) ||
                  (state == WorkflowState.DemandUPKZCuratorSighting) ||
-                 (state == WorkflowState.DemandUPKZHeadSighting) 
+                 (state == WorkflowState.DemandUPKZHeadSighting) ||
+                 //(state == WorkflowState.DemandAgreementInitiatorHeadSighting) ||
+                 //(state == WorkflowState.DemandAgreementOPHeadSighting) ||
+                 (state == WorkflowState.DemandAgreementOPExpertSighting) || (state == WorkflowState.DemandRollbackRequested) 
                 )
                 )
                 return true;
@@ -45,7 +76,10 @@ namespace Budget2.Server.Security.AuthorizationValidators
                 (state == WorkflowState.DemandOPExpertSighting) ||
                 (state == WorkflowState.DemandOPHeadSighting) ||
                 (state == WorkflowState.DemandUPKZCuratorSighting) ||
-                (state == WorkflowState.DemandUPKZHeadSighting)
+                (state == WorkflowState.DemandUPKZHeadSighting) ||
+                //(state == WorkflowState.DemandAgreementInitiatorHeadSighting) ||
+                // (state == WorkflowState.DemandAgreementOPHeadSighting) ||
+                 (state == WorkflowState.DemandAgreementOPExpertSighting) || (state == WorkflowState.DemandRollbackRequested) 
                )
                )
                 return true;
@@ -71,6 +105,9 @@ namespace Budget2.Server.Security.AuthorizationValidators
             if (state == WorkflowState.DemandUPKZCuratorSighting)
                 return AuthorizationService.IsInRole(identity.Id, BudgetRole.Curator);
 
+            if (state == WorkflowState.DemandRollbackRequested)
+                return AuthorizationService.IsInRole(identity.Id, BudgetRole.Curator);
+
             if (state == WorkflowState.DemandUPKZHeadSighting)
                 return AuthorizationService.IsInRole(identity.Id, BudgetRole.UPKZHead);
 
@@ -80,32 +117,42 @@ namespace Budget2.Server.Security.AuthorizationValidators
             if (state == WorkflowState.DemandOPHeadSighting)
                 return AuthorizationService.IsInRole(identity.Id, BudgetRole.DivisionHead) && ValidateCurrentUserInOP(identity, instanceId);
 
-            if (state == WorkflowState.DemandInitiatorHeadSighting)
-                return AuthorizationService.IsInRole(identity.Id, BudgetRole.DivisionHead) && ValidateInitiatorHead(identity, instanceId);
+            if (state == WorkflowState.DemandAgreementOPExpertSighting)
+            {
+                //http://pmtask.ru/redmine/issues/867
+                //return AuthorizationService.IsInRole(identity.Id, BudgetRole.Expert) && ValidateCurrentUserInAgreementOP(identity, instanceId);
+                return ValidateCurrentUserInAgreementOP(identity, instanceId);
+            }
+
+            //if (state == WorkflowState.DemandAgreementOPHeadSighting)
+            //    return AuthorizationService.IsInRole(identity.Id, BudgetRole.DivisionHead) && ValidateCurrentUserInAgreementOP(identity, instanceId);
+
+            if (state == WorkflowState.DemandInitiatorHeadSighting /*|| state == WorkflowState.DemandAgreementInitiatorHeadSighting*/)
+               return  ValidateInitiatorHead(identity, instanceId);
+
+
 
             return false;
         }
 
         private bool ValidateInitiatorHead(ServiceIdentity identity, Guid instanceId)
         {
-            using (var scope = new TransactionScope(TransactionScopeOption.Suppress))
+            using (var context = CreateContext())
             {
-                using (var context = CreateContext())
-                {
-                    var demand = context.Demands.FirstOrDefault(
-                        p =>
-                        p.Id == instanceId && p.AuthorStructDivisionId.HasValue);
+                var dlo = new DataLoadOptions();
+                dlo.LoadWith<Demand>(d => d.BudgetVersion);
+                context.LoadOptions = dlo;
 
-                    if (demand == null)
-                        return false;
+                var demand = context.Demands.FirstOrDefault(
+                    p =>
+                    p.Id == instanceId && p.AuthorId.HasValue);
 
-                    Guid? identityDivisionId = GetIdentityDivisionId(context, identity, demand.BudgetVersion.BudgetId);
+                if (demand == null)
+                    return false;
 
-                    if (!identityDivisionId.HasValue)
-                        return false;
+                var heads = SecurityEntityService.GetHeadIds(demand.AuthorId.Value, demand.BudgetVersion.BudgetId);
 
-                    return demand.AuthorStructDivisionId == identityDivisionId.Value;
-                }
+                return heads.Contains(identity.Id);
             }
         }
 
@@ -133,6 +180,31 @@ namespace Budget2.Server.Security.AuthorizationValidators
             }
         }
 
+
+        private bool ValidateCurrentUserInAgreementOP(ServiceIdentity identity, Guid instanceId)
+        {
+            using (var scope = new TransactionScope(TransactionScopeOption.Suppress))
+            {
+                using (var context = CreateContext())
+                {
+                    var demand = context.Demands.FirstOrDefault(
+                        p =>
+                        p.Id == instanceId && p.AgreementCfo.HasValue);
+
+                    if (demand == null)
+                        return false;
+
+                    Guid? identityDivisionId = GetIdentityDivisionId(context, identity, demand.BudgetVersion.BudgetId);
+
+                    if (!identityDivisionId.HasValue)
+                        return false;
+
+                    return demand.AgreementCfo == identityDivisionId.Value;
+
+                }
+            }
+        }
+
         private Guid? GetIdentityDivisionId(Budget2DataContext context, ServiceIdentity identity, Guid budgetId)
         {
             var employee =
@@ -145,6 +217,18 @@ namespace Budget2.Server.Security.AuthorizationValidators
             using (var context = CreateContext())
             {
                 var demand = context.Demands.SingleOrDefault(p => p.Id == instanceId);
+                if (demand == null)
+                    return false;
+
+                return demand.AuthorId == identity.Id;
+            }
+        }
+
+        private bool ValidateInitiatorForRollback(ServiceIdentity identity, Guid instanceId)
+        {
+            using (var context = CreateContext())
+            {
+                var demand = context.Demands.SingleOrDefault(p => p.Id == instanceId && p.PlanningTypeId != 2);
                 if (demand == null)
                     return false;
 

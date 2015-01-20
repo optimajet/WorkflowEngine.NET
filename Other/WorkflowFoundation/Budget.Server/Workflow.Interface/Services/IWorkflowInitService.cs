@@ -10,11 +10,8 @@ namespace Budget2.Server.Workflow.Interface.Services
     public interface IWorkflowInitService
     {
         WorkflowRuntime Runtime { get; }
-
-        
-
         void SetWorkflowState(Guid instanceId, string stateName, string comment);
-
+        void SetWorkflowState(Guid instanceId, ServiceIdentity serviceIdentity, string stateName, string comment);
         /// <summary>
         /// Отправка на маршрут
         /// </summary>
@@ -31,17 +28,25 @@ namespace Budget2.Server.Workflow.Interface.Services
         /// </summary>
         event EventHandler<DenialCommandEventArgs> Denial;
 
+        event EventHandler<DenialCommandEventArgs> Rollback;
+
         /// <summary>
         /// Отказ по техническим причинам
         /// </summary>
         event EventHandler<DenialCommandEventArgs> DenialByTechnicalCauses;
 
         void RaiseStartProcessing(Guid instanceId);
+        void RaiseStartProcessing(Guid instanceId, ServiceIdentity serviceIdentity);
 
         void RaiseSighting(Guid instanceId);
         void RaiseSighting(Guid instanceId, ServiceIdentity serviceIdentity);
 
         void RaiseDenial(Guid instanceId, string comment);
+        void RaiseDenial(Guid instanceId,ServiceIdentity serviceIdentity, string comment);
+
+        void RaiseRollback(Guid instanceId, string comment);
+        void RaiseRollback(Guid instanceId,ServiceIdentity serviceIdentity, string comment);
+
 
         void RaiseDenialByTechnicalCauses(Guid instanceId, string comment);
 
@@ -54,5 +59,6 @@ namespace Budget2.Server.Workflow.Interface.Services
         void RaiseExport(Guid instanceId);
         void RaiseExport(Guid instanceId, ServiceIdentity serviceIdentity);
         void CreateWorkflowIfNotExists(Guid instanceId);
+       
     }
 }

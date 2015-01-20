@@ -14,6 +14,7 @@ namespace Budget2.DAL
         public Budget2DataContext CreateContext ()
         {
             var context = new Budget2DataContext(ConfigurationManager.ConnectionStrings["default"].ConnectionString);
+            context.CommandTimeout = 600;
             context.DeferredLoadingEnabled = true;
             return context;
         }
@@ -31,6 +32,18 @@ namespace Budget2.DAL
             }
         }
 
-            
+        public TransactionScope ReadUncommittedSupressedScope
+        {
+            get
+            {
+                return new TransactionScope(TransactionScopeOption.Suppress,
+                                            new TransactionOptions()
+                                            {
+                                                IsolationLevel = System.Transactions.IsolationLevel.ReadUncommitted,
+                                                Timeout = new TimeSpan(0, 10, 0)
+                                            });
+            }
+        }
+   
     }
 }

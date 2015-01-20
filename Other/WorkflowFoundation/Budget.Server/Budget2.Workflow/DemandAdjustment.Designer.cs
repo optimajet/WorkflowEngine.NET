@@ -111,6 +111,7 @@ namespace Budget2.Workflow
             this.transactionScopeActivity1 = new System.Workflow.ComponentModel.TransactionScopeActivity();
             this.handleExternalEventActivity1 = new System.Workflow.Activities.HandleExternalEventActivity();
             this.DraftInitCode = new System.Workflow.Activities.CodeActivity();
+            this.handleExternalEventActivity27 = new System.Workflow.Activities.HandleExternalEventActivity();
             this.AgreedInit = new System.Workflow.Activities.StateInitializationActivity();
             this.DenialEvent6 = new System.Workflow.Activities.EventDrivenActivity();
             this.SightingEvent6 = new System.Workflow.Activities.EventDrivenActivity();
@@ -132,6 +133,7 @@ namespace Budget2.Workflow
             this.SourceDemandLimitExecutorSightingInit = new System.Workflow.Activities.StateInitializationActivity();
             this.StartProcessingEvent = new System.Workflow.Activities.EventDrivenActivity();
             this.DraftInit = new System.Workflow.Activities.StateInitializationActivity();
+            this.eventDrivenActivity17 = new System.Workflow.Activities.EventDrivenActivity();
             this.Archived = new System.Workflow.Activities.StateActivity();
             this.Agreed = new System.Workflow.Activities.StateActivity();
             this.UPKZHeadSighting = new System.Workflow.Activities.StateActivity();
@@ -594,12 +596,19 @@ namespace Budget2.Workflow
             this.handleExternalEventActivity1.EventName = "StartProcessing";
             this.handleExternalEventActivity1.InterfaceType = typeof(Budget2.Server.Workflow.Interface.Services.IWorkflowInitService);
             this.handleExternalEventActivity1.Name = "handleExternalEventActivity1";
-            this.handleExternalEventActivity1.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.forvadTransitionEventInvoked);
+            this.handleExternalEventActivity1.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.StartProcessingEventInvoked);
             // 
             // DraftInitCode
             // 
             this.DraftInitCode.Name = "DraftInitCode";
             this.DraftInitCode.ExecuteCode += new System.EventHandler(this.DraftInitCode_ExecuteCode);
+            // 
+            // handleExternalEventActivity27
+            // 
+            this.handleExternalEventActivity27.EventName = "SetInternalParameters";
+            this.handleExternalEventActivity27.InterfaceType = typeof(Budget2.Server.Workflow.Interface.Services.IWorkflowSupportService);
+            this.handleExternalEventActivity27.Name = "handleExternalEventActivity27";
+            this.handleExternalEventActivity27.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.setInternalParametersInvoked);
             // 
             // AgreedInit
             // 
@@ -721,6 +730,11 @@ namespace Budget2.Workflow
             this.DraftInit.Activities.Add(this.DraftInitCode);
             this.DraftInit.Name = "DraftInit";
             // 
+            // eventDrivenActivity17
+            // 
+            this.eventDrivenActivity17.Activities.Add(this.handleExternalEventActivity27);
+            this.eventDrivenActivity17.Name = "eventDrivenActivity17";
+            // 
             // Archived
             // 
             this.Archived.Name = "Archived";
@@ -789,6 +803,7 @@ namespace Budget2.Workflow
             this.Activities.Add(this.UPKZHeadSighting);
             this.Activities.Add(this.Agreed);
             this.Activities.Add(this.Archived);
+            this.Activities.Add(this.eventDrivenActivity17);
             this.Comment = "";
             this.CompletedStateName = "Archived";
             this.DynamicUpdateCondition = null;
@@ -1016,7 +1031,14 @@ namespace Budget2.Workflow
 
         private CodeActivity TargetDemandLimitExecutorSightingInitCode1;
 
+        private HandleExternalEventActivity handleExternalEventActivity27;
+
+        private EventDrivenActivity eventDrivenActivity17;
+
         private StateActivity Draft;
+
+
+
 
 
 

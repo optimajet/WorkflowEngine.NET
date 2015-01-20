@@ -114,6 +114,22 @@ namespace Budget2.Workflow
         #endregion
 
         #region Стандартные обработчики
+        protected void setInternalParametersInvoked(object sender, ExternalDataEventArgs e)
+        {
+            var workflowEventArgs = e as SetWorkflowInternalParametersEventArgs;
+            if (workflowEventArgs == null)
+                return;
+
+            foreach (var parameter in workflowEventArgs.Parameters)
+            {
+                if (WorkflowPersistanceParameters.ContainsKey(parameter.Key))
+                    WorkflowPersistanceParameters[parameter.Key] = parameter.Value;
+                else
+                {
+                    WorkflowPersistanceParameters.Add(parameter.Key,parameter.Value);
+                }
+            }
+        }
 
         /// <summary>
         /// Стандартный обработчик прямого движения документа
@@ -151,6 +167,12 @@ namespace Budget2.Workflow
         {
             DenialEventFired(e);
             LastCommand = WorkflowCommand.DenialByTechnicalCauses;
+        }
+
+        protected void rollbackEventFired1_Invoked(object sender, ExternalDataEventArgs e)
+        {
+            DenialEventFired(e);
+            LastCommand = WorkflowCommand.Rollback;
         }
 
         private void DenialEventFired(ExternalDataEventArgs e)

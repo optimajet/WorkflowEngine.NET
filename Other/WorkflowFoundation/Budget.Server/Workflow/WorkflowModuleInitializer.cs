@@ -21,10 +21,12 @@ namespace Budget2.Server.Workflow
         }
 
         protected virtual void AddGlobalServices(IServiceCollection globalServices)
-        {
+        { 
+            globalServices.AddNew<WorkflowSupportService, IWorkflowSupportService>();
             globalServices.AddNew<BillDemandWorkflowService, IBillDemandWorkflowService>();
             globalServices.AddNew<WorkflowParcelService, IWorkflowParcelService>();
             globalServices.AddNew<WorkflowInitService, IWorkflowInitService>();
+          
             
             
             

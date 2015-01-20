@@ -24,6 +24,8 @@ namespace Budget2.Server.Security.Interface.DataContracts
         [EnumMember]
         CheckStatus,
         [EnumMember]
-        SetWorkflowState
+        SetWorkflowState,
+        [EnumMember]
+        Rollback
     }
 }

@@ -10,11 +10,24 @@ namespace Budget2.Server.Business.Interface.Services
     public interface IDemandBusinessService
     {
         bool CheckInitiatorIsExecutorStructDivision(Guid demandUid);
+
         void UpdateDemandState(WorkflowState state, Guid demandId);
-        void UpdateDemandState(WorkflowState initialState, WorkflowState destinationState, WorkflowCommand command, Guid demandId,
-                               Guid initiatorId, string comment);
+
+        void UpdateDemandState(WorkflowState initialState,
+                               WorkflowState destinationState,
+                               WorkflowCommand command,
+                               Guid demandId,
+                               Guid initiatorId,
+                               string comment);
+
+        bool CheckInitiatorIsAgreementStructDivision(Guid demandUid);
+
+        bool CheckSendToAgreementStructDivision(Guid demandUid);
 
         void CreateDemandPreHistory(Guid demandUid, WorkflowState state);
+
         Demand GetDemand(Guid demandId);
+
+        Demand GetDemandWithBudgetVersion(Guid demandId);
     }
 }

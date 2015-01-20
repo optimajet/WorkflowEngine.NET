@@ -23,6 +23,7 @@ namespace Budget2.Server.Demand
             this.DetailReport.FilterString =
             this.DetailReport1.FilterString =
             this.DetailReport2.FilterString =
+            this.DetailReport3.FilterString =
                 string.Format("DemandId='{0}'", ((DataSet)this.DataSource).Tables["V_Report_Demand"].Rows[e.CurrentRow]["Id"]);
         }
 
@@ -41,6 +42,9 @@ namespace Budget2.Server.Demand
 
             Budget2.DAL.DataSets.DemandTableAdapters.V_Report_DemandTransitionHistoryTableAdapter bdthAdapter = new DAL.DataSets.DemandTableAdapters.V_Report_DemandTransitionHistoryTableAdapter();
             bdthAdapter.Fill(ds.V_Report_DemandTransitionHistory, id);
+
+            Budget2.DAL.DataSets.DemandTableAdapters.V_Report_DemandGoodsTypeTableAdapter bdgtAdapter = new DAL.DataSets.DemandTableAdapters.V_Report_DemandGoodsTypeTableAdapter();
+            bdgtAdapter.Fill(ds.V_Report_DemandGoodsType, id);
 
             this.DataSource = ds;
         }

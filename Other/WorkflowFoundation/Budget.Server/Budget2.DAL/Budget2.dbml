@@ -1,14 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="Budget2" Class="Budget2DataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
   <Connection Mode="AppSettings" ConnectionString="Data Source=(local);Initial Catalog=Budget2;Integrated Security=True" SettingsObjectName="Budget2.DAL.Properties.Settings" SettingsPropertyName="Budget2ConnectionString1" Provider="System.Data.SqlClient" />
-  <Table Name="dbo.BillDemandState" Member="BillDemandStates">
-    <Type Name="BillDemandState">
-      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Association Name="BillDemandState_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="BillDemandTransitionHistory" />
-      <Association Name="BillDemandState_BillDemandTransitionHistory1" Member="BillDemandTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="BillDemandTransitionHistory" />
-      <Association Name="BillDemandState_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="BillDemandStateId" Type="BillDemand" />
-    </Type>
-  </Table>
   <Table Name="dbo.BillDemandDistribution" Member="BillDemandDistributions">
     <Type Name="BillDemandDistribution">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -136,16 +127,16 @@
       <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="BudgetId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Column Name="IsProtected" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="StructDivision_Project" Member="Projects" ThisKey="Id" OtherKey="StructDivisionId" Type="Project" />
+      <Association Name="StructDivision_DemandPermission" Member="DemandPermissions" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="DemandPermission" />
+      <Association Name="StructDivision_DemandPermission1" Member="DemandPermissions1" ThisKey="Id" OtherKey="UserStructDivisionId" Type="DemandPermission" />
+      <Association Name="StructDivision_Contract" Member="Contracts" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="Contract" />
+      <Association Name="StructDivision_Contract1" Member="Contracts1" ThisKey="Id" OtherKey="ExecutorStructId" Type="Contract" />
+      <Association Name="StructDivision_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorStructDivisionId" Type="BillDemandTransitionHistory" />
       <Association Name="StructDivision_Demand" Member="Demands" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="Demand" />
       <Association Name="StructDivision_Demand1" Member="Demands1" ThisKey="Id" OtherKey="ExecutorStructId" Type="Demand" />
       <Association Name="StructDivision_Demand2" Member="Demands2" ThisKey="Id" OtherKey="BeginDivisionId" Type="Demand" />
-      <Association Name="StructDivision_Project" Member="Projects" ThisKey="Id" OtherKey="StructDivisionId" Type="Project" />
-      <Association Name="StructDivision_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorStructDivisionId" Type="BillDemandTransitionHistory" />
-      <Association Name="StructDivision_DemandPermission" Member="DemandPermissions" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="DemandPermission" />
-      <Association Name="StructDivision_DemandPermission1" Member="DemandPermissions1" ThisKey="Id" OtherKey="UserStructDivisionId" Type="DemandPermission" />
       <Association Name="StructDivision_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="BillDemand" />
-      <Association Name="StructDivision_Contract" Member="Contracts" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="Contract" />
-      <Association Name="StructDivision_Contract1" Member="Contracts1" ThisKey="Id" OtherKey="ExecutorStructId" Type="Contract" />
       <Association Name="Budget_StructDivision" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -166,23 +157,27 @@
       <Association Name="SecurityTrustee_DeputyEmployee" Member="DeputyEmployees" ThisKey="Id" OtherKey="Employee" Type="DeputyEmployee" />
       <Association Name="SecurityTrustee_DeputyEmployee1" Member="DeputyEmployees1" ThisKey="Id" OtherKey="DeputyEmployee1" Type="DeputyEmployee" />
       <Association Name="SecurityTrustee_Expert" Member="Experts" ThisKey="Id" OtherKey="SecurityTrusteeId" Type="Expert" />
-      <Association Name="SecurityTrustee_Demand" Member="Demands" ThisKey="Id" OtherKey="AuthorId" Type="Demand" />
-      <Association Name="SecurityTrustee_Demand1" Member="Demands1" ThisKey="Id" OtherKey="NegativeEmployeeId" Type="Demand" />
       <Association Name="SecurityTrustee_Project" Member="Projects" ThisKey="Id" OtherKey="ManagerEmployeeId" Type="Project" />
-      <Association Name="SecurityTrustee_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorId" Type="BillDemandTransitionHistory" />
-      <Association Name="SecurityTrustee_BillDemandTransitionHistory1" Member="BillDemandTransitionHistories1" ThisKey="Id" OtherKey="TransitionExpectedInitiatorId" Type="BillDemandTransitionHistory" />
       <Association Name="SecurityTrustee_DemandPermission" Member="DemandPermissions" ThisKey="Id" OtherKey="AuthorId" Type="DemandPermission" />
       <Association Name="SecurityTrustee_DemandPermission1" Member="DemandPermissions1" ThisKey="Id" OtherKey="UserId" Type="DemandPermission" />
       <Association Name="SecurityTrustee_DemandTransitionHistory" Member="DemandTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorId" Type="DemandTransitionHistory" />
       <Association Name="SecurityTrustee_DemandTransitionHistory1" Member="DemandTransitionHistories1" ThisKey="Id" OtherKey="TransitionExpectedInitiatorId" Type="DemandTransitionHistory" />
       <Association Name="SecurityTrustee_DemandAdjustmentTransitionHistory" Member="DemandAdjustmentTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorId" Type="DemandAdjustmentTransitionHistory" />
       <Association Name="SecurityTrustee_DemandAdjustmentTransitionHistory1" Member="DemandAdjustmentTransitionHistories1" ThisKey="Id" OtherKey="TransitionExpectedInitiatorId" Type="DemandAdjustmentTransitionHistory" />
-      <Association Name="SecurityTrustee_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="AuthorId" Type="BillDemand" />
-      <Association Name="SecurityTrustee_BillDemand1" Member="BillDemands1" ThisKey="Id" OtherKey="LimitManagerId" Type="BillDemand" />
-      <Association Name="SecurityTrustee_BillDemand2" Member="BillDemands2" ThisKey="Id" OtherKey="CuratorId" Type="BillDemand" />
       <Association Name="SecurityTrustee_Contract" Member="Contracts" ThisKey="Id" OtherKey="AuthorId" Type="Contract" />
       <Association Name="SecurityTrustee_Employee" Member="Employees" ThisKey="Id" OtherKey="SecurityTrusteeId" Type="Employee" />
       <Association Name="SecurityTrustee_WorkflowSighting" Member="WorkflowSightings" ThisKey="Id" OtherKey="SighterId" Type="WorkflowSighting" />
+      <Association Name="SecurityTrustee_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="TransitionInitiatorId" Type="BillDemandTransitionHistory" />
+      <Association Name="SecurityTrustee_BillDemandTransitionHistory1" Member="BillDemandTransitionHistories1" ThisKey="Id" OtherKey="TransitionExpectedInitiatorId" Type="BillDemandTransitionHistory" />
+      <Association Name="SecurityTrustee_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="ExecutorId" Type="CostArticle" />
+      <Association Name="SecurityTrustee_CostArticle1" Member="CostArticles1" ThisKey="Id" OtherKey="ManagerId" Type="CostArticle" />
+      <Association Name="SecurityTrustee_CostArticle2" Member="CostArticles2" ThisKey="Id" OtherKey="ModifiedEmployeeId" Type="CostArticle" />
+      <Association Name="SecurityTrustee_Demand" Member="Demands" ThisKey="Id" OtherKey="AuthorId" Type="Demand" />
+      <Association Name="SecurityTrustee_Demand1" Member="Demands1" ThisKey="Id" OtherKey="NegativeEmployeeId" Type="Demand" />
+      <Association Name="SecurityTrustee_vSecurityTrusteeRole" Member="vSecurityTrusteeRoles" ThisKey="Id" OtherKey="Id" Type="vSecurityTrusteeRole" />
+      <Association Name="SecurityTrustee_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="AuthorId" Type="BillDemand" />
+      <Association Name="SecurityTrustee_BillDemand1" Member="BillDemands1" ThisKey="Id" OtherKey="LimitManagerId" Type="BillDemand" />
+      <Association Name="SecurityTrustee_BillDemand2" Member="BillDemands2" ThisKey="Id" OtherKey="CuratorId" Type="BillDemand" />
     </Type>
   </Table>
   <Table Name="dbo.SecurityDescriptorRecord" Member="SecurityDescriptorRecords">
@@ -195,33 +190,6 @@
       <Association Name="SecurityRole_SecurityDescriptorRecord" Member="SecurityRole" ThisKey="RoleId" OtherKey="Id" Type="SecurityRole" IsForeignKey="true" />
     </Type>
   </Table>
-  <Table Name="dbo.CostArticle" Member="CostArticles">
-    <Type Name="CostArticle">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="ParentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Column Name="Code" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="CodeVersion" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="Balance" Type="System.Char" DbType="Char(1)" CanBeNull="true" />
-      <Column Name="GroupCode" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="GroupName" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
-      <Column Name="B_KIND" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="KIND" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="IsProtected" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="POS" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="CapOp" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
-      <Column Name="Comment" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="ExecutorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Association Name="CostArticle_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="ParentId" Type="CostArticle" />
-      <Association Name="CostArticle_ExpertCostArticle" Member="ExpertCostArticles" ThisKey="Id" OtherKey="CostArticleId" Type="ExpertCostArticle" />
-      <Association Name="CostArticle_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="CostArticleId" Type="BillDemandAllocation" />
-      <Association Name="CostArticle_CostArticle" Member="CostArticle1" ThisKey="ParentId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
-      <Association Name="BudgetVersion_CostArticle" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.Currency" Member="Currencies">
     <Type Name="Currency">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -231,10 +199,10 @@
       <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Association Name="Currency_CurrencyRate" Member="CurrencyRates" ThisKey="Id" OtherKey="CurrencyId" Type="CurrencyRate" />
       <Association Name="Currency_CurrencyRateActual" Member="CurrencyRateActual" ThisKey="Id" OtherKey="CurrencyId" Type="CurrencyRateActual" Cardinality="One" />
-      <Association Name="Currency_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="CurrencyId" Type="BillDemand" />
-      <Association Name="Currency_BillDemand1" Member="BillDemands1" ThisKey="Id" OtherKey="PaymentCurrencyId" Type="BillDemand" />
       <Association Name="Currency_Contract" Member="Contracts" ThisKey="Id" OtherKey="CurrencyId" Type="Contract" />
       <Association Name="Currency_Counteragent" Member="Counteragents" ThisKey="Id" OtherKey="CurrencyId" Type="Counteragent" />
+      <Association Name="Currency_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="CurrencyId" Type="BillDemand" />
+      <Association Name="Currency_BillDemand1" Member="BillDemands1" ThisKey="Id" OtherKey="PaymentCurrencyId" Type="BillDemand" />
     </Type>
   </Table>
   <Table Name="dbo.CurrencyRate" Member="CurrencyRates">
@@ -268,13 +236,13 @@
       <Column Name="Name" Type="System.String" DbType="NVarChar(2048) NOT NULL" CanBeNull="false" />
       <Column Name="BudgetId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Column Name="IsCurrent" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Association Name="BudgetVersion_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="BudgetVersionId" Type="CostArticle" />
       <Association Name="BudgetVersion_Limit" Member="Limits" ThisKey="Id" OtherKey="BudgetVersionId" Type="Limit" />
-      <Association Name="BudgetVersion_Filial" Member="Filials" ThisKey="Id" OtherKey="BudgetVersionId" Type="Filial" />
-      <Association Name="BudgetVersion_Demand" Member="Demands" ThisKey="Id" OtherKey="BudgetVersionId" Type="Demand" />
       <Association Name="BudgetVersion_Project" Member="Projects" ThisKey="Id" OtherKey="BudgetVersionId" Type="Project" />
       <Association Name="BudgetVersion_Contract" Member="Contracts" ThisKey="Id" OtherKey="BudgetVersionId" Type="Contract" />
       <Association Name="BudgetVersion_Counteragent" Member="Counteragents" ThisKey="Id" OtherKey="BudgetVersionId" Type="Counteragent" />
+      <Association Name="BudgetVersion_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="BudgetVersionId" Type="CostArticle" />
+      <Association Name="BudgetVersion_Demand" Member="Demands" ThisKey="Id" OtherKey="BudgetVersionId" Type="Demand" />
+      <Association Name="BudgetVersion_Filial" Member="Filials" ThisKey="Id" OtherKey="BudgetVersionId" Type="Filial" />
       <Association Name="Budget_BudgetVersion" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -291,8 +259,8 @@
       <Association Name="Budget_BudgetVersion" Member="BudgetVersions" ThisKey="Id" OtherKey="BudgetId" Type="BudgetVersion" />
       <Association Name="Budget_Expert" Member="Experts" ThisKey="Id" OtherKey="BudgetId" Type="Expert" />
       <Association Name="Budget_CFO" Member="CFOs" ThisKey="Id" OtherKey="BudgetId" Type="CFO" />
-      <Association Name="Budget_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="BudgetId" Type="BillDemand" />
       <Association Name="Budget_Employee" Member="Employees" ThisKey="Id" OtherKey="BudgetId" Type="Employee" />
+      <Association Name="Budget_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="BudgetId" Type="BillDemand" />
       <Association Name="BudgetStatus_Budget" Member="BudgetStatus" ThisKey="StatusId" OtherKey="Id" Type="BudgetStatus" IsForeignKey="true" />
     </Type>
   </Table>
@@ -343,18 +311,11 @@
       <Column Name="Sum" Type="System.Decimal" DbType="Decimal(18,2)" CanBeNull="true" />
       <Column Name="TypeId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
       <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="Limit_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="LimitId" Type="CostArticle" />
       <Association Name="Limit_Demand" Member="Demands" ThisKey="Id" OtherKey="LimitId" Type="Demand" />
       <Association Name="BudgetVersion_Limit" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" />
       <Association Name="SecurityTrustee_Limit" Member="Executor" Storage="_SecurityTrustee" ThisKey="ExecutorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="SecurityTrustee_Limit1" Member="Manager" Storage="_SecurityTrustee1" ThisKey="ManagerId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.DemandAdjustmentState" Member="DemandAdjustmentStates">
-    <Type Name="DemandAdjustmentState">
-      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory" Member="DemandAdjustmentTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="DemandAdjustmentTransitionHistory" />
-      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory1" Member="DemandAdjustmentTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="DemandAdjustmentTransitionHistory" />
     </Type>
   </Table>
   <Table Name="dbo.DemandMoney" Member="DemandMoneys">
@@ -371,8 +332,8 @@
     <Type Name="ExpertCostArticle">
       <Column Name="ExpertId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="CostArticleId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Association Name="CostArticle_ExpertCostArticle" Member="CostArticle" ThisKey="CostArticleId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
       <Association Name="Expert_ExpertCostArticle" Member="Expert" ThisKey="ExpertId" OtherKey="Id" Type="Expert" IsForeignKey="true" />
+      <Association Name="CostArticle_ExpertCostArticle" Member="CostArticle" ThisKey="CostArticleId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.DeputyEmployee" Member="DeputyEmployees">
@@ -384,7 +345,7 @@
       <Column Name="StartDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="EndDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Association Name="SecurityTrustee_DeputyEmployee" Member="SecurityTrustee" ThisKey="Employee" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_DeputyEmployee1" Member="SecurityTrustee1" ThisKey="DeputyEmployee1" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_DeputyEmployee1" Member="DeputySecurityTrustee" Storage="_SecurityTrustee1" ThisKey="DeputyEmployee1" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Expert" Member="Experts">
@@ -397,15 +358,6 @@
       <Association Name="Expert_ExpertCostArticle" Member="ExpertCostArticles" ThisKey="Id" OtherKey="ExpertId" Type="ExpertCostArticle" />
       <Association Name="Budget_Expert" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="SecurityTrustee_Expert" Member="SecurityTrustee" ThisKey="SecurityTrusteeId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.DemandStatusInternal" Member="DemandStatusInternals">
-    <Type Name="DemandStatusInternal">
-      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
-      <Association Name="DemandStatusInternal_Demand" Member="Demands" ThisKey="Id" OtherKey="InternalStatusId" Type="Demand" />
-      <Association Name="DemandStatusInternal_DemandTransitionHistory" Member="DemandTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="DemandTransitionHistory" />
-      <Association Name="DemandStatusInternal_DemandTransitionHistory1" Member="DemandTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="DemandTransitionHistory" />
     </Type>
   </Table>
   <Table Name="dbo.CurrencyRateActual" Member="CurrencyRateActuals">
@@ -423,8 +375,8 @@
       <Column Name="Weight" Type="System.Double" DbType="Float NOT NULL" CanBeNull="false" />
       <Column Name="CfoId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Column Name="GeographicalPositionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Association Name="Demand_DemandAllocation" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="CFO_DemandAllocation" Member="CFO" ThisKey="CfoId" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="Demand_DemandAllocation" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.AppSettings" Member="AppSettings">
@@ -440,97 +392,6 @@
       <Column Name="Head" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
-  <Table Name="dbo.Filial" Member="Filials">
-    <Type Name="Filial">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Column Name="Code" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
-      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="IsProtected" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="ParentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsBillDemandExportable" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Association Name="Filial_Filial" Member="Filials" ThisKey="Id" OtherKey="ParentId" Type="Filial" />
-      <Association Name="Filial_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="FilialId" Type="BillDemandAllocation" />
-      <Association Name="Filial_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="FilialId" Type="BillDemand" />
-      <Association Name="Filial_Contract" Member="Contracts" ThisKey="Id" OtherKey="FilialId" Type="Contract" />
-      <Association Name="Filial_Counteragent" Member="Counteragents" ThisKey="Id" OtherKey="FilialId" Type="Counteragent" />
-      <Association Name="BudgetVersion_Filial" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Filial_Filial" Member="Filial1" ThisKey="ParentId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.Demand" Member="Demands">
-    <Type Name="Demand">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Description" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
-      <Column Name="CostArticleId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ProjectId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="CounteragentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="GoodsTypeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ExecutorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="DefenderId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsActive" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="InitiatorStructId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ExecutorStructId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="BusinessBlockId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="AuthorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Number" Type="System.Int64" DbType="BigInt NOT NULL" CanBeNull="false" />
-      <Column Name="WorkflowPositionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="NegativeEmployeeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="NegativeComment" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
-      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="BeginDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsFrozen" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="Direction" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="ContractBased" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
-      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="ITSystemId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Comment" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="CodeVersion" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="ManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Generation" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
-      <Column Name="ActorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsPrincipal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="LeasingStatus" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="IsPlanned" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="InternalStatusId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="ExternalStatusId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="Evolution" Type="System.Int32" DbType="Int" CanBeNull="true" />
-      <Column Name="Name" Type="System.String" DbType="NVarChar(2000)" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="HasAllocation" Type="System.Boolean" DbType="Bit" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="CustomerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="BankId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="NDS" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="AuthorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="LimitId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="CategoryExpensesId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="DocKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="IsUnionDemand" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="UnionDemandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsNegative" Type="System.Boolean" DbType="Bit" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="MultiAllocationName" Type="System.String" DbType="NVarChar(256)" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="MultiAllocationCode" Type="System.String" DbType="NVarChar(256)" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="SumWithoutNDS" Type="System.Decimal" DbType="Money" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
-      <Association Name="Demand_BillDemandDistribution" Member="BillDemandDistributions" ThisKey="Id" OtherKey="DemandId" Type="BillDemandDistribution" />
-      <Association Name="Demand_BillDemandDistributionReserve" Member="BillDemandDistributionReserves" ThisKey="Id" OtherKey="DemandId" Type="BillDemandDistributionReserve" />
-      <Association Name="Demand_DemandMoney" Member="DemandMoneys" ThisKey="Id" OtherKey="DemandId" Type="DemandMoney" />
-      <Association Name="Demand_DemandAllocation" Member="DemandAllocations" ThisKey="Id" OtherKey="DemandId" Type="DemandAllocation" />
-      <Association Name="Demand_DemandPermission" Member="DemandPermissions" ThisKey="Id" OtherKey="DemandId" Type="DemandPermission" />
-      <Association Name="Demand_DemandTransitionHistory" Member="DemandTransitionHistories" ThisKey="Id" OtherKey="DemandId" Type="DemandTransitionHistory" />
-      <Association Name="Demand_DemandAdjustment" Member="DemandAdjustments" ThisKey="Id" OtherKey="SourceDemandId" Type="DemandAdjustment" />
-      <Association Name="Demand_DemandAdjustment1" Member="DemandAdjustments1" ThisKey="Id" OtherKey="TargetDemandId" Type="DemandAdjustment" />
-      <Association Name="BudgetVersion_Demand" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="DemandStatusInternal_Demand" Member="DemandStatusInternal" ThisKey="InternalStatusId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
-      <Association Name="Limit_Demand" Member="Limit" ThisKey="LimitId" OtherKey="Id" Type="Limit" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_Demand" Member="Author" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_Demand1" Member="SecurityTrustee1" ThisKey="NegativeEmployeeId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="StructDivision_Demand" Member="StructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
-      <Association Name="StructDivision_Demand1" Member="ExecutorStructDivision" Storage="_StructDivision1" ThisKey="ExecutorStructId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
-      <Association Name="StructDivision_Demand2" Member="StructDivision2" ThisKey="BeginDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
-      <Association Name="Project_Demand" Member="Project" ThisKey="ProjectId" OtherKey="Id" Type="Project" IsForeignKey="true" />
-      <Association Name="Counteragent_Demand" Member="Counteragent" ThisKey="CounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
-    </Type>
-  </Table>
   <Table Name="dbo.ContractMoney" Member="ContractMoneys">
     <Type Name="ContractMoney">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -538,7 +399,7 @@
       <Column Name="Year" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
       <Column Name="MonthId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
       <Column Name="Sum" Type="System.Decimal" DbType="Money NOT NULL" CanBeNull="false" />
-      <Column Name="PaidState" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="PaidState" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="ExternalFromEmployeeId" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ExternaToEmployeeId" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ConditionPayment" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
@@ -575,10 +436,10 @@
       <Column Name="Manager" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="StructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="Comment" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Association Name="Project_Demand" Member="Demands" ThisKey="Id" OtherKey="ProjectId" Type="Demand" />
       <Association Name="Project_Project" Member="Projects" ThisKey="Id" OtherKey="ParentId" Type="Project" />
       <Association Name="Project_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="ProjectId" Type="BillDemandAllocation" />
       <Association Name="Project_Contract" Member="Contracts" ThisKey="Id" OtherKey="ProjectId" Type="Contract" />
+      <Association Name="Project_Demand" Member="Demands" ThisKey="Id" OtherKey="ProjectId" Type="Demand" />
       <Association Name="BudgetVersion_Project" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="Project_Project" Member="Project1" ThisKey="ParentId" OtherKey="Id" Type="Project" IsForeignKey="true" />
       <Association Name="SecurityTrustee_Project" Member="SecurityTrustee" ThisKey="ManagerEmployeeId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
@@ -597,10 +458,10 @@
       <Column Name="CfoId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Column Name="CustomerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="FilialId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Association Name="CostArticle_BillDemandAllocation" Member="CostArticle" ThisKey="CostArticleId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
-      <Association Name="Filial_BillDemandAllocation" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
       <Association Name="Project_BillDemandAllocation" Member="Project" ThisKey="ProjectId" OtherKey="Id" Type="Project" IsForeignKey="true" />
       <Association Name="CFO_BillDemandAllocation" Member="CFO" ThisKey="CfoId" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="CostArticle_BillDemandAllocation" Member="CostArticle" ThisKey="CostArticleId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
+      <Association Name="Filial_BillDemandAllocation" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
       <Association Name="BillDemand_BillDemandAllocation" Member="BillDemand" ThisKey="BillDemandId" OtherKey="Id" Type="BillDemand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
@@ -624,8 +485,12 @@
       <Association Name="CFO_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="CfoId" Type="BillDemandAllocation" />
       <Association Name="CFO_CFO" Member="CFO2" ThisKey="Id" OtherKey="Id" Type="CFO" Cardinality="One" />
       <Association Name="CFO_Employee" Member="Employees" ThisKey="Id" OtherKey="StructDivisionId" Type="Employee" />
+      <Association Name="CFO_Demand" Member="Demands" ThisKey="Id" OtherKey="CustomerCfoId" Type="Demand" />
+      <Association Name="CFO_Demand1" Member="Demands1" ThisKey="Id" OtherKey="AgreementCfo" Type="Demand" />
+      <Association Name="CFO_Demand2" Member="Demands2" ThisKey="Id" OtherKey="AuthorStructDivisionId" Type="Demand" />
       <Association Name="Budget_CFO" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="CFO_CFO" Member="CFO1" ThisKey="Id" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="Filial_CFO" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.BillDemandContractMoney" Member="BillDemandContractMoneys">
@@ -636,29 +501,9 @@
       <Column Name="Sum" Type="System.Decimal" DbType="Money NOT NULL" CanBeNull="false" />
       <Column Name="BillDemandId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Column Name="ToPayment" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="ContractMoneyId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
       <Association Name="Month_BillDemandContractMoney" Member="Month1" ThisKey="Month" OtherKey="Id" Type="Month" IsForeignKey="true" />
       <Association Name="BillDemand_BillDemandContractMoney" Member="BillDemand" ThisKey="BillDemandId" OtherKey="Id" Type="BillDemand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.BillDemandTransitionHistory" Member="BillDemandTransitionHistories">
-    <Type Name="BillDemandTransitionHistory">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="InitialStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="DestinationStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="BillDemandId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="CommandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="TransitionInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Comment" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
-      <Column Name="TransitionTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="TransitionInitiatorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="TransitionExpectedInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsPlanTransition" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="Description" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Association Name="BillDemandState_BillDemandTransitionHistory" Member="BillDemandState" ThisKey="InitialStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
-      <Association Name="BillDemandState_BillDemandTransitionHistory1" Member="BillDemandState1" ThisKey="DestinationStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_BillDemandTransitionHistory" Member="SecurityTrustee" ThisKey="TransitionInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_BillDemandTransitionHistory1" Member="SecurityTrustee1" ThisKey="TransitionExpectedInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="StructDivision_BillDemandTransitionHistory" Member="StructDivision" ThisKey="TransitionInitiatorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.DemandPermission" Member="DemandPermissions">
@@ -673,11 +518,11 @@
       <Column Name="EndPermissionDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="IsRestricted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="IsConstantPermission" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Association Name="Demand_DemandPermission" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandPermission" Member="SecurityTrustee" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandPermission1" Member="SecurityTrustee1" ThisKey="UserId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="StructDivision_DemandPermission" Member="StructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
       <Association Name="StructDivision_DemandPermission1" Member="StructDivision1" ThisKey="UserStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+      <Association Name="Demand_DemandPermission" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.DemandTransitionHistory" Member="DemandTransitionHistories">
@@ -692,11 +537,11 @@
       <Column Name="CommandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="TransitionExpectedInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Association Name="Demand_DemandTransitionHistory" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="DemandStatusInternal_DemandTransitionHistory" Member="DemandStatusInternal" ThisKey="InitialStateId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
-      <Association Name="DemandStatusInternal_DemandTransitionHistory1" Member="DemandStatusInternal1" ThisKey="DestinationStateId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandTransitionHistory" Member="SecurityTrustee" ThisKey="TransitionInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandTransitionHistory1" Member="SecurityTrustee1" ThisKey="TransitionExpectedInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="DemandStatusInternal_DemandTransitionHistory" Member="InitialState" ThisKey="InitialStateId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
+      <Association Name="DemandStatusInternal_DemandTransitionHistory1" Member="DemandStatusInternal1" ThisKey="DestinationStateId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
+      <Association Name="Demand_DemandTransitionHistory" Member="Demand" ThisKey="DemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
     </Type>
   </Table>
   <Table Name="dbo.DemandAdjustmentTransitionHistory" Member="DemandAdjustmentTransitionHistories">
@@ -711,84 +556,11 @@
       <Column Name="CommandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="TransitionExpectedInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="Description" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory" Member="DemandAdjustmentState" ThisKey="InitialStateId" OtherKey="Id" Type="DemandAdjustmentState" IsForeignKey="true" />
-      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory1" Member="DemandAdjustmentState1" ThisKey="DestinationStateId" OtherKey="Id" Type="DemandAdjustmentState" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandAdjustmentTransitionHistory" Member="SecurityTrustee" ThisKey="TransitionInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="SecurityTrustee_DemandAdjustmentTransitionHistory1" Member="SecurityTrustee1" ThisKey="TransitionExpectedInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="DemandAdjustment_DemandAdjustmentTransitionHistory" Member="DemandAdjustment" ThisKey="DemandAdjustmentId" OtherKey="Id" Type="DemandAdjustment" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-    </Type>
-  </Table>
-  <Table Name="dbo.BillDemand" Member="BillDemands">
-    <Type Name="BillDemand">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="IdNumber" Type="System.Int64" DbType="BigInt NOT NULL" CanBeNull="false" />
-      <Column Name="BudgetId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="Number" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="Substance" Type="System.String" DbType="NVarChar(2048)" CanBeNull="true" />
-      <Column Name="CounteragentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ContractId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="Sum" Type="System.Decimal" DbType="Money NOT NULL" CanBeNull="false" />
-      <Column Name="AllocationDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="DateOfPerformance" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="IsSFReceipt" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="IsActReceipt" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="IsBillReceivable" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="BillDemandStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
-      <Column Name="CurrencyId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="CurrencySum" Type="System.Decimal" DbType="Money" CanBeNull="true" />
-      <Column Name="AuthorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="TransferDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="AccountDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
-      <Column Name="AccountNumber" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
-      <Column Name="Comment" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
-      <Column Name="Condition" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
-      <Column Name="BankId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="ITSystem" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="NDS" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="CurrencyRate" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="CurrencyRateCBPercents" Type="System.Double" DbType="Float" CanBeNull="true" />
-      <Column Name="CurrencyRateTypeId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="LimitManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="CuratorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="AuthorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="INN" Type="System.String" DbType="NVarChar(12)" CanBeNull="true" />
-      <Column Name="PersonalAccount" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
-      <Column Name="KPP" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
-      <Column Name="BankName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="BankBIC" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="DocKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="CategoryExpensesId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="PaymentKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="FilialId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IsCompensation" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Column Name="PaymentCurrencyId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="MultiOPName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiOPCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiPPName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiPPCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiProjectName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiProjectCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiCostArticleName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="MultiCostArticleCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="ClassifiedOrder" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
-      <Column Name="SumWithoutNDS" Type="System.Decimal" DbType="Money" CanBeNull="true" />
-      <Column Name="NDSValue" Type="System.Decimal" DbType="Money" CanBeNull="true" />
-      <Column Name="IsNDSFixed" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-      <Association Name="BillDemand_BillDemandDistribution" Member="BillDemandDistributions" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandDistribution" />
-      <Association Name="BillDemand_BillDemandPath" Member="BillDemandPaths" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandPath" />
-      <Association Name="BillDemand_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandAllocation" />
-      <Association Name="BillDemand_BillDemandContractMoney" Member="BillDemandContractMoneys" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandContractMoney" />
-      <Association Name="BillDemandState_BillDemand" Member="BillDemandState" ThisKey="BillDemandStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
-      <Association Name="Budget_BillDemand" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
-      <Association Name="Currency_BillDemand" Member="Currency" ThisKey="CurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
-      <Association Name="Currency_BillDemand1" Member="Currency1" ThisKey="PaymentCurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
-      <Association Name="Filial_BillDemand" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_BillDemand" Member="Author" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_BillDemand1" Member="SecurityTrustee1" ThisKey="LimitManagerId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="SecurityTrustee_BillDemand2" Member="SecurityTrustee2" ThisKey="CuratorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
-      <Association Name="StructDivision_BillDemand" Member="StructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
-      <Association Name="Contract_BillDemand" Member="Contract" ThisKey="ContractId" OtherKey="Id" Type="Contract" IsForeignKey="true" />
-      <Association Name="Counteragent_BillDemand" Member="Counteragent" ThisKey="CounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
+      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory" Member="InitialState" ThisKey="InitialStateId" OtherKey="Id" Type="DemandAdjustmentState" IsForeignKey="true" />
+      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory1" Member="DemandAdjustmentState1" ThisKey="DestinationStateId" OtherKey="Id" Type="DemandAdjustmentState" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Contract" Member="Contracts">
@@ -827,7 +599,7 @@
       <Column Name="CurrencyRate" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Column Name="CurrencyRateCBPercents" Type="System.Double" DbType="Float" CanBeNull="true" />
       <Column Name="CurrencyRateTypeId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
-      <Column Name="ExternalId" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="ExternalId" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="ExternalCustomerId" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ExternalExecutorId" Type="System.Int32" DbType="Int" CanBeNull="true" />
       <Column Name="ExternalCustomerDetails" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
@@ -847,19 +619,19 @@
       <Column Name="ChangeDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="IsPotential" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Association Name="Contract_ContractMoney" Member="ContractMoneys" ThisKey="Id" OtherKey="ContractId" Type="ContractMoney" />
-      <Association Name="Contract_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="ContractId" Type="BillDemand" />
       <Association Name="Contract_Contract" Member="Contracts" ThisKey="Id" OtherKey="ParentId" Type="Contract" />
+      <Association Name="Contract_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="ContractId" Type="BillDemand" />
       <Association Name="BudgetVersion_Contract" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="Contract_Contract" Member="Contract1" ThisKey="ParentId" OtherKey="Id" Type="Contract" IsForeignKey="true" />
       <Association Name="ContractStatus_Contract" Member="ContractStatus" ThisKey="StatusId" OtherKey="Id" Type="ContractStatus" IsForeignKey="true" />
       <Association Name="Currency_Contract" Member="Currency" ThisKey="CurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
-      <Association Name="Filial_Contract" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
       <Association Name="Project_Contract" Member="Project" ThisKey="ProjectId" OtherKey="Id" Type="Project" IsForeignKey="true" />
       <Association Name="SecurityTrustee_Contract" Member="SecurityTrustee" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
       <Association Name="StructDivision_Contract" Member="StructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
       <Association Name="StructDivision_Contract1" Member="StructDivision1" ThisKey="ExecutorStructId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
       <Association Name="Counteragent_Contract" Member="CustomerCounteragent" ThisKey="CustomerCounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
       <Association Name="Counteragent_Contract1" Member="Counteragent1" ThisKey="ExecutorCounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
+      <Association Name="Filial_Contract" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
     </Type>
   </Table>
   <Table Name="dbo.Counteragent" Member="Counteragents">
@@ -885,19 +657,19 @@
       <Column Name="CodeVersion" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
       <Column Name="IsPotential" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="FilialId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="IdCft" Type="System.Int64" DbType="BigInt" CanBeNull="true" />
+      <Column Name="IdCft" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
       <Column Name="AuthorID" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="CreateDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Column Name="ChangedByID" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="ChangeDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
       <Association Name="Counteragent_Contact" Member="Contacts" ThisKey="Id" OtherKey="CountragentId" Type="Contact" />
-      <Association Name="Counteragent_Demand" Member="Demands" ThisKey="Id" OtherKey="CounteragentId" Type="Demand" />
       <Association Name="Counteragent_ContractMoney" Member="ContractMoneys" ThisKey="Id" OtherKey="FromCounteragentId" Type="ContractMoney" />
       <Association Name="Counteragent_ContractMoney1" Member="ContractMoneys1" ThisKey="Id" OtherKey="ToCounteragentId" Type="ContractMoney" />
-      <Association Name="Counteragent_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="CounteragentId" Type="BillDemand" />
       <Association Name="Counteragent_Contract" Member="Contracts" ThisKey="Id" OtherKey="CustomerCounteragentId" Type="Contract" />
       <Association Name="Counteragent_Contract1" Member="Contracts1" ThisKey="Id" OtherKey="ExecutorCounteragentId" Type="Contract" />
       <Association Name="Counteragent_Counteragent" Member="Counteragents" ThisKey="Id" OtherKey="ParentId" Type="Counteragent" />
+      <Association Name="Counteragent_Demand" Member="Demands" ThisKey="Id" OtherKey="CounteragentId" Type="Demand" />
+      <Association Name="Counteragent_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="CounteragentId" Type="BillDemand" />
       <Association Name="BudgetVersion_Counteragent" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
       <Association Name="Counteragent_Counteragent" Member="Counteragent1" ThisKey="ParentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
       <Association Name="Currency_Counteragent" Member="Currency" ThisKey="CurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
@@ -1052,8 +824,303 @@
       <Association Name="Demand_DemandAdjustment1" Member="TargetDemand" ThisKey="TargetDemandId" OtherKey="Id" Type="Demand" IsForeignKey="true" />
     </Type>
   </Table>
+  <Table Name="dbo.BillDemandTransitionHistory" Member="BillDemandTransitionHistories">
+    <Type Name="BillDemandTransitionHistory">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="InitialStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="DestinationStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="BillDemandId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="CommandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="TransitionInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="TransitionTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="TransitionInitiatorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="TransitionExpectedInitiatorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsPlanTransition" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="Description" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="TransitionTimeForSort" Type="System.DateTime" DbType="DateTime" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="SightingTime" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Association Name="SecurityTrustee_BillDemandTransitionHistory" Member="SecurityTrustee" ThisKey="TransitionInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_BillDemandTransitionHistory1" Member="SecurityTrustee1" ThisKey="TransitionExpectedInitiatorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="StructDivision_BillDemandTransitionHistory" Member="StructDivision" ThisKey="TransitionInitiatorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+      <Association Name="BillDemandState_BillDemandTransitionHistory" Member="InitialState" ThisKey="InitialStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
+      <Association Name="BillDemandState_BillDemandTransitionHistory1" Member="BillDemandState1" ThisKey="DestinationStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DemandStatusInternal" Member="DemandStatusInternals">
+    <Type Name="DemandStatusInternal">
+      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(50) NOT NULL" CanBeNull="false" />
+      <Column Name="[Order]" Member="Order" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Association Name="DemandStatusInternal_DemandTransitionHistory" Member="DemandTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="DemandTransitionHistory" />
+      <Association Name="DemandStatusInternal_DemandTransitionHistory1" Member="DemandTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="DemandTransitionHistory" />
+      <Association Name="DemandStatusInternal_Demand" Member="Demands" ThisKey="Id" OtherKey="InternalStatusId" Type="Demand" />
+    </Type>
+  </Table>
+  <Table Name="dbo.BillDemandState" Member="BillDemandStates">
+    <Type Name="BillDemandState">
+      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="[Order]" Member="Order" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Association Name="BillDemandState_BillDemandTransitionHistory" Member="BillDemandTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="BillDemandTransitionHistory" />
+      <Association Name="BillDemandState_BillDemandTransitionHistory1" Member="BillDemandTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="BillDemandTransitionHistory" />
+      <Association Name="BillDemandState_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="BillDemandStateId" Type="BillDemand" />
+    </Type>
+  </Table>
+  <Table Name="dbo.DemandAdjustmentState" Member="DemandAdjustmentStates">
+    <Type Name="DemandAdjustmentState">
+      <Column Name="Id" Type="System.Byte" DbType="TinyInt NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="[Order]" Member="Order" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory" Member="DemandAdjustmentTransitionHistories" ThisKey="Id" OtherKey="InitialStateId" Type="DemandAdjustmentTransitionHistory" />
+      <Association Name="DemandAdjustmentState_DemandAdjustmentTransitionHistory1" Member="DemandAdjustmentTransitionHistories1" ThisKey="Id" OtherKey="DestinationStateId" Type="DemandAdjustmentTransitionHistory" />
+    </Type>
+  </Table>
+  <Table Name="dbo.CostArticle" Member="CostArticles">
+    <Type Name="CostArticle">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="ParentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="Code" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="CodeVersion" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="Balance" Type="System.Char" DbType="Char(1)" CanBeNull="true" />
+      <Column Name="GroupCode" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="GroupName" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
+      <Column Name="B_KIND" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="KIND" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="IsProtected" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="POS" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="CapOp" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="ExecutorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ModifiedEmployeeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ModifiedDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="LimitId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="AlwaysConfirmInGO" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AllowPlaningForPP" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AllowPlaningForFilial" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AllowPlaningForOP" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AllowPlaningForBusinessBlock" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AllowPlaningForChildCompany" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="AlwaysConfirmInGOOnNormative" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="CostArticle_ExpertCostArticle" Member="ExpertCostArticles" ThisKey="Id" OtherKey="CostArticleId" Type="ExpertCostArticle" />
+      <Association Name="CostArticle_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="CostArticleId" Type="BillDemandAllocation" />
+      <Association Name="CostArticle_CostArticle" Member="CostArticles" ThisKey="Id" OtherKey="ParentId" Type="CostArticle" />
+      <Association Name="CostArticle_Demand" Member="Demands" ThisKey="Id" OtherKey="CostArticleId" Type="Demand" />
+      <Association Name="BudgetVersion_CostArticle" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="CostArticle_CostArticle" Member="CostArticle1" ThisKey="ParentId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_CostArticle" Member="SecurityTrustee" ThisKey="ExecutorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="Limit_CostArticle" Member="Limit" ThisKey="LimitId" OtherKey="Id" Type="Limit" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_CostArticle1" Member="SecurityTrustee1" ThisKey="ManagerId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_CostArticle2" Member="SecurityTrustee2" ThisKey="ModifiedEmployeeId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Demand" Member="Demands">
+    <Type Name="Demand">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Description" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
+      <Column Name="CostArticleId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ProjectId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="CounteragentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="GoodsTypeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ExecutorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="DefenderId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsActive" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="InitiatorStructId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ExecutorStructId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="BusinessBlockId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="AuthorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Number" Type="System.Int64" DbType="BigInt NOT NULL" CanBeNull="false" />
+      <Column Name="WorkflowPositionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="NegativeEmployeeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="NegativeComment" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
+      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="BeginDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsFrozen" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="Direction" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="ContractBased" Type="System.Boolean" DbType="Bit" CanBeNull="true" />
+      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="ITSystemId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="NText" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="CodeVersion" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="ManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Generation" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="ActorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsPrincipal" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="LeasingStatus" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="IsPlanned" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="InternalStatusId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="ExternalStatusId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="Evolution" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(2000)" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="HasAllocation" Type="System.Boolean" DbType="Bit" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="CustomerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="BankId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="NDS" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="AuthorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="LimitId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="CategoryExpensesId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="DocKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="IsUnionDemand" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="UnionDemandId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsNegative" Type="System.Boolean" DbType="Bit" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="SumWithoutNDS" Type="System.Decimal" DbType="Money" IsDbGenerated="true" CanBeNull="true" UpdateCheck="Never" />
+      <Column Name="CustomerCfoId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsBlockCustomerCfo" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="MultiAllocationName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiAllocationCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="DiscountQ1" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="DiscountQ2" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="DiscountQ3" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="DiscountQ4" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="StaffNormativeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="PayerFilialId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="PlanningTypeId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="StaffNormativeVersion" Type="System.Int32" DbType="Int" CanBeNull="true" />
+      <Column Name="AgreementCfo" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Version" Type="System.Int32" DbType="Int NOT NULL" CanBeNull="false" />
+      <Column Name="MarginQ1" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="MarginQ2" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="MarginQ3" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Column Name="MarginQ4" Type="System.Decimal" DbType="Decimal(18,4) NOT NULL" CanBeNull="false" />
+      <Association Name="Demand_BillDemandDistribution" Member="BillDemandDistributions" ThisKey="Id" OtherKey="DemandId" Type="BillDemandDistribution" />
+      <Association Name="Demand_BillDemandDistributionReserve" Member="BillDemandDistributionReserves" ThisKey="Id" OtherKey="DemandId" Type="BillDemandDistributionReserve" />
+      <Association Name="Demand_DemandMoney" Member="DemandMoneys" ThisKey="Id" OtherKey="DemandId" Type="DemandMoney" />
+      <Association Name="Demand_DemandAllocation" Member="DemandAllocations" ThisKey="Id" OtherKey="DemandId" Type="DemandAllocation" />
+      <Association Name="Demand_DemandPermission" Member="DemandPermissions" ThisKey="Id" OtherKey="DemandId" Type="DemandPermission" />
+      <Association Name="Demand_DemandTransitionHistory" Member="DemandTransitionHistories" ThisKey="Id" OtherKey="DemandId" Type="DemandTransitionHistory" />
+      <Association Name="Demand_DemandAdjustment" Member="DemandAdjustments" ThisKey="Id" OtherKey="SourceDemandId" Type="DemandAdjustment" />
+      <Association Name="Demand_DemandAdjustment1" Member="DemandAdjustments1" ThisKey="Id" OtherKey="TargetDemandId" Type="DemandAdjustment" />
+      <Association Name="BudgetVersion_Demand" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="CFO_Demand" Member="CFO" ThisKey="CustomerCfoId" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="CFO_Demand1" Member="AgreementCFO" ThisKey="AgreementCfo" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="Counteragent_Demand" Member="Counteragent" ThisKey="CounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
+      <Association Name="DemandStatusInternal_Demand" Member="DemandStatusInternal" ThisKey="InternalStatusId" OtherKey="Id" Type="DemandStatusInternal" IsForeignKey="true" />
+      <Association Name="Limit_Demand" Member="Limit" ThisKey="LimitId" OtherKey="Id" Type="Limit" IsForeignKey="true" />
+      <Association Name="Project_Demand" Member="Project" ThisKey="ProjectId" OtherKey="Id" Type="Project" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_Demand" Member="Author" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_Demand1" Member="SecurityTrustee1" ThisKey="NegativeEmployeeId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="StructDivision_Demand" Member="AuthorStructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+      <Association Name="StructDivision_Demand1" Member="ExecutorStructDivision" ThisKey="ExecutorStructId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+      <Association Name="StructDivision_Demand2" Member="StructDivision2" ThisKey="BeginDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+      <Association Name="CostArticle_Demand" Member="CostArticle" ThisKey="CostArticleId" OtherKey="Id" Type="CostArticle" IsForeignKey="true" />
+      <Association Name="CFO_Demand2" Member="AuthorCFO" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="CFO" IsForeignKey="true" />
+      <Association Name="Filial_Demand" Member="Filial" ThisKey="PayerFilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.Filial" Member="Filials">
+    <Type Name="Filial">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="Code" Type="System.String" DbType="NVarChar(255) NOT NULL" CanBeNull="false" />
+      <Column Name="BudgetVersionId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="IsDeleted" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="IsProtected" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="ParentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsBillDemandExportable" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="IsSkipInAccountingState" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Association Name="Filial_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="FilialId" Type="BillDemandAllocation" />
+      <Association Name="Filial_CFO" Member="CFOs" ThisKey="Id" OtherKey="FilialId" Type="CFO" />
+      <Association Name="Filial_Contract" Member="Contracts" ThisKey="Id" OtherKey="FilialId" Type="Contract" />
+      <Association Name="Filial_Counteragent" Member="Counteragents" ThisKey="Id" OtherKey="FilialId" Type="Counteragent" />
+      <Association Name="Filial_Demand" Member="Demands" ThisKey="Id" OtherKey="PayerFilialId" Type="Demand" />
+      <Association Name="Filial_Filial" Member="Filials" ThisKey="Id" OtherKey="ParentId" Type="Filial" />
+      <Association Name="Filial_BillDemand" Member="BillDemands" ThisKey="Id" OtherKey="FilialId" Type="BillDemand" />
+      <Association Name="BudgetVersion_Filial" Member="BudgetVersion" ThisKey="BudgetVersionId" OtherKey="Id" Type="BudgetVersion" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="Filial_Filial" Member="Filial1" ThisKey="ParentId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.vSecurityTrusteeRoles" Member="vSecurityTrusteeRoles">
+    <Type Name="vSecurityTrusteeRole">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="RoleId" Type="System.Guid" DbType="UniqueIdentifier" IsPrimaryKey="true" CanBeNull="true" />
+      <Association Name="SecurityTrustee_vSecurityTrusteeRole" Member="SecurityTrustee" ThisKey="Id" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.BillDemand" Member="BillDemands">
+    <Type Name="BillDemand">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="IdNumber" Type="System.Int64" DbType="BigInt NOT NULL" CanBeNull="false" />
+      <Column Name="BudgetId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
+      <Column Name="Number" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="Substance" Type="System.String" DbType="NVarChar(2048)" CanBeNull="true" />
+      <Column Name="CounteragentId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ContractId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="Sum" Type="System.Decimal" DbType="Money NOT NULL" CanBeNull="false" />
+      <Column Name="AllocationDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="DateOfPerformance" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="IsSFReceipt" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="IsActReceipt" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="IsBillReceivable" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="BillDemandStateId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Column Name="CurrencyId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="CurrencySum" Type="System.Decimal" DbType="Money" CanBeNull="true" />
+      <Column Name="AuthorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="TransferDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="AccountDate" Type="System.DateTime" DbType="DateTime" CanBeNull="true" />
+      <Column Name="AccountNumber" Type="System.String" DbType="NVarChar(50)" CanBeNull="true" />
+      <Column Name="Comment" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
+      <Column Name="Condition" Type="System.String" DbType="NVarChar(1024)" CanBeNull="true" />
+      <Column Name="BankId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="ITSystem" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="NDS" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="CurrencyRate" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="CurrencyRateCBPercents" Type="System.Double" DbType="Float" CanBeNull="true" />
+      <Column Name="CurrencyRateTypeId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="LimitManagerId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="CuratorId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="AuthorStructDivisionId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="INN" Type="System.String" DbType="NVarChar(12)" CanBeNull="true" />
+      <Column Name="PersonalAccount" Type="System.String" DbType="NVarChar(255)" CanBeNull="true" />
+      <Column Name="KPP" Type="System.String" DbType="NVarChar(10)" CanBeNull="true" />
+      <Column Name="BankName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="BankBIC" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="DocKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="CategoryExpensesId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="PaymentKindId" Type="System.Byte" DbType="TinyInt" CanBeNull="true" />
+      <Column Name="FilialId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="IsCompensation" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="PaymentCurrencyId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="MultiOPName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiOPCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiPPName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiPPCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiProjectName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiProjectCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiCostArticleName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="MultiCostArticleCode" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="ClassifiedOrder" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="SumWithoutNDS" Type="System.Decimal" DbType="Money" CanBeNull="true" />
+      <Column Name="NDSValue" Type="System.Decimal" DbType="Money" CanBeNull="true" />
+      <Column Name="IsNDSFixed" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="MultiFilialName" Type="System.String" DbType="NVarChar(256)" CanBeNull="true" />
+      <Column Name="BudgetPartId" Type="System.Byte" DbType="TinyInt NOT NULL" CanBeNull="false" />
+      <Association Name="BillDemand_BillDemandDistribution" Member="BillDemandDistributions" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandDistribution" />
+      <Association Name="BillDemand_BillDemandPath" Member="BillDemandPaths" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandPath" />
+      <Association Name="BillDemand_BillDemandAllocation" Member="BillDemandAllocations" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandAllocation" />
+      <Association Name="BillDemand_BillDemandContractMoney" Member="BillDemandContractMoneys" ThisKey="Id" OtherKey="BillDemandId" Type="BillDemandContractMoney" />
+      <Association Name="BillDemandState_BillDemand" Member="BillDemandState" ThisKey="BillDemandStateId" OtherKey="Id" Type="BillDemandState" IsForeignKey="true" />
+      <Association Name="Budget_BillDemand" Member="Budget" ThisKey="BudgetId" OtherKey="Id" Type="Budget" IsForeignKey="true" DeleteRule="CASCADE" DeleteOnNull="true" />
+      <Association Name="Contract_BillDemand" Member="Contract" ThisKey="ContractId" OtherKey="Id" Type="Contract" IsForeignKey="true" />
+      <Association Name="Counteragent_BillDemand" Member="Counteragent" ThisKey="CounteragentId" OtherKey="Id" Type="Counteragent" IsForeignKey="true" />
+      <Association Name="Currency_BillDemand" Member="Currency" ThisKey="CurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
+      <Association Name="Currency_BillDemand1" Member="Currency1" ThisKey="PaymentCurrencyId" OtherKey="Id" Type="Currency" IsForeignKey="true" />
+      <Association Name="Filial_BillDemand" Member="Filial" ThisKey="FilialId" OtherKey="Id" Type="Filial" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_BillDemand" Member="Author" ThisKey="AuthorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_BillDemand1" Member="SecurityTrustee1" ThisKey="LimitManagerId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="SecurityTrustee_BillDemand2" Member="SecurityTrustee2" ThisKey="CuratorId" OtherKey="Id" Type="SecurityTrustee" IsForeignKey="true" />
+      <Association Name="StructDivision_BillDemand" Member="StructDivision" ThisKey="AuthorStructDivisionId" OtherKey="Id" Type="StructDivision" IsForeignKey="true" />
+    </Type>
+  </Table>
   <Function Name="dbo.spRecalcBillDemandCurrencySum" Method="spRecalcBillDemandCurrencySum">
     <Parameter Name="BillDemandId" Parameter="billDemandId" Type="System.Guid" DbType="UniqueIdentifier" />
+    <Return Type="System.Int32" />
+  </Function>
+  <Function Name="dbo.DeleteWorkflowInPesistenceStore" Method="DeleteWorkflowInPesistenceStore">
+    <Parameter Name="id" Type="System.Guid" DbType="UniqueIdentifier" />
     <Return Type="System.Int32" />
   </Function>
 </Database>

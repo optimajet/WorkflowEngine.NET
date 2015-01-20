@@ -55,7 +55,7 @@ namespace Budget2.Server.Business.Services
                     {
                         Logger.Log.DebugFormat("Обновляем контрагента {0} (Id={1}).", covenantee.Name, covenantee.Id);
 
-                        var currCounteragent = caList.Where(curr => curr.Number == covenantee.Id).FirstOrDefault();
+                        var currCounteragent = caList.Where(curr => curr.Number == covenantee.Id && !curr.IsPotential).FirstOrDefault();
 
                         if (currCounteragent != null && currCounteragent.IsProtected)
                             continue;
@@ -95,6 +95,7 @@ namespace Budget2.Server.Business.Services
                         currCounteragent.BankName = covenantee.BankName;
                         currCounteragent.BankBIC = covenantee.BankBIC;
                         currCounteragent.IdCft = covenantee.IdCft;
+                        currCounteragent.IsPotential = false;
                         currCounteragent.CurrencyId = 
                             (from c in currencyList where c.Code == covenantee.Currency && !c.IsDeleted select new Nullable<Guid>(c.Id)).FirstOrDefault();
                         

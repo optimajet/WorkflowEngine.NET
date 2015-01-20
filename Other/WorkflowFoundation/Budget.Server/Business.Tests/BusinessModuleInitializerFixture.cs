@@ -125,7 +125,7 @@ namespace Budget2.Server.Business.Tests
             c.INN = "1234567891";
             c.KPP = "23456";
             c.Name = "ООО Рога и копыта";
-            c.IdCft = 66613;
+            c.IdCft = "66613";
             list.Add(c);
 
             var result = uploadCovenantee.UploadCovenantee(list);
@@ -156,7 +156,7 @@ namespace Budget2.Server.Business.Tests
             c.DateTo = DateTime.Now.AddDays(10);
             c.ExecutorDetails = "ExecutorDetails";
             c.ExecutorId = 0;
-            c.Id = 24;
+            c.Id = "24";
             c.Manager = "test";
             c.Number = 212042011;
             c.PaymentTerms = "Условия оплаты";
@@ -173,7 +173,7 @@ namespace Budget2.Server.Business.Tests
             sc1.DateTo = DateTime.Now.AddDays(10);
             sc1.ExecutorDetails = "ExecutorDetails";
             sc1.ExecutorId = 0;
-            sc1.Id = 25;
+            sc1.Id = "25";
             sc1.Manager = "test";
             sc1.Number = 212042011;
             sc1.PaymentTerms = "Условия оплаты";
@@ -193,7 +193,7 @@ namespace Budget2.Server.Business.Tests
                               PaymentTerms = "PT1-000",
                               Prefix = "P1",
                               FactPay = true,
-                              DogId = 02042012
+                              DogId = "02042012"
                           };
             var pi2 = new PaymentPlanItem()
                           {
@@ -209,7 +209,7 @@ namespace Budget2.Server.Business.Tests
                               PaymentTerms = "PT2-000",
                               Prefix = "P2",
                               FactPay = true,
-                               DogId = 02042012
+                              DogId = "25"
                           };
             var spi1 = new PaymentPlanItem()
             {
@@ -225,7 +225,7 @@ namespace Budget2.Server.Business.Tests
                 PaymentTerms = "PT1-000",
                 Prefix = "P1",
                 FactPay = true,
-                DogId = 02042011
+                DogId = "25"
             };
             var spi2 = new PaymentPlanItem()
             {
@@ -241,7 +241,7 @@ namespace Budget2.Server.Business.Tests
                 PaymentTerms = "PT2-000",
                 Prefix = "P2",
                 FactPay = false,
-                 DogId = 02042011
+                DogId = "25"
             };
             c.PaymentPlan = new List<PaymentPlanItem>() {pi1, pi2,spi1,spi2};
             //sc1.PaymentPlan = new List<PaymentPlanItem>() { spi1, spi2 };

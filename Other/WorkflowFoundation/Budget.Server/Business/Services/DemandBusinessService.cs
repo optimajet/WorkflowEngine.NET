@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Data.Linq;
 using System.Linq;
 using System.Transactions;
 using Budget2.DAL;
@@ -13,32 +14,62 @@ namespace Budget2.Server.Business.Services
         [ServiceDependency]
         public IWorkflowStateService WorkflowStateService { get; set; }
 
+        [ServiceDependency]
+        public ISettingsService SettingsService { get; set; }
+
         public void CreateDemandPreHistory(Guid demandUid, WorkflowState state)
         {
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = this.CreateContext())
                 {
                     var existingNotUsedItems =
-                      context.DemandTransitionHistories.Where(
-                          dth => dth.DemandId == demandUid && !dth.TransitionTime.HasValue).ToList();
+                        context.DemandTransitionHistories.Where(
+                            dth =>
+                            dth.DemandId == demandUid && !dth.TransitionTime.HasValue &&
+                            dth.InitialState.Order >= state.Order).ToList();
 
                     context.DemandTransitionHistories.DeleteAllOnSubmit(existingNotUsedItems);
 
                     var demand = GetDemand(context, demandUid);
+
+
                     if (CheckInitiatorIsExecutorStructDivision(demandUid, context))
                     {
-                        WritePreHistory(demandUid, context, WorkflowState.DemandDraft, WorkflowState.DemandOPHeadSighting, demand.AuthorId, state);
+                        WritePreHistory(demandUid, context, WorkflowState.DemandDraft,
+                                        WorkflowState.DemandOPHeadSighting, demand.AuthorId,
+                                        WorkflowCommand.StartProcessing, state);
                     }
                     else
                     {
-                        WritePreHistory(demandUid, context, WorkflowState.DemandDraft, WorkflowState.DemandOPExpertSighting, demand.AuthorId, state);
-                        WritePreHistory(demandUid, context, WorkflowState.DemandOPExpertSighting, WorkflowState.DemandInitiatorHeadSighting, null, state);
-                        WritePreHistory(demandUid, context, WorkflowState.DemandInitiatorHeadSighting, WorkflowState.DemandOPHeadSighting, null, state);
+                        WritePreHistory(demandUid, context, WorkflowState.DemandDraft,
+                                        WorkflowState.DemandOPExpertSighting, demand.AuthorId,
+                                        WorkflowCommand.StartProcessing, state);
+                        WritePreHistory(demandUid, context, WorkflowState.DemandOPExpertSighting,
+                                        WorkflowState.DemandInitiatorHeadSighting, null, state);
+                        WritePreHistory(demandUid, context, WorkflowState.DemandInitiatorHeadSighting,
+                                        WorkflowState.DemandOPHeadSighting, null, state);
                     }
-                    WritePreHistory(demandUid, context, WorkflowState.DemandOPHeadSighting, WorkflowState.DemandUPKZCuratorSighting, null, state);
-                    WritePreHistory(demandUid, context, WorkflowState.DemandUPKZCuratorSighting, WorkflowState.DemandUPKZHeadSighting, null, state);
-                    WritePreHistory(demandUid, context, WorkflowState.DemandUPKZHeadSighting, WorkflowState.DemandAgreed, null, state);
+
+                    if (CheckSendToAgreementStructDivision(demandUid, context))
+                    {
+                        WritePreHistory(demandUid, context, WorkflowState.DemandOPHeadSighting,
+                                        WorkflowState.DemandAgreementOPExpertSighting, null, state);
+                        WritePreHistory(demandUid, context, WorkflowState.DemandAgreementOPExpertSighting,
+                                        WorkflowState.DemandUPKZCuratorSighting, null, state);
+                    }
+                    else
+                    {
+                        WritePreHistory(demandUid, context, WorkflowState.DemandOPHeadSighting,
+                                        WorkflowState.DemandUPKZCuratorSighting, null, state);
+                    }
+
+
+
+                    WritePreHistory(demandUid, context, WorkflowState.DemandUPKZCuratorSighting,
+                                    WorkflowState.DemandUPKZHeadSighting, null, state);
+                    WritePreHistory(demandUid, context, WorkflowState.DemandUPKZHeadSighting, WorkflowState.DemandAgreed,
+                                    null, state);
 
                     context.SubmitChanges();
                 }
@@ -48,7 +79,7 @@ namespace Budget2.Server.Business.Services
         }
 
         private void WritePreHistory(Guid demandId, Budget2DataContext context, WorkflowState initialState,
-                                    WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
+                                    WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowCommand command, WorkflowState startState)
         {
 
             if (initialState.Order < startState.Order)
@@ -60,11 +91,18 @@ namespace Budget2.Server.Business.Services
                 DestinationStateId = destinationState.DbStateId.Value,
                 InitialStateId = initialState.DbStateId.Value,
                 TransitionExpectedInitiatorId = expectedInitiatorId,
-                CommandId = WorkflowCommand.Sighting.Id,
+                CommandId = command.Id,
                 Comment = string.Empty,
                 Description = string.Empty
             };
             context.DemandTransitionHistories.InsertOnSubmit(billDemndHistoryItem);
+        }
+
+        private void WritePreHistory(Guid demandId, Budget2DataContext context, WorkflowState initialState,
+                                WorkflowState destinationState, Guid? expectedInitiatorId, WorkflowState startState)
+        {
+            WritePreHistory(demandId, context, initialState,
+                                   destinationState, expectedInitiatorId, WorkflowCommand.Sighting, startState);
         }
 
         public bool CheckInitiatorIsExecutorStructDivision(Guid demandUid)
@@ -84,8 +122,50 @@ namespace Budget2.Server.Business.Services
                         context.Demands.Count(
                             p =>
                             p.Id == demandUid && p.AuthorId.HasValue &&
-                            p.Author.Employees.First().StructDivisionId == p.ExecutorStructId) > 0;
+                            p.Author.Employees.First(e=>e.BudgetId == p.BudgetVersion.BudgetId).StructDivisionId == p.ExecutorStructId) > 0;
         }
+
+        public bool CheckInitiatorIsAgreementStructDivision(Guid demandUid)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    return CheckInitiatorIsAgreementStructDivision(demandUid, context);
+                }
+            }
+        }
+
+        private bool CheckInitiatorIsAgreementStructDivision(Guid demandUid, Budget2DataContext context)
+        {
+            return
+                        context.Demands.Count(
+                            p =>
+                            p.Id == demandUid && p.AuthorId.HasValue &&
+                            p.Author.Employees.First(e => e.BudgetId == p.BudgetVersion.BudgetId).StructDivisionId == p.AgreementCfo) > 0;
+        }
+
+        public bool CheckSendToAgreementStructDivision(Guid demandUid)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    return CheckSendToAgreementStructDivision(demandUid, context);
+                }
+            }
+        }
+
+        private bool CheckSendToAgreementStructDivision(Guid demandUid, Budget2DataContext context)
+        {
+           return context.Demands.Count(
+                d =>
+                d.Id == demandUid &&
+                ((d.CostArticle != null && d.CostArticle.AlwaysConfirmInGO && d.Filial.Code != SettingsService.HeadFilialCode) ||
+                 (d.AuthorCFO != null && d.AuthorCFO.Filial != null &&
+                  d.AuthorCFO.Filial.Code == SettingsService.HeadFilialCode && d.Filial.Code != SettingsService.HeadFilialCode))) > 0;
+        }
+
 
         public void UpdateDemandState(WorkflowState state, Guid demandId)
         {
@@ -93,7 +173,7 @@ namespace Budget2.Server.Business.Services
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию Demand", "state");
 
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {
@@ -121,6 +201,20 @@ namespace Budget2.Server.Business.Services
             }
         }
 
+        public Demand GetDemandWithBudgetVersion(Guid demandId)
+        {
+            using (var scope = ReadCommittedSupressedScope)
+            {
+                using (var context = CreateContext())
+                {
+                    var dlo = new DataLoadOptions();
+                    dlo.LoadWith<Demand>(d=>d.BudgetVersion);
+                    context.LoadOptions = dlo;
+                    return GetDemand(context, demandId);
+                }
+            }
+        }
+
         private Demand GetDemand(Budget2DataContext context, Guid demandId)
         {
             var demand = context.Demands.SingleOrDefault(p => p.Id == demandId);
@@ -137,7 +231,7 @@ namespace Budget2.Server.Business.Services
                 throw new ArgumentException(
                     "Не определено соттветствие состояния Workflow отображаемому состоянию Demand",
                     "destinationState");
-            using (var scope = ReadCommittedSupressedScope)
+            using (var scope = ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
                 {

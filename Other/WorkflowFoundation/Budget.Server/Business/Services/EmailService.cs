@@ -123,10 +123,14 @@ namespace Budget2.Server.Business.Services
             }
 
             var sb = new StringBuilder(template.Body);
+            var sbHead = new StringBuilder(template.Head);
             foreach (var kvp in parameters)
+            {
+                sbHead.Replace(kvp.Key, kvp.Value);
                 sb.Replace(kvp.Key, kvp.Value);
+            }
             var body = sb.ToString();
-
+            var head = sbHead.ToString();
             if (string.IsNullOrEmpty(SenderEmail))
             {
                 Logger.Log.Error("E-mail:Не задано значение SenderEmail");
@@ -155,7 +159,7 @@ namespace Budget2.Server.Business.Services
 
 
             body = string.Format("<html><body>{0}</body></html>", body);
-            var message = new MailMessage(SenderEmail, sendTo, template.Head, body);
+            var message = new MailMessage(SenderEmail, sendTo, head, body);
             message.IsBodyHtml = true;
             var client = GetClient();
             client.SendAsync(message, null);

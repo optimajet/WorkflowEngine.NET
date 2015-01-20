@@ -22,5 +22,6 @@ namespace Budget2.Server.Business.Interface.Services
         void CreateDemandAdjustmentPreHistory(Guid demandAdjustmentId, WorkflowState state);
         DemandAdjustmentSighters GetSightersId(Guid demandAdjustmentId);
         void SetStartProcessingDate(Guid demnadAdjustmentId);
+        void SetAgreedDate(Guid demnadAdjustmentId);
     }
 }

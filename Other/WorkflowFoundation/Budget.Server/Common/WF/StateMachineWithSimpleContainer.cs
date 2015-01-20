@@ -9,9 +9,22 @@ namespace Common.WF
 {
     public class StateMachineWithSimpleContainer : StateMachineWorkflowActivity
     {
-        protected Dictionary<string , object > WorkflowPersistanceParameters = new Dictionary<string , object >();
+        public Dictionary<string , object > WorkflowPersistanceParameters = new Dictionary<string , object >();
 
-        protected void ClearPersistanceParameters ()
+        public const string DontWriteToWorkflowHistoryPersistenceKey = "{A6DAF70A-56FE-4331-A194-0CAEBC9A2AF2}";
+
+        protected bool DontWriteToWorkflowHistory
+        {
+            get
+            {
+                if (WorkflowPersistanceParameters.ContainsKey(DontWriteToWorkflowHistoryPersistenceKey))
+                    return (bool)WorkflowPersistanceParameters[DontWriteToWorkflowHistoryPersistenceKey];
+                return false;
+            }
+            set { WorkflowPersistanceParameters[DontWriteToWorkflowHistoryPersistenceKey] = value; }
+        }
+
+        protected  void ClearPersistanceParameters ()
         {
             WorkflowPersistanceParameters.Clear();
         }

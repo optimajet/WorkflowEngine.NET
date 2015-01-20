@@ -20,7 +20,6 @@ namespace Budget2.Server.Business.Services
         [ServiceDependency]
         public IEmployeeService EmployeeService { get; set; }
 
-
         [ServiceDependency]
         public IWorkflowTicketService WorkflowTicketService { get; set; }
 
@@ -48,17 +47,21 @@ namespace Budget2.Server.Business.Services
             _senders.Add(WorkflowState.BillDemandHeadInitiatorSighting, SendOnInputHeadInitiatorSighting);
             _senders.Add(WorkflowState.BillDemandUPKZHeadSighting, SendOnInputUpkzHeadSighting);
             _senders.Add(WorkflowState.BillDemandLimitExecutorSighting, SendOnInputLimitExecutorSighting);
-            _senders.Add(WorkflowState.BillLimitManagerSighting, SendOnInputLimitManagerSighting); 
+            _senders.Add(WorkflowState.BillLimitManagerSighting, SendOnInputLimitManagerSighting);
         }
 
         private void CheckOnInputInAccountingWithExport(BillDemand billDemand)
         {
-            if (!BillDemandBuinessService.IsBillDemandFilialSupportExport(billDemand.Id))
+            if (BillDemandBuinessService.IsBillDemandSkipInAccountingState(billDemand.Id))
                 return;
-
-            if (!billDemand.FilialId.HasValue || !SecurityEntityService.CheckThatSomebodyHasRoleInFilial(BudgetRole.Accountant,billDemand.FilialId.Value))
+            if (!billDemand.FilialId.HasValue || !SecurityEntityService.CheckThatSomebodyHasRoleInFilial(BudgetRole.Accountant, billDemand.FilialId.Value, billDemand.BudgetId))
             {
                 var parameters = GetDefaultParameters(billDemand);
+                if (billDemand.FilialId.HasValue && billDemand.Filial != null)
+                    parameters.Add("$FILIALNAME$", billDemand.Filial.Name);
+                else
+                    parameters.Add("$FILIALNAME$", "Не определено");
+
                 EmailService.SendEmail("BD_NOT_FOUND_ACCOUNTANT", parameters);
             }
         }
@@ -69,7 +72,7 @@ namespace Budget2.Server.Business.Services
 
         private void SendOnInputUpkzCuratorSighting(BillDemand billDemand)
         {
-            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.Curator);
+            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.Curator, billDemand.BudgetId, true);
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillDemandUPKZCuratorSighting);
         }
 
@@ -77,8 +80,8 @@ namespace Budget2.Server.Business.Services
         {
             var limits = GetLimits(billDemand, false);
             var executorIds = new List<Guid>();
-            limits.Where(lim=>lim.ExecutorId.HasValue).ForEach(lim=>executorIds.Add(lim.ExecutorId.Value));
-            var employees = EmployeeService.GetEmployeesBySecurityTrusteeIdsForNotification(executorIds);
+            limits.Where(lim => lim.ExecutorId.HasValue).ForEach(lim => executorIds.Add(lim.ExecutorId.Value));
+            var employees = EmployeeService.GetEmployeesBySecurityTrusteeIdsForNotification(executorIds, billDemand.BudgetId, true);
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillDemandLimitExecutorSighting);
         }
 
@@ -86,20 +89,21 @@ namespace Budget2.Server.Business.Services
         {
             var limits = GetLimits(billDemand, false);
             var managerIds = new List<Guid>();
-            limits.Where(lim => lim.ManagerId.HasValue).ForEach(lim => managerIds.Add(lim.ExecutorId.Value));
-            var employees = EmployeeService.GetEmployeesBySecurityTrusteeIdsForNotification(managerIds);
+            var sightedLimits = SightedByManagerLimitIds(billDemand);
+            limits.Where(lim => lim.ManagerId.HasValue && !sightedLimits.Contains(lim.Id)).ForEach(lim => managerIds.Add(lim.ExecutorId.Value));
+            var employees = EmployeeService.GetEmployeesBySecurityTrusteeIdsForNotification(managerIds, billDemand.BudgetId, true);
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillLimitManagerSighting);
         }
 
         private void SendOnInputUpkzHeadSighting(BillDemand billDemand)
         {
-            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.UPKZHead);
+            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.UPKZHead, billDemand.BudgetId, true);
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillDemandUPKZHeadSighting);
         }
 
         private void SendOnInputUpkzControllerSighting(BillDemand billDemand)
         {
-            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.Controller);
+            var employees = SecurityEntityService.GetAllEmployeesInRole(BudgetRole.Controller, billDemand.BudgetId, true);
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillDemandUPKZCntrollerSighting);
         }
 
@@ -108,9 +112,10 @@ namespace Budget2.Server.Business.Services
             if (!billDemand.AuthorId.HasValue)
                 throw new InvalidOperationException("billDemand.AuthorId is null");
 
-            var trusteeIds = EmployeeService.GetTrusteeInSameStructDivisionIds(billDemand.AuthorId.Value, billDemand.BudgetId);
+            var trusteeIds = SecurityEntityService.GetHeadIds(billDemand.AuthorId.Value, billDemand.BudgetId);
 
-            var employees = SecurityEntityService.GetAllEmployeesInRole(trusteeIds, BudgetRole.DivisionHead);
+            var employees = EmployeeService.GetEmployeesBySecurityTrusteeIdsForNotification(trusteeIds,
+                                                                                            billDemand.BudgetId, true); 
 
             SendMailsToEmployee(employees, billDemand, WorkflowState.BillDemandHeadInitiatorSighting);
         }
@@ -118,31 +123,30 @@ namespace Budget2.Server.Business.Services
         private void SendMailsToEmployee(IEnumerable<Employee> employees, BillDemand billDemand, WorkflowState state)
         {
             bool hasErrors = false;
-            StringBuilder errors = new StringBuilder();
-
-            foreach (var employee in employees)
+            var errors = new StringBuilder();
+            var distinctemployees = employees;//.Distinct();
+            foreach (var employee in distinctemployees)
             {
                 try
                 {
-                    SendEmailToEmployee(billDemand,employee,state );
+                    SendEmailToEmployee(billDemand, employee, state);
                 }
                 catch (Exception ex)
                 {
                     errors.AppendLine(ex.Message);
                     hasErrors = true;
                 }
-                
             }
 
             if (hasErrors)
                 throw new InvalidOperationException(errors.ToString());
         }
 
-        private void SendEmailToEmployee(BillDemand bd, Business.Interface.DataContracts.Employee employee, WorkflowState state)
+        private void SendEmailToEmployee(BillDemand bd, Employee employee, WorkflowState state)
         {
             var parameters = GetDefaultParameters(bd);
-            parameters.Add("$BILLDEMANDLINK$",string.Format("{0}/BillDemand/?tid={1}",PublicPagesUrl,WorkflowTicketService.CreateTicket(employee.IdentityId,bd.Id,state.WorkflowStateName)));
-            EmailService.SendEmail("BILL_DEMAND_NOTIFICATION",parameters,employee.Email);
+            parameters.Add("$BILLDEMANDLINK$", string.Format("{0}/BillDemand/?tid={1}", PublicPagesUrl, WorkflowTicketService.CreateTicket(employee.IdentityId, bd.Id, state.WorkflowStateName)));
+            EmailService.SendEmail("BILL_DEMAND_NOTIFICATION", parameters, employee.Email);
         }
 
         private void CheckOnInputHeadInitiatorSighting(BillDemand billDemand)
@@ -150,23 +154,19 @@ namespace Budget2.Server.Business.Services
             if (!billDemand.AuthorId.HasValue)
                 throw new InvalidOperationException("billDemand.AuthorId is null");
 
-            var trusteeIds = EmployeeService.GetTrusteeInSameStructDivisionIds(billDemand.AuthorId.Value, billDemand.BudgetId);
+            var trusteeIds = SecurityEntityService.GetHeadIds(billDemand.AuthorId.Value, billDemand.BudgetId);
 
-            if (!SecurityEntityService.CheckThatSomebodyHasRole(trusteeIds, BudgetRole.DivisionHead))
+            if (trusteeIds.Count() < 1)
             {
                 var parameters = GetDefaultParameters(billDemand);
-                parameters.Add("$INITIATOR$",billDemand.Author.Name);
+                parameters.Add("$INITIATOR$", billDemand.Author.Name);
                 EmailService.SendEmail("BD_NOT_FOUND_INITIATOR_HEAD", parameters);
-                
             }
         }
 
         private string PublicPagesUrl
         {
-            get
-            {
-               return ConfigurationManager.AppSettings["PublicPagesUrl"];
-            }
+            get { return ConfigurationManager.AppSettings["PublicPagesUrl"]; }
         }
 
         private void CheckOnInputUpkzCuratorSighting(BillDemand billDemand)
@@ -175,7 +175,6 @@ namespace Budget2.Server.Business.Services
             {
                 EmailService.SendEmail("BD_NOT_FOUND_UPKZ_CURATOR", GetDefaultParameters(billDemand));
             }
-
         }
 
         private void CheckOnInputUpkzControllerSighting(BillDemand billDemand)
@@ -196,11 +195,10 @@ namespace Budget2.Server.Business.Services
 
         private void CheckOnInputLimitManagerSighting(BillDemand billDemand)
         {
-
             List<Limit> limits = GetLimits(billDemand);
             foreach (var limit in limits)
             {
-                if (!limit.ManagerId.HasValue ||
+                if (!limit.ManagerId.HasValue || !limit.Manager.Enabled || 
                     limit.Manager.Employees.Count(p => !p.IsDeleted && p.BudgetId == billDemand.BudgetId) <= 0)
                 {
                     var parameters = GetDefaultParameters(billDemand);
@@ -208,7 +206,6 @@ namespace Budget2.Server.Business.Services
                     EmailService.SendEmail("BD_NOT_FOUND_LIMIT_MANADGER", parameters);
                 }
             }
-
         }
 
         private List<Limit> GetLimits(BillDemand billDemand, bool loademployees = true)
@@ -234,12 +231,28 @@ namespace Budget2.Server.Business.Services
             }
         }
 
+        private IEnumerable<Guid> SightedByManagerLimitIds(BillDemand billDemand)
+        {
+            using (var scope = ReadUncommittedSupressedScope)
+            {
+                using (var context = this.CreateContext())
+                {
+                    return
+                        context.WorkflowSightings.Where(
+                            p =>
+                            p.EntityId == billDemand.Id &&
+                            p.SightingType == SightingType.BillDemandLimitManagerSighting.Id).Select(p => p.ItemId).
+                            ToList();
+                }
+            }
+        }
+
         private void CheckOnInputLimitExecutorSighting(BillDemand billDemand)
         {
             List<Limit> limits = GetLimits(billDemand);
             foreach (var limit in limits)
             {
-                if (!limit.ExecutorId.HasValue || limit.Executor.Employees.Count(p => !p.IsDeleted && p.BudgetId == billDemand.BudgetId) <= 0)
+                if (!limit.ExecutorId.HasValue || !limit.Executor.Enabled || limit.Executor.Employees.Count(p => !p.IsDeleted && p.BudgetId == billDemand.BudgetId) <= 0)
                 {
                     var parameters = GetDefaultParameters(billDemand);
                     parameters = AddLimitParameters(parameters, limit);
@@ -248,12 +261,14 @@ namespace Budget2.Server.Business.Services
             }
         }
 
-        private Dictionary<string,string> GetDefaultParameters (BillDemand billDemand)
+        private Dictionary<string, string> GetDefaultParameters(BillDemand billDemand)
         {
             return new Dictionary<string, string>()
                        {
-                           {"$BILLDEMANDNUMBER$",
-                               billDemand.IdNumber.ToString(CultureInfo.CurrentCulture)},
+                           {
+                               "$BILLDEMANDNUMBER$",
+                               billDemand.IdNumber.ToString(CultureInfo.CurrentCulture)
+                               },
                            {
                                "$BILLDEMANDDATE$",
                                billDemand.AllocationDate.HasValue
@@ -263,10 +278,10 @@ namespace Budget2.Server.Business.Services
                        };
         }
 
-        private Dictionary<string,string> AddLimitParameters (Dictionary<string,string> parameters, Limit limit)
+        private Dictionary<string, string> AddLimitParameters(Dictionary<string, string> parameters, Limit limit)
         {
             parameters.Add("$LIMITCODE$", limit.Code);
-            parameters.Add("$LIMITNAME$",limit.Name);
+            parameters.Add("$LIMITNAME$", limit.Name);
             return parameters;
         }
 
@@ -280,7 +295,12 @@ namespace Budget2.Server.Business.Services
 
         public void CheckAndSendMailForState(Guid billDemandUid, WorkflowState state)
         {
-            var billDemand = BillDemandBuinessService.GetBillDemand(billDemandUid);
+            var dataLoadOptions = new DataLoadOptions();
+            dataLoadOptions.LoadWith<BillDemand>(d=>d.Author);
+            if (state == WorkflowState.BillDemandInAccountingWithExport)
+                dataLoadOptions.LoadWith<BillDemand>(d=>d.Filial);
+
+            var billDemand = BillDemandBuinessService.GetBillDemand(billDemandUid,dataLoadOptions);
             Action<BillDemand> action;
             if (_checkings.TryGetValue(state, out action))
                 action.Invoke(billDemand);
@@ -288,7 +308,11 @@ namespace Budget2.Server.Business.Services
 
         public void CheckAndSendMail(Guid billDemandUid)
         {
-            var billDemand = BillDemandBuinessService.GetBillDemand(billDemandUid);
+            var dataLoadOptions = new DataLoadOptions();
+            dataLoadOptions.LoadWith<BillDemand>(d => d.Author);
+            dataLoadOptions.LoadWith<BillDemand>(d => d.Filial);
+
+            var billDemand = BillDemandBuinessService.GetBillDemand(billDemandUid, dataLoadOptions);
 
             foreach (var item in _checkings.Values)
                 item.Invoke(billDemand);
@@ -296,7 +320,6 @@ namespace Budget2.Server.Business.Services
 
         public void SendNotification(Guid billDemandUid, WorkflowState state)
         {
-            
         }
     }
 }

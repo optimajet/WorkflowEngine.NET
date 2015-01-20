@@ -2,9 +2,10 @@
 <xs:schema id="Demand" targetNamespace="http://tempuri.org/Demand.xsd" xmlns:mstns="http://tempuri.org/Demand.xsd" xmlns="http://tempuri.org/Demand.xsd" xmlns:xs="http://www.w3.org/2001/XMLSchema" xmlns:msdata="urn:schemas-microsoft-com:xml-msdata" xmlns:msprop="urn:schemas-microsoft-com:xml-msprop" attributeFormDefault="qualified" elementFormDefault="qualified">
   <xs:annotation>
     <xs:appinfo source="urn:schemas-microsoft-com:xml-msdatasource">
-      <DataSource DefaultConnectionIndex="0" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
+      <DataSource DefaultConnectionIndex="1" FunctionsComponentName="QueriesTableAdapter" Modifier="AutoLayout, AnsiClass, Class, Public" SchemaSerializationMode="IncludeSchema" xmlns="urn:schemas-microsoft-com:xml-msdatasource">
         <Connections>
           <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="Budget2ConnectionString" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="Budget2ConnectionString (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.Budget2.DAL.Properties.Settings.GlobalReference.Default.Budget2ConnectionString" Provider="System.Data.SqlClient" />
+          <Connection AppSettingsObjectName="Settings" AppSettingsPropertyName="Budget2ConnectionString1" ConnectionStringObject="" IsAppSettingsProperty="true" Modifier="Assembly" Name="Budget2ConnectionString1 (Settings)" ParameterPrefix="@" PropertyReference="ApplicationSettings.Budget2.DAL.Properties.Settings.GlobalReference.Default.Budget2ConnectionString1" Provider="System.Data.SqlClient" />
         </Connections>
         <Tables>
           <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="V_Report_DemandTableAdapter" GeneratorDataComponentClassName="V_Report_DemandTableAdapter" Name="V_Report_Demand" UserDataComponentName="V_Report_DemandTableAdapter">
@@ -15,7 +16,8 @@
                     <CommandText>SELECT        Id, BudgetName, CostArticleName, CostArticleCode, ProjectName, ProjectCode, CounteragentName, GoodsTypeCode, GoodsTypeName, DemandNumber, 
                          DemandDescription, BudgetVersionId, BudgetId, BudgetVersionName, InitiatorName, InitiatorCode, OPName, OPCode, CategoryExpenseName, DocKindName, 
                          CustomerName, CustomerCode, AuthorName, AuthorSDName, AuthorSDCode, IsPrincipal, IsPlanned, Planned, LimitCode, LimitName, SumWithoutNDS, NDS, Sum, 
-                         DemandStatusName, IsFrozen
+                         DemandStatusName, IsFrozen, StaffNormativeVersion, StaffNormativeName, StaffNormativeId, DemandPlanningTypeName, PlanningTypeId, MarginQ4, MarginQ3, 
+                         MarginQ2, MarginQ1, DiscountQ4, DiscountQ3, DiscountQ2, DiscountQ1, AgreementCfoName, AgreementCfoCode, PayerFilial
 FROM            V_Report_Demand
 WHERE        (Id = @id)</CommandText>
                     <Parameters>
@@ -61,6 +63,22 @@ WHERE        (Id = @id)</CommandText>
               <Mapping SourceColumn="Sum" DataSetColumn="Sum" />
               <Mapping SourceColumn="DemandStatusName" DataSetColumn="DemandStatusName" />
               <Mapping SourceColumn="IsFrozen" DataSetColumn="IsFrozen" />
+              <Mapping SourceColumn="StaffNormativeVersion" DataSetColumn="StaffNormativeVersion" />
+              <Mapping SourceColumn="StaffNormativeName" DataSetColumn="StaffNormativeName" />
+              <Mapping SourceColumn="StaffNormativeId" DataSetColumn="StaffNormativeId" />
+              <Mapping SourceColumn="DemandPlanningTypeName" DataSetColumn="DemandPlanningTypeName" />
+              <Mapping SourceColumn="PlanningTypeId" DataSetColumn="PlanningTypeId" />
+              <Mapping SourceColumn="MarginQ4" DataSetColumn="MarginQ4" />
+              <Mapping SourceColumn="MarginQ3" DataSetColumn="MarginQ3" />
+              <Mapping SourceColumn="MarginQ2" DataSetColumn="MarginQ2" />
+              <Mapping SourceColumn="MarginQ1" DataSetColumn="MarginQ1" />
+              <Mapping SourceColumn="DiscountQ4" DataSetColumn="DiscountQ4" />
+              <Mapping SourceColumn="DiscountQ3" DataSetColumn="DiscountQ3" />
+              <Mapping SourceColumn="DiscountQ2" DataSetColumn="DiscountQ2" />
+              <Mapping SourceColumn="DiscountQ1" DataSetColumn="DiscountQ1" />
+              <Mapping SourceColumn="AgreementCfoName" DataSetColumn="AgreementCfoName" />
+              <Mapping SourceColumn="AgreementCfoCode" DataSetColumn="AgreementCfoCode" />
+              <Mapping SourceColumn="PayerFilial" DataSetColumn="PayerFilial" />
             </Mappings>
             <Sources />
           </TableAdapter>
@@ -101,8 +119,9 @@ ORDER BY TransitionTimeForSort, StateOrder</CommandText>
               <DbSource ConnectionRef="Budget2ConnectionString (Settings)" DbObjectName="Budget2.dbo.V_Report_DemandAllocation" DbObjectType="View" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
                 <SelectCommand>
                   <DbCommand CommandType="Text" ModifiedByUser="true">
-                    <CommandText>SELECT Id, demandId, CfoCode, CfoName, Weight FROM dbo.V_Report_DemandAllocation
-where DemandId = @DemandId</CommandText>
+                    <CommandText>SELECT        Id, demandId, CfoCode, CfoName, Weight, FuncGroup, FilialName, LevelsOfExpenses
+FROM            V_Report_DemandAllocation
+WHERE        (demandId = @DemandId)</CommandText>
                     <Parameters>
                       <Parameter AllowDbNull="false" AutogeneratedName="DemandId" ColumnName="demandId" DataSourceName="Budget2.dbo.V_Report_DemandAllocation" DataTypeServer="uniqueidentifier" DbType="Guid" Direction="Input" ParameterName="@DemandId" Precision="0" ProviderType="UniqueIdentifier" Scale="0" Size="16" SourceColumn="demandId" SourceColumnNullMapping="false" SourceVersion="Current" />
                     </Parameters>
@@ -116,6 +135,9 @@ where DemandId = @DemandId</CommandText>
               <Mapping SourceColumn="CfoCode" DataSetColumn="CfoCode" />
               <Mapping SourceColumn="CfoName" DataSetColumn="CfoName" />
               <Mapping SourceColumn="Weight" DataSetColumn="Weight" />
+              <Mapping SourceColumn="FuncGroup" DataSetColumn="FuncGroup" />
+              <Mapping SourceColumn="FilialName" DataSetColumn="FilialName" />
+              <Mapping SourceColumn="LevelsOfExpenses" DataSetColumn="LevelsOfExpenses" />
             </Mappings>
             <Sources />
           </TableAdapter>
@@ -140,6 +162,41 @@ Order by MonthId</CommandText>
               <Mapping SourceColumn="MonthId" DataSetColumn="MonthId" />
               <Mapping SourceColumn="MonthName" DataSetColumn="MonthName" />
               <Mapping SourceColumn="Sum" DataSetColumn="Sum" />
+            </Mappings>
+            <Sources />
+          </TableAdapter>
+          <TableAdapter BaseClass="System.ComponentModel.Component" DataAccessorModifier="AutoLayout, AnsiClass, Class, Public" DataAccessorName="V_Report_DemandGoodsTypeTableAdapter" GeneratorDataComponentClassName="V_Report_DemandGoodsTypeTableAdapter" Name="V_Report_DemandGoodsType" UserDataComponentName="V_Report_DemandGoodsTypeTableAdapter">
+            <MainSource>
+              <DbSource ConnectionRef="Budget2ConnectionString1 (Settings)" DbObjectName="Budget2.dbo.V_Report_DemandGoodsType" DbObjectType="View" FillMethodModifier="Public" FillMethodName="Fill" GenerateMethods="Both" GenerateShortCommands="false" GeneratorGetMethodName="GetData" GeneratorSourceName="Fill" GetMethodModifier="Public" GetMethodName="GetData" QueryType="Rowset" ScalarCallRetval="System.Object, mscorlib, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" UseOptimisticConcurrency="false" UserGetMethodName="GetData" UserSourceName="Fill">
+                <SelectCommand>
+                  <DbCommand CommandType="Text" ModifiedByUser="true">
+                    <CommandText>SELECT        Id, DemandId, AverageCost, GoodsTypeId, GoodsTypeName, GoodsTypeCode, NumberQ1, NumberQ2, NumberQ3, NumberQ4, SumQ1, SumQ2, SumQ3, SumQ4, 
+                         GoodsTypeMeasure
+FROM            V_Report_DemandGoodsType
+WHERE        (DemandId = @DemandId)</CommandText>
+                    <Parameters>
+                      <Parameter AllowDbNull="false" AutogeneratedName="DemandId" ColumnName="DemandId" DataSourceName="Budget2.dbo.V_Report_DemandGoodsType" DataTypeServer="uniqueidentifier" DbType="Guid" Direction="Input" ParameterName="@DemandId" Precision="0" ProviderType="UniqueIdentifier" Scale="0" Size="16" SourceColumn="DemandId" SourceColumnNullMapping="false" SourceVersion="Current" />
+                    </Parameters>
+                  </DbCommand>
+                </SelectCommand>
+              </DbSource>
+            </MainSource>
+            <Mappings>
+              <Mapping SourceColumn="Id" DataSetColumn="Id" />
+              <Mapping SourceColumn="DemandId" DataSetColumn="DemandId" />
+              <Mapping SourceColumn="AverageCost" DataSetColumn="AverageCost" />
+              <Mapping SourceColumn="GoodsTypeId" DataSetColumn="GoodsTypeId" />
+              <Mapping SourceColumn="GoodsTypeName" DataSetColumn="GoodsTypeName" />
+              <Mapping SourceColumn="GoodsTypeCode" DataSetColumn="GoodsTypeCode" />
+              <Mapping SourceColumn="NumberQ1" DataSetColumn="NumberQ1" />
+              <Mapping SourceColumn="NumberQ2" DataSetColumn="NumberQ2" />
+              <Mapping SourceColumn="NumberQ3" DataSetColumn="NumberQ3" />
+              <Mapping SourceColumn="NumberQ4" DataSetColumn="NumberQ4" />
+              <Mapping SourceColumn="SumQ1" DataSetColumn="SumQ1" />
+              <Mapping SourceColumn="SumQ2" DataSetColumn="SumQ2" />
+              <Mapping SourceColumn="SumQ3" DataSetColumn="SumQ3" />
+              <Mapping SourceColumn="SumQ4" DataSetColumn="SumQ4" />
+              <Mapping SourceColumn="GoodsTypeMeasure" DataSetColumn="GoodsTypeMeasure" />
             </Mappings>
             <Sources />
           </TableAdapter>
@@ -333,6 +390,52 @@ Order by MonthId</CommandText>
                 </xs:simpleType>
               </xs:element>
               <xs:element name="IsFrozen" msprop:Generator_ColumnVarNameInTable="columnIsFrozen" msprop:Generator_ColumnPropNameInRow="IsFrozen" msprop:Generator_ColumnPropNameInTable="IsFrozenColumn" msprop:Generator_UserColumnName="IsFrozen" type="xs:boolean" />
+              <xs:element name="StaffNormativeVersion" msprop:Generator_ColumnVarNameInTable="columnStaffNormativeVersion" msprop:Generator_ColumnPropNameInRow="StaffNormativeVersion" msprop:Generator_ColumnPropNameInTable="StaffNormativeVersionColumn" msprop:Generator_UserColumnName="StaffNormativeVersion" type="xs:int" minOccurs="0" />
+              <xs:element name="StaffNormativeName" msprop:Generator_ColumnVarNameInTable="columnStaffNormativeName" msprop:Generator_ColumnPropNameInRow="StaffNormativeName" msprop:Generator_ColumnPropNameInTable="StaffNormativeNameColumn" msprop:Generator_UserColumnName="StaffNormativeName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="255" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="StaffNormativeId" msdata:DataType="System.Guid, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnVarNameInTable="columnStaffNormativeId" msprop:Generator_ColumnPropNameInRow="StaffNormativeId" msprop:Generator_ColumnPropNameInTable="StaffNormativeIdColumn" msprop:Generator_UserColumnName="StaffNormativeId" type="xs:string" minOccurs="0" />
+              <xs:element name="DemandPlanningTypeName" msprop:Generator_ColumnVarNameInTable="columnDemandPlanningTypeName" msprop:Generator_ColumnPropNameInRow="DemandPlanningTypeName" msprop:Generator_ColumnPropNameInTable="DemandPlanningTypeNameColumn" msprop:Generator_UserColumnName="DemandPlanningTypeName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="PlanningTypeId" msprop:Generator_ColumnVarNameInTable="columnPlanningTypeId" msprop:Generator_ColumnPropNameInRow="PlanningTypeId" msprop:Generator_ColumnPropNameInTable="PlanningTypeIdColumn" msprop:Generator_UserColumnName="PlanningTypeId" type="xs:unsignedByte" />
+              <xs:element name="MarginQ4" msprop:Generator_ColumnVarNameInTable="columnMarginQ4" msprop:Generator_ColumnPropNameInRow="MarginQ4" msprop:Generator_ColumnPropNameInTable="MarginQ4Column" msprop:Generator_UserColumnName="MarginQ4" type="xs:decimal" />
+              <xs:element name="MarginQ3" msprop:Generator_ColumnVarNameInTable="columnMarginQ3" msprop:Generator_ColumnPropNameInRow="MarginQ3" msprop:Generator_ColumnPropNameInTable="MarginQ3Column" msprop:Generator_UserColumnName="MarginQ3" type="xs:decimal" />
+              <xs:element name="MarginQ2" msprop:Generator_ColumnVarNameInTable="columnMarginQ2" msprop:Generator_ColumnPropNameInRow="MarginQ2" msprop:Generator_ColumnPropNameInTable="MarginQ2Column" msprop:Generator_UserColumnName="MarginQ2" type="xs:decimal" />
+              <xs:element name="MarginQ1" msprop:Generator_ColumnVarNameInTable="columnMarginQ1" msprop:Generator_ColumnPropNameInRow="MarginQ1" msprop:Generator_ColumnPropNameInTable="MarginQ1Column" msprop:Generator_UserColumnName="MarginQ1" type="xs:decimal" />
+              <xs:element name="DiscountQ4" msprop:Generator_ColumnVarNameInTable="columnDiscountQ4" msprop:Generator_ColumnPropNameInRow="DiscountQ4" msprop:Generator_ColumnPropNameInTable="DiscountQ4Column" msprop:Generator_UserColumnName="DiscountQ4" type="xs:decimal" />
+              <xs:element name="DiscountQ3" msprop:Generator_ColumnVarNameInTable="columnDiscountQ3" msprop:Generator_ColumnPropNameInRow="DiscountQ3" msprop:Generator_ColumnPropNameInTable="DiscountQ3Column" msprop:Generator_UserColumnName="DiscountQ3" type="xs:decimal" />
+              <xs:element name="DiscountQ2" msprop:Generator_ColumnVarNameInTable="columnDiscountQ2" msprop:Generator_ColumnPropNameInRow="DiscountQ2" msprop:Generator_ColumnPropNameInTable="DiscountQ2Column" msprop:Generator_UserColumnName="DiscountQ2" type="xs:decimal" />
+              <xs:element name="DiscountQ1" msprop:Generator_ColumnVarNameInTable="columnDiscountQ1" msprop:Generator_ColumnPropNameInRow="DiscountQ1" msprop:Generator_ColumnPropNameInTable="DiscountQ1Column" msprop:Generator_UserColumnName="DiscountQ1" type="xs:decimal" />
+              <xs:element name="AgreementCfoName" msprop:Generator_ColumnVarNameInTable="columnAgreementCfoName" msprop:Generator_ColumnPropNameInRow="AgreementCfoName" msprop:Generator_ColumnPropNameInTable="AgreementCfoNameColumn" msprop:Generator_UserColumnName="AgreementCfoName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="AgreementCfoCode" msprop:Generator_ColumnVarNameInTable="columnAgreementCfoCode" msprop:Generator_ColumnPropNameInRow="AgreementCfoCode" msprop:Generator_ColumnPropNameInTable="AgreementCfoCodeColumn" msprop:Generator_UserColumnName="AgreementCfoCode" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="255" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="PayerFilial" msprop:Generator_ColumnVarNameInTable="columnPayerFilial" msprop:Generator_ColumnPropNameInRow="PayerFilial" msprop:Generator_ColumnPropNameInTable="PayerFilialColumn" msprop:Generator_UserColumnName="PayerFilial" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -409,6 +512,27 @@ Order by MonthId</CommandText>
                 </xs:simpleType>
               </xs:element>
               <xs:element name="Weight" msprop:Generator_ColumnVarNameInTable="columnWeight" msprop:Generator_ColumnPropNameInRow="Weight" msprop:Generator_ColumnPropNameInTable="WeightColumn" msprop:Generator_UserColumnName="Weight" type="xs:double" />
+              <xs:element name="FuncGroup" msprop:Generator_ColumnVarNameInTable="columnFuncGroup" msprop:Generator_ColumnPropNameInRow="FuncGroup" msprop:Generator_ColumnPropNameInTable="FuncGroupColumn" msprop:Generator_UserColumnName="FuncGroup" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="255" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="FilialName" msprop:Generator_ColumnVarNameInTable="columnFilialName" msprop:Generator_ColumnPropNameInRow="FilialName" msprop:Generator_ColumnPropNameInTable="FilialNameColumn" msprop:Generator_UserColumnName="FilialName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="LevelsOfExpenses" msprop:Generator_ColumnVarNameInTable="columnLevelsOfExpenses" msprop:Generator_ColumnPropNameInRow="LevelsOfExpenses" msprop:Generator_ColumnPropNameInTable="LevelsOfExpensesColumn" msprop:Generator_UserColumnName="LevelsOfExpenses" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="255" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
@@ -429,6 +553,45 @@ Order by MonthId</CommandText>
             </xs:sequence>
           </xs:complexType>
         </xs:element>
+        <xs:element name="V_Report_DemandGoodsType" msprop:Generator_TableClassName="V_Report_DemandGoodsTypeDataTable" msprop:Generator_TableVarName="tableV_Report_DemandGoodsType" msprop:Generator_TablePropName="V_Report_DemandGoodsType" msprop:Generator_RowDeletingName="V_Report_DemandGoodsTypeRowDeleting" msprop:Generator_UserTableName="V_Report_DemandGoodsType" msprop:Generator_RowChangingName="V_Report_DemandGoodsTypeRowChanging" msprop:Generator_RowEvHandlerName="V_Report_DemandGoodsTypeRowChangeEventHandler" msprop:Generator_RowDeletedName="V_Report_DemandGoodsTypeRowDeleted" msprop:Generator_RowEvArgName="V_Report_DemandGoodsTypeRowChangeEvent" msprop:Generator_RowChangedName="V_Report_DemandGoodsTypeRowChanged" msprop:Generator_RowClassName="V_Report_DemandGoodsTypeRow">
+          <xs:complexType>
+            <xs:sequence>
+              <xs:element name="Id" msdata:DataType="System.Guid, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnVarNameInTable="columnId" msprop:Generator_ColumnPropNameInRow="Id" msprop:Generator_ColumnPropNameInTable="IdColumn" msprop:Generator_UserColumnName="Id" type="xs:string" />
+              <xs:element name="DemandId" msdata:DataType="System.Guid, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnVarNameInTable="columnDemandId" msprop:Generator_ColumnPropNameInRow="DemandId" msprop:Generator_ColumnPropNameInTable="DemandIdColumn" msprop:Generator_UserColumnName="DemandId" type="xs:string" />
+              <xs:element name="AverageCost" msprop:Generator_ColumnVarNameInTable="columnAverageCost" msprop:Generator_ColumnPropNameInRow="AverageCost" msprop:Generator_ColumnPropNameInTable="AverageCostColumn" msprop:Generator_UserColumnName="AverageCost" type="xs:decimal" />
+              <xs:element name="GoodsTypeId" msdata:DataType="System.Guid, mscorlib, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089" msprop:Generator_ColumnVarNameInTable="columnGoodsTypeId" msprop:Generator_ColumnPropNameInRow="GoodsTypeId" msprop:Generator_ColumnPropNameInTable="GoodsTypeIdColumn" msprop:Generator_UserColumnName="GoodsTypeId" type="xs:string" />
+              <xs:element name="GoodsTypeName" msprop:Generator_ColumnVarNameInTable="columnGoodsTypeName" msprop:Generator_ColumnPropNameInRow="GoodsTypeName" msprop:Generator_ColumnPropNameInTable="GoodsTypeNameColumn" msprop:Generator_UserColumnName="GoodsTypeName" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="1024" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="GoodsTypeCode" msprop:Generator_ColumnVarNameInTable="columnGoodsTypeCode" msprop:Generator_ColumnPropNameInRow="GoodsTypeCode" msprop:Generator_ColumnPropNameInTable="GoodsTypeCodeColumn" msprop:Generator_UserColumnName="GoodsTypeCode" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="255" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+              <xs:element name="NumberQ1" msprop:Generator_ColumnVarNameInTable="columnNumberQ1" msprop:Generator_ColumnPropNameInRow="NumberQ1" msprop:Generator_ColumnPropNameInTable="NumberQ1Column" msprop:Generator_UserColumnName="NumberQ1" type="xs:decimal" />
+              <xs:element name="NumberQ2" msprop:Generator_ColumnVarNameInTable="columnNumberQ2" msprop:Generator_ColumnPropNameInRow="NumberQ2" msprop:Generator_ColumnPropNameInTable="NumberQ2Column" msprop:Generator_UserColumnName="NumberQ2" type="xs:decimal" />
+              <xs:element name="NumberQ3" msprop:Generator_ColumnVarNameInTable="columnNumberQ3" msprop:Generator_ColumnPropNameInRow="NumberQ3" msprop:Generator_ColumnPropNameInTable="NumberQ3Column" msprop:Generator_UserColumnName="NumberQ3" type="xs:decimal" />
+              <xs:element name="NumberQ4" msprop:Generator_ColumnVarNameInTable="columnNumberQ4" msprop:Generator_ColumnPropNameInRow="NumberQ4" msprop:Generator_ColumnPropNameInTable="NumberQ4Column" msprop:Generator_UserColumnName="NumberQ4" type="xs:decimal" />
+              <xs:element name="SumQ1" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnSumQ1" msprop:Generator_ColumnPropNameInRow="SumQ1" msprop:Generator_ColumnPropNameInTable="SumQ1Column" msprop:Generator_UserColumnName="SumQ1" type="xs:decimal" minOccurs="0" />
+              <xs:element name="SumQ2" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnSumQ2" msprop:Generator_ColumnPropNameInRow="SumQ2" msprop:Generator_ColumnPropNameInTable="SumQ2Column" msprop:Generator_UserColumnName="SumQ2" type="xs:decimal" minOccurs="0" />
+              <xs:element name="SumQ3" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnSumQ3" msprop:Generator_ColumnPropNameInRow="SumQ3" msprop:Generator_ColumnPropNameInTable="SumQ3Column" msprop:Generator_UserColumnName="SumQ3" type="xs:decimal" minOccurs="0" />
+              <xs:element name="SumQ4" msdata:ReadOnly="true" msprop:Generator_ColumnVarNameInTable="columnSumQ4" msprop:Generator_ColumnPropNameInRow="SumQ4" msprop:Generator_ColumnPropNameInTable="SumQ4Column" msprop:Generator_UserColumnName="SumQ4" type="xs:decimal" minOccurs="0" />
+              <xs:element name="GoodsTypeMeasure" msprop:Generator_ColumnVarNameInTable="columnGoodsTypeMeasure" msprop:Generator_ColumnPropNameInRow="GoodsTypeMeasure" msprop:Generator_ColumnPropNameInTable="GoodsTypeMeasureColumn" msprop:Generator_UserColumnName="GoodsTypeMeasure" minOccurs="0">
+                <xs:simpleType>
+                  <xs:restriction base="xs:string">
+                    <xs:maxLength value="256" />
+                  </xs:restriction>
+                </xs:simpleType>
+              </xs:element>
+            </xs:sequence>
+          </xs:complexType>
+        </xs:element>
       </xs:choice>
     </xs:complexType>
     <xs:unique name="Constraint1" msdata:PrimaryKey="true">
@@ -445,6 +608,10 @@ Order by MonthId</CommandText>
     </xs:unique>
     <xs:unique name="V_Report_DemandMoney_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
       <xs:selector xpath=".//mstns:V_Report_DemandMoney" />
+      <xs:field xpath="mstns:Id" />
+    </xs:unique>
+    <xs:unique name="V_Report_DemandGoodsType_Constraint1" msdata:ConstraintName="Constraint1" msdata:PrimaryKey="true">
+      <xs:selector xpath=".//mstns:V_Report_DemandGoodsType" />
       <xs:field xpath="mstns:Id" />
     </xs:unique>
   </xs:element>

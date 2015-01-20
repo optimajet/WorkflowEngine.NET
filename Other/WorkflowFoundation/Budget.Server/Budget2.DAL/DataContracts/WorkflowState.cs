@@ -17,6 +17,9 @@ namespace Budget2.DAL.DataContracts
 
         public bool IsFinal { get; set; }
 
+        /// <summary>
+        /// Исключает из возможных команд- установки состояния
+        /// </summary>
         public bool ExcludeFromSetStateCommand { get; set; }
 
         public byte? Order { get; set; }
@@ -134,11 +137,11 @@ namespace Budget2.DAL.DataContracts
         public static readonly WorkflowState BillDemandInitiatorConfirmation = new WorkflowState
         {
             Type = WorkflowType.BillDemandWorkfow,
-            ExcludeFromSetStateCommand = true,
+            ExcludeFromSetStateCommand = false,
             WorkflowStateName =
                 "InitiatorConfirmation",
             DbStateId = 8,
-            StateNamePostfix = "- Филиалы", Order = 8
+            StateNamePostfix = "- Филиалы без бухгалтерии", Order = 8
         };
 
         public static readonly WorkflowState BillDemandOnPayment = new WorkflowState
@@ -301,6 +304,44 @@ namespace Budget2.DAL.DataContracts
                                                                                    DbStateId = 4, Order = 3
                                                                                };
 
+        public static readonly WorkflowState DemandRollbackRequested = new WorkflowState
+        {
+            Type =
+                WorkflowType.DemandWorkflow,
+            WorkflowStateName =
+                "RollbackRequested",
+            DbStateId = 10,
+            Order = 100
+        };
+
+        public static readonly WorkflowState DemandAgreementOPExpertSighting = new WorkflowState
+        {
+            Type =
+                WorkflowType.DemandWorkflow,
+            WorkflowStateName = "AgreementOPExpertSighting",
+            DbStateId = 8,
+            Order = 2
+        };
+
+        //public static readonly WorkflowState DemandAgreementOPHeadSighting = new WorkflowState
+        //{
+        //    Type =
+        //        WorkflowType.DemandWorkflow,
+        //    WorkflowStateName = "AgreementOPHeadSighting",
+        //    DbStateId = 9,
+        //    Order = 4
+        //};
+
+        //public static readonly WorkflowState DemandAgreementInitiatorHeadSighting = new WorkflowState
+        //{
+        //    Type =
+        //        WorkflowType.DemandWorkflow,
+        //    WorkflowStateName =
+        //        "AgreementInitiatorHeadSighting",
+        //    DbStateId = 4,
+        //    Order = 3
+        //};
+
         public static readonly WorkflowState DemandUPKZCuratorSighting = new WorkflowState
                                                                              {
                                                                                  Type =
@@ -367,7 +408,11 @@ namespace Budget2.DAL.DataContracts
                                                                    DemandUPKZCuratorSighting,
                                                                    DemandUPKZHeadSighting,
                                                                    DemandAgreed,
-                                                                   DemandArchived
+                                                                   DemandArchived,
+                                                                   DemandAgreementOPExpertSighting,
+                                                                   //DemandAgreementInitiatorHeadSighting,
+                                                                   DemandRollbackRequested,
+                                                                  // DemandAgreementOPHeadSighting
                                                                };
     }
 }

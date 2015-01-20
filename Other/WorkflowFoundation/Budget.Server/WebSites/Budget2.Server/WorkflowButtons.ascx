@@ -10,6 +10,7 @@
           <asp:TableCell runat="server" ID="cDenialByTechnicalCauses">
             <asp:Button runat="server" ID="Button1" Text="Отказать по ТП"  OnClick="cDenialByTechnicalCauses_Click" />
         </asp:TableCell>
+
     </asp:TableRow>
 </asp:Table>
 

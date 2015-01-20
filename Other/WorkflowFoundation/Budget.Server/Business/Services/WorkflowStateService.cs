@@ -191,6 +191,15 @@ namespace Budget2.Server.Business.Services
             return WorkflowState.AllStates.First(ws => ws.Type.Id == workflowType.Id && ws.IsInitial); 
         }
 
+        public IEnumerable<Guid> GetAllWFInAction ()
+        {
+            using (var context = this.CreateContext())
+            {
+               return context.WorkflowCurrentStates.Where(dbs =>! WorkflowState.AllStates.Where(st=>st.IsFinal).Select(st=>st.WorkflowStateName).Contains(dbs.StateName)).Select(dbs=>dbs.WorkflowId).ToList();
+                
+            }
+        }
+
         public List<WorkflowStateInfo> GetAllAvailiableStates(Guid instanceId)
         {
             var state = GetCurrentState(instanceId);

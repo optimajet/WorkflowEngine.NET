@@ -61,7 +61,7 @@ namespace Budget2.Server.Business.Services
                                                                                                       CultureInfo.
                                                                                                           CreateSpecificCulture
                                                                                                           ("en-US")),
-                                                          rUserSmeta = "0",
+                                                          rUserSmeta = billDemandForExport.BudgetPartId.ToString(CultureInfo.InvariantCulture),
                                                           rUserExpenses = billDemandForExport.SmetaCode,
                                                           rUserCfuExpenses = billDemandForExport.OPCode,
                                                           rUserCfuPotreb = billDemandForExport.PPCode,

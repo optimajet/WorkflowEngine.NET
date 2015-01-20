@@ -24,8 +24,10 @@ namespace Budget2.Server.Business
 
         protected virtual void AddGlobalServices(IServiceCollection globalServices)
         {
+            globalServices.AddNew<SettingsService, ISettingsService>();
             globalServices.AddNew<WorkflowTicketService, IWorkflowTicketService>();
             globalServices.AddNew<WorkflowStateService, IWorkflowStateService>();
+            globalServices.AddNew<EmployeeService, IEmployeeService>();
             globalServices.AddNew<SecurityEntityService, ISecurityEntityService>();
             globalServices.AddNew<BillDemandBusinessService, IBillDemandBuinessService>();
             globalServices.AddNew<AuthenticationService, IAuthenticationService>();
@@ -35,7 +37,6 @@ namespace Budget2.Server.Business
             globalServices.AddNew<DemandAdjustmentBusinessService, IDemandAdjustmentBusinessService>();
             globalServices.AddNew<BillDemandExportService,IBillDemandExportService>();
             globalServices.AddNew<DemandBusinessService, IDemandBusinessService>();
-            globalServices.AddNew<EmployeeService, IEmployeeService>();
             globalServices.AddNew<EmailService, IEmailService>();
             globalServices.AddNew<DemandNotificationService, IDemandNotificationService>();
             globalServices.AddNew<BillDemandNotificationService, IBillDemandNotificationService>();

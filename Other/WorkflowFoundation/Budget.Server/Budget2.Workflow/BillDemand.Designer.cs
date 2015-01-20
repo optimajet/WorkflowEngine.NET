@@ -26,22 +26,44 @@ namespace Budget2.Workflow
         private void InitializeComponent()
         {
             this.CanModifyActivities = true;
+            System.Workflow.Activities.CodeCondition codecondition1 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition2 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition3 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition4 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference1 = new System.Workflow.Activities.Rules.RuleConditionReference();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference2 = new System.Workflow.Activities.Rules.RuleConditionReference();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference3 = new System.Workflow.Activities.Rules.RuleConditionReference();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference4 = new System.Workflow.Activities.Rules.RuleConditionReference();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference5 = new System.Workflow.Activities.Rules.RuleConditionReference();
             System.Workflow.Activities.Rules.RuleConditionReference ruleconditionreference6 = new System.Workflow.Activities.Rules.RuleConditionReference();
-            System.Workflow.Activities.CodeCondition codecondition1 = new System.Workflow.Activities.CodeCondition();
-            System.Workflow.Activities.CodeCondition codecondition2 = new System.Workflow.Activities.CodeCondition();
-            System.Workflow.Activities.CodeCondition codecondition3 = new System.Workflow.Activities.CodeCondition();
-            System.Workflow.Activities.CodeCondition codecondition4 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition5 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition6 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition7 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition8 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition9 = new System.Workflow.Activities.CodeCondition();
             System.Workflow.Activities.CodeCondition codecondition10 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition11 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition12 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition13 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition14 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition15 = new System.Workflow.Activities.CodeCondition();
+            System.Workflow.Activities.CodeCondition codecondition16 = new System.Workflow.Activities.CodeCondition();
+            this.setStateActivity51 = new System.Workflow.Activities.SetStateActivity();
+            this.setStateActivity50 = new System.Workflow.Activities.SetStateActivity();
+            this.setStateActivity49 = new System.Workflow.Activities.SetStateActivity();
+            this.setStateActivity48 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseBranchActivity29 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity28 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity25 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity24 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.setStateActivity7 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseActivity14 = new System.Workflow.Activities.IfElseActivity();
+            this.setStateActivity3 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseActivity12 = new System.Workflow.Activities.IfElseActivity();
+            this.ifElseBranchActivity27 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity26 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity23 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity14 = new System.Workflow.Activities.IfElseBranchActivity();
             this.setStateActivity41 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity40 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity39 = new System.Workflow.Activities.SetStateActivity();
@@ -53,6 +75,8 @@ namespace Budget2.Workflow
             this.setStateActivity33 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity31 = new System.Workflow.Activities.SetStateActivity();
             this.SetExternalParameters = new System.Workflow.Activities.CodeActivity();
+            this.setStateActivity26 = new System.Workflow.Activities.SetStateActivity();
+            this.setStateActivity43 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity13 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity46 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity18 = new System.Workflow.Activities.SetStateActivity();
@@ -61,11 +85,12 @@ namespace Budget2.Workflow
             this.setStateActivity47 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity5 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity21 = new System.Workflow.Activities.SetStateActivity();
-            this.setStateActivity7 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseActivity13 = new System.Workflow.Activities.IfElseActivity();
             this.ResetLimitManagerSights1 = new System.Workflow.Activities.CodeActivity();
-            this.setStateActivity3 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseActivity11 = new System.Workflow.Activities.IfElseActivity();
             this.ResetLimitManagerSightsCode1 = new System.Workflow.Activities.CodeActivity();
             this.setStateActivity2 = new System.Workflow.Activities.SetStateActivity();
+            this.setStateActivity34 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity27 = new System.Workflow.Activities.SetStateActivity();
             this.ifElseBranchActivity21 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity20 = new System.Workflow.Activities.IfElseBranchActivity();
@@ -78,6 +103,8 @@ namespace Budget2.Workflow
             this.faultHandlersActivity2 = new System.Workflow.ComponentModel.FaultHandlersActivity();
             this.ifElseBranchActivity12 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity11 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity13 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity9 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity1 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity7 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity3 = new System.Workflow.Activities.IfElseBranchActivity();
@@ -89,6 +116,7 @@ namespace Budget2.Workflow
             this.ifElseBranchActivity5 = new System.Workflow.Activities.IfElseBranchActivity();
             this.transactionScopeActivity29 = new System.Workflow.ComponentModel.TransactionScopeActivity();
             this.ifElseBranchActivity4 = new System.Workflow.Activities.IfElseBranchActivity();
+            this.ifElseBranchActivity8 = new System.Workflow.Activities.IfElseBranchActivity();
             this.ifElseBranchActivity10 = new System.Workflow.Activities.IfElseBranchActivity();
             this.CheckInitiatorHeadMustSign = new System.Workflow.Activities.IfElseBranchActivity();
             this.setStateActivity28 = new System.Workflow.Activities.SetStateActivity();
@@ -103,7 +131,7 @@ namespace Budget2.Workflow
             this.ifElseActivity6 = new System.Workflow.Activities.IfElseActivity();
             this.CheckExternalStatus = new System.Workflow.Activities.CodeActivity();
             this.setStateActivity29 = new System.Workflow.Activities.SetStateActivity();
-            this.setStateActivity26 = new System.Workflow.Activities.SetStateActivity();
+            this.ifElseActivity10 = new System.Workflow.Activities.IfElseActivity();
             this.setStateActivity25 = new System.Workflow.Activities.SetStateActivity();
             this.setStateActivity24 = new System.Workflow.Activities.SetStateActivity();
             this.ifElseActivity1 = new System.Workflow.Activities.IfElseActivity();
@@ -207,6 +235,7 @@ namespace Budget2.Workflow
             this.DraftInitCode = new System.Workflow.Activities.CodeActivity();
             this.transactionScopeActivity1 = new System.Workflow.ComponentModel.TransactionScopeActivity();
             this.handleExternalEventActivity1 = new System.Workflow.Activities.HandleExternalEventActivity();
+            this.handleExternalEventActivity26 = new System.Workflow.Activities.HandleExternalEventActivity();
             this.PaidEvent2 = new System.Workflow.Activities.EventDrivenActivity();
             this.InitiatorConfirmationInit = new System.Workflow.Activities.StateInitializationActivity();
             this.DenialEvent11 = new System.Workflow.Activities.EventDrivenActivity();
@@ -250,6 +279,7 @@ namespace Budget2.Workflow
             this.SightingEvent1 = new System.Workflow.Activities.EventDrivenActivity();
             this.DraftInit = new System.Workflow.Activities.StateInitializationActivity();
             this.StartProcessingEvent = new System.Workflow.Activities.EventDrivenActivity();
+            this.eventDrivenActivity17 = new System.Workflow.Activities.EventDrivenActivity();
             this.InitiatorConfirmation = new System.Workflow.Activities.StateActivity();
             this.InAccountingWithExport = new System.Workflow.Activities.StateActivity();
             this.DraftForTechnicalDenial = new System.Workflow.Activities.StateActivity();
@@ -265,6 +295,96 @@ namespace Budget2.Workflow
             this.LimitManagerSighting = new System.Workflow.Activities.StateActivity();
             this.UPKZCntrollerSighting = new System.Workflow.Activities.StateActivity();
             this.Draft = new System.Workflow.Activities.StateActivity();
+            // 
+            // setStateActivity51
+            // 
+            this.setStateActivity51.Name = "setStateActivity51";
+            this.setStateActivity51.TargetStateName = "InitiatorConfirmation";
+            // 
+            // setStateActivity50
+            // 
+            this.setStateActivity50.Name = "setStateActivity50";
+            this.setStateActivity50.TargetStateName = "PostingAccounting";
+            // 
+            // setStateActivity49
+            // 
+            this.setStateActivity49.Name = "setStateActivity49";
+            this.setStateActivity49.TargetStateName = "InitiatorConfirmation";
+            // 
+            // setStateActivity48
+            // 
+            this.setStateActivity48.Name = "setStateActivity48";
+            this.setStateActivity48.TargetStateName = "PostingAccounting";
+            // 
+            // ifElseBranchActivity29
+            // 
+            this.ifElseBranchActivity29.Activities.Add(this.setStateActivity51);
+            this.ifElseBranchActivity29.Name = "ifElseBranchActivity29";
+            // 
+            // ifElseBranchActivity28
+            // 
+            this.ifElseBranchActivity28.Activities.Add(this.setStateActivity50);
+            codecondition1.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
+            this.ifElseBranchActivity28.Condition = codecondition1;
+            this.ifElseBranchActivity28.Name = "ifElseBranchActivity28";
+            // 
+            // ifElseBranchActivity25
+            // 
+            this.ifElseBranchActivity25.Activities.Add(this.setStateActivity49);
+            this.ifElseBranchActivity25.Name = "ifElseBranchActivity25";
+            // 
+            // ifElseBranchActivity24
+            // 
+            this.ifElseBranchActivity24.Activities.Add(this.setStateActivity48);
+            codecondition2.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
+            this.ifElseBranchActivity24.Condition = codecondition2;
+            this.ifElseBranchActivity24.Name = "ifElseBranchActivity24";
+            // 
+            // setStateActivity7
+            // 
+            this.setStateActivity7.Name = "setStateActivity7";
+            this.setStateActivity7.TargetStateName = "UPKZCuratorSighting";
+            // 
+            // ifElseActivity14
+            // 
+            this.ifElseActivity14.Activities.Add(this.ifElseBranchActivity28);
+            this.ifElseActivity14.Activities.Add(this.ifElseBranchActivity29);
+            this.ifElseActivity14.Name = "ifElseActivity14";
+            // 
+            // setStateActivity3
+            // 
+            this.setStateActivity3.Name = "setStateActivity3";
+            this.setStateActivity3.TargetStateName = "UPKZCuratorSighting";
+            // 
+            // ifElseActivity12
+            // 
+            this.ifElseActivity12.Activities.Add(this.ifElseBranchActivity24);
+            this.ifElseActivity12.Activities.Add(this.ifElseBranchActivity25);
+            this.ifElseActivity12.Name = "ifElseActivity12";
+            // 
+            // ifElseBranchActivity27
+            // 
+            this.ifElseBranchActivity27.Activities.Add(this.setStateActivity7);
+            this.ifElseBranchActivity27.Name = "ifElseBranchActivity27";
+            // 
+            // ifElseBranchActivity26
+            // 
+            this.ifElseBranchActivity26.Activities.Add(this.ifElseActivity14);
+            codecondition3.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsOperative_ExecuteCode);
+            this.ifElseBranchActivity26.Condition = codecondition3;
+            this.ifElseBranchActivity26.Name = "ifElseBranchActivity26";
+            // 
+            // ifElseBranchActivity23
+            // 
+            this.ifElseBranchActivity23.Activities.Add(this.setStateActivity3);
+            this.ifElseBranchActivity23.Name = "ifElseBranchActivity23";
+            // 
+            // ifElseBranchActivity14
+            // 
+            this.ifElseBranchActivity14.Activities.Add(this.ifElseActivity12);
+            codecondition4.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsOperative_ExecuteCode);
+            this.ifElseBranchActivity14.Condition = codecondition4;
+            this.ifElseBranchActivity14.Name = "ifElseBranchActivity14";
             // 
             // setStateActivity41
             // 
@@ -321,6 +441,16 @@ namespace Budget2.Workflow
             this.SetExternalParameters.Name = "SetExternalParameters";
             this.SetExternalParameters.ExecuteCode += new System.EventHandler(this.SetExternalParameters_ExecuteCode);
             // 
+            // setStateActivity26
+            // 
+            this.setStateActivity26.Name = "setStateActivity26";
+            this.setStateActivity26.TargetStateName = "LimitExecutorSighting";
+            // 
+            // setStateActivity43
+            // 
+            this.setStateActivity43.Name = "setStateActivity43";
+            this.setStateActivity43.TargetStateName = "LimitManagerSighting";
+            // 
             // setStateActivity13
             // 
             this.setStateActivity13.Name = "setStateActivity13";
@@ -361,20 +491,22 @@ namespace Budget2.Workflow
             this.setStateActivity21.Name = "setStateActivity21";
             this.setStateActivity21.TargetStateName = "UPKZHeadSighting";
             // 
-            // setStateActivity7
+            // ifElseActivity13
             // 
-            this.setStateActivity7.Name = "setStateActivity7";
-            this.setStateActivity7.TargetStateName = "UPKZCuratorSighting";
+            this.ifElseActivity13.Activities.Add(this.ifElseBranchActivity26);
+            this.ifElseActivity13.Activities.Add(this.ifElseBranchActivity27);
+            this.ifElseActivity13.Name = "ifElseActivity13";
             // 
             // ResetLimitManagerSights1
             // 
             this.ResetLimitManagerSights1.Name = "ResetLimitManagerSights1";
             this.ResetLimitManagerSights1.ExecuteCode += new System.EventHandler(this.ResetLimitManagerSights_ExecuteCode);
             // 
-            // setStateActivity3
+            // ifElseActivity11
             // 
-            this.setStateActivity3.Name = "setStateActivity3";
-            this.setStateActivity3.TargetStateName = "UPKZCuratorSighting";
+            this.ifElseActivity11.Activities.Add(this.ifElseBranchActivity14);
+            this.ifElseActivity11.Activities.Add(this.ifElseBranchActivity23);
+            this.ifElseActivity11.Name = "ifElseActivity11";
             // 
             // ResetLimitManagerSightsCode1
             // 
@@ -385,6 +517,11 @@ namespace Budget2.Workflow
             // 
             this.setStateActivity2.Name = "setStateActivity2";
             this.setStateActivity2.TargetStateName = "LimitExecutorSighting";
+            // 
+            // setStateActivity34
+            // 
+            this.setStateActivity34.Name = "setStateActivity34";
+            this.setStateActivity34.TargetStateName = "LimitManagerSighting";
             // 
             // setStateActivity27
             // 
@@ -451,23 +588,35 @@ namespace Budget2.Workflow
             // ifElseBranchActivity12
             // 
             this.ifElseBranchActivity12.Activities.Add(this.setStateActivity33);
-            codecondition1.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsRejected_ExecuteCode);
-            this.ifElseBranchActivity12.Condition = codecondition1;
+            codecondition5.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsRejected_ExecuteCode);
+            this.ifElseBranchActivity12.Condition = codecondition5;
             this.ifElseBranchActivity12.Name = "ifElseBranchActivity12";
             // 
             // ifElseBranchActivity11
             // 
             this.ifElseBranchActivity11.Activities.Add(this.SetExternalParameters);
             this.ifElseBranchActivity11.Activities.Add(this.setStateActivity31);
-            codecondition2.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsPaid_ExecuteCode);
-            this.ifElseBranchActivity11.Condition = codecondition2;
+            codecondition6.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsPaid_ExecuteCode);
+            this.ifElseBranchActivity11.Condition = codecondition6;
             this.ifElseBranchActivity11.Name = "ifElseBranchActivity11";
+            // 
+            // ifElseBranchActivity13
+            // 
+            this.ifElseBranchActivity13.Activities.Add(this.setStateActivity26);
+            this.ifElseBranchActivity13.Name = "ifElseBranchActivity13";
+            // 
+            // ifElseBranchActivity9
+            // 
+            this.ifElseBranchActivity9.Activities.Add(this.setStateActivity43);
+            codecondition7.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsOperative_ExecuteCode);
+            this.ifElseBranchActivity9.Condition = codecondition7;
+            this.ifElseBranchActivity9.Name = "ifElseBranchActivity9";
             // 
             // ifElseBranchActivity1
             // 
             this.ifElseBranchActivity1.Activities.Add(this.setStateActivity13);
-            codecondition3.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandInitiatorHeadIsAutoSight_ExecuteCode);
-            this.ifElseBranchActivity1.Condition = codecondition3;
+            codecondition8.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandInitiatorHeadIsAutoSight_ExecuteCode);
+            this.ifElseBranchActivity1.Condition = codecondition8;
             this.ifElseBranchActivity1.Name = "ifElseBranchActivity1";
             // 
             // ifElseBranchActivity7
@@ -478,16 +627,16 @@ namespace Budget2.Workflow
             // ifElseBranchActivity3
             // 
             this.ifElseBranchActivity3.Activities.Add(this.setStateActivity18);
-            codecondition4.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
-            this.ifElseBranchActivity3.Condition = codecondition4;
+            codecondition9.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
+            this.ifElseBranchActivity3.Condition = codecondition9;
             this.ifElseBranchActivity3.Name = "ifElseBranchActivity3";
             // 
             // CheckLimitExecutorSight
             // 
             this.CheckLimitExecutorSight.Activities.Add(this.ResetLimitExecutorSightsCode1);
             this.CheckLimitExecutorSight.Activities.Add(this.setStateActivity9);
-            codecondition5.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitExecutorSight_ExecuteCode);
-            this.CheckLimitExecutorSight.Condition = codecondition5;
+            codecondition10.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitExecutorSight_ExecuteCode);
+            this.CheckLimitExecutorSight.Condition = codecondition10;
             this.CheckLimitExecutorSight.Name = "CheckLimitExecutorSight";
             // 
             // setStateActivity42
@@ -508,42 +657,49 @@ namespace Budget2.Workflow
             // ifElseBranchActivity6
             // 
             this.ifElseBranchActivity6.Activities.Add(this.setStateActivity5);
-            codecondition6.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
-            this.ifElseBranchActivity6.Condition = codecondition6;
+            codecondition11.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandFilialIsSupportedExport_ExecuteCode);
+            this.ifElseBranchActivity6.Condition = codecondition11;
             this.ifElseBranchActivity6.Name = "ifElseBranchActivity6";
             // 
             // ifElseBranchActivity5
             // 
             this.ifElseBranchActivity5.Activities.Add(this.setStateActivity21);
-            codecondition7.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandValue_ExecuteCode);
-            this.ifElseBranchActivity5.Condition = codecondition7;
+            codecondition12.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckBillDemandValue_ExecuteCode);
+            this.ifElseBranchActivity5.Condition = codecondition12;
             this.ifElseBranchActivity5.Name = "ifElseBranchActivity5";
             // 
             // transactionScopeActivity29
             // 
             this.transactionScopeActivity29.Activities.Add(this.ResetLimitManagerSights1);
-            this.transactionScopeActivity29.Activities.Add(this.setStateActivity7);
+            this.transactionScopeActivity29.Activities.Add(this.ifElseActivity13);
             this.transactionScopeActivity29.Name = "transactionScopeActivity29";
             this.transactionScopeActivity29.TransactionOptions.IsolationLevel = System.Transactions.IsolationLevel.Serializable;
             // 
             // ifElseBranchActivity4
             // 
             this.ifElseBranchActivity4.Activities.Add(this.ResetLimitManagerSightsCode1);
-            this.ifElseBranchActivity4.Activities.Add(this.setStateActivity3);
-            codecondition8.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitMangerSight_ExecuteCode);
-            this.ifElseBranchActivity4.Condition = codecondition8;
+            this.ifElseBranchActivity4.Activities.Add(this.ifElseActivity11);
+            codecondition13.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitMangerSight_ExecuteCode);
+            this.ifElseBranchActivity4.Condition = codecondition13;
             this.ifElseBranchActivity4.Name = "ifElseBranchActivity4";
+            // 
+            // ifElseBranchActivity8
+            // 
+            this.ifElseBranchActivity8.Activities.Add(this.setStateActivity2);
+            this.ifElseBranchActivity8.Name = "ifElseBranchActivity8";
             // 
             // ifElseBranchActivity10
             // 
-            this.ifElseBranchActivity10.Activities.Add(this.setStateActivity2);
+            this.ifElseBranchActivity10.Activities.Add(this.setStateActivity34);
+            codecondition14.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckIsOperative_ExecuteCode);
+            this.ifElseBranchActivity10.Condition = codecondition14;
             this.ifElseBranchActivity10.Name = "ifElseBranchActivity10";
             // 
             // CheckInitiatorHeadMustSign
             // 
             this.CheckInitiatorHeadMustSign.Activities.Add(this.setStateActivity27);
-            codecondition9.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckInitiatorHeadMustSign_ExecuteCode);
-            this.CheckInitiatorHeadMustSign.Condition = codecondition9;
+            codecondition15.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckInitiatorHeadMustSign_ExecuteCode);
+            this.CheckInitiatorHeadMustSign.Condition = codecondition15;
             this.CheckInitiatorHeadMustSign.Name = "CheckInitiatorHeadMustSign";
             // 
             // setStateActivity28
@@ -615,10 +771,11 @@ namespace Budget2.Workflow
             this.setStateActivity29.Name = "setStateActivity29";
             this.setStateActivity29.TargetStateName = "Archived";
             // 
-            // setStateActivity26
+            // ifElseActivity10
             // 
-            this.setStateActivity26.Name = "setStateActivity26";
-            this.setStateActivity26.TargetStateName = "LimitExecutorSighting";
+            this.ifElseActivity10.Activities.Add(this.ifElseBranchActivity9);
+            this.ifElseActivity10.Activities.Add(this.ifElseBranchActivity13);
+            this.ifElseActivity10.Name = "ifElseActivity10";
             // 
             // setStateActivity25
             // 
@@ -727,8 +884,8 @@ namespace Budget2.Workflow
             // ifElseBranchActivity2
             // 
             this.ifElseBranchActivity2.Activities.Add(this.transactionScopeActivity29);
-            codecondition10.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitManagerSightingComplete_ExecuteCode);
-            this.ifElseBranchActivity2.Condition = codecondition10;
+            codecondition16.Condition += new System.EventHandler<System.Workflow.Activities.ConditionalEventArgs>(this.CheckLimitManagerSightingComplete_ExecuteCode);
+            this.ifElseBranchActivity2.Condition = codecondition16;
             this.ifElseBranchActivity2.Name = "ifElseBranchActivity2";
             // 
             // ifElseActivity3
@@ -745,6 +902,7 @@ namespace Budget2.Workflow
             // 
             this.ifElseActivity5.Activities.Add(this.CheckInitiatorHeadMustSign);
             this.ifElseActivity5.Activities.Add(this.ifElseBranchActivity10);
+            this.ifElseActivity5.Activities.Add(this.ifElseBranchActivity8);
             this.ifElseActivity5.Name = "ifElseActivity5";
             // 
             // setStateActivity1
@@ -898,7 +1056,7 @@ namespace Budget2.Workflow
             // 
             // transactionScopeActivity21
             // 
-            this.transactionScopeActivity21.Activities.Add(this.setStateActivity26);
+            this.transactionScopeActivity21.Activities.Add(this.ifElseActivity10);
             this.transactionScopeActivity21.Name = "transactionScopeActivity21";
             this.transactionScopeActivity21.TransactionOptions.IsolationLevel = System.Transactions.IsolationLevel.Serializable;
             // 
@@ -1230,7 +1388,14 @@ namespace Budget2.Workflow
             this.handleExternalEventActivity1.EventName = "StartProcessing";
             this.handleExternalEventActivity1.InterfaceType = typeof(Budget2.Server.Workflow.Interface.Services.IWorkflowInitService);
             this.handleExternalEventActivity1.Name = "handleExternalEventActivity1";
-            this.handleExternalEventActivity1.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.forvadTransitionEventInvoked);
+            this.handleExternalEventActivity1.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.StartProcessingEventInvoked);
+            // 
+            // handleExternalEventActivity26
+            // 
+            this.handleExternalEventActivity26.EventName = "SetInternalParameters";
+            this.handleExternalEventActivity26.InterfaceType = typeof(Budget2.Server.Workflow.Interface.Services.IWorkflowSupportService);
+            this.handleExternalEventActivity26.Name = "handleExternalEventActivity26";
+            this.handleExternalEventActivity26.Invoked += new System.EventHandler<System.Workflow.Activities.ExternalDataEventArgs>(this.setInternalParametersInvoked);
             // 
             // PaidEvent2
             // 
@@ -1481,6 +1646,11 @@ namespace Budget2.Workflow
             this.StartProcessingEvent.Activities.Add(this.transactionScopeActivity1);
             this.StartProcessingEvent.Name = "StartProcessingEvent";
             // 
+            // eventDrivenActivity17
+            // 
+            this.eventDrivenActivity17.Activities.Add(this.handleExternalEventActivity26);
+            this.eventDrivenActivity17.Name = "eventDrivenActivity17";
+            // 
             // InitiatorConfirmation
             // 
             this.InitiatorConfirmation.Activities.Add(this.DenialEvent11);
@@ -1601,6 +1771,7 @@ namespace Budget2.Workflow
             this.Activities.Add(this.DraftForTechnicalDenial);
             this.Activities.Add(this.InAccountingWithExport);
             this.Activities.Add(this.InitiatorConfirmation);
+            this.Activities.Add(this.eventDrivenActivity17);
             this.Comment = "";
             this.CompletedStateName = "Archived";
             this.DynamicUpdateCondition = null;
@@ -1611,6 +1782,54 @@ namespace Budget2.Workflow
         }
 
         #endregion
+
+        private SetStateActivity setStateActivity43;
+
+        private SetStateActivity setStateActivity34;
+
+        private IfElseBranchActivity ifElseBranchActivity13;
+
+        private IfElseBranchActivity ifElseBranchActivity9;
+
+        private IfElseActivity ifElseActivity10;
+
+        private SetStateActivity setStateActivity51;
+
+        private SetStateActivity setStateActivity50;
+
+        private SetStateActivity setStateActivity49;
+
+        private SetStateActivity setStateActivity48;
+
+        private IfElseBranchActivity ifElseBranchActivity29;
+
+        private IfElseBranchActivity ifElseBranchActivity28;
+
+        private IfElseBranchActivity ifElseBranchActivity25;
+
+        private IfElseBranchActivity ifElseBranchActivity24;
+
+        private IfElseActivity ifElseActivity14;
+
+        private IfElseActivity ifElseActivity12;
+
+        private IfElseBranchActivity ifElseBranchActivity27;
+
+        private IfElseBranchActivity ifElseBranchActivity26;
+
+        private IfElseBranchActivity ifElseBranchActivity23;
+
+        private IfElseBranchActivity ifElseBranchActivity14;
+
+        private IfElseActivity ifElseActivity13;
+
+        private IfElseActivity ifElseActivity11;
+
+        private IfElseBranchActivity ifElseBranchActivity8;
+
+        private HandleExternalEventActivity handleExternalEventActivity26;
+
+        private EventDrivenActivity eventDrivenActivity17;
 
         private SetStateActivity setStateActivity7;
 
@@ -2057,6 +2276,19 @@ namespace Budget2.Workflow
         private CodeActivity CheckExternalStatus;
 
         private StateActivity Draft;
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

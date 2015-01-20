@@ -22,10 +22,12 @@ namespace Budget2.Server.Business.Interface.Services
 
         WorkflowStateInfo GetWorkflowStateInfo(WorkflowState state);
         /// <summary>
-        /// Если информация о WF не найдена в треке, определяет его тип и возвращает начальное состояние
+        /// Если информация о WF не найдена в треке, определяет его тип и возвращает неопределенное состояние
         /// </summary>
         /// <param name="instanceId"></param>
         /// <returns></returns>
         WorkflowState GetWorkflowState(Guid instanceId);
+
+        IEnumerable<Guid> GetAllWFInAction();
     }
 }

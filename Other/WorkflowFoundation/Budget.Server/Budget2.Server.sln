@@ -13,6 +13,13 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "DAL", "DAL", "{1C7FDE82-E38
 EndProject
 Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Common", "Common", "{50B6F427-9D12-454E-9800-467835F8B5D1}"
 EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "OldWorkflow", "OldWorkflow", "{423F0949-2220-4B02-A7C9-992A56BF0318}"
+	ProjectSection(SolutionItems) = preProject
+		OldWorkflow\Budget2.Workflow.dll = OldWorkflow\Budget2.Workflow.dll
+		OldWorkflow\Workflow.dll = OldWorkflow\Workflow.dll
+		OldWorkflow\Workflow.Interface.dll = OldWorkflow\Workflow.Interface.dll
+	EndProjectSection
+EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Budget2.Server", "WebSites\Budget2.Server\Budget2.Server.csproj", "{B50EA9B4-9D7A-42FB-8F12-899BAECBBE22}"
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "Shell", "Modules\Shell\Shell.csproj", "{9035E962-D35E-46FD-8677-16AA63B9896F}"

@@ -1,8 +1,10 @@
-﻿using System.Workflow.ComponentModel;
+﻿using System.Collections.Generic;
+using System.Workflow.ComponentModel;
 using Budget2.DAL.DataContracts;
 using System;
 using System.Workflow.Activities;
 using Budget2.Server.Business.Interface.DataContracts;
+using Budget2.Server.Business.Interface.Services;
 using Budget2.Server.Workflow.Interface.DataContracts;
 using Common;
 using System.Linq;
@@ -11,6 +13,18 @@ namespace Budget2.Workflow
 {
     public sealed partial class BillDemand : BudgetWorkflow
     {
+        public new Dictionary<string, object> WorkflowPersistanceParameters
+        {
+            set
+            {
+                base.WorkflowPersistanceParameters = value;
+            }
+            get
+            {
+                return base.WorkflowPersistanceParameters;
+            }
+
+        }
 
         private const string LastExternalStatusPersistanceKey = "{DCCC371D-5BE4-4BFB-9B96-665EB4B7C1E3}";
 
@@ -25,6 +39,33 @@ namespace Budget2.Workflow
             set { WorkflowPersistanceParameters[LastExternalStatusPersistanceKey] = value; }
         }
 
+        private const string IsSupressWriteHistoryPersistanceKey = "{617BDAE8-8FE9-4EE1-855E-4069769FD5C4}";
+
+        private bool IsSupressWriteHistory
+        {
+            get
+            {
+                if (WorkflowPersistanceParameters.ContainsKey(IsSupressWriteHistoryPersistanceKey))
+                    return (bool)WorkflowPersistanceParameters[IsSupressWriteHistoryPersistanceKey];
+                return false;
+            }
+            set { WorkflowPersistanceParameters[IsSupressWriteHistoryPersistanceKey] = value; }
+        }
+
+
+        private const string IsOperativePersistanceKey = "{30FA8DEB-FEAE-487F-A8C5-D43A1391D126}";
+
+        private bool IsOperative
+        {
+            get
+            {
+                if (WorkflowPersistanceParameters.ContainsKey(IsOperativePersistanceKey))
+                    return (bool)WorkflowPersistanceParameters[IsOperativePersistanceKey];
+                return false;
+            }
+            set { WorkflowPersistanceParameters[IsOperativePersistanceKey] = value; }
+        }
+
         public BillDemand()
         {
             InitializeComponent();
@@ -37,7 +78,7 @@ namespace Budget2.Workflow
             var sightingIdentity = GetSightingIdentity();
             e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.LimitExecutorSight(WorkflowInstanceId, sightingIdentity, TransitionInitiator);
 
-            Budget2WorkflowRuntime.BillDemandBuinessService.LimitManagerSight(WorkflowInstanceId, sightingIdentity, TransitionInitiator);
+            Budget2WorkflowRuntime.BillDemandBuinessService.LimitManagerSight(WorkflowInstanceId, sightingIdentity, TransitionInitiator, IsOperative);
 
             if (!e.Result)
                 WriteTransitionToHistory(WorkflowState.BillDemandLimitExecutorSighting);
@@ -45,24 +86,52 @@ namespace Budget2.Workflow
 
         private void CheckLimitManagerSightingComplete_ExecuteCode(object sender, ConditionalEventArgs e)
         {
-            var sighters = Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSighters(WorkflowInstanceId);
-            var sightings = Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSightings(WorkflowInstanceId);
-            //var sightingsToWriteToHistory = sightings.Select(p => p.SighterId).Distinct().ToList();
-
-            e.Result =
-               sighters.TrueForAll(p => sightings.Count(s => s.LimitId == p.LimitId && s.SighterId == p.SighterId) > 0);
-
-            for (int i = 0; i < sightings.Count; i++)
+            if (!IsOperative)
             {
-                if (i != sightings.Count - 1 || !e.Result)
-                    WriteTransitionToHistory(WorkflowState.BillLimitManagerSighting, sightings[i].InitiatorId,
-                                             sightings[i].SighterId);
+                var sighters =
+                    Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSighters(WorkflowInstanceId,IsOperative);
+                var sightings =
+                    Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSightings(WorkflowInstanceId);
+                e.Result =
+                    sighters.TrueForAll(
+                        p => sightings.Count(s => s.LimitId == p.LimitId && s.SighterId == p.SighterId) > 0);
+
+
+                if (!e.Result)
+                {
+                    foreach (LimitSighting t in sightings)
+                    {
+                        WriteTransitionToHistory(WorkflowState.BillLimitManagerSighting, t.InitiatorId,
+                                                 t.SighterId, t.SightingTime);
+                    }
+                }
                 else
                 {
-                    TransitionInitiator = sightings[i].InitiatorId;
-                    ImpersonatedIdentityId = sightings[i].SighterId;
+                    for (var i = 0; i < sightings.Count; i++)
+                    {
+                        if (i != sightings.Count - 1)
+                            WriteTransitionToHistory(WorkflowState.BillLimitManagerSighting, sightings[i].InitiatorId,
+                                                     sightings[i].SighterId, sightings[i].SightingTime);
+                        else
+                            WriteTransitionToHistory(WorkflowState.BillDemandUPKZCuratorSighting,
+                                                     sightings[i].InitiatorId,
+                                                     sightings[i].SighterId, sightings[i].SightingTime);
+                    }
                 }
+
+                IsSupressWriteHistory = e.Result;
             }
+            else
+            {
+                var sighters =
+                  Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSighters(WorkflowInstanceId,IsOperative);
+                var sightings =
+                    Budget2WorkflowRuntime.BillDemandBuinessService.GetLimitManagerSightings(WorkflowInstanceId);
+                e.Result =
+                    sighters.TrueForAll(
+                        p => sightings.Count(s => s.LimitId == p.LimitId) > 0);
+            }
+
         }
 
         private Guid GetSightingIdentity()
@@ -73,7 +142,7 @@ namespace Budget2.Workflow
         private void CheckLimitMangerSight_ExecuteCode(object sender, ConditionalEventArgs e)
         {
             var sightingIdentity = GetSightingIdentity();
-            e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.LimitManagerSight(WorkflowInstanceId, sightingIdentity, TransitionInitiator);
+            e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.LimitManagerSight(WorkflowInstanceId, sightingIdentity, TransitionInitiator, IsOperative);
 
             if (!e.Result)
                 WriteTransitionToHistory(WorkflowState.BillLimitManagerSighting);
@@ -120,7 +189,9 @@ namespace Budget2.Workflow
 
         private void UPKZCntrollerSightingInitCode_ExecuteCode(object sender, EventArgs e)
         {
-            WriteTransitionToHistory(WorkflowState.BillDemandUPKZCntrollerSighting);
+            if (!(PreviousWorkflowState.WorkflowStateName == WorkflowState.BillLimitManagerSighting.WorkflowStateName && LastCommand.Id == WorkflowCommand.Sighting.Id))
+                WriteTransitionToHistory(WorkflowState.BillDemandUPKZCntrollerSighting);
+
             PreviousWorkflowState = WorkflowState.BillDemandUPKZCntrollerSighting;
             SendNotifications(WorkflowState.BillDemandUPKZCntrollerSighting);
         }
@@ -135,7 +206,9 @@ namespace Budget2.Workflow
 
         private void UPKZCuratorSightingInitCode_ExecuteCode(object sender, EventArgs e)
         {
-            WriteTransitionToHistory(WorkflowState.BillDemandUPKZCuratorSighting);
+            if (!IsSupressWriteHistory)
+                WriteTransitionToHistory(WorkflowState.BillDemandUPKZCuratorSighting);
+            IsSupressWriteHistory = false;
             PreviousWorkflowState = WorkflowState.BillDemandUPKZCuratorSighting;
             SendNotifications(WorkflowState.BillDemandUPKZCuratorSighting);
         }
@@ -199,10 +272,22 @@ namespace Budget2.Workflow
 
         private void WriteTransitionToHistory(WorkflowState current, Guid initiatorId, Guid? impersonatedIdentityId)
         {
-           
+            WriteTransitionToHistory(current, initiatorId, impersonatedIdentityId, null);
+        }
+
+
+        private void WriteTransitionToHistory(WorkflowState current, Guid initiatorId, Guid? impersonatedIdentityId, DateTime? sightingTime)
+        {
+            if (DontWriteToWorkflowHistory)
+                return;
             if (PreviousWorkflowState == null || PreviousWorkflowState.WorkflowStateName == WorkflowState.BillDemandDraft.WorkflowStateName)
             {
                 Budget2WorkflowRuntime.BillDemandBuinessService.CreateBillDemandPreHistory(WorkflowInstanceId, WorkflowState.BillDemandDraft);
+            }
+            //Отказ не в черновик - расписываем маршрут
+            else if (LastCommand.Id == WorkflowCommand.Denial.Id && current.WorkflowStateName != WorkflowState.BillDemandDraft.WorkflowStateName)
+            {
+                Budget2WorkflowRuntime.BillDemandBuinessService.CreateBillDemandPreHistory(WorkflowInstanceId, current);
             }
 
             if (PreviousWorkflowState == null)
@@ -211,17 +296,29 @@ namespace Budget2.Workflow
                 return;
             }
 
-
-            Budget2WorkflowRuntime.BillDemandBuinessService.UpdateBillDemandState(PreviousWorkflowState, current, LastCommand,
-                                                                                  WorkflowInstanceId,
-                                                                                  initiatorId, impersonatedIdentityId, Comment);
+            if (sightingTime.HasValue)
+                Budget2WorkflowRuntime.BillDemandBuinessService.UpdateBillDemandState(new UpdateBillDemandStateParams(PreviousWorkflowState, current, LastCommand,
+                                                                                 WorkflowInstanceId,
+                                                                                 initiatorId, impersonatedIdentityId, Comment, sightingTime.Value));
+            else
+                Budget2WorkflowRuntime.BillDemandBuinessService.UpdateBillDemandState(
+                    new UpdateBillDemandStateParams(PreviousWorkflowState, current, LastCommand,
+                                                    WorkflowInstanceId,
+                                                    initiatorId, impersonatedIdentityId, Comment));
             Comment = string.Empty;
         }
 
         private void WriteTransitionToHistory(WorkflowState current)
         {
+            WriteTransitionToHistory(current, null);
+        }
+
+        private void WriteTransitionToHistory(WorkflowState current, DateTime? sightingTime)
+        {
+            if (DontWriteToWorkflowHistory)
+                return;
             SetStateIfParcelExists();
-            WriteTransitionToHistory(current, TransitionInitiator, ImpersonatedIdentityId);
+            WriteTransitionToHistory(current, TransitionInitiator, ImpersonatedIdentityId, sightingTime);
         }
 
         #endregion
@@ -255,7 +352,8 @@ namespace Budget2.Workflow
 
         private void CheckBillDemandFilialIsSupportedExport_ExecuteCode(object sender, ConditionalEventArgs e)
         {
-            e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.IsBillDemandFilialSupportExport(WorkflowInstanceId);
+            // e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.IsBillDemandSupportExport(WorkflowInstanceId);
+            e.Result = !Budget2WorkflowRuntime.BillDemandBuinessService.IsBillDemandSkipInAccountingState(WorkflowInstanceId);
         }
 
         private void CheckBillDemandInitiatorHeadIsAutoSight_ExecuteCode(object sender, ConditionalEventArgs e)
@@ -363,6 +461,12 @@ namespace Budget2.Workflow
 
         }
 
+
+        private void CheckIsOperative_ExecuteCode(object sender, ConditionalEventArgs e)
+        {
+            IsOperative = e.Result = Budget2WorkflowRuntime.BillDemandBuinessService.IsOperative(WorkflowInstanceId);
+        }
+
         private void WriteCommentToHistoryCode_ExecuteCode(object sender, EventArgs e)
         {
             if ((_externalState.Status.Code != LastExternalStatus.Code) && (!_externalState.Status.IsIgnored))
@@ -425,5 +529,12 @@ namespace Budget2.Workflow
         {
             Budget2WorkflowRuntime.BillDemandBuinessService.SetTransferDate(WorkflowInstanceId);
         }
+
+        private void StartProcessingEventInvoked(object sender, ExternalDataEventArgs e)
+        {
+            forvadTransitionEventInvoked(sender, e);
+            LastCommand = WorkflowCommand.StartProcessing;
+        }
+
     }
 }

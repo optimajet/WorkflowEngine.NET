@@ -31,6 +31,12 @@
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>budget2.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -53,6 +59,7 @@
       <DependentUpon>Budget2.dbml</DependentUpon>
     </Compile>
     <Compile Include="Budget2DataContextService.cs" />
+    <Compile Include="DataContracts\BudgetDocumentKind.cs" />
     <Compile Include="DataContracts\BudgetPermission.cs" />
     <Compile Include="DataContracts\BudgetRole.cs" />
     <Compile Include="DataContracts\DemandAdjustmentType.cs" />
@@ -89,6 +96,7 @@
       <LastGenOutput>Budget2.designer.cs</LastGenOutput>
       <SubType>Designer</SubType>
     </None>
+    <None Include="budget2.snk" />
     <None Include="DataSets\BillDemand.xsc">
       <DependentUpon>BillDemand.xsd</DependentUpon>
     </None>

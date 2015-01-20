@@ -9,7 +9,7 @@
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>Budget2.Server.Workflow</RootNamespace>
-    <AssemblyName>Workflow</AssemblyName>
+    <AssemblyName>Workflow.1.0.0.0</AssemblyName>
     <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
     <FileUpgradeFlags>
     </FileUpgradeFlags>
@@ -50,6 +50,12 @@
     <WarningLevel>4</WarningLevel>
     <CodeAnalysisRuleSet>AllRules.ruleset</CodeAnalysisRuleSet>
   </PropertyGroup>
+  <PropertyGroup>
+    <SignAssembly>true</SignAssembly>
+  </PropertyGroup>
+  <PropertyGroup>
+    <AssemblyOriginatorKeyFile>budget2.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.Practices.CompositeWeb">
       <HintPath>..\Library\Microsoft.Practices.CompositeWeb.dll</HintPath>
@@ -86,6 +92,7 @@
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />
+    <Reference Include="System.Data.Linq" />
     <Reference Include="System.Workflow.Activities" />
     <Reference Include="System.Workflow.ComponentModel" />
     <Reference Include="System.Workflow.Runtime" />
@@ -97,9 +104,12 @@
     <Compile Include="Services\BillDemandWorkflowService.cs" />
     <Compile Include="Services\WorkflowInitService.cs" />
     <Compile Include="Services\WorkflowParcelService.cs" />
+    <Compile Include="Services\WorkflowSupportService.cs" />
     <Compile Include="WorkflowModuleInitializer.cs" />
   </ItemGroup>
-  <ItemGroup />
+  <ItemGroup>
+    <None Include="budget2.snk" />
+  </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\Budget2.DAL\Budget2.DAL.csproj">
       <Project>{0BDD7A49-045E-4A5D-B68B-6AF3CAA8E6D3}</Project>

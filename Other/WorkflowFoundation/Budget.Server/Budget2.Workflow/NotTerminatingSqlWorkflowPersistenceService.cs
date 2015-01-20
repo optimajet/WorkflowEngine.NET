@@ -13,6 +13,12 @@ namespace Common.WF
 {
     public class NotTerminatingSqlWorkflowPersistenceService : SqlWorkflowPersistenceService
     {
+        public class WorkflowSavedParametersArgs : EventArgs
+        {
+            public Dictionary<string, object> Parameters = new Dictionary<string, object>();
+            public Guid InstanceId { get; set;}
+        }
+
         public NotTerminatingSqlWorkflowPersistenceService(string connectionString) : base(connectionString) { }
         public NotTerminatingSqlWorkflowPersistenceService(NameValueCollection parameters) : base(parameters) { }
         public NotTerminatingSqlWorkflowPersistenceService(string connectionString, bool unloadOnIdle, TimeSpan instanceOwnerShipDuration, TimeSpan loadingInterval)
@@ -29,5 +35,24 @@ namespace Common.WF
             }
             base.SaveWorkflowInstanceState(rootActivity, unlock);
         }
+
+        protected override Activity LoadWorkflowInstanceState(Guid id)
+        {
+            var act = base.LoadWorkflowInstanceState(id);
+            if (!(act is StateMachineWithSimpleContainer))
+                return act;
+            var args = new WorkflowSavedParametersArgs() {InstanceId = id};
+            foreach (var kvp in (act as StateMachineWithSimpleContainer).WorkflowPersistanceParameters)
+            {
+                args.Parameters.Add(kvp.Key,kvp.Value);
+            }
+            if (OnArgsAllowed != null)
+                OnArgsAllowed(null, args);
+            return act;
+        }
+
+
+        public EventHandler<WorkflowSavedParametersArgs> OnArgsAllowed;
+        
     }
 }
