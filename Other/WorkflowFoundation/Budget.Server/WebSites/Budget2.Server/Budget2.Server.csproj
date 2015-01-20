@@ -89,7 +89,7 @@
     </Reference>
     <Reference Include="log4net, Version=1.2.9.0, Culture=neutral">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\..\..\TPS\log4net\debug\log4net.dll</HintPath>
+      <HintPath>..\..\Library\log4net.dll</HintPath>
     </Reference>
     <Reference Include="Microsoft.Practices.CompositeWeb">
       <HintPath>..\..\Library\Microsoft.Practices.CompositeWeb.dll</HintPath>
