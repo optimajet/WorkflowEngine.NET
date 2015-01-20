@@ -1,0 +1,1 @@
+﻿<%@ ServiceHost Language="C#" Debug="true" Service="Budget2.Server.API.Services.UpdateRatesApi" %>

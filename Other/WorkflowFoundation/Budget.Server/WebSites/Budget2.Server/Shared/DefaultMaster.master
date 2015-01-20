@@ -1,0 +1,52 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" Codebehind="DefaultMaster.master.cs"
+    Inherits="Budget2.Server.Shell.MasterPages.DefaultMaster" %>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" >
+<head id="Head" runat="server">
+    <title>Budget2 - Система бюджетирования</title>
+</head>
+<body>
+    <form id="mainForm" runat="server">
+        <asp:ScriptManager ID="DefaultMasterScriptManager" runat="server">
+    </asp:ScriptManager>
+        &nbsp;
+        <div id="mainwrapper">      
+			<div id="header">
+				<table style="width:100%">
+					<tr>
+						<td>
+							Budget 2
+							<div id="header-bottom">Система бюджетирования
+							</div>
+						</td>
+					</tr>
+				</table>
+			</div>
+            <table id="content" width="100%">
+                <tr>
+                    <td id="content-left" valign="top" style="visibility:hidden">
+                        <asp:TreeView ID="NavigationTreeView" runat="server" ExpandDepth="2" DataSourceID="ApplicationSiteMap" />
+                    </td>
+                    <td id="content-right">
+                        <div id="breadcrumb">
+                            <asp:SiteMapPath ID="DefaultBreadCrumb" SiteMapProvider="DefaultSiteMapProvider" runat="server" />                        
+                        </div>
+                        <asp:ContentPlaceHolder ID="DefaultContent" runat="server" />
+                    </td>
+                </tr>
+            </table>
+            <div id="footer">
+                <table style="width:100%">
+                    <tr>
+                        <td>
+                         
+                         </td>
+                    </tr>
+                </table>
+            </div>
+        </div>
+        <asp:SiteMapDataSource ID="ApplicationSiteMap" runat="server" SiteMapProvider="DefaultSiteMapProvider" ShowStartingNode="False" />
+        &nbsp;
+    </form>
+</body>
+</html>

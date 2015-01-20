@@ -1,0 +1,120 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
+    <ProductVersion>9.0.21107</ProductVersion>
+    <SchemaVersion>2.0</SchemaVersion>
+    <ProjectGuid>{21260753-1AA2-4F06-BA90-1B77E9582E0A}</ProjectGuid>
+    <OutputType>Library</OutputType>
+    <RootNamespace>Budget2.Workflow</RootNamespace>
+    <AssemblyName>Budget2.Workflow</AssemblyName>
+    <ProjectTypeGuids>{14822709-B5A1-4724-98CA-57A101D1B079};{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}</ProjectTypeGuids>
+    <WarningLevel>4</WarningLevel>
+    <TargetFrameworkVersion>v3.5</TargetFrameworkVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Debug' ">
+    <DebugSymbols>true</DebugSymbols>
+    <DebugType>full</DebugType>
+    <Optimize>false</Optimize>
+    <OutputPath>.\bin\Debug\</OutputPath>
+    <DefineConstants>DEBUG;TRACE</DefineConstants>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <PropertyGroup Condition=" '$(Configuration)' == 'Release' ">
+    <DebugSymbols>false</DebugSymbols>
+    <Optimize>true</Optimize>
+    <OutputPath>.\bin\Release\</OutputPath>
+    <DefineConstants>TRACE</DefineConstants>
+    <UseVSHostingProcess>false</UseVSHostingProcess>
+  </PropertyGroup>
+  <ItemGroup>
+    <Reference Include="log4net">
+      <HintPath>..\Library\log4net.dll</HintPath>
+    </Reference>
+    <Reference Include="System.Configuration" />
+    <Reference Include="System.Data.Linq" />
+    <Reference Include="System.Workflow.Activities" />
+    <Reference Include="System.Workflow.ComponentModel" />
+    <Reference Include="System.Workflow.Runtime" />
+    <Reference Include="System" />
+    <Reference Include="System.Data" />
+    <Reference Include="System.Transactions" />
+    <Reference Include="System.Xml" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Services" />
+    <Reference Include="System.Core" />
+    <Reference Include="System.Xml.Linq" />
+  </ItemGroup>
+  <ItemGroup>
+    <Compile Include="BillDemand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="BillDemand.Designer.cs">
+      <DependentUpon>BillDemand.cs</DependentUpon>
+    </Compile>
+    <Compile Include="Budget2WorkflowRuntime.cs" />
+    <Compile Include="BudgetWorkflow.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Demand.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="Demand.Designer.cs">
+      <DependentUpon>Demand.cs</DependentUpon>
+    </Compile>
+    <Compile Include="DemandAdjustment.cs">
+      <SubType>Component</SubType>
+    </Compile>
+    <Compile Include="DemandAdjustment.Designer.cs">
+      <DependentUpon>DemandAdjustment.cs</DependentUpon>
+    </Compile>
+    <Compile Include="NotTerminatingSqlWorkflowPersistenceService.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="Tracking\Budget2TrackingChannel.cs" />
+    <Compile Include="Tracking\Budget2TrackingService.cs" />
+    <None Include="Properties\Settings.settings">
+      <Generator>SettingsSingleFileGenerator</Generator>
+      <LastGenOutput>Settings.cs</LastGenOutput>
+    </None>
+    <Compile Include="Properties\Settings.cs">
+      <AutoGen>True</AutoGen>
+      <DependentUpon>Settings.settings</DependentUpon>
+    </Compile>
+    <AppDesigner Include="Properties\" />
+  </ItemGroup>
+  <ItemGroup>
+    <EmbeddedResource Include="BillDemand.layout">
+      <DependentUpon>BillDemand.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="BillDemand.rules">
+      <DependentUpon>BillDemand.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="Demand.layout">
+      <DependentUpon>Demand.cs</DependentUpon>
+    </EmbeddedResource>
+    <EmbeddedResource Include="DemandAdjustment.layout">
+      <DependentUpon>DemandAdjustment.cs</DependentUpon>
+    </EmbeddedResource>
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\Budget2.DAL\Budget2.DAL.csproj">
+      <Project>{0BDD7A49-045E-4A5D-B68B-6AF3CAA8E6D3}</Project>
+      <Name>Budget2.DAL</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Business.Interface\Business.Interface.csproj">
+      <Project>{FBA0CB6B-8DCD-4B78-8225-A833CB2F4321}</Project>
+      <Name>Business.Interface</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Common\Common.csproj">
+      <Project>{F44BB867-5E77-40A7-B47F-0BA8086BF707}</Project>
+      <Name>Common %28Common\Common%29</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\Workflow.Interface\Workflow.Interface.csproj">
+      <Project>{A79780A9-5B07-41CC-9171-B323D01A2E8D}</Project>
+      <Name>Workflow.Interface</Name>
+    </ProjectReference>
+  </ItemGroup>
+  <ItemGroup />
+  <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.Targets" />
+  <Import Project="$(MSBuildToolsPath)\Workflow.Targets" />
+</Project>

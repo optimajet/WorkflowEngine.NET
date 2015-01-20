@@ -1,0 +1,311 @@
+﻿<StateMachineWorkflowDesigner xmlns:ns0="clr-namespace:System.Drawing;Assembly=System.Drawing, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" Size="1229, 792" AutoSizeMargin="16, 24" Location="30, 30" Name="Demand" xmlns="http://schemas.microsoft.com/winfx/2006/xaml/workflow">
+	<StateMachineWorkflowDesigner.Designers>
+		<StateDesigner Size="188, 84" AutoSizeMargin="16, 24" Location="233, 71" Name="Draft">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="DraftInit" Size="150, 125" Location="241, 104">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="DraftInitCode" Size="130, 41" Location="251, 169" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="StartProcessingEvent" Size="401, 480" Location="241, 130">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity1" Size="130, 44" Location="376, 195" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity1" Size="381, 333" Location="251, 258">
+							<TransactionScopeActivityDesigner.Designers>
+								<IfElseDesigner Name="ifElseActivity2" Size="361, 249" Location="261, 323">
+									<IfElseDesigner.Designers>
+										<IfElseBranchDesigner Name="ifElseBranchActivity3" Size="150, 146" Location="280, 397">
+											<IfElseBranchDesigner.Designers>
+												<SetStateDesigner Name="setStateActivity9" Size="130, 62" Location="290, 462" />
+											</IfElseBranchDesigner.Designers>
+										</IfElseBranchDesigner>
+										<IfElseBranchDesigner Name="ifElseBranchActivity4" Size="150, 146" Location="453, 397">
+											<IfElseBranchDesigner.Designers>
+												<SetStateDesigner Name="setStateActivity1" Size="130, 62" Location="463, 462" />
+											</IfElseBranchDesigner.Designers>
+										</IfElseBranchDesigner>
+									</IfElseDesigner.Designers>
+								</IfElseDesigner>
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="188, 110" AutoSizeMargin="16, 24" Location="614, 130" Name="OPExpertSighting">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="OPExpertSightingInit" Size="150, 128" Location="622, 163">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="OPExpertSightingInitCode" Size="130, 44" Location="632, 228" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="SightingEvent1" Size="170, 293" Location="622, 189">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity2" Size="130, 44" Location="642, 254" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity2" Size="150, 146" Location="632, 317">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity2" Size="130, 62" Location="642, 382" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+				<EventDrivenDesigner Name="DenialEvent1" Size="170, 293" Location="622, 215">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="denialEventFired1" Size="130, 44" Location="642, 280" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity8" Size="150, 146" Location="632, 343">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity8" Size="130, 62" Location="642, 408" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="188, 110" AutoSizeMargin="16, 24" Location="308, 277" Name="OPHeadSighting">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="OPHeadSightingInit" Size="150, 128" Location="316, 310">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="OPHeadSightingInitCode" Size="130, 44" Location="326, 375" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="SightingEvent2" Size="170, 293" Location="316, 336">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity3" Size="130, 44" Location="336, 401" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity3" Size="150, 146" Location="326, 464">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity3" Size="130, 62" Location="336, 529" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+				<EventDrivenDesigner Name="DenialEvent2" Size="170, 293" Location="316, 362">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity4" Size="130, 44" Location="336, 427" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity4" Size="150, 146" Location="326, 490">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity4" Size="130, 62" Location="336, 555" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="188, 110" AutoSizeMargin="16, 24" Location="872, 262" Name="InitiatorHeadSighting">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="InitiatorHeadSightingInit" Size="150, 128" Location="880, 295">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="InitiatorHeadSightingInitCode" Size="130, 44" Location="890, 360" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="SightingEvent3" Size="170, 293" Location="880, 321">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity5" Size="130, 44" Location="900, 386" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity5" Size="150, 146" Location="890, 449">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity6" Size="130, 62" Location="900, 514" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+				<EventDrivenDesigner Name="DenialEvent3" Size="170, 293" Location="880, 347">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity8" Size="130, 44" Location="900, 412" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity10" Size="150, 146" Location="890, 475">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity10" Size="130, 62" Location="900, 540" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="188, 110" AutoSizeMargin="16, 24" Location="600, 428" Name="UPKZCuratorSighting">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="UPKZCuratorSightingInit" Size="150, 128" Location="608, 461">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="UPKZCuratorSightingInitCode" Size="130, 44" Location="618, 526" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="SightingEvent4" Size="170, 293" Location="608, 487">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity11" Size="130, 44" Location="628, 552" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity9" Size="150, 146" Location="618, 615">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity12" Size="130, 62" Location="628, 680" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+				<EventDrivenDesigner Name="DenialEvent4" Size="170, 293" Location="608, 513">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity12" Size="130, 44" Location="628, 578" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity14" Size="150, 146" Location="618, 641">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity16" Size="130, 62" Location="628, 706" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="170, 110" AutoSizeMargin="16, 24" Location="608, 568" Name="UPKZHeadSighting">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="UPKZHeadSightingInit" Size="150, 128" Location="616, 601">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="UPKZHeadSightingInitCode" Size="130, 44" Location="626, 666" />
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+				<EventDrivenDesigner Name="SightingEvent5" Size="170, 293" Location="616, 627">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity6" Size="130, 44" Location="636, 692" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity7" Size="150, 146" Location="626, 755">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity13" Size="130, 62" Location="636, 820" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+				<EventDrivenDesigner Name="DenialEvent5" Size="170, 293" Location="616, 653">
+					<EventDrivenDesigner.Designers>
+						<HandleExternalEventActivityDesigner Name="handleExternalEventActivity7" Size="130, 44" Location="636, 718" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity11" Size="150, 146" Location="626, 781">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity14" Size="130, 62" Location="636, 846" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</EventDrivenDesigner.Designers>
+				</EventDrivenDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="160, 80" AutoSizeMargin="16, 24" Location="616, 712" Name="Agreed">
+			<StateDesigner.Designers>
+				<StateInitializationDesigner Name="AgreedInit" Size="170, 290" Location="624, 745">
+					<StateInitializationDesigner.Designers>
+						<CodeDesigner Name="AgreedInitCode" Size="130, 41" Location="644, 810" />
+						<TransactionScopeActivityDesigner Name="transactionScopeActivity6" Size="150, 146" Location="634, 870">
+							<TransactionScopeActivityDesigner.Designers>
+								<SetStateDesigner Name="setStateActivity5" Size="130, 62" Location="644, 935" />
+							</TransactionScopeActivityDesigner.Designers>
+						</TransactionScopeActivityDesigner>
+					</StateInitializationDesigner.Designers>
+				</StateInitializationDesigner>
+			</StateDesigner.Designers>
+		</StateDesigner>
+		<StateDesigner Size="160, 80" AutoSizeMargin="16, 24" Location="983, 702" Name="Archived" />
+	</StateMachineWorkflowDesigner.Designers>
+	<StateMachineWorkflowDesigner.DesignerConnectors>
+		<StateDesignerConnector TargetActivity="OPExpertSighting" SetStateName="setStateActivity1" SourceActivity="Draft" TargetConnectionIndex="0" SourceStateName="Draft" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="StartProcessingEvent" SourceConnectionIndex="1" TargetStateName="OPExpertSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="391" Y="141" />
+				<ns0:Point X="433" Y="141" />
+				<ns0:Point X="433" Y="122" />
+				<ns0:Point X="708" Y="122" />
+				<ns0:Point X="708" Y="130" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Draft" SetStateName="setStateActivity8" SourceActivity="OPExpertSighting" TargetConnectionIndex="0" SourceStateName="OPExpertSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="DenialEvent1" SourceConnectionIndex="2" TargetStateName="Draft">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="729" Y="226" />
+				<ns0:Point X="807" Y="226" />
+				<ns0:Point X="807" Y="63" />
+				<ns0:Point X="327" Y="63" />
+				<ns0:Point X="327" Y="71" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Draft" SetStateName="setStateActivity4" SourceActivity="OPHeadSighting" TargetConnectionIndex="0" SourceStateName="OPHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="DenialEvent2" SourceConnectionIndex="2" TargetStateName="Draft">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="423" Y="373" />
+				<ns0:Point X="503" Y="373" />
+				<ns0:Point X="503" Y="63" />
+				<ns0:Point X="327" Y="63" />
+				<ns0:Point X="327" Y="71" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Draft" SetStateName="setStateActivity10" SourceActivity="InitiatorHeadSighting" TargetConnectionIndex="0" SourceStateName="InitiatorHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="DenialEvent3" SourceConnectionIndex="2" TargetStateName="Draft">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="987" Y="358" />
+				<ns0:Point X="1071" Y="358" />
+				<ns0:Point X="1071" Y="63" />
+				<ns0:Point X="327" Y="63" />
+				<ns0:Point X="327" Y="71" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="UPKZHeadSighting" SetStateName="setStateActivity12" SourceActivity="UPKZCuratorSighting" TargetConnectionIndex="0" SourceStateName="UPKZCuratorSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="SightingEvent4" SourceConnectionIndex="1" TargetStateName="UPKZHeadSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="726" Y="498" />
+				<ns0:Point X="797" Y="498" />
+				<ns0:Point X="797" Y="556" />
+				<ns0:Point X="693" Y="556" />
+				<ns0:Point X="693" Y="568" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Draft" SetStateName="setStateActivity16" SourceActivity="UPKZCuratorSighting" TargetConnectionIndex="0" SourceStateName="UPKZCuratorSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="DenialEvent4" SourceConnectionIndex="2" TargetStateName="Draft">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="715" Y="524" />
+				<ns0:Point X="807" Y="524" />
+				<ns0:Point X="807" Y="63" />
+				<ns0:Point X="327" Y="63" />
+				<ns0:Point X="327" Y="71" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Agreed" SetStateName="setStateActivity13" SourceActivity="UPKZHeadSighting" TargetConnectionIndex="0" SourceStateName="UPKZHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="SightingEvent5" SourceConnectionIndex="1" TargetStateName="Agreed">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="734" Y="638" />
+				<ns0:Point X="784" Y="638" />
+				<ns0:Point X="784" Y="700" />
+				<ns0:Point X="696" Y="700" />
+				<ns0:Point X="696" Y="712" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Draft" SetStateName="setStateActivity14" SourceActivity="UPKZHeadSighting" TargetConnectionIndex="0" SourceStateName="UPKZHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="DenialEvent5" SourceConnectionIndex="2" TargetStateName="Draft">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="723" Y="664" />
+				<ns0:Point X="807" Y="664" />
+				<ns0:Point X="807" Y="63" />
+				<ns0:Point X="327" Y="63" />
+				<ns0:Point X="327" Y="71" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="Archived" SetStateName="setStateActivity5" SourceActivity="Agreed" TargetConnectionIndex="0" SourceStateName="Agreed" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="AgreedInit" SourceConnectionIndex="0" TargetStateName="Archived">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="718" Y="756" />
+				<ns0:Point X="788" Y="756" />
+				<ns0:Point X="788" Y="694" />
+				<ns0:Point X="1063" Y="694" />
+				<ns0:Point X="1063" Y="702" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="OPHeadSighting" SetStateName="setStateActivity9" SourceActivity="Draft" TargetConnectionIndex="0" SourceStateName="Draft" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="StartProcessingEvent" SourceConnectionIndex="1" TargetStateName="OPHeadSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="391" Y="141" />
+				<ns0:Point X="426" Y="141" />
+				<ns0:Point X="426" Y="265" />
+				<ns0:Point X="402" Y="265" />
+				<ns0:Point X="402" Y="277" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="InitiatorHeadSighting" SetStateName="setStateActivity2" SourceActivity="OPExpertSighting" TargetConnectionIndex="0" SourceStateName="OPExpertSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="SightingEvent1" SourceConnectionIndex="1" TargetStateName="InitiatorHeadSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="740" Y="200" />
+				<ns0:Point X="966" Y="200" />
+				<ns0:Point X="966" Y="262" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="UPKZCuratorSighting" SetStateName="setStateActivity3" SourceActivity="OPHeadSighting" TargetConnectionIndex="0" SourceStateName="OPHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="SightingEvent2" SourceConnectionIndex="1" TargetStateName="UPKZCuratorSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="434" Y="347" />
+				<ns0:Point X="694" Y="347" />
+				<ns0:Point X="694" Y="428" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+		<StateDesignerConnector TargetActivity="OPHeadSighting" SetStateName="setStateActivity6" SourceActivity="InitiatorHeadSighting" TargetConnectionIndex="0" SourceStateName="InitiatorHeadSighting" TargetConnectionEdge="Top" SourceConnectionEdge="Right" EventHandlerName="SightingEvent3" SourceConnectionIndex="1" TargetStateName="OPHeadSighting">
+			<StateDesignerConnector.Segments>
+				<ns0:Point X="998" Y="332" />
+				<ns0:Point X="1066" Y="332" />
+				<ns0:Point X="1066" Y="253" />
+				<ns0:Point X="402" Y="253" />
+				<ns0:Point X="402" Y="277" />
+			</StateDesignerConnector.Segments>
+		</StateDesignerConnector>
+	</StateMachineWorkflowDesigner.DesignerConnectors>
+</StateMachineWorkflowDesigner>

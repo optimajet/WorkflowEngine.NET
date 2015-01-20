@@ -1,0 +1,203 @@
+﻿<RuleDefinitions xmlns="http://schemas.microsoft.com/winfx/2006/xaml/workflow">
+	<RuleDefinitions.Conditions>
+		<RuleExpressionCondition Name="Condition1">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodeFieldReferenceExpression FieldName="BillDemandUPKZCntrollerSighting">
+							<ns0:CodeFieldReferenceExpression.TargetObject>
+								<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+							</ns0:CodeFieldReferenceExpression.TargetObject>
+						</ns0:CodeFieldReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodeIndexerExpression>
+							<ns0:CodeIndexerExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="WorkflowPersistanceParameters">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodeIndexerExpression.TargetObject>
+							<ns0:CodeIndexerExpression.Indices>
+								<ns0:CodeFieldReferenceExpression FieldName="StateToTransitFromDraftPersistanceKey">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.Workflow.BillDemand, Budget2.Workflow, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodeIndexerExpression.Indices>
+						</ns0:CodeIndexerExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition2">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillDemandUPKZCuratorSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition3">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillLimitManagerSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition4">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillDemandLimitExecutorSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition5">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillDemandUPKZHeadSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition6">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillDemandUPKZCntrollerSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+		<RuleExpressionCondition Name="Condition7">
+			<RuleExpressionCondition.Expression>
+				<ns0:CodeBinaryOperatorExpression Operator="ValueEquality" xmlns:ns0="clr-namespace:System.CodeDom;Assembly=System, Version=2.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+					<ns0:CodeBinaryOperatorExpression.Right>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodeFieldReferenceExpression FieldName="BillDemandHeadInitiatorSighting">
+									<ns0:CodeFieldReferenceExpression.TargetObject>
+										<ns0:CodeTypeReferenceExpression Type="Budget2.DAL.DataContracts.WorkflowState, Budget2.DAL, Version=1.0.0.0, Culture=neutral, PublicKeyToken=null" />
+									</ns0:CodeFieldReferenceExpression.TargetObject>
+								</ns0:CodeFieldReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Right>
+					<ns0:CodeBinaryOperatorExpression.Left>
+						<ns0:CodePropertyReferenceExpression PropertyName="WorkflowStateName">
+							<ns0:CodePropertyReferenceExpression.TargetObject>
+								<ns0:CodePropertyReferenceExpression PropertyName="StateToTransitFromDraft">
+									<ns0:CodePropertyReferenceExpression.TargetObject>
+										<ns0:CodeThisReferenceExpression />
+									</ns0:CodePropertyReferenceExpression.TargetObject>
+								</ns0:CodePropertyReferenceExpression>
+							</ns0:CodePropertyReferenceExpression.TargetObject>
+						</ns0:CodePropertyReferenceExpression>
+					</ns0:CodeBinaryOperatorExpression.Left>
+				</ns0:CodeBinaryOperatorExpression>
+			</RuleExpressionCondition.Expression>
+		</RuleExpressionCondition>
+	</RuleDefinitions.Conditions>
+</RuleDefinitions>
