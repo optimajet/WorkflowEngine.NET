@@ -602,6 +602,7 @@ namespace OptimaJet.Workflow.DbPersistence
             if (wfScheme == null)
             {
                 wfScheme = new WorkflowScheme();
+                wfScheme.Id = schemaCode;
                 wfScheme.Code = schemaCode;
                 wfScheme.Scheme = scheme;
                 dbcoll.Insert(wfScheme);
@@ -671,8 +672,8 @@ namespace OptimaJet.Workflow.DbPersistence
             var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
             WorkflowScheme scheme = dbcoll.FindOne(Query<WorkflowScheme>.Where(c => c.Code == code));
 
-            if (scheme == null)
-                throw new InvalidOperationException(string.Format("Scheme with Code={0} not found", code));
+            if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
+                throw new SchemeNotFoundException();
 
             return XElement.Parse(scheme.Scheme);
         }      

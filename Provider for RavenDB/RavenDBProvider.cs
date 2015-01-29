@@ -773,8 +773,10 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var wfscheme =
                     session.Query<WorkflowScheme>().Where(wps => wps.Code == code).FirstOrDefault();
-                if (wfscheme == null)
-                    return null;
+
+                if (wfscheme == null || string.IsNullOrEmpty(wfscheme.Scheme))
+                    throw new SchemeNotFoundException();
+
                 return XElement.Parse(wfscheme.Scheme);
             }
         }
