@@ -751,7 +751,7 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StateName", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StateName", DbType="NVarChar(MAX) NOT NULL")]
 		public string StateName
 		{
 			get
@@ -1321,7 +1321,7 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ExecutorIdentityId", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ExecutorIdentityId", DbType="NVarChar(MAX) NOT NULL")]
 		public string ExecutorIdentityId
 		{
 			get
@@ -1341,7 +1341,7 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActorIdentityId", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActorIdentityId", DbType="NVarChar(MAX) NOT NULL")]
 		public string ActorIdentityId
 		{
 			get

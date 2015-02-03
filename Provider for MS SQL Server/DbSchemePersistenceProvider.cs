@@ -46,15 +46,15 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                 throw new SchemeNotFoundException();
 
-            return new SchemeDefinition<XElement>(schemeId, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete, processScheme.DefiningParameters);
+            return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete, processScheme.DefiningParameters);
         }
 
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string SchemeCode, IDictionary<string, object> parameters)
+        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string, object> parameters)
         {
-            return GetProcessSchemeWithParameters(SchemeCode, parameters, false);
+            return GetProcessSchemeWithParameters(schemeCode, parameters, false);
         }
 
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string SchemeCode, IDictionary<string,object> parameters, bool ignoreObsolete)
+        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string,object> parameters, bool ignoreObsolete)
         { 
             IEnumerable<WorkflowProcessScheme> processSchemes;
             var definingParameters = SerializeParameters(parameters);
@@ -62,7 +62,7 @@ namespace OptimaJet.Workflow.DbPersistence
             
             using (var context = CreateContext())
             {
-                processSchemes = context.WorkflowProcessSchemes.Where(pss => pss.SchemeCode == SchemeCode && pss.DefiningParametersHash == hash && (!ignoreObsolete || !pss.IsObsolete)).ToList();
+                processSchemes = context.WorkflowProcessSchemes.Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && (!ignoreObsolete || !pss.IsObsolete)).ToList();
             }
 
             if (processSchemes.Count() < 1)
@@ -71,12 +71,12 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, XElement.Parse(scheme.Scheme),scheme.IsObsolete);
+                return new SchemeDefinition<XElement>(scheme.Id, schemeCode, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
             }
 
             foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
-                return new SchemeDefinition<XElement>(processScheme.Id, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return new SchemeDefinition<XElement>(processScheme.Id, schemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
             }
 
             throw new SchemeNotFoundException();

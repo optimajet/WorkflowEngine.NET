@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="SampleWorkflowEngineNET" Class="WorkflowPersistenceModelDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="AppSettings" ConnectionString="Data Source=(local)\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Security=True;User ID=sa" SettingsObjectName="OptimaJet.Workflow.DbPersistence.Properties.Settings" SettingsPropertyName="SampleWorkflowEngineNETConnectionString" Provider="System.Data.SqlClient" />
+  <Connection Mode="AppSettings" ConnectionString="Data Source=(local)\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Security=True;User ID=sa" SettingsObjectName="OptimaJet.Workflow.DbPersistence.Properties.Settings" SettingsPropertyName="SampleWorkflowEngineNETConnectionString1" Provider="System.Data.SqlClient" />
   <Table Name="dbo.WorkflowProcessInstancePersistence" Member="WorkflowProcessInstancePersistences">
     <Type Name="WorkflowProcessInstancePersistence">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -34,7 +34,7 @@
   <Table Name="dbo.WorkflowProcessInstance" Member="WorkflowProcessInstances">
     <Type Name="WorkflowProcessInstance">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="StateName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="StateName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="true" />
       <Column Name="ActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
       <Column Name="SchemeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
       <Column Name="PreviousState" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
@@ -65,8 +65,8 @@
     <Type Name="WorkflowProcessTransitionHistory">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
       <Column Name="ProcessId" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" CanBeNull="false" />
-      <Column Name="ExecutorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
-      <Column Name="ActorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="ExecutorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="true" />
+      <Column Name="ActorIdentityId" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="true" />
       <Column Name="FromActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
       <Column Name="ToActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
       <Column Name="ToStateName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />

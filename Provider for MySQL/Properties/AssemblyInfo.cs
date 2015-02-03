@@ -5,12 +5,12 @@ using System.Runtime.InteropServices;
 // General Information about an assembly is controlled through the following 
 // set of attributes. Change these attribute values to modify the information
 // associated with an assembly.
-[assembly: AssemblyTitle("OptimaJet.Workflow.RavenDB")]
-[assembly: AssemblyDescription("Workflow Engine NET")]
+[assembly: AssemblyTitle("OptimaJet.Workflow.MySQL")]
+[assembly: AssemblyDescription("")]
 [assembly: AssemblyConfiguration("")]
-[assembly: AssemblyCompany("OptimaJet")]
-[assembly: AssemblyProduct("OptimaJet.Workflow.RavenDB")]
-[assembly: AssemblyCopyright("Copyright © OptimaJet 2015")]
+[assembly: AssemblyCompany("")]
+[assembly: AssemblyProduct("OptimaJet.Workflow.MySQL")]
+[assembly: AssemblyCopyright("Copyright ©  2015")]
 [assembly: AssemblyTrademark("")]
 [assembly: AssemblyCulture("")]
 
@@ -20,7 +20,7 @@ using System.Runtime.InteropServices;
 [assembly: ComVisible(false)]
 
 // The following GUID is for the ID of the typelib if this project is exposed to COM
-[assembly: Guid("118c2746-a07d-4c79-919f-2413bc8dee3d")]
+[assembly: Guid("5ea0536c-e849-45d2-9e70-541a79490c8c")]
 
 // Version information for an assembly consists of the following four values:
 //

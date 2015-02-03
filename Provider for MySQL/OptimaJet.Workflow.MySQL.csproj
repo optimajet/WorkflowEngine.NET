@@ -4,13 +4,14 @@
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
-    <ProjectGuid>{7655560F-996D-4D75-8430-97937D952493}</ProjectGuid>
+    <ProjectGuid>{419AA6D0-9521-402E-B652-4AA3FA49DF93}</ProjectGuid>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
-    <RootNamespace>OptimaJet.Workflow.RavenDB</RootNamespace>
-    <AssemblyName>OptimaJet.Workflow.RavenDB</AssemblyName>
+    <RootNamespace>OptimaJet.Workflow.MySQL</RootNamespace>
+    <AssemblyName>OptimaJet.Workflow.MySQL</AssemblyName>
     <TargetFrameworkVersion>v4.5</TargetFrameworkVersion>
     <FileAlignment>512</FileAlignment>
+    <TargetFrameworkProfile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -20,6 +21,7 @@
     <DefineConstants>DEBUG;TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Release|AnyCPU' ">
     <DebugType>pdbonly</DebugType>
@@ -28,6 +30,7 @@
     <DefineConstants>TRACE</DefineConstants>
     <ErrorReport>prompt</ErrorReport>
     <WarningLevel>4</WarningLevel>
+    <Prefer32Bit>false</Prefer32Bit>
   </PropertyGroup>
   <PropertyGroup>
     <SignAssembly>true</SignAssembly>
@@ -36,14 +39,11 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Raven.Abstractions">
-      <HintPath>..\packages\RavenDB.Client.2.5.2916\lib\net45\Raven.Abstractions.dll</HintPath>
-    </Reference>
-    <Reference Include="Raven.Client.Lightweight">
-      <HintPath>..\packages\RavenDB.Client.2.5.2916\lib\net45\Raven.Client.Lightweight.dll</HintPath>
+    <Reference Include="MySql.Data">
+      <HintPath>..\packages\MySql.Data.6.9.5\lib\net45\MySql.Data.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
-    <Reference Include="System.ComponentModel.Composition" />
     <Reference Include="System.Core" />
     <Reference Include="System.Xml.Linq" />
     <Reference Include="System.Data.DataSetExtensions" />
@@ -52,17 +52,19 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Models\WorkflowScheme.cs" />
-    <Compile Include="Models\WorkflowProcessTransitionHistory.cs" />
-    <Compile Include="Models\WorkflowProcessScheme.cs" />
-    <Compile Include="Models\WorkflowProcessInstanceStatus.cs" />
-    <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />
-    <Compile Include="Models\WorkflowProcessTimer.cs" />
-    <Compile Include="RavenDBProvider.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
+    <Compile Include="DbObject.cs" />
     <Compile Include="Models\WorkflowProcessInstance.cs" />
+    <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />
+    <Compile Include="Models\WorkflowProcessInstanceStatus.cs" />
+    <Compile Include="Models\WorkflowProcessScheme.cs" />
+    <Compile Include="Models\WorkflowProcessTimer.cs" />
+    <Compile Include="Models\WorkflowProcessTransitionHistory.cs" />
+    <Compile Include="Models\WorkflowScheme.cs" />
+    <Compile Include="MySQLProvider.cs" />
+    <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <None Include="app.config" />
     <None Include="packages.config" />
     <None Include="Workflow.snk" />
   </ItemGroup>
@@ -71,6 +73,10 @@
       <Project>{d92ef824-b99d-4955-8078-aa8ece917187}</Project>
       <Name>OptimaJet.Workflow.Core</Name>
     </ProjectReference>
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="Scripts\CreatePersistenceObjects.sql" />
+    <Content Include="Scripts\DropPersistenceObjects.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

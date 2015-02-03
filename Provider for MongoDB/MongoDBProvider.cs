@@ -509,7 +509,7 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                 throw new SchemeNotFoundException();
 
-            return new SchemeDefinition<XElement>(schemeId, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+            return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
         }
 
 
@@ -535,12 +535,12 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
+                return new SchemeDefinition<XElement>(scheme.Id, scheme.SchemeCode, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
             }
 
             foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
-                return new SchemeDefinition<XElement>(processScheme.Id, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return new SchemeDefinition<XElement>(processScheme.Id, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
             }
 
             throw new SchemeNotFoundException();

@@ -1,7 +1,9 @@
 /*
 Company: OptimaJet
-Project: WorkflowEngine.NET 1.4
+Project: WorkflowEngine.NET Provider for MSSQL
+Version: 1.4.3
 File: CreatePersistenceObjects.sql
+
 */
 
 
@@ -29,7 +31,7 @@ IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 
 BEGIN
 	CREATE TABLE [WorkflowProcessInstance](
 		[Id] [uniqueidentifier] NOT NULL,
-		[StateName] [nvarchar](max) NOT NULL,
+		[StateName] [nvarchar](max) NULL,
 		[ActivityName] [nvarchar](max) NOT NULL,
 		[SchemeId] [uniqueidentifier] NULL,
 		[PreviousState] [nvarchar](max) NULL,
@@ -69,8 +71,8 @@ BEGIN
 	CREATE TABLE [WorkflowProcessTransitionHistory](
 		[Id] [uniqueidentifier] NOT NULL,
 		[ProcessId] [uniqueidentifier] NOT NULL,
-		[ExecutorIdentityId] [nvarchar](max) NOT NULL,
-		[ActorIdentityId] [nvarchar](max) NOT NULL,
+		[ExecutorIdentityId] [nvarchar](max) NULL,
+		[ActorIdentityId] [nvarchar](max) NULL,
 		[FromActivityName] [nvarchar](max) NOT NULL,
 		[ToActivityName] [nvarchar](max) NOT NULL,
 		[ToStateName] [nvarchar](max) NULL,

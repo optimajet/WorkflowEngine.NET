@@ -11,47 +11,46 @@ using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Generator;
-using OptimaJet.Workflow.RavenDB;
-using Raven.Abstractions.Indexing;
-using Raven.Client.Document;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Oracle;
+using Oracle.ManagedDataAccess.Client;
+
 
 namespace OptimaJet.Workflow.DbPersistence
 {
-    public class RavenDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
+    public class OracleProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
-        public DocumentStore Store { get; set; }
-
+        public string ConnectionString { get; set; }
         private Core.Runtime.WorkflowRuntime _runtime;
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public RavenDBProvider(DocumentStore store)
+        public OracleProvider(string connectionString)
         {
-            Store = store;
-            Store.Initialize();
+            ConnectionString = connectionString;
         }
 
         #region IPersistenceProvider
         public void InitializeProcess(ProcessInstance processInstance)
         {
-            using(var session = Store.OpenSession())
+            using(OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldProcess = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
+                var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
                 {
                     throw new ProcessAlredyExistsException();
                 }
-                var newProcess = new WorkflowProcessInstance {
-                                         Id = processInstance.ProcessId,
-                                         SchemeId = processInstance.SchemeId,
-                                         ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                                         StateName = processInstance.ProcessScheme.InitialActivity.State
-                                     };
-                session.Store(newProcess);
-                session.SaveChanges();
+                var newProcess = new WorkflowProcessInstance
+                {
+                    Id = processInstance.ProcessId,
+                    SchemeId = processInstance.SchemeId,
+                    ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
+                    StateName = processInstance.ProcessScheme.InitialActivity.State
+                };
+                newProcess.Insert(connection);
+                WorkflowProcessInstance.Commit(connection);
             }
         }
 
@@ -62,17 +61,17 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void BindProcessToNewScheme(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldProcess = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
+                var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess == null)
                     throw new ProcessNotFoundException();
 
                 oldProcess.SchemeId = processInstance.SchemeId;
                 if (resetIsDeterminingParametersChanged)
                     oldProcess.IsDeterminingParametersChanged = false;
-                session.Store(oldProcess);
-                session.SaveChanges();
+                oldProcess.Update(connection);
+                WorkflowProcessInstance.Commit(connection);
             }
         }
 
@@ -94,76 +93,54 @@ namespace OptimaJet.Workflow.DbPersistence
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-              processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value,ptp.Type) })
+              processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type) })
                   .ToList();
             var persistenceParameters = processInstance.ProcessScheme.PersistenceParameters.ToList();
 
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var process = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
-                if (process != null && process.Persistence != null)
-                {
-                    var persistedParameters = process.Persistence.Where(
+                var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).Where(
                         WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
 
-                    foreach (var parameterDefinitionWithValue in parametersToPersistList)
+                foreach (var parameterDefinitionWithValue in parametersToPersistList)
+                {
+                    var persistence =
+                        persistedParameters.SingleOrDefault(
+                            pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
                     {
-                        var persistence =
-                            persistedParameters.SingleOrDefault(
-                                pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
+                        if (persistence == null)
                         {
-                            if (persistence == null)
+                            if (parameterDefinitionWithValue.SerializedValue != null)
                             {
-                                if (parameterDefinitionWithValue.SerializedValue != null)
+                                persistence = new WorkflowProcessInstancePersistence()
                                 {
-                                    persistence = new WorkflowProcessInstancePersistence()
-                                    {
-                                        ParameterName = parameterDefinitionWithValue.Parameter.Name,
-                                        Value = parameterDefinitionWithValue.SerializedValue
-                                    };
-                                    process.Persistence.Add(persistence);
-                                }
-                            }
-                            else
-                            {
-                                if (parameterDefinitionWithValue.SerializedValue != null)
-                                    persistence.Value = parameterDefinitionWithValue.SerializedValue;
-                                else
-                                    process.Persistence.Remove(persistence);
+                                    Id = Guid.NewGuid(),
+                                    ProcessId = processInstance.ProcessId,
+                                    ParameterName = parameterDefinitionWithValue.Parameter.Name,
+                                    Value = parameterDefinitionWithValue.SerializedValue
+                                };
+                                persistence.Insert(connection);
                             }
                         }
-
-
+                        else
+                        {
+                            if (parameterDefinitionWithValue.SerializedValue != null)
+                            {
+                                persistence.Value = parameterDefinitionWithValue.SerializedValue;
+                                persistence.Update(connection);
+                            }
+                            else
+                                WorkflowProcessInstancePersistence.Delete(connection, persistence.Id);
+                        }
                     }
                 }
-                session.SaveChanges();
+                WorkflowProcessInstancePersistence.Commit(connection);
             }
         }
 
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
-            using (var session = Store.OpenSession())
-            {
-                var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processInstance.ProcessId);
-                if (instanceStatus == null)
-                {
-                    instanceStatus = new WorkflowProcessInstanceStatus()
-                    {
-                        Id = processInstance.ProcessId,
-                        Lock = Guid.NewGuid(),
-                        Status = ProcessStatus.Initialized.Id
-                    };
-
-                    session.Store(instanceStatus);
-
-                }
-                else
-                {
-                    instanceStatus.Status = ProcessStatus.Initialized.Id;
-                }
-
-                session.SaveChanges();
-            }
+            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Initialized, true);
         }
 
         public void SetWorkflowIdled(ProcessInstance processInstance)
@@ -173,19 +150,19 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processInstance.ProcessId);
+                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processInstance.ProcessId);
                 if (instanceStatus == null)
                     throw new StatusNotDefinedException();
-                
+
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
                     throw new ImpossibleToSetStatusException();
 
-                instanceStatus.Lock = Guid.NewGuid();
+                instanceStatus.LOCKFLAG = Guid.NewGuid();
                 instanceStatus.Status = ProcessStatus.Running.Id;
-
-                session.SaveChanges();
+                instanceStatus.Update(connection);
+                WorkflowProcessInstanceStatus.Commit(connection);
             }
         }
 
@@ -201,28 +178,10 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void ResetWorkflowRunning()
         {
-            var session = Store.OpenSession();
-            do
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var prInst = session.Query<WorkflowProcessInstanceStatus>().Where(c=> c.Status == 1).ToArray();
-                
-                if(prInst.Length == 0)
-                    break;
-                foreach (var item in prInst)
-                {
-                    item.Status = 2;
-                }
-
-                session.SaveChanges();
-
-                if(session.Advanced.NumberOfRequests >= session.Advanced.MaxNumberOfRequestsPerSession - 2)
-                {
-                    session.Dispose();
-                    session = Store.OpenSession();
-                }
-            } while (true);
-
-            session.Dispose();
+                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id);
+            }
         }
 
         public void UpdatePersistenceState(ProcessInstance processInstance, TransitionDefinition transition)
@@ -230,13 +189,14 @@ namespace OptimaJet.Workflow.DbPersistence
             var paramIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterIdentityId.Name);
             var paramImpIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterImpersonatedIdentityId.Name);
 
-            string identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
-            string impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
+            var identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
+            var impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                WorkflowProcessInstance inst = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
-                if(inst != null)
+                WorkflowProcessInstance inst = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
+                
+                if (inst != null)
                 {
                     if (!string.IsNullOrEmpty(transition.To.State))
                         inst.StateName = transition.To.State;
@@ -260,6 +220,8 @@ namespace OptimaJet.Workflow.DbPersistence
                         if (!string.IsNullOrEmpty(transition.From.State))
                             inst.PreviousStateForReverse = transition.From.State;
                     }
+
+                    inst.Update(connection);
                 }
 
                 var history = new WorkflowProcessTransitionHistory()
@@ -278,25 +240,24 @@ namespace OptimaJet.Workflow.DbPersistence
                     TransitionTime = _runtime.RuntimeDateTimeNow,
                     TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
                 };
-
-                session.Store(history);
-                session.SaveChanges();
+                history.Insert(connection);
+                WorkflowProcessTransitionHistory.Commit(connection);
             }
         }
 
         public bool IsProcessExists(Guid processId)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                return session.Load<WorkflowProcessInstance>(processId) != null;
+                return WorkflowProcessInstance.SelectByKey(connection, processId) != null;
             }
         }
 
         public ProcessStatus GetInstanceStatus(Guid processId)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var instance = session.Load<WorkflowProcessInstanceStatus>(processId);
+                var instance = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
                 if (instance == null)
                     return ProcessStatus.NotFound;
                 var status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status);
@@ -307,16 +268,31 @@ namespace OptimaJet.Workflow.DbPersistence
         }
 
 
-        private void SetCustomStatus(Guid processId, ProcessStatus status)
+        private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
         {
-            using (var session = Store.OpenSession())
+            using(OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processId);
-                if (instanceStatus == null)
-                    throw new StatusNotDefinedException();
-                instanceStatus.Status = status.Id;
+                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
+                if(instanceStatus == null)
+                {
+                    if(!createIfnotDefined)
+                        throw new StatusNotDefinedException();
 
-                session.SaveChanges();
+                    instanceStatus = new WorkflowProcessInstanceStatus()
+                    {
+                        Id = processId,
+                        LOCKFLAG = Guid.NewGuid(),
+                        Status = ProcessStatus.Initialized.Id
+                    };
+                    instanceStatus.Insert(connection);
+                }
+                else
+                {
+                    instanceStatus.Status = ProcessStatus.Initialized.Id;
+                    instanceStatus.Update(connection);
+                }
+
+                WorkflowProcessInstanceStatus.Commit(connection);
             }
         }
 
@@ -386,17 +362,10 @@ namespace OptimaJet.Workflow.DbPersistence
 
             List<WorkflowProcessInstancePersistence> persistedParameters;
 
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var process = session.Load<WorkflowProcessInstance>(processId);
-                if(process != null && process.Persistence != null)
-                {
-                    persistedParameters = process.Persistence.Where(WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
-                }
-                else
-                {
-                    persistedParameters = new List<WorkflowProcessInstancePersistence>();
-                }  
+                persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processId)
+                    .Where(WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
             }
 
             foreach (var persistedParameter in persistedParameters)
@@ -407,12 +376,13 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return parameters;
         }
-        
+
+
         private WorkflowProcessInstance GetProcessInstance(Guid processId)
         {
-            using (var session = Store.OpenSession())
+            using(OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var processInstance = session.Load<WorkflowProcessInstance>(processId);
+                var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
                     throw new ProcessNotFoundException();
                 return processInstance;
@@ -427,57 +397,26 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void DeleteProcess(Guid processId)
         {
-            using (var session = Store.OpenSession())
+            using(OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var wpi = session.Load<WorkflowProcessInstance>(processId);
-                if (wpi != null)
-                    session.Delete<WorkflowProcessInstance>(wpi);
+                WorkflowProcessInstance.Delete(connection, processId);
+                WorkflowProcessInstanceStatus.Delete(connection, processId);
+                WorkflowProcessInstancePersistence.DeleteByProcessId(connection, processId);
+                WorkflowProcessTransitionHistory.DeleteByProcessId(connection, processId);
+                WorkflowProcessTimer.DeleteByProcessId(connection, processId);
 
-                var wpis = session.Load<WorkflowProcessInstanceStatus>(processId);
-                if (wpis != null)
-                    session.Delete<WorkflowProcessInstanceStatus>(wpis);
-
-                session.SaveChanges();
+                WorkflowProcessInstance.Commit(connection);
             }
-
-            WorkflowProcessTransitionHistory[] wpths = null;
-            do
-            {
-                using (var session = Store.OpenSession())
-                {
-                    wpths = session.Query<WorkflowProcessTransitionHistory>().Where(c => c.ProcessId == processId).ToArray();
-                    foreach (var wpth in wpths)
-                        session.Delete<WorkflowProcessTransitionHistory>(wpth);
-
-                    session.SaveChanges();
-                }
-            } while (wpths.Length > 0);
-
-
-            WorkflowProcessTimer[] wpts = null;
-            do
-            {
-                using (var session = Store.OpenSession())
-                {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(c => c.ProcessId == processId).ToArray();
-                    foreach (var wpt in wpts)
-                        session.Delete<WorkflowProcessTimer>(wpt);
-
-                    session.SaveChanges();
-                }
-            } while (wpts.Length > 0);
         }
 
         public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldTimer =
-                    session.Query<WorkflowProcessTimer>().SingleOrDefault(wpt => wpt.ProcessId == processId && wpt.Name == name);
-
-                if (oldTimer == null)
+                var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
+                if (timer == null)
                 {
-                    oldTimer = new WorkflowProcessTimer()
+                    timer = new WorkflowProcessTimer()
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
@@ -485,67 +424,52 @@ namespace OptimaJet.Workflow.DbPersistence
                         ProcessId = processId
                     };
 
-                    oldTimer.Ignore = false;
-
-                    session.Store(oldTimer);
+                    timer.Ignore = false;
+                    timer.Insert(connection);
                 }
 
                 if (!notOverrideIfExists)
                 {
-                    oldTimer.NextExecutionDateTime = nextExecutionDateTime;
+                    timer.NextExecutionDateTime = nextExecutionDateTime;
+                    timer.Update(connection);
                 }
 
-                session.SaveChanges();
+                WorkflowProcessTimer.Commit(connection);
             }
         }
 
         public void ClearTimers(Guid processId, List<string> timersIgnoreList)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var timers = session.Query<WorkflowProcessTimer>().Where(wpt => wpt.ProcessId == processId).ToList();
-                timers.Where(wpt => !timersIgnoreList.Contains(wpt.Name)).ToList().ForEach((t) => session.Delete(t));                    
-                session.SaveChanges();
+                WorkflowProcessTimer.DeleteByProcessId(connection, processId, timersIgnoreList);
+                WorkflowProcessTimer.Commit(connection);
             }
         }
 
         public void ClearTimersIgnore()
         {
-            WorkflowProcessTimer[] wpts = null;
-
-            do
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                using (var session = Store.OpenSession())
-                {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(t => t.Ignore).ToArray();
-                    foreach (var wpth in wpts)
-                        wpth.Ignore = false;
-
-                    session.SaveChanges();
-                }
-            } while (wpts.Length > 0);
+                WorkflowProcessTimer.ClearTimersIgnore(connection);
+                WorkflowProcessTimer.Commit(connection);
+            }
         }
 
         public void ClearTimer(Guid timerId)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var timer = session.Load <WorkflowProcessTimer>(timerId);
-                if (timer != null)
-                {
-                    session.Delete(timer);
-                    session.SaveChanges();
-                }
+                WorkflowProcessTimer.Delete(connection, timerId);
+                WorkflowProcessTimer.Commit(connection);
             }
         }
 
         public DateTime? GetCloseExecutionDateTime()
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var timer =
-                    session.Query<WorkflowProcessTimer>().Where(t => !t.Ignore).OrderBy(wpt => wpt.NextExecutionDateTime).FirstOrDefault();
-
+                var timer = WorkflowProcessTimer.GetCloseExecutionTimer(connection);
                 if (timer == null)
                     return null;
 
@@ -555,59 +479,48 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public List<TimerToExecute> GetTimersToExecute()
         {
-            WorkflowProcessTimer[] wpts = null;
-            List<WorkflowProcessTimer> timers = new List<WorkflowProcessTimer>();
             var now = _runtime.RuntimeDateTimeNow;
 
-            do
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                using (var session = Store.OpenSession())
-                {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(t => !t.Ignore && t.NextExecutionDateTime <= now).ToArray();
-                    foreach (var wpth in wpts)
-                        wpth.Ignore = true;
+                var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
+                WorkflowProcessTimer.SetIgnore(connection, timers);
+                WorkflowProcessTimer.Commit(connection);
 
-                    timers.AddRange(wpts);
-                    session.SaveChanges();
-                }
-            } while (wpts.Length > 0);
-
-            return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+                return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+            }
         }
-
-        #endregion 
+        #endregion
 
         #region ISchemePersistenceProvider
         public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
         {
-            WorkflowProcessInstance processInstance = new WorkflowProcessInstance();
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                processInstance = session.Load<WorkflowProcessInstance>(processId);
+                var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
+                if (processInstance == null)
+                    throw new ProcessNotFoundException();
+
+                if (!processInstance.SchemeId.HasValue)
+                    throw new SchemeNotFoundException();
+
+                var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
+                schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
+                return schemeDefinition;
             }
-
-            if (processInstance == null)
-                throw new ProcessNotFoundException();
-
-            if (!processInstance.SchemeId.HasValue)
-                throw new SchemeNotFoundException();
-            var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
-            schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
-            return schemeDefinition;
         }
 
         public SchemeDefinition<XElement> GetProcessSchemeBySchemeId(Guid schemeId)
         {
-            WorkflowProcessScheme processScheme = new WorkflowProcessScheme();
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                processScheme = session.Load<WorkflowProcessScheme>(schemeId);
+                WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
+
+                if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
+                    throw new SchemeNotFoundException();
+
+                return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
             }
-
-            if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                throw new SchemeNotFoundException();
-
-            return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
         }
 
 
@@ -622,11 +535,10 @@ namespace OptimaJet.Workflow.DbPersistence
             var definingParameters = SerializeParameters(parameters);
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                processSchemes = ignoreObsolete ?
-                    session.Query<WorkflowProcessScheme>().Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash).ToList() :
-                    session.Query<WorkflowProcessScheme>().Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && !pss.IsObsolete).ToList();
+                processSchemes =
+                WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete);
             }
 
             if (processSchemes.Count() < 1)
@@ -635,7 +547,7 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, scheme.SchemeCode, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
+                return new SchemeDefinition<XElement>(scheme.Id, scheme.SchemeCode,  XElement.Parse(scheme.Scheme), scheme.IsObsolete);
             }
 
             foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
@@ -651,64 +563,20 @@ namespace OptimaJet.Workflow.DbPersistence
             var definingParameters = SerializeParameters(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            var session = Store.OpenSession();
-            do
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldSchemes =
-                         session.Query<WorkflowProcessScheme>().Where(
-                             wps =>
-                                 wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == schemeCode &&
-                                 !wps.IsObsolete).ToList();
-
-                if (oldSchemes.Count == 0)
-                    break;
-
-                foreach (var scheme in oldSchemes)
-                {
-                    scheme.IsObsolete = true;
-                }
-
-                session.SaveChanges();
-
-                if (session.Advanced.NumberOfRequests >= session.Advanced.MaxNumberOfRequestsPerSession - 2)
-                {
-                    session.Dispose();
-                    session = Store.OpenSession();
-                }
-            } while (true);
-
-            session.Dispose();
+                WorkflowProcessScheme.SetObsolete(connection, schemeCode, definingParametersHash);
+                WorkflowProcessScheme.Commit(connection);
+            }
         }
 
         public void SetSchemeIsObsolete(string schemeCode)
         {
-            var session = Store.OpenSession();
-            do
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldSchemes =
-                         session.Query<WorkflowProcessScheme>().Where(
-                             wps =>
-                                  wps.SchemeCode == schemeCode &&
-                                 !wps.IsObsolete).ToList();
-
-                if (oldSchemes.Count == 0)
-                    break;
-
-                foreach (var scheme in oldSchemes)
-                {
-                    scheme.IsObsolete = true;
-                }
-
-                session.SaveChanges();
-
-                if (session.Advanced.NumberOfRequests >= session.Advanced.MaxNumberOfRequestsPerSession - 2)
-                {
-                    session.Dispose();
-                    session = Store.OpenSession();
-                }
-            } while (true);
-
-            session.Dispose();
+                WorkflowProcessScheme.SetObsolete(connection, schemeCode);
+                WorkflowProcessScheme.Commit(connection);
+            }
         }
 
         public void SaveScheme(string schemeCode, Guid schemeId, XElement scheme, IDictionary<string, object> parameters)
@@ -716,12 +584,9 @@ namespace OptimaJet.Workflow.DbPersistence
             var definingParameters = SerializeParameters(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldSchemes =
-                    session.Query<WorkflowProcessScheme>().Where(
-                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == schemeCode && !wps.IsObsolete).ToList();
-
+                var oldSchemes = WorkflowProcessScheme.Select(connection, schemeCode, definingParametersHash, true);
                 if (oldSchemes.Count() > 0)
                 {
                     foreach (var oldScheme in oldSchemes)
@@ -729,91 +594,42 @@ namespace OptimaJet.Workflow.DbPersistence
                             throw new SchemeAlredyExistsException();
                 }
 
-
                 var newProcessScheme = new WorkflowProcessScheme
-                                           {
-                                               Id = schemeId,
-                                               DefiningParameters = definingParameters,
-                                               DefiningParametersHash = definingParametersHash,
-                                               Scheme = scheme.ToString(),
-                                               SchemeCode = schemeCode
-                                           };
-                session.Store(newProcessScheme);
-                session.SaveChanges();
+                {
+                    Id = schemeId,
+                    DefiningParameters = definingParameters,
+                    DefiningParametersHash = definingParametersHash,
+                    Scheme = scheme.ToString(),
+                    SchemeCode = schemeCode
+                };
+
+                newProcessScheme.Insert(connection);
+                WorkflowProcessScheme.Commit(connection);
             }
         }
 
-        public void SaveScheme(string schemeCode, string scheme)
+        public void SaveScheme(string schemaCode, string scheme)
         {
-            using (var session = Store.OpenSession())
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var wfscheme =
-                    session.Query<WorkflowScheme>().Where(wps => wps.Code == schemeCode).FirstOrDefault();
-
-                if (wfscheme == null)
+                WorkflowScheme wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
+                if (wfScheme == null)
                 {
-                    wfscheme = new WorkflowScheme()
-                    {
-                        Code = schemeCode,
-                        Scheme = scheme
-                    };
-                    session.Store(wfscheme);
+                    wfScheme = new WorkflowScheme();
+                    wfScheme.Code = schemaCode;
+                    wfScheme.Scheme = scheme;
+                    wfScheme.Insert(connection);
                 }
                 else
                 {
-                    wfscheme.Scheme = scheme;
+                    wfScheme.Scheme = scheme;
+                    wfScheme.Update(connection);
                 }
 
-                session.SaveChanges();
-            }
-        }
-        public XElement GetScheme(string code)
-        {
-            using (var session = Store.OpenSession())
-            {
-                var wfscheme =
-                    session.Query<WorkflowScheme>().Where(wps => wps.Code == code).FirstOrDefault();
-
-                if (wfscheme == null || string.IsNullOrEmpty(wfscheme.Scheme))
-                    throw new SchemeNotFoundException();
-
-                return XElement.Parse(wfscheme.Scheme);
+                WorkflowScheme.Commit(connection);
             }
         }
 
-        #endregion
-
-        #region IWorkflowGenerator
-        protected IDictionary<string, string> TemplateTypeMapping = new Dictionary<string, string>();
-
-        public XElement Generate(string processName, Guid schemeId, IDictionary<string, object> parameters)
-        {
-            if (parameters.Count > 0)
-                throw new InvalidOperationException("Parameters not supported");
-
-            var code = !TemplateTypeMapping.ContainsKey(processName.ToLower()) ? processName : TemplateTypeMapping[processName.ToLower()];
-            WorkflowScheme scheme = null;
-            using (var session = Store.OpenSession())
-            {
-                scheme = session.Load<WorkflowScheme>(code);
-            }
-
-            if (scheme == null)
-                throw new InvalidOperationException(string.Format("Scheme with Code={0} not found",code));
-
-            return XElement.Parse(scheme.Scheme);
-        }
-
-        public void AddMapping(string processName, object generatorSource)
-        {
-            var value = generatorSource as string;
-            if (value == null)
-                throw new InvalidOperationException("Generator source must be a string");
-            TemplateTypeMapping.Add(processName.ToLower(), value);
-        }
-
-        #endregion  
-     
         private string SerializeParameters(IDictionary<string, object> parameters)
         {
             var json = new StringBuilder("{");
@@ -866,5 +682,30 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return json.ToString();
         }
+
+        public XElement GetScheme(string code)
+        {
+            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowScheme scheme = WorkflowScheme.SelectByKey(connection, code);
+                if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
+                    throw new SchemeNotFoundException();
+
+                return XElement.Parse(scheme.Scheme);
+            }
+        }
+
+        #endregion
+
+        #region IWorkflowGenerator
+        public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
+        {
+            if (parameters.Count > 0)
+                throw new InvalidOperationException("Parameters not supported");
+
+            return GetScheme(schemeCode);
+        }
+        #endregion
+
     }
 }
