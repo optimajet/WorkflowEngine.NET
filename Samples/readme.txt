@@ -34,3 +34,27 @@ The order of execution of scripts:
 2. DB\CreateObjects.sql
 3. DB\FillData.sql
 
+4. Oracle - Sample for Oracle
+
+1. Execute Designer\SQL\CreatePersistenceObjects.sql
+2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+3. Check connection string in Console\App.config (connectionStrings section)
+
+Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
+
+5. MySQL - Sample for MySQL
+
+1. Execute Designer\SQL\CreatePersistenceObjects.sql
+2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+3. Check connection string in Console\App.config (connectionStrings section)
+
+Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
+
+6. PostgreSQL - Sample for PostgreSQL
+
+1. Execute Designer\SQL\CreatePersistenceObjects.sql
+2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+3. Check connection string in Console\App.config (connectionStrings section)
+
+Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
+
