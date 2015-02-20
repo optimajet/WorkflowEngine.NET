@@ -39,8 +39,9 @@
     <Reference Include="Npgsql">
       <HintPath>..\packages\Npgsql.2.2.3\lib\net45\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core">
-      <HintPath>..\packages\WorkflowEngine.NET-Core.1.4.3.1\lib\net40\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core, Version=1.4.4.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
+      <HintPath>..\packages\WorkflowEngine.NET-Core.1.4.4.2\lib\net40\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.PostgreSQL">
       <HintPath>..\packages\WorkflowEngine.NET-ProviderForPostgreSQL.1.4.3.0\lib\net45\OptimaJet.Workflow.PostgreSQL.dll</HintPath>

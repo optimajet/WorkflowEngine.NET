@@ -1,22 +1,20 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Xml.Serialization;
 using System.Xml.Linq;
+using Npgsql;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.Oracle;
-using Npgsql;
+using OptimaJet.Workflow.PostgreSQL.Models;
+using ServiceStack.Text;
 
-
-namespace OptimaJet.Workflow.DbPersistence
+namespace OptimaJet.Workflow.PostgreSQL
 {
     public class PostgreSQLProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
@@ -476,6 +474,65 @@ namespace OptimaJet.Workflow.DbPersistence
                 return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
             }
         }
+
+        public void SaveGlobalParameter<T>(string type, string name, T value)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            {
+                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
+
+                if (parameter == null)
+                {
+                    parameter = new WorkflowGlobalParameter()
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = type,
+                        Name = name,
+                        Value = JsonSerializer.SerializeToString(value)
+                    };
+
+                    parameter.Insert(connection);
+                }
+
+                parameter.Value = JsonSerializer.SerializeToString(value);
+
+                parameter.Update(connection);
+            }
+        }
+
+        public T LoadGlobalParameter<T>(string type, string name)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            {
+                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
+
+                if (parameter == null)
+                    return default(T);
+
+                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+            }
+
+        }
+
+        public List<T> LoadGlobalParameters<T>(string type)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            {
+                var parameters = WorkflowGlobalParameter.SelectByTypeAndName(connection, type);
+
+                return parameters.Select(p => JsonSerializer.DeserializeFromString<T>(p.Value)).ToList();
+            }
+        }
+
+        public void DeleteGlobalParameters(string type, string name = null)
+        {
+            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowGlobalParameter.DeleteByTypeAndName(connection, type, name);
+            }
+        }
+
+
         #endregion
 
         #region ISchemePersistenceProvider

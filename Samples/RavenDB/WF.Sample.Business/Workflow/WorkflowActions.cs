@@ -14,52 +14,6 @@ namespace WF.Sample.Business.Workflow
 {
     public  class WorkflowActions : IWorkflowActionProvider
     {
-        public static bool CheckDocumentHasController(ProcessInstance processInstance, string parameter)
-        {
-            var conditionResult = false;
-            using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
-            {
-                var doc = session.Load<Document>(processInstance.ProcessId);
-                if (doc != null)
-                    conditionResult = doc.EmloyeeControlerId.HasValue;
-            }
-
-            return conditionResult;
-        }
-
-        public static bool CheckDocumentsAuthorIsBoss(ProcessInstance processInstance, string parameter)
-        {
-            var conditionResult = false;
-
-            using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
-            {
-                var doc = session.Load<Document>(processInstance.ProcessId);
-                if (doc != null)
-                {
-                    var emp = session.Load<Employee>(doc.AuthorId);
-                    if (emp != null)
-                        conditionResult = emp.IsHead;
-                }
-            }
-
-            return conditionResult;
-        }
-
-        public static bool CheckBigBossMustSight(ProcessInstance processInstance, string parameter)
-        {
-            var conditionResult = false;
-            using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
-            {
-                var doc = session.Load<Document>(processInstance.ProcessId);
-                if (doc != null)
-                    conditionResult = doc.Sum > 100;
-                else
-                    conditionResult = false;
-            }
-
-            return conditionResult;
-        }
-
         public static void WriteTransitionHistory(ProcessInstance processInstance, string parameter)
         {
             if (processInstance.IdentityIds == null)
@@ -177,12 +131,10 @@ namespace WF.Sample.Business.Workflow
 
         private static Dictionary<string, Func<ProcessInstance, string, bool>> _conditions = new Dictionary<string, Func<ProcessInstance, string, bool>>
         {
-            {"CheckDocumentHasController",CheckDocumentHasController},
-            {"CheckDocumentsAuthorIsBoss",CheckDocumentsAuthorIsBoss},
-            {"CheckBigBossMustSight",CheckBigBossMustSight}
+          
         };
 
-        public void ExecuteAction(string name, ProcessInstance processInstance, string actionParameter)
+        public void ExecuteAction(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             if (_actions.ContainsKey(name))
             {
@@ -193,7 +145,7 @@ namespace WF.Sample.Business.Workflow
             throw new NotImplementedException(string.Format("Action with name {0} not implemented", name));
         }
 
-        public bool ExecuteCondition(string name, ProcessInstance processInstance, string actionParameter)
+        public bool ExecuteCondition(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             if (_conditions.ContainsKey(name))
             {

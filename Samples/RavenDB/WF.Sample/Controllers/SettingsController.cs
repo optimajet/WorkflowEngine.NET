@@ -450,6 +450,50 @@ namespace WF.Sample.Controllers
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""AccountantProcessing"" Value=""Accountant processing"" />
     <Localize Type=""Command"" IsDefault=""True"" Culture=""en-US"" ObjectName=""StartProcessing"" Value=""Start processing"" />
   </Localization>
+  <CodeActions>
+  <CodeAction Name=""CheckDocumentHasController"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[ var conditionResult = false;
+using (var session = WorkflowInit.Provider.Store.OpenSession())
+{
+    var doc = session.Load<Document>(processInstance.ProcessId);
+    if (doc != null)
+        conditionResult = doc.EmloyeeControlerId.HasValue;
+}
+return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+    <CodeAction Name=""CheckDocumentsAuthorIsBoss"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[ var conditionResult = false;
+using (var session = WorkflowInit.Provider.Store.OpenSession())
+{
+    var doc = session.Load<Document>(processInstance.ProcessId);
+    if (doc != null)
+    {
+     var emp = session.Load<Employee>(doc.AuthorId);
+     if (emp != null)
+         conditionResult = emp.IsHead;
+    }
+}
+return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+    <CodeAction Name=""CheckBigBossMustSight"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[var conditionResult = false;
+using (var session = WorkflowInit.Provider.Store.OpenSession())
+{
+    var doc = session.Load<Document>(processInstance.ProcessId);
+    if (doc != null)
+        conditionResult = doc.Sum > 100;
+    else
+        conditionResult = false;
+}
+return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+   </CodeActions>  
 </Process>"
                     }, SchemeName);
                     #endregion

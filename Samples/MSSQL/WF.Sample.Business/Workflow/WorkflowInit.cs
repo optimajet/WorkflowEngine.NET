@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Configuration;
+using System.Reflection;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
+using OptimaJet.Workflow.Core.CodeActions;
 using OptimaJet.Workflow.Core.Parser;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.DbPersistence;
@@ -53,9 +55,11 @@ namespace WF.Sample.Business.Workflow
                                 .WithTimerManager(new TimerManager())
                                 .WithBus(new NullBus())
                                 .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
+                                .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
+                                .RegisterAssemblyForCodeActions(Assembly.GetAssembly(typeof(System.Data.Linq.DataContext)))
                                 .Start();
 
-                            _runtime.ProcessStatusChanged += new EventHandler<ProcessStatusChangedEventArgs>(_runtime_ProcessStatusChanged);
+                            _runtime.ProcessStatusChanged += _runtime_ProcessStatusChanged;
                         }
                     }
                 }

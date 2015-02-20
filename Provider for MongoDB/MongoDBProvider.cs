@@ -1,22 +1,20 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Xml.Serialization;
 using System.Xml.Linq;
+using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Generator;
-using MongoDB.Driver;
-using OptimaJet.Workflow.MongoDB;
-using MongoDB.Driver.Builders;
 using OptimaJet.Workflow.Core.Runtime;
+using ServiceStack.Text;
 
-namespace OptimaJet.Workflow.DbPersistence
+namespace OptimaJet.Workflow.MongoDB
 {
     public class MongoDBConstants
     {
@@ -27,13 +25,14 @@ namespace OptimaJet.Workflow.DbPersistence
         public const string WorkflowProcessTransitionHistoryCollectionName = "WorkflowProcessTransitionHistory";
         public const string WorkflowSchemeCollectionName = "WorkflowScheme";
         public const string WorkflowProcessTimerCollectionName = "WorkflowProcessTimer";
+        public const string WorkflowGlobalParameterCollectionName = "WorkflowGlobalParameter";
     }
 
     public class MongoDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
         public MongoDatabase Store { get; set; }
 
-        private Core.Runtime.WorkflowRuntime _runtime;
+        private WorkflowRuntime _runtime;
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
@@ -394,6 +393,68 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             foreach (var processId in processIds)
                 DeleteProcess(processId);
+        }
+
+        public void SaveGlobalParameter<T>(string type, string name, T value)
+        {
+            var dbcoll = Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
+
+            var parameter = dbcoll.Find(Query<WorkflowGlobalParameter>.Where(item => item.Type == type && item.Name == name))
+                .FirstOrDefault();
+
+            if (parameter == null)
+            {
+                parameter = new WorkflowGlobalParameter()
+                {
+                    Id = Guid.NewGuid(),
+                    Name = name,
+                    Type = type,
+                    Value = JsonSerializer.SerializeToString(value)
+                };
+
+                dbcoll.Insert(parameter);
+            }
+            else
+            {
+                parameter.Value = JsonSerializer.SerializeToString(value);
+                dbcoll.Save(parameter);
+            }
+        }
+
+        public T LoadGlobalParameter<T>(string type, string name)
+        {
+            var dbcoll = Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
+
+            var parameter = dbcoll.Find(Query<WorkflowGlobalParameter>.Where(item => item.Type == type && item.Name == name))
+                .FirstOrDefault();
+
+            if (parameter != null)
+                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+
+            return default(T);
+        }
+
+        public List<T> LoadGlobalParameters<T>(string type)
+        {
+            var dbcoll =
+                Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
+
+            return
+                dbcoll.Find(Query<WorkflowGlobalParameter>.Where(item => item.Type == type))
+                    .Select(gp => JsonSerializer.DeserializeFromString<T>(gp.Value))
+                    .ToList();
+        }
+
+        public void DeleteGlobalParameters(string type, string name = null)
+        {
+            var dbcoll =
+                Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
+
+            MongoCursor<WorkflowGlobalParameter> parameters;
+
+            dbcoll.Remove(
+                Query<WorkflowGlobalParameter>.Where(
+                    item => item.Type == type && (string.IsNullOrEmpty(name) || item.Name == name)));
         }
 
         public void DeleteProcess(Guid processId)

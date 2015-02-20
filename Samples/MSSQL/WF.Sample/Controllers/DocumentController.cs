@@ -203,7 +203,7 @@ namespace WF.Sample.Controllers
 
             var result = new Dictionary<string, string>();
             var states = WorkflowInit.Runtime.GetAvailableStateToSet(id);
-            foreach (var state in states.Where(c=> !string.IsNullOrWhiteSpace(c.Name)))
+            foreach (var state in states)
             {
                 if (!result.ContainsKey(state.Name))
                     result.Add(state.Name, state.VisibleName);

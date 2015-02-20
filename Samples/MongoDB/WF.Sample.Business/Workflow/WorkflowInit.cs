@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Linq;
-using System.Data.Linq;
+using System.Collections.Generic;
 using System.Configuration;
+using System.Reflection;
 using System.Xml.Linq;
+using MongoDB.Driver;
+using MongoDB.Driver.Builders;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Parser;
-using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.DbPersistence;
-using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Model;
-using OptimaJet.Workflow;
+using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.MongoDB;
 using WF.Sample.Business.Models;
-using MongoDB.Driver;
-using System.Collections.Generic;
-using MongoDB.Driver.Builders;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -57,6 +53,7 @@ namespace WF.Sample.Business.Workflow
                                 .WithTimerManager(new TimerManager())
                                 .WithBus(new NullBus())
                                 .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
+                                .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
                                 .Start();
 
                             _runtime.ProcessStatusChanged += new EventHandler<ProcessStatusChangedEventArgs>(_runtime_ProcessStatusChanged);
@@ -98,11 +95,11 @@ namespace WF.Sample.Business.Workflow
             }
 
             //Change state name
-            var docdbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var docdbcoll = Provider.Store.GetCollection<Document>("Document");
             var document = docdbcoll.FindOneById(e.ProcessId);
             if (document != null)
             {
-                var nextState = WorkflowInit.Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
+                var nextState = Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
                 document.StateName = nextState;
                 docdbcoll.Save(document);
             }

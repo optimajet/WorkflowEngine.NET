@@ -38,12 +38,12 @@ namespace WF.Sample.Controllers
     public class ActionProvider : IWorkflowActionProvider
     {
 
-        public void ExecuteAction(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, string actionParameter)
+        public void ExecuteAction(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             throw new NotImplementedException();
         }
 
-        public bool ExecuteCondition(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, string actionParameter)
+        public bool ExecuteCondition(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             throw new NotImplementedException();
         }

@@ -65,7 +65,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 processSchemes = context.WorkflowProcessSchemes.Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && (!ignoreObsolete || !pss.IsObsolete)).ToList();
             }
 
-            if (processSchemes.Count() < 1)
+            if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
             
             if (processSchemes.Count() == 1)

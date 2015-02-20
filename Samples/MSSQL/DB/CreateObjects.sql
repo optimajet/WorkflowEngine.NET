@@ -1,6 +1,6 @@
 /*
 Company: OptimaJet
-Project: WF.Sample WorkflowEngine.NET 1.4
+Project: WF.Sample WorkflowEngine.NET 1.4.4
 File: CreateObjects.sql
 */
 

@@ -50,5 +50,11 @@
         <elementListCompartment Id="986fc344-f539-4888-a980-245ff75d1ee1" absoluteBounds="3.5149999999999997, 0.96, 1.9700000000000002, 2.5570068359375" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
+    <classShape Id="5154b097-79bf-4ec0-9a84-e513ae71a4e6" absoluteBounds="6.25, 4.125, 2, 1.5785953776041666">
+      <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowGlobalParameter" />
+      <nestedChildShapes>
+        <elementListCompartment Id="c0459466-275c-4d52-8d53-1efa847985dc" absoluteBounds="6.265, 4.585, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
   </nestedChildShapes>
 </ordesignerObjectsDiagram>

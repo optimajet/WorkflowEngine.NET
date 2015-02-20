@@ -1,12 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
-using Npgsql;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using NpgsqlTypes;
 
-namespace OptimaJet.Workflow.Oracle
+namespace OptimaJet.Workflow.PostgreSQL.Models
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
     {

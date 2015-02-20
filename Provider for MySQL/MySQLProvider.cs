@@ -1,27 +1,24 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Xml.Serialization;
 using System.Xml.Linq;
+using MySql.Data.MySqlClient;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.Oracle;
-using MySql.Data.MySqlClient;
+using ServiceStack.Text;
 
-
-namespace OptimaJet.Workflow.DbPersistence
+namespace OptimaJet.Workflow.MySQL
 {
     public class MySQLProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
         public string ConnectionString { get; set; }
-        private Core.Runtime.WorkflowRuntime _runtime;
+        private WorkflowRuntime _runtime;
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
@@ -387,6 +384,63 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             foreach (var processId in processIds)
                 DeleteProcess(processId);
+        }
+
+        public void SaveGlobalParameter<T>(string type, string name, T value)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection,type, name).FirstOrDefault();
+
+                if (parameter == null)
+                {
+                    parameter = new WorkflowGlobalParameter()
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = type,
+                        Name = name,
+                        Value = JsonSerializer.SerializeToString(value)
+                    };
+
+                    parameter.Insert(connection);
+                }
+
+                parameter.Value = JsonSerializer.SerializeToString(value);
+
+                parameter.Update(connection);
+            }
+        }
+
+        public T LoadGlobalParameter<T>(string type, string name)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
+
+                if (parameter == null)
+                    return default (T);
+
+                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+            }
+
+        }
+
+        public List<T> LoadGlobalParameters<T>(string type)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                var parameters = WorkflowGlobalParameter.SelectByTypeAndName(connection, type);
+
+                return parameters.Select(p => JsonSerializer.DeserializeFromString<T>(p.Value)).ToList();
+            }
+        }
+
+        public void DeleteGlobalParameters(string type, string name = null)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                WorkflowGlobalParameter.DeleteByTypeAndName(connection, type, name);
+            }
         }
 
         public void DeleteProcess(Guid processId)

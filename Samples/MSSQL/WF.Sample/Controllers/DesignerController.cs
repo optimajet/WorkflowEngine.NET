@@ -1,19 +1,12 @@
 ﻿using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Web;
-using System.Web.Mvc;
-using WF.Sample.Models;
-using System.Configuration;
-using WF.Sample.Business.Workflow;
-using OptimaJet.Workflow.Core.Builder;
-using System.Xml.Linq;
-using WF.Sample.Business;
-using System.Text;
-using OptimaJet.Workflow.Core.Model;
-using OptimaJet.Workflow;
-using System.IO;
 using System.Collections.Specialized;
+using System.IO;
+using System.Linq;
+using System.Text;
+using System.Web.Mvc;
+using OptimaJet.Workflow;
+using WF.Sample.Business.Workflow;
+
 
 namespace WF.Sample.Controllers
 {
@@ -21,12 +14,7 @@ namespace WF.Sample.Controllers
     {
         public ActionResult Index(string schemeName)
         {
-            var model = new DesignerModel()
-            {
-                SchemeName = schemeName
-            };
-
-            return View(model);
+            return View();
         }
         
         public ActionResult API()
@@ -37,7 +25,7 @@ namespace WF.Sample.Controllers
 
             var pars = new NameValueCollection();
             pars.Add(Request.Params);
-            
+
             if(Request.HttpMethod.Equals("POST", StringComparison.InvariantCultureIgnoreCase))
             {
                 var parsKeys = pars.AllKeys;
@@ -55,5 +43,6 @@ namespace WF.Sample.Controllers
                 return File(UTF8Encoding.UTF8.GetBytes(res), "text/xml", "scheme.xml");
             return Content(res);
         }
-    }
+
+     }
 }

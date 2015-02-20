@@ -45,8 +45,8 @@ namespace WF.Sample.Controllers
             using (var session = WF.Sample.Business.Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
                 session.Advanced.DocumentStore.DatabaseCommands.DeleteByIndex("Raven/DocumentsByEntityName",
-                        new IndexQuery { Query = "Tag:LoadTestingOperationModels" },
-                        allowStale: true
+                        new IndexQuery { Query = "Tag:LoadTestingOperationModels" }//,
+                       // allowStale: true
                 );
             }
 

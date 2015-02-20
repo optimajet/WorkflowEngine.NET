@@ -1,11 +1,7 @@
 ﻿using System;
-using System.Collections.Generic;
 using MySql.Data.MySqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OptimaJet.Workflow.Oracle
+namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
     {

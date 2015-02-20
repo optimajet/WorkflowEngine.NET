@@ -26,11 +26,33 @@ namespace OptimaJet.Workflow.DbPersistence.Properties {
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
         [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
-        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local);Initial Catalog=SampleWorkflowEngineNET;Integrated Se" +
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local)\\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Se" +
+            "curity=True;User ID=sa")]
+        public string SampleWorkflowEngineNETConnectionString1 {
+            get {
+                return ((string)(this["SampleWorkflowEngineNETConnectionString1"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local)\\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Se" +
             "curity=True;User ID=sa")]
         public string SampleWorkflowEngineNETConnectionString {
             get {
                 return ((string)(this["SampleWorkflowEngineNETConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local)\\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Se" +
+            "curity=True;User ID=sa;Password=1")]
+        public string SampleWorkflowEngineNETConnectionString2 {
+            get {
+                return ((string)(this["SampleWorkflowEngineNETConnectionString2"]));
             }
         }
     }

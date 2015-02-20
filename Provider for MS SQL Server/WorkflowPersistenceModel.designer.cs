@@ -54,10 +54,13 @@ namespace OptimaJet.Workflow.DbPersistence
     partial void InsertWorkflowProcessTransitionHistory(WorkflowProcessTransitionHistory instance);
     partial void UpdateWorkflowProcessTransitionHistory(WorkflowProcessTransitionHistory instance);
     partial void DeleteWorkflowProcessTransitionHistory(WorkflowProcessTransitionHistory instance);
+    partial void InsertWorkflowGlobalParameter(WorkflowGlobalParameter instance);
+    partial void UpdateWorkflowGlobalParameter(WorkflowGlobalParameter instance);
+    partial void DeleteWorkflowGlobalParameter(WorkflowGlobalParameter instance);
     #endregion
 		
 		public WorkflowPersistenceModelDataContext() : 
-				base(global::OptimaJet.Workflow.DbPersistence.Properties.Settings.Default.SampleWorkflowEngineNETConnectionString, mappingSource)
+				base(global::OptimaJet.Workflow.DbPersistence.Properties.Settings.Default.SampleWorkflowEngineNETConnectionString2, mappingSource)
 		{
 			OnCreated();
 		}
@@ -147,6 +150,14 @@ namespace OptimaJet.Workflow.DbPersistence
 			get
 			{
 				return this.GetTable<WorkflowProcessTransitionHistory>();
+			}
+		}
+		
+		public System.Data.Linq.Table<WorkflowGlobalParameter> WorkflowGlobalParameters
+		{
+			get
+			{
+				return this.GetTable<WorkflowGlobalParameter>();
 			}
 		}
 		
@@ -1517,6 +1528,140 @@ namespace OptimaJet.Workflow.DbPersistence
 					this._TriggerName = value;
 					this.SendPropertyChanged("TriggerName");
 					this.OnTriggerNameChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.WorkflowGlobalParameter")]
+	public partial class WorkflowGlobalParameter : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private System.Guid _Id;
+		
+		private string _Type;
+		
+		private string _Name;
+		
+		private string _Value;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(System.Guid value);
+    partial void OnIdChanged();
+    partial void OnTypeChanging(string value);
+    partial void OnTypeChanged();
+    partial void OnNameChanging(string value);
+    partial void OnNameChanged();
+    partial void OnValueChanging(string value);
+    partial void OnValueChanged();
+    #endregion
+		
+		public WorkflowGlobalParameter()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="UniqueIdentifier NOT NULL", IsPrimaryKey=true)]
+		public System.Guid Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Type", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string Type
+		{
+			get
+			{
+				return this._Type;
+			}
+			set
+			{
+				if ((this._Type != value))
+				{
+					this.OnTypeChanging(value);
+					this.SendPropertyChanging();
+					this._Type = value;
+					this.SendPropertyChanged("Type");
+					this.OnTypeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string Name
+		{
+			get
+			{
+				return this._Name;
+			}
+			set
+			{
+				if ((this._Name != value))
+				{
+					this.OnNameChanging(value);
+					this.SendPropertyChanging();
+					this._Name = value;
+					this.SendPropertyChanged("Name");
+					this.OnNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Value", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string Value
+		{
+			get
+			{
+				return this._Value;
+			}
+			set
+			{
+				if ((this._Value != value))
+				{
+					this.OnValueChanging(value);
+					this.SendPropertyChanging();
+					this._Value = value;
+					this.SendPropertyChanged("Value");
+					this.OnValueChanged();
 				}
 			}
 		}

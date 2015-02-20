@@ -1,6 +1,6 @@
 /*
 Company: OptimaJet
-Project: WF.Sample WorkflowEngine.NET 1.3 For Azure
+Project: WF.Sample WorkflowEngine.NET 1.4.4 
 File: FillData.sql
 */
 
@@ -36,7 +36,9 @@ INSERT dbo.EmployeeRole(EmloyeeId, RoleId) VALUES ('deb579f9-991c-4db9-a17d-bb1e
 INSERT dbo.EmployeeRole(EmloyeeId, RoleId) VALUES ('91f2b471-4a96-4ab7-a41a-ea4293703d16', '71fffb5b-b707-4b3c-951c-c37fdfcc8dfb')
 
 
-EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Process Name="SimpleWF">
+
+EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''
+<Process Name="SimpleWF">
   <Designer X="-110" Y="-60" />
   <Actors>
     <Actor Name="Author" Rule="IsDocumentAuthor" Value="" />
@@ -78,7 +80,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="100" Y="90" />
+      <Designer X="80" Y="80" />
     </Activity>
     <Activity Name="Draft" State="Draft" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -87,10 +89,10 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="120" Y="270" />
+      <Designer X="80" Y="680" />
     </Activity>
     <Activity Name="DraftStartProcessingExecute" IsInitial="False" IsFinal="False" IsForSetState="False" IsAutoSchemeUpdate="False">
-      <Designer X="400" Y="90" />
+      <Designer X="330" Y="80" />
     </Activity>
     <Activity Name="ControllerSighting" State="ControllerSighting" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -99,10 +101,10 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="400" Y="270" />
+      <Designer X="580" Y="80" />
     </Activity>
     <Activity Name="ControllerSightingExecute" IsInitial="False" IsFinal="False" IsForSetState="False" IsAutoSchemeUpdate="False">
-      <Designer X="650" Y="130" />
+      <Designer X="580" Y="230" />
     </Activity>
     <Activity Name="AuthorBossSighting" State="AuthorBossSighting" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -111,7 +113,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="650" Y="320" />
+      <Designer X="830" Y="530" />
     </Activity>
     <Activity Name="AuthorConfirmation" State="AuthorConfirmation" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -120,7 +122,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="970" Y="210" />
+      <Designer X="830" Y="230" />
     </Activity>
     <Activity Name="BigBossSighting" State="BigBossSighting" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -129,7 +131,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="970" Y="410" />
+      <Designer X="1080" Y="230" />
     </Activity>
     <Activity Name="AccountantProcessing" State="AccountantProcessing" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -138,7 +140,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="1240" Y="300" />
+      <Designer X="1080" Y="380" />
     </Activity>
     <Activity Name="Paid" State="Paid" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -147,11 +149,11 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="1240" Y="480" />
+      <Designer X="1330" Y="380" />
     </Activity>
   </Activities>
   <Transitions>
-    <Transition Name="DraftInitial" To="DraftStartProcessingExecute" From="DraftInitial" Classifier="Direct">
+    <Transition Name="DraftInitial" To="DraftStartProcessingExecute" From="DraftInitial" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Author" />
       </Restrictions>
@@ -163,7 +165,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       </Conditions>
       <Designer Bending="0" />
     </Transition>
-    <Transition Name="Draft" To="ControllerSighting" From="Draft" Classifier="Direct">
+    <Transition Name="Draft" To="ControllerSighting" From="Draft" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Author" />
       </Restrictions>
@@ -175,16 +177,16 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       </Conditions>
       <Designer Bending="0" />
     </Transition>
-    <Transition Name="DraftStartProcessingExecute_1" To="ControllerSighting" From="DraftStartProcessingExecute" Classifier="Direct">
+    <Transition Name="DraftStartProcessingExecute_1" To="ControllerSighting" From="DraftStartProcessingExecute" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Triggers>
         <Trigger Type="Auto" />
       </Triggers>
       <Conditions>
-        <Condition Type="Action" NameRef="CheckDocumentHasController" />
+        <Condition Type="Action" NameRef="CheckDocumentHasController" ConditionInversion="false" />
       </Conditions>
-      <Designer Bending="" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="DraftStartProcessingExecute_2" To="ControllerSightingExecute" From="DraftStartProcessingExecute" Classifier="Direct">
+    <Transition Name="DraftStartProcessingExecute_2" To="ControllerSightingExecute" From="DraftStartProcessingExecute" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Triggers>
         <Trigger Type="Auto" />
       </Triggers>
@@ -193,7 +195,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       </Conditions>
       <Designer Bending="0" />
     </Transition>
-    <Transition Name="ControllerSighting" To="ControllerSightingExecute" From="ControllerSighting" Classifier="Direct">
+    <Transition Name="ControllerSighting" To="ControllerSightingExecute" From="ControllerSighting" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Controller" />
       </Restrictions>
@@ -203,9 +205,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="0.18861156996410458" />
+      <Designer Bending="0.40848372045710795" />
     </Transition>
-    <Transition Name="ControllerSighting_R" To="Draft" From="ControllerSighting" Classifier="Reverse">
+    <Transition Name="ControllerSighting_R" To="Draft" From="ControllerSighting" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Controller" />
       </Restrictions>
@@ -215,27 +217,27 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="ControllerSightingExecute_1" To="AuthorConfirmation" From="ControllerSightingExecute" Classifier="Direct">
+    <Transition Name="ControllerSightingExecute_1" To="AuthorConfirmation" From="ControllerSightingExecute" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Triggers>
         <Trigger Type="Auto" />
       </Triggers>
       <Conditions>
-        <Condition Type="Action" NameRef="CheckDocumentsAuthorIsBoss" />
+        <Condition Type="Action" NameRef="CheckDocumentsAuthorIsBoss" ConditionInversion="false" />
       </Conditions>
-      <Designer Bending="0.13091527870458927" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="ControllerSightingExecute_2" To="AuthorBossSighting" From="ControllerSightingExecute" Classifier="Direct">
+    <Transition Name="ControllerSightingExecute_2" To="AuthorBossSighting" From="ControllerSightingExecute" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Triggers>
         <Trigger Type="Auto" />
       </Triggers>
       <Conditions>
         <Condition Type="Otherwise" />
       </Conditions>
-      <Designer Bending="" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AuthorBossSighting" To="AuthorConfirmation" From="AuthorBossSighting" Classifier="Direct">
+    <Transition Name="AuthorBossSighting" To="AuthorConfirmation" From="AuthorBossSighting" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="AuthorsBoss" />
       </Restrictions>
@@ -247,7 +249,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       </Conditions>
       <Designer Bending="0" />
     </Transition>
-    <Transition Name="AuthorBossSighting_R" To="Draft" From="AuthorBossSighting" Classifier="Reverse">
+    <Transition Name="AuthorBossSighting_R" To="Draft" From="AuthorBossSighting" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="AuthorsBoss" />
       </Restrictions>
@@ -257,9 +259,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="-0.10762234343917368" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AuthorConfirmation_1" To="BigBossSighting" From="AuthorConfirmation" Classifier="Direct">
+    <Transition Name="AuthorConfirmation_1" To="BigBossSighting" From="AuthorConfirmation" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Author" />
       </Restrictions>
@@ -267,11 +269,11 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
         <Trigger Type="Command" NameRef="Sighting" />
       </Triggers>
       <Conditions>
-        <Condition Type="Action" NameRef="CheckBigBossMustSight" />
+        <Condition Type="Action" NameRef="CheckBigBossMustSight" ConditionInversion="false" />
       </Conditions>
-      <Designer Bending="" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AuthorConfirmation_2" To="AccountantProcessing" From="AuthorConfirmation" Classifier="Direct">
+    <Transition Name="AuthorConfirmation_2" To="AccountantProcessing" From="AuthorConfirmation" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Author" />
       </Restrictions>
@@ -281,9 +283,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Otherwise" />
       </Conditions>
-      <Designer Bending="-0.3508719297850871" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AuthorConfirmation_R" To="Draft" From="AuthorConfirmation" Classifier="Reverse">
+    <Transition Name="AuthorConfirmation_R" To="Draft" From="AuthorConfirmation" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Author" />
       </Restrictions>
@@ -293,9 +295,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="-0.2916249379586396" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="BigBossSighting" To="AccountantProcessing" From="BigBossSighting" Classifier="Direct">
+    <Transition Name="BigBossSighting" To="AccountantProcessing" From="BigBossSighting" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="BigBoss" />
       </Restrictions>
@@ -307,7 +309,7 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       </Conditions>
       <Designer Bending="0" />
     </Transition>
-    <Transition Name="BigBossSighting_R" To="Draft" From="BigBossSighting" Classifier="Reverse">
+    <Transition Name="BigBossSighting_R" To="Draft" From="BigBossSighting" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="BigBoss" />
       </Restrictions>
@@ -317,9 +319,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="-0.20253979975959344" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AccountantProcessing" To="Paid" From="AccountantProcessing" Classifier="Direct">
+    <Transition Name="AccountantProcessing" To="Paid" From="AccountantProcessing" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Accountant" />
       </Restrictions>
@@ -329,9 +331,9 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="AccountantProcessing_R" To="AuthorConfirmation" From="AccountantProcessing" Classifier="Reverse">
+    <Transition Name="AccountantProcessing_R" To="AuthorConfirmation" From="AccountantProcessing" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Restrictions>
         <Restriction Type="Allow" NameRef="Accountant" />
       </Restrictions>
@@ -341,18 +343,112 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="0.19834025131435484" />
+      <Designer Bending="0" />
     </Transition>
-    <Transition Name="ControllerSighting_ControllerSightingExecute_1" To="ControllerSightingExecute" From="ControllerSighting" Classifier="NotSpecified">
+    <Transition Name="ControllerSighting_ControllerSightingExecute_1" To="ControllerSightingExecute" From="ControllerSighting" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And">
       <Triggers>
         <Trigger Type="Timer" NameRef="ControllerTimer" />
       </Triggers>
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer Bending="-0.14296569235026" />
+      <Designer Bending="-0.44455415338869924" />
     </Transition>
   </Transitions>
+  <CodeActions>
+    <CodeAction Name="CheckDocumentHasController" Type="Condition" IsGlobal="False">
+      <ActionCode><![CDATA[using (var context = new DataModelDataContext())
+{
+    return context.Documents.Count(d => d.Id == processInstance.ProcessId && d.EmloyeeControlerId.HasValue) > 0;
+}]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;]]></Usings>
+    </CodeAction>
+    <CodeAction Name="CheckDocumentsAuthorIsBoss" Type="Condition" IsGlobal="False">
+      <ActionCode><![CDATA[using (var context = new DataModelDataContext())
+{
+    return context.Documents.Count(d => d.Id == processInstance.ProcessId && d.Employee1.IsHead) > 0;
+}]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;]]></Usings>
+    </CodeAction>
+    <CodeAction Name="CheckBigBossMustSight" Type="Condition" IsGlobal="False">
+      <ActionCode><![CDATA[using (var context = new DataModelDataContext())
+{
+    return context.Documents.Count(d => d.Id == processInstance.ProcessId && d.Sum > 100) > 0;
+}]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;]]></Usings>
+    </CodeAction>
+    <CodeAction Name="WriteTransitionHistory" Type="Action" IsGlobal="False">
+      <ActionCode><![CDATA[if (processInstance.IdentityIds == null)
+    return;
+
+var currentstate = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.CurrentState);
+
+var nextState = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.ExecutedActivityState);
+
+var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
+
+using (var context = new DataModelDataContext())
+{
+    var historyItem = new DocumentTransitionHistory
+            {
+                Id = Guid.NewGuid(),
+                AllowedToEmployeeNames = WorkflowActions.GetEmployeesString(processInstance.IdentityIds, context),
+                DestinationState = nextState,
+                DocumentId = processInstance.ProcessId,
+                InitialState = currentstate,
+                Command = command
+            };
+            
+    context.DocumentTransitionHistories.InsertOnSubmit(historyItem);
+    context.SubmitChanges();
+    
+}]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;]]></Usings>
+    </CodeAction>
+    <CodeAction Name="UpdateTransitionHistory" Type="Action" IsGlobal="False">
+      <ActionCode><![CDATA[var currentstate = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.CurrentState);
+
+var nextState = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.ExecutedActivityState);
+
+var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
+
+var isTimer = !string.IsNullOrEmpty(processInstance.ExecutedTimer);
+
+using (var context = new DataModelDataContext())
+{
+    var historyItem =
+        context.DocumentTransitionHistories.FirstOrDefault(
+            h => h.DocumentId == processInstance.ProcessId && !h.TransitionTime.HasValue &&
+            h.InitialState == currentstate && h.DestinationState == nextState);
+
+    if (historyItem == null)
+    {
+        historyItem = new DocumentTransitionHistory
+        {
+            Id = Guid.NewGuid(),
+            AllowedToEmployeeNames = string.Empty,
+            DestinationState = nextState,
+            DocumentId = processInstance.ProcessId,
+            InitialState = currentstate
+        };
+
+        context.DocumentTransitionHistories.InsertOnSubmit(historyItem);
+
+    }
+
+    historyItem.Command = !isTimer ? command : string.Format("Timer: {0}",processInstance.ExecutedTimer);
+    historyItem.TransitionTime = DateTime.Now;
+
+    if (string.IsNullOrWhiteSpace(processInstance.IdentityId))
+        historyItem.EmployeeId = null;
+    else
+        historyItem.EmployeeId = new Guid(processInstance.IdentityId);
+
+    context.SubmitChanges();
+}]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;]]></Usings>
+    </CodeAction>
+  </CodeActions>
   <Localization>
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="ControllerSighting" Value="Controller sighting" />
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AuthorBossSighting" Value="Author''''s boss sighting" />
@@ -361,7 +457,8 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''<Proces
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AccountantProcessing" Value="Accountant processing" />
     <Localize Type="Command" IsDefault="True" Culture="en-US" ObjectName="StartProcessing" Value="Start processing" />
   </Localization>
-</Process>'')')
+</Process>
+'')')
 
 
 COMMIT TRANSACTION

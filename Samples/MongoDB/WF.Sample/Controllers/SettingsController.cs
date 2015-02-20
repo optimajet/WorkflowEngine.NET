@@ -452,6 +452,43 @@ namespace WF.Sample.Controllers
       <Designer Bending=""-0.14296569235026"" />
     </Transition>
   </Transitions>
+  <CodeActions>
+  <CodeAction Name=""CheckDocumentHasController"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[var conditionResult = false;
+var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
+var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+if (doc != null)
+    conditionResult = doc.EmloyeeControlerId.HasValue;
+return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+    <CodeAction Name=""CheckDocumentsAuthorIsBoss"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[var conditionResult = false;
+var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
+var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+if (doc != null)
+    {
+        var dbcollEmployee = WorkflowInit.Provider.Store.GetCollection(""Employee"");
+        var emp = dbcollEmployee.FindOneByIdAs<Employee>(doc.AuthorId);
+        if (emp != null)
+            conditionResult = emp.IsHead;
+    }
+return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+    <CodeAction Name=""CheckBigBossMustSight"" Type=""Condition"" IsGlobal=""False"">
+      <ActionCode><![CDATA[var conditionResult = false;
+var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
+var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+if (doc != null)
+    conditionResult = doc.Sum > 100;  
+    return conditionResult;
+]]></ActionCode>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+    </CodeAction>
+   </CodeActions>
   <Localization>
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""ControllerSighting"" Value=""Controller sighting"" />
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""AuthorBossSighting"" Value=""Author's boss sighting"" />

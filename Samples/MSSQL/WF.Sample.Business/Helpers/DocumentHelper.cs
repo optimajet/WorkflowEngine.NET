@@ -40,7 +40,7 @@ namespace WF.Sample.Business.Helpers
                 var subQuery = context.WorkflowInboxes.Where(c => c.IdentityId == identityId).Skip(actual).Take(pageSize);
                 count = subQuery.Count();
 
-                return context.Documents.Where(c => subQuery.Where(i => i.ProcessId == c.Id).Count() > 0).ToList();
+                return context.Documents.Where(c => subQuery.Where(i => i.ProcessId == c.Id).Count() > 0).OrderByDescending(c=>c.Number).ToList();
             }
         }
 

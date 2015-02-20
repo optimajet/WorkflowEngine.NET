@@ -68,7 +68,7 @@ namespace WF.Sample.Controllers
         private void DocumentCreateWorkflow(Guid id)
         {
             DateTime opStart = DateTime.Now;
-            WorkflowInit.Runtime.CreateInstance("SimpleWF", id);
+            WorkflowInit.Runtime.CreateInstance("Document", id);
             AddOperation(opStart, DateTime.Now, "CreatingWorkflow");
         }
 

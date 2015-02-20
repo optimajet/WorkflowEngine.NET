@@ -1,17 +1,15 @@
 ﻿using System;
-using System.Linq;
-using System.Data.Linq;
 using System.Configuration;
+using System.Linq;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Parser;
-using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.DbPersistence;
-using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Model;
-using OptimaJet.Workflow;
+using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.RavenDB;
+using Raven.Client;
+using Raven.Client.Document;
 using WF.Sample.Business.Models;
 
 namespace WF.Sample.Business.Workflow
@@ -41,7 +39,7 @@ namespace WF.Sample.Business.Workflow
                     {
                         if (_runtime == null)
                         {
-                            var provider = new RavenDBProvider(new Raven.Client.Document.DocumentStore()
+                            var provider = new RavenDBProvider(new DocumentStore()
                             {
                                 Url = ConfigurationManager.AppSettings["Url"],
                                 DefaultDatabase = ConfigurationManager.AppSettings["Database"]
@@ -87,7 +85,7 @@ namespace WF.Sample.Business.Workflow
             _runtime.PreExecuteFromCurrentActivity(e.ProcessId);
 
             //Inbox
-            using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
+            using (var session = Provider.Store.OpenSession())
             {
                 var inboxDocs = session.Query<WorkflowInbox>().Where(c => c.ProcessId == e.ProcessId).ToList();
                 foreach (var d in inboxDocs)
@@ -102,8 +100,8 @@ namespace WF.Sample.Business.Workflow
             }
 
             //Change state name
-            var nextState = WorkflowInit.Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
-            using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
+            var nextState = Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
+            using (var session = Provider.Store.OpenSession())
             {
                 var document = session.Load<Document>(e.ProcessId);
                 if (document != null)
@@ -130,7 +128,7 @@ namespace WF.Sample.Business.Workflow
             }
         }
 
-        private static void FillInbox(Guid processId, Raven.Client.IDocumentSession session)
+        private static void FillInbox(Guid processId, IDocumentSession session)
         {
             var newActors = Runtime.GetAllActorsForDirectCommandTransitions(processId);
             foreach (var newActor in newActors)

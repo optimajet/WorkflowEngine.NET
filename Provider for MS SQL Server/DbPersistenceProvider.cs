@@ -7,6 +7,7 @@ using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using ServiceStack.Text;
 
 namespace OptimaJet.Workflow.DbPersistence
 {
@@ -571,6 +572,63 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             foreach (var p in processIds)
                 DeleteProcess(p);
+        }
+
+        public void SaveGlobalParameter<T>(string type, string name, T value)
+        {
+            using (var context = CreateContext())
+            {
+                var parameter = context.WorkflowGlobalParameters.FirstOrDefault(p => p.Type == type && p.Name == name);
+
+                if (parameter == null)
+                {
+                    parameter = new WorkflowGlobalParameter
+                    {
+                        Id = Guid.NewGuid(),
+                        Type = type,
+                        Name = name
+                    };
+
+                    context.WorkflowGlobalParameters.InsertOnSubmit(parameter);
+
+                }
+
+                parameter.Value = JsonSerializer.SerializeToString(value);
+
+                context.SubmitChanges();
+            }
+        }
+
+        public T LoadGlobalParameter<T>(string type, string name) 
+        {
+            using (var context = CreateContext())
+            {
+                var parameter = context.WorkflowGlobalParameters.FirstOrDefault(p => p.Type == type && p.Name == name);
+
+                if (parameter == null)
+                    return default(T);
+
+                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+            }
+        }
+
+        public List<T> LoadGlobalParameters<T>(string type)
+        {
+            using (var context = CreateContext())
+            {
+                var parameters = context.WorkflowGlobalParameters.Where(p => p.Type == type).ToList();
+                return parameters.Select(p=>JsonSerializer.DeserializeFromString<T>(p.Value)).ToList();
+            }
+        }
+
+        public void DeleteGlobalParameters(string type, string name = null)
+        {
+            using (var context = CreateContext())
+            {
+                var parameters = context.WorkflowGlobalParameters.Where(p => p.Type == type && (string.IsNullOrEmpty(name) || p.Name == name)).ToList();
+                context.WorkflowGlobalParameters.DeleteAllOnSubmit(parameters);
+                context.SubmitChanges();
+            }
         }
     }
 }

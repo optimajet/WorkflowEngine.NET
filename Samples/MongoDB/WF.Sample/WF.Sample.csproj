@@ -131,7 +131,9 @@
     <Compile Include="Helpers\CurrentUserSettings.cs" />
     <Compile Include="Helpers\WebPageHelper.cs" />
     <Compile Include="Models\DesignerModel.cs" />
+    <Compile Include="Models\DocumentHistoryModel.cs" />
     <Compile Include="Models\DocumentListModel.cs" />
+    <Compile Include="Models\DocumentModel.cs" />
     <Compile Include="Models\LoadTestingOperations.cs" />
     <Compile Include="Models\LoadTestingStatistics.cs" />
     <Compile Include="Models\SettingsModel.cs" />

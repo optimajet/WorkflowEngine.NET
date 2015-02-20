@@ -75,12 +75,12 @@ namespace WorkflowApp
 
     public class ActionProvider : IWorkflowActionProvider
     {
-        public void ExecuteAction(string name, ProcessInstance processInstance, string actionParameter)
+        public void ExecuteAction(string name, ProcessInstance processInstance,WorkflowRuntime runtime, string actionParameter)
         {
             
         }
 
-        public bool ExecuteCondition(string name, ProcessInstance processInstance, string actionParameter)
+        public bool ExecuteCondition(string name, ProcessInstance processInstance,WorkflowRuntime runtime, string actionParameter)
         {
             return true;
         }

@@ -33,9 +33,9 @@
     <WarningLevel>4</WarningLevel>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="OptimaJet.Workflow.Core, Version=1.4.3.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+    <Reference Include="OptimaJet.Workflow.Core, Version=1.4.4.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\WorkflowEngine.NET-Core.1.4.3.1\lib\net40\OptimaJet.Workflow.Core.dll</HintPath>
+      <HintPath>..\packages\WorkflowEngine.NET-Core.1.4.4.2\lib\net40\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.Oracle">
       <HintPath>..\packages\WorkflowEngine.NET-ProviderForOracle.1.4.3.0\lib\net45\OptimaJet.Workflow.Oracle.dll</HintPath>
@@ -64,10 +64,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SQL\CreatePersistenceObjects.sql" />
-    <Content Include="SQL\DropPersistenceObjects.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

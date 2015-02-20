@@ -12,6 +12,9 @@ WorkflowEngine.NET Provider for RavenDB PM> Install-Package WorkflowEngine.NET-P
 
 Instructions is here: http://workflowenginenet.com/Documentation/Detail/howtoconnect
 
-3. Run your application and open /Designer - page
+3. File names in the project may be different from those set from NuGet (!). It is also necessary to check the sequence of initialization of Jquery and JqueryUI. 
+In the _Layout.cshtml file, perform re-initialization of the library. Look at http://workflowenginenet.com/Articles/Item/wfe-alternative-wf for instructions.
+
+4. Run your application and open /Designer - page
 
 

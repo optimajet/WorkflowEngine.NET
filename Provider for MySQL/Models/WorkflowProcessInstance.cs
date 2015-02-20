@@ -1,13 +1,7 @@
-﻿
-using System;
-using System.Collections.Generic;
-using System.Data;
+﻿using System;
 using MySql.Data.MySqlClient;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
-namespace OptimaJet.Workflow.Oracle
+namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessInstance: DbObject<WorkflowProcessInstance>
     {
@@ -103,8 +97,9 @@ namespace OptimaJet.Workflow.Oracle
                     PreviousStateForReverse = value as string;
                     break;
                 case "SchemeId":
-                    if (value is byte[])
-                        SchemeId = new Guid((byte[])value);
+                    var bytes = value as byte[];
+                    if (bytes != null)
+                        SchemeId = new Guid(bytes);
                     else
                         SchemeId = null;
                     break;

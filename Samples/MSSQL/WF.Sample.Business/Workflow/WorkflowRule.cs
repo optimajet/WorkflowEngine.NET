@@ -14,7 +14,7 @@ namespace WF.Sample.Business.Workflow
             public Func<Guid, string, string, bool> CheckFunction { get; set; }
         }
 
-        private Dictionary<string, RuleFunction> _funcs =
+        private readonly Dictionary<string, RuleFunction> _funcs =
             new Dictionary<string, RuleFunction>();
 
 

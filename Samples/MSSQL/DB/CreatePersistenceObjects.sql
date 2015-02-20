@@ -1,7 +1,9 @@
 /*
 Company: OptimaJet
-Project: WorkflowEngine.NET 1.4
+Project: WorkflowEngine.NET Provider for MSSQL
+Version: 1.4.4
 File: CreatePersistenceObjects.sql
+
 */
 
 
@@ -29,7 +31,7 @@ IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = 
 BEGIN
 	CREATE TABLE [WorkflowProcessInstance](
 		[Id] [uniqueidentifier] NOT NULL,
-		[StateName] [nvarchar](max) NOT NULL,
+		[StateName] [nvarchar](max) NULL,
 		[ActivityName] [nvarchar](max) NOT NULL,
 		[SchemeId] [uniqueidentifier] NULL,
 		[PreviousState] [nvarchar](max) NULL,
@@ -69,8 +71,8 @@ BEGIN
 	CREATE TABLE [WorkflowProcessTransitionHistory](
 		[Id] [uniqueidentifier] NOT NULL,
 		[ProcessId] [uniqueidentifier] NOT NULL,
-		[ExecutorIdentityId] [nvarchar](max) NOT NULL,
-		[ActorIdentityId] [nvarchar](max) NOT NULL,
+		[ExecutorIdentityId] [nvarchar](max) NULL,
+		[ActorIdentityId] [nvarchar](max) NULL,
 		[FromActivityName] [nvarchar](max) NOT NULL,
 		[ToActivityName] [nvarchar](max) NOT NULL,
 		[ToStateName] [nvarchar](max) NULL,
@@ -226,5 +228,24 @@ CREATE TABLE [dbo].[WorkflowProcessTimer](
 PRINT 'WorkflowProcessTimer CREATE TABLE'
 
 END
+
+IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowGlobalParameter')
+BEGIN
+CREATE TABLE [dbo].[WorkflowGlobalParameter](
+	[Id] [uniqueidentifier] NOT NULL,
+	[Type] [nvarchar](max) NOT NULL,
+	[Name] [nvarchar](max) NOT NULL,
+	[Value]  [nvarchar](max) NOT NULL
+ CONSTRAINT [PK_WorkflowGlobalParameter] PRIMARY KEY CLUSTERED 
+(
+	[Id] ASC
+)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, IGNORE_DUP_KEY = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY]
+) ON [PRIMARY] TEXTIMAGE_ON [PRIMARY]
+
+PRINT 'WorkflowGlobalParameter CREATE TABLE'
+
+END
+
+GO
 
 COMMIT TRANSACTION

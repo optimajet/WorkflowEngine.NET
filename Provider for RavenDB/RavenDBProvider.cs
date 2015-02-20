@@ -1,22 +1,19 @@
 ﻿using System;
+using System.Collections;
 using System.Collections.Generic;
-using System.IO;
 using System.Linq;
 using System.Text;
-using System.Collections;
-using System.Xml.Serialization;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Generator;
-using OptimaJet.Workflow.RavenDB;
-using Raven.Abstractions.Indexing;
-using Raven.Client.Document;
 using OptimaJet.Workflow.Core.Runtime;
+using Raven.Client.Document;
+using ServiceStack.Text;
 
-namespace OptimaJet.Workflow.DbPersistence
+namespace OptimaJet.Workflow.RavenDB
 {
     public class RavenDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
@@ -425,6 +422,113 @@ namespace OptimaJet.Workflow.DbPersistence
                 DeleteProcess(processId);
         }
 
+        public void SaveGlobalParameter<T>(string type, string name, T value)
+        {
+            using (var session = Store.OpenSession())
+            {
+                var parameter = session.Query<WorkflowGlobalParameter>().FirstOrDefault(p => p.Type == type && p.Name == name);
+
+                if (parameter == null)
+                {
+                    parameter = new WorkflowGlobalParameter()
+                    {
+                        Id = Guid.NewGuid(),
+                        Name = name,
+                        Type = type
+                    };
+
+                    session.Store(parameter);
+                }
+
+                parameter.Value = JsonSerializer.SerializeToString(value);
+
+                session.SaveChanges();
+            }
+        }
+
+        public T LoadGlobalParameter<T>(string type, string name)
+        {
+            using (var session = Store.OpenSession())
+            {
+                var parameter =
+                    session.Query<WorkflowGlobalParameter>().FirstOrDefault(p => p.Type == type && p.Name == name);
+
+                if (parameter != null)
+                {
+                    return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+                }
+
+                return default (T);
+            }
+        }
+
+        public List<T> LoadGlobalParameters<T>(string type)
+        {
+            var result = new List<T>();
+            var skip = 0;
+            var session = Store.OpenSession();
+            try
+            {
+                do
+                {
+                    var parameters = session.Query<WorkflowGlobalParameter>()
+                        .Where(p => p.Type == type).Skip(skip).Take(session.Advanced.MaxNumberOfRequestsPerSession).ToList()
+                        .Select(p => JsonSerializer.DeserializeFromString<T>(p.Value))
+                        .ToList();
+
+                    if (!parameters.Any())
+                        break;
+
+                    result.AddRange(parameters);
+
+                    skip += session.Advanced.MaxNumberOfRequestsPerSession;
+
+                } while (true);
+            }
+            finally
+            {
+                session.Dispose();
+            }
+
+            return result;
+        }
+
+        public void DeleteGlobalParameters(string type, string name = null)
+        {
+
+            var session = Store.OpenSession();
+            try
+            {
+
+                do
+                {
+                    var pInst =
+                        session.Query<WorkflowGlobalParameter>()
+                            .Where(p => p.Type == type && (string.IsNullOrEmpty(name) || p.Name == name))
+                            .Take(session.Advanced.MaxNumberOfRequestsPerSession - 1)
+                            .ToArray();
+
+                    if (pInst.Length == 0)
+                        break;
+
+                    foreach (var item in pInst)
+                    {
+                        session.Delete(item);
+                    }
+
+                    session.SaveChanges();
+                    session.Dispose();
+                    session = Store.OpenSession();
+
+                } while (true);
+            }
+            finally
+            {
+                session.Dispose();
+            }
+
+        }
+
         public void DeleteProcess(Guid processId)
         {
             using (var session = Store.OpenSession())
@@ -477,15 +581,15 @@ namespace OptimaJet.Workflow.DbPersistence
 
                 if (oldTimer == null)
                 {
-                    oldTimer = new WorkflowProcessTimer()
+                    oldTimer = new WorkflowProcessTimer
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId
+                        ProcessId = processId,
+                        Ignore = false
                     };
 
-                    oldTimer.Ignore = false;
 
                     session.Store(oldTimer);
                 }
@@ -748,7 +852,7 @@ namespace OptimaJet.Workflow.DbPersistence
             using (var session = Store.OpenSession())
             {
                 var wfscheme =
-                    session.Query<WorkflowScheme>().Where(wps => wps.Code == schemeCode).FirstOrDefault();
+                    session.Query<WorkflowScheme>().FirstOrDefault(wps => wps.Code == schemeCode);
 
                 if (wfscheme == null)
                 {
@@ -772,7 +876,7 @@ namespace OptimaJet.Workflow.DbPersistence
             using (var session = Store.OpenSession())
             {
                 var wfscheme =
-                    session.Query<WorkflowScheme>().Where(wps => wps.Code == code).FirstOrDefault();
+                    session.Query<WorkflowScheme>().FirstOrDefault(wps => wps.Code == code);
 
                 if (wfscheme == null || string.IsNullOrEmpty(wfscheme.Scheme))
                     throw new SchemeNotFoundException();
@@ -866,5 +970,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return json.ToString();
         }
+
+       
     }
 }
