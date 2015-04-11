@@ -4,6 +4,7 @@ using System.Linq;
 using OptimaJet.Workflow.Core.Runtime;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Helpers;
+using OptimaJet.Workflow.Core.Model;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -11,9 +12,9 @@ namespace WF.Sample.Business.Workflow
     {
         private class RuleFunction
         {
-            public Func<Guid, string, IEnumerable<string>> GetFunction { get; set; }
+            public Func<ProcessInstance, string, IEnumerable<string>> GetFunction { get; set; }
 
-            public Func<Guid, string, string, bool> CheckFunction { get; set; }
+            public Func<ProcessInstance, string, string, bool> CheckFunction { get; set; }
         }
 
         private Dictionary<string, RuleFunction> _funcs =
@@ -28,7 +29,7 @@ namespace WF.Sample.Business.Workflow
             _funcs.Add("CheckRole", new RuleFunction() { CheckFunction = CheckRole, GetFunction = GetInRole });
         }
 
-        private IEnumerable<string> GetInRole(Guid processId, string parameter)
+        private IEnumerable<string> GetInRole(ProcessInstance processInstance, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
@@ -36,7 +37,7 @@ namespace WF.Sample.Business.Workflow
             }
         }
 
-        private bool CheckRole(Guid processId, string identityId, string parameter)
+        private bool CheckRole(ProcessInstance processInstance, string identityId, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
@@ -52,30 +53,30 @@ namespace WF.Sample.Business.Workflow
         }
 
 
-        public bool Check(Guid processId, string identityId, string ruleName, string parameter)
+        public bool Check(ProcessInstance processInstance, string identityId, string ruleName, string parameter)
         {
-            return _funcs.ContainsKey(ruleName) && _funcs[ruleName].CheckFunction.Invoke(processId, identityId,parameter);
+            return _funcs.ContainsKey(ruleName) && _funcs[ruleName].CheckFunction.Invoke(processInstance, identityId, parameter);
         }
 
-        public IEnumerable<string> GetIdentities(Guid processId, string ruleName, string parameter)
+        public IEnumerable<string> GetIdentities(ProcessInstance processInstance, string ruleName, string parameter)
         {
             return !_funcs.ContainsKey(ruleName)
                 ? new List<string> {}
-                : _funcs[ruleName].GetFunction.Invoke(processId,parameter);
+                : _funcs[ruleName].GetFunction.Invoke(processInstance, parameter);
         }
 
-        private bool IsAuthorsBoss(Guid processId, string identityId, string parameter)
+        private bool IsAuthorsBoss(ProcessInstance processInstance, string identityId, string parameter)
         {
-            return GetAuthorsBoss(processId, parameter).Contains(identityId);
+            return GetAuthorsBoss(processInstance, parameter).Contains(identityId);
         }
 
-        private IEnumerable<string> GetAuthorsBoss(Guid processId, string parameter)
+        private IEnumerable<string> GetAuthorsBoss(ProcessInstance processInstance, string parameter)
         {
             var res = new List<string>();
 
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
-                var document = session.Load<Document>(processId);
+                var document = session.Load<Document>(processInstance.ProcessId);
                 if (document == null)
                     return res;
 
@@ -102,11 +103,11 @@ namespace WF.Sample.Business.Workflow
             }
         }
 
-        private IEnumerable<string> GetDocumentController(Guid processId, string parameter)
+        private IEnumerable<string> GetDocumentController(ProcessInstance processInstance, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
-                var document = session.Load<Document>(processId);
+                var document = session.Load<Document>(processInstance.ProcessId);
                 if (document == null || !document.EmloyeeControlerId.HasValue)
                     return new List<string> { };
 
@@ -114,33 +115,33 @@ namespace WF.Sample.Business.Workflow
             }
         }
 
-        private IEnumerable<string> GetDocumentAuthor(Guid processId, string parameter)
+        private IEnumerable<string> GetDocumentAuthor(ProcessInstance processInstance, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
-                var document = session.Load<Document>(processId);
+                var document = session.Load<Document>(processInstance.ProcessId);
                 if (document == null)
                     return new List<string> { };
                 return new List<string> { document.AuthorId.ToString("N") };
             }
         }
 
-        private bool IsDocumentController(Guid processId, string identityId, string parameter)
+        private bool IsDocumentController(ProcessInstance processInstance, string identityId, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
-                var document = session.Load<Document>(processId);
+                var document = session.Load<Document>(processInstance.ProcessId);
                 if (document == null)
                     return false;
                 return document.EmloyeeControlerId.HasValue && document.EmloyeeControlerId.Value == new Guid(identityId);
             }
         }
 
-        private bool IsDocumentAuthor(Guid processId, string identityId, string parameter)
+        private bool IsDocumentAuthor(ProcessInstance processInstance, string identityId, string parameter)
         {
             using (var session = Workflow.WorkflowInit.Provider.Store.OpenSession())
             {
-                var document = session.Load<Document>(processId);
+                var document = session.Load<Document>(processInstance.ProcessId);
                 if (document == null)
                     return false;
                 return document.AuthorId == new Guid(identityId);

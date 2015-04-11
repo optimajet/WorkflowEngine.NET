@@ -1,5 +1,5 @@
 ﻿<?xml version="1.0" encoding="utf-8"?><Database Name="SampleWorkflowEngineNET" Class="WorkflowPersistenceModelDataContext" xmlns="http://schemas.microsoft.com/linqtosql/dbml/2007">
-  <Connection Mode="AppSettings" ConnectionString="Data Source=(local)\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Security=True;User ID=sa" SettingsObjectName="OptimaJet.Workflow.DbPersistence.Properties.Settings" SettingsPropertyName="SampleWorkflowEngineNETConnectionString1" Provider="System.Data.SqlClient" />
+  <Connection Mode="AppSettings" ConnectionString="Data Source=(local)\SQL2012;Initial Catalog=SampleWorkflowEngineNET;Integrated Security=True;User ID=sa" SettingsObjectName="OptimaJet.Workflow.DbPersistence.Properties.Settings" SettingsPropertyName="SampleWorkflowEngineNETConnectionString2" Provider="System.Data.SqlClient" />
   <Table Name="dbo.WorkflowProcessInstancePersistence" Member="WorkflowProcessInstancePersistences">
     <Type Name="WorkflowProcessInstancePersistence">
       <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -75,6 +75,14 @@
       <Column Name="IsFinalised" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
       <Column Name="FromStateName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
       <Column Name="TriggerName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowGlobalParameter" Member="WorkflowGlobalParameters">
+    <Type Name="WorkflowGlobalParameter">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Type" Type="System.String" DbType="NVarChar(4000) NOT NULL" CanBeNull="false" />
+      <Column Name="Name" Type="System.String" DbType="NVarChar(4000) NOT NULL" CanBeNull="false" />
+      <Column Name="Value" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
   <Function Name="dbo.spWorkflowProcessResetRunningStatus" Method="spWorkflowProcessResetRunningStatus">

@@ -202,8 +202,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
                     .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value,ptp.Type)})
                     .ToList();
-            var persistenceParameters = processInstance.ProcessScheme.PersistenceParameters.ToList();
-            
+           
             using (var scope = PredefinedTransactionScopes.ReadUncommittedSupressedScope)
             {
                 using (var context = CreateContext())
@@ -211,8 +210,7 @@ namespace OptimaJet.Workflow.DbPersistence
                    var persistedParameters =
                       context.WorkflowProcessInstancePersistences.Where(
                           wpip =>
-                          wpip.ProcessId == processInstance.ProcessId &&
-                          persistenceParameters.Select(pp => pp.Name).Contains(wpip.ParameterName)).ToList();
+                          wpip.ProcessId == processInstance.ProcessId).ToList();
 
                     foreach (var parameterDefinitionWithValue in parametersToPersistList)
                     {
@@ -515,15 +513,18 @@ namespace OptimaJet.Workflow.DbPersistence
                     persistedParameters =
                         context.WorkflowProcessInstancePersistences.Where(
                             wpip =>
-                            wpip.ProcessId == processId &&
-                            persistenceParameters.Select(pp => pp.Name).Contains(wpip.ParameterName)).ToList();
+                            wpip.ProcessId == processId).ToList();
                 }
             }
 
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.Single(p => p.Name == persistedParameter.ParameterName);
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+                if (parameterDefinition == null)
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName,"System.String",ParameterPurpose.Persistence.ToString(),null);
+
                 parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                
             }
 
             return parameters;

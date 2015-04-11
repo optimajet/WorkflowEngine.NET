@@ -829,12 +829,12 @@
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.CodeActionType.RuleGet">
             <summary>
-            Code action uses like users get method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(System.Guid,System.String,System.String)"/>
+            Code action uses like users get method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String)"/>
             </summary>
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.CodeActionType.RuleCheck">
             <summary>
-            Code action uses like check rule method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(System.Guid,System.String,System.String,System.String)"/>
+            Code action uses like check rule method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String,System.String)"/>
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.CodeActionDefinition">
@@ -1451,7 +1451,7 @@
             <param name="name">Name of the parameter</param>
             <returns>Value of the parameter</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.SetParameter``1(System.String,``0)">
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.SetParameter``1(System.String,``0,OptimaJet.Workflow.Core.Model.ParameterPurpose)">
             <summary>
             Set value of the parameter with specific name. If the definition of the parameter with specific name is absent in the scheme of the process <see cref="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.Parameters"/>,
             there will be creted Temporary parameter  <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.Purpose"/> with specified name
@@ -2482,7 +2482,7 @@
             </summary>
             <returns>List of rule names</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(System.Guid,System.String,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String,System.String)">
             <summary>
             Check the rule
             </summary>
@@ -2492,7 +2492,7 @@
             <param name="parameter">Additional rule parameter <see cref="P:OptimaJet.Workflow.Core.Model.RestrictionDefinition.Actor"/> <see cref="P:OptimaJet.Workflow.Core.Model.ActorDefinition.Value"/></param>
             <returns>Rule check result</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(System.Guid,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String)">
             <summary>
             Get the list of users which satisfies the rule
             </summary>

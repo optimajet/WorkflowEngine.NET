@@ -34,20 +34,19 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Mono.Security">
-      <HintPath>..\packages\Npgsql.2.2.3\lib\net45\Mono.Security.dll</HintPath>
+      <HintPath>..\DLL\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="Npgsql">
-      <HintPath>..\packages\Npgsql.2.2.3\lib\net45\Npgsql.dll</HintPath>
+      <HintPath>..\DLL\Npgsql.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=1.4.4.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\WorkflowEngine.NET-Core.1.4.4.2\lib\net40\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core">
+      <HintPath>..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.PostgreSQL">
-      <HintPath>..\packages\WorkflowEngine.NET-ProviderForPostgreSQL.1.4.3.0\lib\net45\OptimaJet.Workflow.PostgreSQL.dll</HintPath>
+      <HintPath>..\DLL\OptimaJet.Workflow.PostgreSQL.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\packages\ServiceStack.Text.Signed.4.0.36\lib\net40\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\DLL\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />

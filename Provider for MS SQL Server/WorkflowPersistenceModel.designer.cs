@@ -1606,7 +1606,7 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Type", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Type", DbType="NVarChar(4000) NOT NULL", CanBeNull=false)]
 		public string Type
 		{
 			get
@@ -1626,7 +1626,7 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Name", DbType="NVarChar(4000) NOT NULL", CanBeNull=false)]
 		public string Name
 		{
 			get

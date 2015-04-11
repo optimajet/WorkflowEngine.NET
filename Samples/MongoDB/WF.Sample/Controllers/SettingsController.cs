@@ -99,7 +99,7 @@ namespace WF.Sample.Controllers
             };
 
             e6.Roles.Add(new Guid("71FFFB5B-B707-4B3C-951C-C37FDFCC8DFB"), "User");
-            var employees = new List<Employee>() { e1, e2, e3, e4, e5, e6 };
+            var employees = new List<Employee>() { e1 , e2, e3, e4, e5, e6 };
 
 
             var dbcollRole = WorkflowInit.Provider.Store.GetCollection<Role>("Role");

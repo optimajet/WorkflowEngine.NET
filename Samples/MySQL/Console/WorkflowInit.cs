@@ -2,7 +2,7 @@
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.DbPersistence;
+using OptimaJet.Workflow.MySQL;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,8 +38,6 @@ namespace WorkflowApp
 
                             _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
                                 .WithBuilder(builder)
-                                .WithActionProvider(new ActionProvider())
-                                .WithRuleProvider(new RuleProvider())
                                 .WithPersistenceProvider(provider)
                                 .WithTimerManager(new TimerManager())
                                 .WithBus(new NullBus())
@@ -53,46 +51,4 @@ namespace WorkflowApp
             }
         }
     }
-
-    public class RuleProvider : IWorkflowRuleProvider
-    {
-        public bool Check(Guid processId, string identityId, string ruleName, string parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public IEnumerable<string> GetIdentities(Guid processId, string ruleName, string parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Collections.Generic.List<string> GetRules()
-        {
-            //LIST YOUR RULES NAMES HERE
-            return new List<string>() {  };
-        }
-    }
-
-    public class ActionProvider : IWorkflowActionProvider
-    {
-        public void ExecuteAction(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
-        {
-            
-        }
-
-        public bool ExecuteCondition(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
-        {
-            return true;
-        }
-
-        public List<string> GetActions()
-        {
-            //LIST YOUR ACTIONS NAMES HERE
-            return new List<string>()
-            {
-   
-            };
-        }
-    }
-
 }

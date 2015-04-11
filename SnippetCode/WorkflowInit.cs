@@ -55,12 +55,12 @@ namespace WorkflowApp
 
     public class RuleProvider : IWorkflowRuleProvider
     {
-        public bool Check(Guid processId, string identityId, string ruleName, string parameter)
+        public bool Check(ProcessInstance processInstance, string identityId, string ruleName, string parameter)
         {
             throw new NotImplementedException();
         }
 
-        public IEnumerable<string> GetIdentities(Guid processId, string ruleName, string parameter)
+        public IEnumerable<string> GetIdentities(ProcessInstance processInstance, string ruleName, string parameter)
         {
             throw new NotImplementedException();
         }
@@ -74,12 +74,12 @@ namespace WorkflowApp
 
     public class ActionProvider : IWorkflowActionProvider
     {
-        public void ExecuteAction(string name, ProcessInstance processInstance, string actionParameter)
+        public void ExecuteAction(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             
         }
 
-        public bool ExecuteCondition(string name, ProcessInstance processInstance, string actionParameter)
+        public bool ExecuteCondition(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             return true;
         }

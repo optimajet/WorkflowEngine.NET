@@ -12,52 +12,10 @@ using System.Text;
 using System.Web.Mvc;
 using System.Xml.Linq;
 using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
+using OptimaJet.Workflow.MySQL;
 
 namespace WF.Sample.Controllers
 {
-    public class RuleProvider : IWorkflowRuleProvider
-    {
-
-        public bool Check(Guid processId, string identityId, string ruleName, string parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Collections.Generic.IEnumerable<string> GetIdentities(Guid processId, string ruleName, string parameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public System.Collections.Generic.List<string> GetRules()
-        {
-            //LIST YOUR RULES NAMES HERE
-            return new List<string>() { "" };
-        }
-    }
-
-    public class ActionProvider : IWorkflowActionProvider
-    {
-
-        public void ExecuteAction(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public bool ExecuteCondition(string name, OptimaJet.Workflow.Core.Model.ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
-        {
-            throw new NotImplementedException();
-        }
-
-        public List<string> GetActions()
-        {
-            //LIST YOUR ACTIONS NAMES HERE
-            return new List<string>()
-            {
-                ""
-            };
-        }
-    }
-
     public class DesignerController : Controller
     {
         public ActionResult Index(string schemeName)
@@ -105,7 +63,7 @@ namespace WF.Sample.Controllers
                         if (_runtime == null)
                         {
                             var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                            var provider = new OptimaJet.Workflow.DbPersistence.MySQLProvider(connectionString);
+                            var provider = new MySQLProvider(connectionString);
                             var builder = new WorkflowBuilder<XElement>(
                                 provider,
                                 new OptimaJet.Workflow.Core.Parser.XmlWorkflowParser(),
@@ -114,8 +72,6 @@ namespace WF.Sample.Controllers
 
                             _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
                                 .WithBuilder(builder)
-                                .WithActionProvider(new ActionProvider())
-                                .WithRuleProvider(new RuleProvider())
                                 .WithPersistenceProvider(provider)
                                 .WithTimerManager(new TimerManager())
                                 .WithBus(new NullBus())

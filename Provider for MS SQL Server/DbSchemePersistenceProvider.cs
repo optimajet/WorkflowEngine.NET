@@ -104,6 +104,8 @@ namespace OptimaJet.Workflow.DbPersistence
 
                     context.SubmitChanges();
                 }
+
+                scope.Complete();
             }
         }
 
@@ -125,6 +127,8 @@ namespace OptimaJet.Workflow.DbPersistence
 
                     context.SubmitChanges();
                 }
+
+                scope.Complete();
             }
         }
 

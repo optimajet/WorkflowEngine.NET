@@ -8,7 +8,6 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-using System.Configuration;
 namespace WF.Sample.Business.Properties {
     
     
@@ -23,14 +22,25 @@ namespace WF.Sample.Business.Properties {
                 return defaultInstance;
             }
         }
-                
+        
         [global::System.Configuration.ApplicationScopedSettingAttribute()]
         [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
-        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]      
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local);Initial Catalog=WorkflowEngine;Integrated Security=True")]
+        public string WorkflowEngineConnectionString {
+            get {
+                return ((string)(this["WorkflowEngineConnectionString"]));
+            }
+        }
+        
+        [global::System.Configuration.ApplicationScopedSettingAttribute()]
+        [global::System.Diagnostics.DebuggerNonUserCodeAttribute()]
+        [global::System.Configuration.SpecialSettingAttribute(global::System.Configuration.SpecialSetting.ConnectionString)]
+        [global::System.Configuration.DefaultSettingValueAttribute("Data Source=(local);Initial Catalog=WFTemp;Integrated Security=True;User ID=sa;Pa" +
+            "ssword=1")]
         public string WFTempConnectionString {
             get {
-                //return ((string)(this["WF.Sample.Business.Properties.Settings.WorkflowEngineConnectionString"]));
-                return ConfigurationManager.ConnectionStrings["WF.Sample.Business.Properties.Settings.WorkflowEngineConnectionString"].ConnectionString;
+                return ((string)(this["WFTempConnectionString"]));
             }
         }
     }

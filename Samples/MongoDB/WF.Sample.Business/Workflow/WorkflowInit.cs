@@ -4,7 +4,6 @@ using System.Configuration;
 using System.Reflection;
 using System.Xml.Linq;
 using MongoDB.Driver;
-using MongoDB.Driver.Builders;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Parser;
@@ -12,6 +11,7 @@ using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.MongoDB;
 using WF.Sample.Business.Models;
+using MongoDB.Driver.Builders;
 
 namespace WF.Sample.Business.Workflow
 {
