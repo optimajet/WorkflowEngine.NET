@@ -74,8 +74,8 @@ namespace WF.Sample.Business
     partial void DeleteLoadTestingOperation(LoadTestingOperation instance);
     #endregion
 		
-		public DataModelDataContext() : 
-				base(global::WF.Sample.Business.Properties.Settings.Default.WFTempConnectionString, mappingSource)
+		public DataModelDataContext() :
+        base(System.Configuration.ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString, mappingSource)
 		{
 			OnCreated();
 		}
