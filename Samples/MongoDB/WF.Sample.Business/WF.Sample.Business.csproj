@@ -45,28 +45,28 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="MongoDB.Bson">
-      <HintPath>..\DLL\MongoDB.Bson.dll</HintPath>
+      <HintPath>..\..\DLL\MongoDB.Bson.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Driver">
-      <HintPath>..\DLL\MongoDB.Driver.dll</HintPath>
+      <HintPath>..\..\DLL\MongoDB.Driver.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Driver.Core">
-      <HintPath>..\DLL\MongoDB.Driver.Core.dll</HintPath>
+      <HintPath>..\..\DLL\MongoDB.Driver.Core.dll</HintPath>
     </Reference>
     <Reference Include="MongoDB.Driver.Legacy">
-      <HintPath>..\DLL\MongoDB.Driver.Legacy.dll</HintPath>
+      <HintPath>..\..\DLL\MongoDB.Driver.Legacy.dll</HintPath>
     </Reference>
     <Reference Include="Mono.Security">
-      <HintPath>..\DLL\Mono.Security.dll</HintPath>
+      <HintPath>..\..\DLL\Mono.Security.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.Core">
-      <HintPath>..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.MongoDB">
-      <HintPath>..\DLL\OptimaJet.Workflow.MongoDB.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.MongoDB.dll</HintPath>
     </Reference>
     <Reference Include="ServiceStack.Text">
-      <HintPath>..\DLL\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\..\DLL\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.ComponentModel.DataAnnotations" />

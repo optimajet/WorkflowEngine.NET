@@ -39,7 +39,9 @@ namespace OptimaJet.Workflow.DbPersistence
                                              Id = processInstance.ProcessId,
                                              SchemeId = processInstance.SchemeId,
                                              ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                                             StateName = processInstance.ProcessScheme.InitialActivity.State
+                                             StateName = processInstance.ProcessScheme.InitialActivity.State,
+                                             RootProcessId = processInstance.RootProcessId,
+                                             ParentProcessId = processInstance.ParentProcessId
                                          };
                     context.WorkflowProcessInstances.InsertOnSubmit(newProcess);
                     context.SubmitChanges();
@@ -372,6 +374,9 @@ namespace OptimaJet.Workflow.DbPersistence
                         if (!string.IsNullOrEmpty(transition.From.State))
                             inst.PreviousStateForReverse = transition.From.State;
                     }
+
+                    inst.ParentProcessId = processInstance.ParentProcessId;
+                    inst.RootProcessId = processInstance.RootProcessId;
                 }
 
                 var history = new WorkflowProcessTransitionHistory()
@@ -495,7 +500,13 @@ namespace OptimaJet.Workflow.DbPersistence
                     (object) processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
-                    false)
+                    false),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
+                    processInstance.ParentProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
+                    processInstance.RootProcessId)
             };
             return parameters;
         }

@@ -1,5 +1,5 @@
 /*
- * Worflow Engine.NET 1.4.5
+ * Worflow Engine.NET 1.4.4
  * http://workflowenginenet.com
  */
  
@@ -56,5 +56,11 @@ Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engi
 2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
 3. Check connection string in Console\App.config (connectionStrings section)
 
-Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
 
+7 WebFormsSample - Sample for ASP.NET WebForms
+
+1. Execute SQL\CreatePersistenceObjects.sql
+2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+3. Check connection string in Console\App.config (connectionStrings section)
+
+Additional Information: http://worklfowenginenet.com

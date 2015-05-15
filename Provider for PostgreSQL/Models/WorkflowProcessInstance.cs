@@ -16,6 +16,8 @@ namespace OptimaJet.Workflow.PostgreSQL
         public string PreviousStateForReverse { get; set; }
         public Guid? SchemeId { get; set; }
         public string StateName { get; set; }
+        public Guid? ParentProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
         public WorkflowProcessInstance(): base()
         {
             db_TableName = "WorkflowProcessInstance";
@@ -30,7 +32,9 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo(){Name="PreviousStateForDirect"},
                 new ColumnInfo(){Name="PreviousStateForReverse"},
                 new ColumnInfo(){Name="SchemeId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="StateName"}
+                new ColumnInfo(){Name="StateName"},
+                new ColumnInfo() {Name = "ParentProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo() {Name = "RootProcessId", Type = NpgsqlDbType.Uuid},
             });
         }
 
@@ -60,6 +64,10 @@ namespace OptimaJet.Workflow.PostgreSQL
                     return SchemeId;
                 case "StateName":
                     return StateName;
+                case "ParentProcessId":
+                    return ParentProcessId;
+                case "RootProcessId":
+                    return RootProcessId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -104,6 +112,19 @@ namespace OptimaJet.Workflow.PostgreSQL
                     break;
                 case "StateName":
                     StateName = value as string;
+                    break;
+                case "ParentProcessId":
+                    if (value is Guid)
+                    {
+                        ParentProcessId = (Guid) value;
+                    }
+                    else
+                    {
+                        ParentProcessId = null;
+                    }
+                    break;
+                case "RootProcessId":
+                    RootProcessId = (Guid) value;
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

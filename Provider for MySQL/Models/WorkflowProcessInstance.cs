@@ -16,21 +16,26 @@ namespace OptimaJet.Workflow.MySQL
         public string PreviousStateForReverse { get; set; }
         public Guid? SchemeId { get; set; }
         public string StateName { get; set; }
+        public Guid? ParentProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
         public WorkflowProcessInstance(): base()
         {
             db_TableName = "WorkflowProcessInstance";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ActivityName"},
-                new ColumnInfo(){Name="IsDeterminingParametersChanged", Type = MySqlDbType.Bit},
-                new ColumnInfo(){Name="PreviousActivity"},
-                new ColumnInfo(){Name="PreviousActivityForDirect"},
-                new ColumnInfo(){Name="PreviousActivityForReverse"},
-                new ColumnInfo(){Name="PreviousState"},
-                new ColumnInfo(){Name="PreviousStateForDirect"},
-                new ColumnInfo(){Name="PreviousStateForReverse"},
-                new ColumnInfo(){Name="SchemeId", Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="StateName"}
+            db_Columns.AddRange(new ColumnInfo[]
+            {
+                new ColumnInfo() {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo() {Name = "ActivityName"},
+                new ColumnInfo() {Name = "IsDeterminingParametersChanged", Type = MySqlDbType.Bit},
+                new ColumnInfo() {Name = "PreviousActivity"},
+                new ColumnInfo() {Name = "PreviousActivityForDirect"},
+                new ColumnInfo() {Name = "PreviousActivityForReverse"},
+                new ColumnInfo() {Name = "PreviousState"},
+                new ColumnInfo() {Name = "PreviousStateForDirect"},
+                new ColumnInfo() {Name = "PreviousStateForReverse"},
+                new ColumnInfo() {Name = "SchemeId", Type = MySqlDbType.Binary},
+                new ColumnInfo() {Name = "StateName"},
+                new ColumnInfo() {Name = "ParentProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo() {Name = "RootProcessId", Type = MySqlDbType.Binary},
             });
         }
 
@@ -60,6 +65,10 @@ namespace OptimaJet.Workflow.MySQL
                     return SchemeId.HasValue ? SchemeId.Value.ToByteArray() : null;
                 case "StateName":
                     return StateName;
+                case "ParentProcessId":
+                    return ParentProcessId;
+                case "RootProcessId":
+                    return RootProcessId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -105,6 +114,16 @@ namespace OptimaJet.Workflow.MySQL
                     break;
                 case "StateName":
                     StateName = value as string;
+                    break;
+                case "ParentProcessId":
+                    var bytes1 = value as byte[];
+                    if (bytes1 != null)
+                        ParentProcessId = new Guid(bytes1);
+                    else
+                        ParentProcessId = null;
+                    break;
+                case "RootProcessId":
+                    RootProcessId = new Guid((byte[])value);
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

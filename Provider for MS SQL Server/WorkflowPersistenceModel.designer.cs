@@ -39,12 +39,6 @@ namespace OptimaJet.Workflow.DbPersistence
     partial void InsertWorkflowRuntime(WorkflowRuntime instance);
     partial void UpdateWorkflowRuntime(WorkflowRuntime instance);
     partial void DeleteWorkflowRuntime(WorkflowRuntime instance);
-    partial void InsertWorkflowProcessScheme(WorkflowProcessScheme instance);
-    partial void UpdateWorkflowProcessScheme(WorkflowProcessScheme instance);
-    partial void DeleteWorkflowProcessScheme(WorkflowProcessScheme instance);
-    partial void InsertWorkflowProcessInstance(WorkflowProcessInstance instance);
-    partial void UpdateWorkflowProcessInstance(WorkflowProcessInstance instance);
-    partial void DeleteWorkflowProcessInstance(WorkflowProcessInstance instance);
     partial void InsertWorkflowScheme(WorkflowScheme instance);
     partial void UpdateWorkflowScheme(WorkflowScheme instance);
     partial void DeleteWorkflowScheme(WorkflowScheme instance);
@@ -57,6 +51,12 @@ namespace OptimaJet.Workflow.DbPersistence
     partial void InsertWorkflowGlobalParameter(WorkflowGlobalParameter instance);
     partial void UpdateWorkflowGlobalParameter(WorkflowGlobalParameter instance);
     partial void DeleteWorkflowGlobalParameter(WorkflowGlobalParameter instance);
+    partial void InsertWorkflowProcessInstance(WorkflowProcessInstance instance);
+    partial void UpdateWorkflowProcessInstance(WorkflowProcessInstance instance);
+    partial void DeleteWorkflowProcessInstance(WorkflowProcessInstance instance);
+    partial void InsertWorkflowProcessScheme(WorkflowProcessScheme instance);
+    partial void UpdateWorkflowProcessScheme(WorkflowProcessScheme instance);
+    partial void DeleteWorkflowProcessScheme(WorkflowProcessScheme instance);
     #endregion
 		
 		public WorkflowPersistenceModelDataContext() : 
@@ -113,22 +113,6 @@ namespace OptimaJet.Workflow.DbPersistence
 			}
 		}
 		
-		public System.Data.Linq.Table<WorkflowProcessScheme> WorkflowProcessSchemes
-		{
-			get
-			{
-				return this.GetTable<WorkflowProcessScheme>();
-			}
-		}
-		
-		public System.Data.Linq.Table<WorkflowProcessInstance> WorkflowProcessInstances
-		{
-			get
-			{
-				return this.GetTable<WorkflowProcessInstance>();
-			}
-		}
-		
 		public System.Data.Linq.Table<WorkflowScheme> WorkflowSchemes
 		{
 			get
@@ -158,6 +142,22 @@ namespace OptimaJet.Workflow.DbPersistence
 			get
 			{
 				return this.GetTable<WorkflowGlobalParameter>();
+			}
+		}
+		
+		public System.Data.Linq.Table<WorkflowProcessInstance> WorkflowProcessInstances
+		{
+			get
+			{
+				return this.GetTable<WorkflowProcessInstance>();
+			}
+		}
+		
+		public System.Data.Linq.Table<WorkflowProcessScheme> WorkflowProcessSchemes
+		{
+			get
+			{
+				return this.GetTable<WorkflowProcessScheme>();
 			}
 		}
 		
@@ -474,490 +474,6 @@ namespace OptimaJet.Workflow.DbPersistence
 					this._Timer = value;
 					this.SendPropertyChanged("Timer");
 					this.OnTimerChanged();
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.WorkflowProcessScheme")]
-	public partial class WorkflowProcessScheme : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private System.Guid _Id;
-		
-		private string _Scheme;
-		
-		private string _DefiningParameters;
-		
-		private string _DefiningParametersHash;
-		
-		private string _SchemeCode;
-		
-		private bool _IsObsolete;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnIdChanging(System.Guid value);
-    partial void OnIdChanged();
-    partial void OnSchemeChanging(string value);
-    partial void OnSchemeChanged();
-    partial void OnDefiningParametersChanging(string value);
-    partial void OnDefiningParametersChanged();
-    partial void OnDefiningParametersHashChanging(string value);
-    partial void OnDefiningParametersHashChanged();
-    partial void OnSchemeCodeChanging(string value);
-    partial void OnSchemeCodeChanged();
-    partial void OnIsObsoleteChanging(bool value);
-    partial void OnIsObsoleteChanged();
-    #endregion
-		
-		public WorkflowProcessScheme()
-		{
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="UniqueIdentifier NOT NULL", IsPrimaryKey=true)]
-		public System.Guid Id
-		{
-			get
-			{
-				return this._Id;
-			}
-			set
-			{
-				if ((this._Id != value))
-				{
-					this.OnIdChanging(value);
-					this.SendPropertyChanging();
-					this._Id = value;
-					this.SendPropertyChanged("Id");
-					this.OnIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Scheme", DbType="NText NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
-		public string Scheme
-		{
-			get
-			{
-				return this._Scheme;
-			}
-			set
-			{
-				if ((this._Scheme != value))
-				{
-					this.OnSchemeChanging(value);
-					this.SendPropertyChanging();
-					this._Scheme = value;
-					this.SendPropertyChanged("Scheme");
-					this.OnSchemeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DefiningParameters", DbType="NText NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
-		public string DefiningParameters
-		{
-			get
-			{
-				return this._DefiningParameters;
-			}
-			set
-			{
-				if ((this._DefiningParameters != value))
-				{
-					this.OnDefiningParametersChanging(value);
-					this.SendPropertyChanging();
-					this._DefiningParameters = value;
-					this.SendPropertyChanged("DefiningParameters");
-					this.OnDefiningParametersChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DefiningParametersHash", DbType="NVarChar(1024) NOT NULL", CanBeNull=false)]
-		public string DefiningParametersHash
-		{
-			get
-			{
-				return this._DefiningParametersHash;
-			}
-			set
-			{
-				if ((this._DefiningParametersHash != value))
-				{
-					this.OnDefiningParametersHashChanging(value);
-					this.SendPropertyChanging();
-					this._DefiningParametersHash = value;
-					this.SendPropertyChanged("DefiningParametersHash");
-					this.OnDefiningParametersHashChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SchemeCode", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
-		public string SchemeCode
-		{
-			get
-			{
-				return this._SchemeCode;
-			}
-			set
-			{
-				if ((this._SchemeCode != value))
-				{
-					this.OnSchemeCodeChanging(value);
-					this.SendPropertyChanging();
-					this._SchemeCode = value;
-					this.SendPropertyChanged("SchemeCode");
-					this.OnSchemeCodeChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsObsolete", DbType="Bit NOT NULL")]
-		public bool IsObsolete
-		{
-			get
-			{
-				return this._IsObsolete;
-			}
-			set
-			{
-				if ((this._IsObsolete != value))
-				{
-					this.OnIsObsoleteChanging(value);
-					this.SendPropertyChanging();
-					this._IsObsolete = value;
-					this.SendPropertyChanged("IsObsolete");
-					this.OnIsObsoleteChanged();
-				}
-			}
-		}
-		
-		public event PropertyChangingEventHandler PropertyChanging;
-		
-		public event PropertyChangedEventHandler PropertyChanged;
-		
-		protected virtual void SendPropertyChanging()
-		{
-			if ((this.PropertyChanging != null))
-			{
-				this.PropertyChanging(this, emptyChangingEventArgs);
-			}
-		}
-		
-		protected virtual void SendPropertyChanged(String propertyName)
-		{
-			if ((this.PropertyChanged != null))
-			{
-				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
-			}
-		}
-	}
-	
-	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.WorkflowProcessInstance")]
-	public partial class WorkflowProcessInstance : INotifyPropertyChanging, INotifyPropertyChanged
-	{
-		
-		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
-		
-		private System.Guid _Id;
-		
-		private string _StateName;
-		
-		private string _ActivityName;
-		
-		private System.Nullable<System.Guid> _SchemeId;
-		
-		private string _PreviousState;
-		
-		private string _PreviousStateForDirect;
-		
-		private string _PreviousStateForReverse;
-		
-		private string _PreviousActivity;
-		
-		private string _PreviousActivityForDirect;
-		
-		private string _PreviousActivityForReverse;
-		
-		private bool _IsDeterminingParametersChanged;
-		
-    #region Extensibility Method Definitions
-    partial void OnLoaded();
-    partial void OnValidate(System.Data.Linq.ChangeAction action);
-    partial void OnCreated();
-    partial void OnIdChanging(System.Guid value);
-    partial void OnIdChanged();
-    partial void OnStateNameChanging(string value);
-    partial void OnStateNameChanged();
-    partial void OnActivityNameChanging(string value);
-    partial void OnActivityNameChanged();
-    partial void OnSchemeIdChanging(System.Nullable<System.Guid> value);
-    partial void OnSchemeIdChanged();
-    partial void OnPreviousStateChanging(string value);
-    partial void OnPreviousStateChanged();
-    partial void OnPreviousStateForDirectChanging(string value);
-    partial void OnPreviousStateForDirectChanged();
-    partial void OnPreviousStateForReverseChanging(string value);
-    partial void OnPreviousStateForReverseChanged();
-    partial void OnPreviousActivityChanging(string value);
-    partial void OnPreviousActivityChanged();
-    partial void OnPreviousActivityForDirectChanging(string value);
-    partial void OnPreviousActivityForDirectChanged();
-    partial void OnPreviousActivityForReverseChanging(string value);
-    partial void OnPreviousActivityForReverseChanged();
-    partial void OnIsDeterminingParametersChangedChanging(bool value);
-    partial void OnIsDeterminingParametersChangedChanged();
-    #endregion
-		
-		public WorkflowProcessInstance()
-		{
-			OnCreated();
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="UniqueIdentifier NOT NULL", IsPrimaryKey=true)]
-		public System.Guid Id
-		{
-			get
-			{
-				return this._Id;
-			}
-			set
-			{
-				if ((this._Id != value))
-				{
-					this.OnIdChanging(value);
-					this.SendPropertyChanging();
-					this._Id = value;
-					this.SendPropertyChanged("Id");
-					this.OnIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StateName", DbType="NVarChar(MAX) NOT NULL")]
-		public string StateName
-		{
-			get
-			{
-				return this._StateName;
-			}
-			set
-			{
-				if ((this._StateName != value))
-				{
-					this.OnStateNameChanging(value);
-					this.SendPropertyChanging();
-					this._StateName = value;
-					this.SendPropertyChanged("StateName");
-					this.OnStateNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivityName", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
-		public string ActivityName
-		{
-			get
-			{
-				return this._ActivityName;
-			}
-			set
-			{
-				if ((this._ActivityName != value))
-				{
-					this.OnActivityNameChanging(value);
-					this.SendPropertyChanging();
-					this._ActivityName = value;
-					this.SendPropertyChanged("ActivityName");
-					this.OnActivityNameChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SchemeId", DbType="UniqueIdentifier")]
-		public System.Nullable<System.Guid> SchemeId
-		{
-			get
-			{
-				return this._SchemeId;
-			}
-			set
-			{
-				if ((this._SchemeId != value))
-				{
-					this.OnSchemeIdChanging(value);
-					this.SendPropertyChanging();
-					this._SchemeId = value;
-					this.SendPropertyChanged("SchemeId");
-					this.OnSchemeIdChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousState", DbType="NVarChar(MAX)")]
-		public string PreviousState
-		{
-			get
-			{
-				return this._PreviousState;
-			}
-			set
-			{
-				if ((this._PreviousState != value))
-				{
-					this.OnPreviousStateChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousState = value;
-					this.SendPropertyChanged("PreviousState");
-					this.OnPreviousStateChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousStateForDirect", DbType="NVarChar(MAX)")]
-		public string PreviousStateForDirect
-		{
-			get
-			{
-				return this._PreviousStateForDirect;
-			}
-			set
-			{
-				if ((this._PreviousStateForDirect != value))
-				{
-					this.OnPreviousStateForDirectChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousStateForDirect = value;
-					this.SendPropertyChanged("PreviousStateForDirect");
-					this.OnPreviousStateForDirectChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousStateForReverse", DbType="NVarChar(MAX)")]
-		public string PreviousStateForReverse
-		{
-			get
-			{
-				return this._PreviousStateForReverse;
-			}
-			set
-			{
-				if ((this._PreviousStateForReverse != value))
-				{
-					this.OnPreviousStateForReverseChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousStateForReverse = value;
-					this.SendPropertyChanged("PreviousStateForReverse");
-					this.OnPreviousStateForReverseChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivity", DbType="NVarChar(MAX)")]
-		public string PreviousActivity
-		{
-			get
-			{
-				return this._PreviousActivity;
-			}
-			set
-			{
-				if ((this._PreviousActivity != value))
-				{
-					this.OnPreviousActivityChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousActivity = value;
-					this.SendPropertyChanged("PreviousActivity");
-					this.OnPreviousActivityChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivityForDirect", DbType="NVarChar(MAX)")]
-		public string PreviousActivityForDirect
-		{
-			get
-			{
-				return this._PreviousActivityForDirect;
-			}
-			set
-			{
-				if ((this._PreviousActivityForDirect != value))
-				{
-					this.OnPreviousActivityForDirectChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousActivityForDirect = value;
-					this.SendPropertyChanged("PreviousActivityForDirect");
-					this.OnPreviousActivityForDirectChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivityForReverse", DbType="NVarChar(MAX)")]
-		public string PreviousActivityForReverse
-		{
-			get
-			{
-				return this._PreviousActivityForReverse;
-			}
-			set
-			{
-				if ((this._PreviousActivityForReverse != value))
-				{
-					this.OnPreviousActivityForReverseChanging(value);
-					this.SendPropertyChanging();
-					this._PreviousActivityForReverse = value;
-					this.SendPropertyChanged("PreviousActivityForReverse");
-					this.OnPreviousActivityForReverseChanged();
-				}
-			}
-		}
-		
-		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsDeterminingParametersChanged", DbType="Bit NOT NULL")]
-		public bool IsDeterminingParametersChanged
-		{
-			get
-			{
-				return this._IsDeterminingParametersChanged;
-			}
-			set
-			{
-				if ((this._IsDeterminingParametersChanged != value))
-				{
-					this.OnIsDeterminingParametersChangedChanging(value);
-					this.SendPropertyChanging();
-					this._IsDeterminingParametersChanged = value;
-					this.SendPropertyChanged("IsDeterminingParametersChanged");
-					this.OnIsDeterminingParametersChangedChanged();
 				}
 			}
 		}
@@ -1662,6 +1178,634 @@ namespace OptimaJet.Workflow.DbPersistence
 					this._Value = value;
 					this.SendPropertyChanged("Value");
 					this.OnValueChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.WorkflowProcessInstance")]
+	public partial class WorkflowProcessInstance : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private System.Guid _Id;
+		
+		private string _StateName;
+		
+		private string _ActivityName;
+		
+		private System.Nullable<System.Guid> _SchemeId;
+		
+		private string _PreviousState;
+		
+		private string _PreviousStateForDirect;
+		
+		private string _PreviousStateForReverse;
+		
+		private string _PreviousActivity;
+		
+		private string _PreviousActivityForDirect;
+		
+		private string _PreviousActivityForReverse;
+		
+		private bool _IsDeterminingParametersChanged;
+		
+		private System.Nullable<System.Guid> _ParentProcessId;
+		
+		private System.Nullable<System.Guid> _RootProcessId;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(System.Guid value);
+    partial void OnIdChanged();
+    partial void OnStateNameChanging(string value);
+    partial void OnStateNameChanged();
+    partial void OnActivityNameChanging(string value);
+    partial void OnActivityNameChanged();
+    partial void OnSchemeIdChanging(System.Nullable<System.Guid> value);
+    partial void OnSchemeIdChanged();
+    partial void OnPreviousStateChanging(string value);
+    partial void OnPreviousStateChanged();
+    partial void OnPreviousStateForDirectChanging(string value);
+    partial void OnPreviousStateForDirectChanged();
+    partial void OnPreviousStateForReverseChanging(string value);
+    partial void OnPreviousStateForReverseChanged();
+    partial void OnPreviousActivityChanging(string value);
+    partial void OnPreviousActivityChanged();
+    partial void OnPreviousActivityForDirectChanging(string value);
+    partial void OnPreviousActivityForDirectChanged();
+    partial void OnPreviousActivityForReverseChanging(string value);
+    partial void OnPreviousActivityForReverseChanged();
+    partial void OnIsDeterminingParametersChangedChanging(bool value);
+    partial void OnIsDeterminingParametersChangedChanged();
+    partial void OnParentProcessIdChanging(System.Nullable<System.Guid> value);
+    partial void OnParentProcessIdChanged();
+    partial void OnRootProcessIdChanging(System.Nullable<System.Guid> value);
+    partial void OnRootProcessIdChanged();
+    #endregion
+		
+		public WorkflowProcessInstance()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="UniqueIdentifier NOT NULL", IsPrimaryKey=true)]
+		public System.Guid Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StateName", DbType="NVarChar(MAX)")]
+		public string StateName
+		{
+			get
+			{
+				return this._StateName;
+			}
+			set
+			{
+				if ((this._StateName != value))
+				{
+					this.OnStateNameChanging(value);
+					this.SendPropertyChanging();
+					this._StateName = value;
+					this.SendPropertyChanged("StateName");
+					this.OnStateNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ActivityName", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string ActivityName
+		{
+			get
+			{
+				return this._ActivityName;
+			}
+			set
+			{
+				if ((this._ActivityName != value))
+				{
+					this.OnActivityNameChanging(value);
+					this.SendPropertyChanging();
+					this._ActivityName = value;
+					this.SendPropertyChanged("ActivityName");
+					this.OnActivityNameChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SchemeId", DbType="UniqueIdentifier")]
+		public System.Nullable<System.Guid> SchemeId
+		{
+			get
+			{
+				return this._SchemeId;
+			}
+			set
+			{
+				if ((this._SchemeId != value))
+				{
+					this.OnSchemeIdChanging(value);
+					this.SendPropertyChanging();
+					this._SchemeId = value;
+					this.SendPropertyChanged("SchemeId");
+					this.OnSchemeIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousState", DbType="NVarChar(MAX)")]
+		public string PreviousState
+		{
+			get
+			{
+				return this._PreviousState;
+			}
+			set
+			{
+				if ((this._PreviousState != value))
+				{
+					this.OnPreviousStateChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousState = value;
+					this.SendPropertyChanged("PreviousState");
+					this.OnPreviousStateChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousStateForDirect", DbType="NVarChar(MAX)")]
+		public string PreviousStateForDirect
+		{
+			get
+			{
+				return this._PreviousStateForDirect;
+			}
+			set
+			{
+				if ((this._PreviousStateForDirect != value))
+				{
+					this.OnPreviousStateForDirectChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousStateForDirect = value;
+					this.SendPropertyChanged("PreviousStateForDirect");
+					this.OnPreviousStateForDirectChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousStateForReverse", DbType="NVarChar(MAX)")]
+		public string PreviousStateForReverse
+		{
+			get
+			{
+				return this._PreviousStateForReverse;
+			}
+			set
+			{
+				if ((this._PreviousStateForReverse != value))
+				{
+					this.OnPreviousStateForReverseChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousStateForReverse = value;
+					this.SendPropertyChanged("PreviousStateForReverse");
+					this.OnPreviousStateForReverseChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivity", DbType="NVarChar(MAX)")]
+		public string PreviousActivity
+		{
+			get
+			{
+				return this._PreviousActivity;
+			}
+			set
+			{
+				if ((this._PreviousActivity != value))
+				{
+					this.OnPreviousActivityChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousActivity = value;
+					this.SendPropertyChanged("PreviousActivity");
+					this.OnPreviousActivityChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivityForDirect", DbType="NVarChar(MAX)")]
+		public string PreviousActivityForDirect
+		{
+			get
+			{
+				return this._PreviousActivityForDirect;
+			}
+			set
+			{
+				if ((this._PreviousActivityForDirect != value))
+				{
+					this.OnPreviousActivityForDirectChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousActivityForDirect = value;
+					this.SendPropertyChanged("PreviousActivityForDirect");
+					this.OnPreviousActivityForDirectChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_PreviousActivityForReverse", DbType="NVarChar(MAX)")]
+		public string PreviousActivityForReverse
+		{
+			get
+			{
+				return this._PreviousActivityForReverse;
+			}
+			set
+			{
+				if ((this._PreviousActivityForReverse != value))
+				{
+					this.OnPreviousActivityForReverseChanging(value);
+					this.SendPropertyChanging();
+					this._PreviousActivityForReverse = value;
+					this.SendPropertyChanged("PreviousActivityForReverse");
+					this.OnPreviousActivityForReverseChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsDeterminingParametersChanged", DbType="Bit NOT NULL")]
+		public bool IsDeterminingParametersChanged
+		{
+			get
+			{
+				return this._IsDeterminingParametersChanged;
+			}
+			set
+			{
+				if ((this._IsDeterminingParametersChanged != value))
+				{
+					this.OnIsDeterminingParametersChangedChanging(value);
+					this.SendPropertyChanging();
+					this._IsDeterminingParametersChanged = value;
+					this.SendPropertyChanged("IsDeterminingParametersChanged");
+					this.OnIsDeterminingParametersChangedChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_ParentProcessId", DbType="UniqueIdentifier")]
+		public System.Nullable<System.Guid> ParentProcessId
+		{
+			get
+			{
+				return this._ParentProcessId;
+			}
+			set
+			{
+				if ((this._ParentProcessId != value))
+				{
+					this.OnParentProcessIdChanging(value);
+					this.SendPropertyChanging();
+					this._ParentProcessId = value;
+					this.SendPropertyChanged("ParentProcessId");
+					this.OnParentProcessIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RootProcessId", DbType="UniqueIdentifier")]
+		public System.Nullable<System.Guid> RootProcessId
+		{
+			get
+			{
+				return this._RootProcessId;
+			}
+			set
+			{
+				if ((this._RootProcessId != value))
+				{
+					this.OnRootProcessIdChanging(value);
+					this.SendPropertyChanging();
+					this._RootProcessId = value;
+					this.SendPropertyChanged("RootProcessId");
+					this.OnRootProcessIdChanged();
+				}
+			}
+		}
+		
+		public event PropertyChangingEventHandler PropertyChanging;
+		
+		public event PropertyChangedEventHandler PropertyChanged;
+		
+		protected virtual void SendPropertyChanging()
+		{
+			if ((this.PropertyChanging != null))
+			{
+				this.PropertyChanging(this, emptyChangingEventArgs);
+			}
+		}
+		
+		protected virtual void SendPropertyChanged(String propertyName)
+		{
+			if ((this.PropertyChanged != null))
+			{
+				this.PropertyChanged(this, new PropertyChangedEventArgs(propertyName));
+			}
+		}
+	}
+	
+	[global::System.Data.Linq.Mapping.TableAttribute(Name="dbo.WorkflowProcessScheme")]
+	public partial class WorkflowProcessScheme : INotifyPropertyChanging, INotifyPropertyChanged
+	{
+		
+		private static PropertyChangingEventArgs emptyChangingEventArgs = new PropertyChangingEventArgs(String.Empty);
+		
+		private System.Guid _Id;
+		
+		private string _Scheme;
+		
+		private string _DefiningParameters;
+		
+		private string _DefiningParametersHash;
+		
+		private string _SchemeCode;
+		
+		private bool _IsObsolete;
+		
+		private string _RootSchemeCode;
+		
+		private System.Nullable<System.Guid> _RootSchemeId;
+		
+		private string _AllowedActivities;
+		
+		private string _StartingTransition;
+		
+    #region Extensibility Method Definitions
+    partial void OnLoaded();
+    partial void OnValidate(System.Data.Linq.ChangeAction action);
+    partial void OnCreated();
+    partial void OnIdChanging(System.Guid value);
+    partial void OnIdChanged();
+    partial void OnSchemeChanging(string value);
+    partial void OnSchemeChanged();
+    partial void OnDefiningParametersChanging(string value);
+    partial void OnDefiningParametersChanged();
+    partial void OnDefiningParametersHashChanging(string value);
+    partial void OnDefiningParametersHashChanged();
+    partial void OnSchemeCodeChanging(string value);
+    partial void OnSchemeCodeChanged();
+    partial void OnIsObsoleteChanging(bool value);
+    partial void OnIsObsoleteChanged();
+    partial void OnRootSchemeCodeChanging(string value);
+    partial void OnRootSchemeCodeChanged();
+    partial void OnRootSchemeIdChanging(System.Nullable<System.Guid> value);
+    partial void OnRootSchemeIdChanged();
+    partial void OnAllowedActivitiesChanging(string value);
+    partial void OnAllowedActivitiesChanged();
+    partial void OnStartingTransitionChanging(string value);
+    partial void OnStartingTransitionChanged();
+    #endregion
+		
+		public WorkflowProcessScheme()
+		{
+			OnCreated();
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Id", DbType="UniqueIdentifier NOT NULL", IsPrimaryKey=true)]
+		public System.Guid Id
+		{
+			get
+			{
+				return this._Id;
+			}
+			set
+			{
+				if ((this._Id != value))
+				{
+					this.OnIdChanging(value);
+					this.SendPropertyChanging();
+					this._Id = value;
+					this.SendPropertyChanged("Id");
+					this.OnIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_Scheme", DbType="NText NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
+		public string Scheme
+		{
+			get
+			{
+				return this._Scheme;
+			}
+			set
+			{
+				if ((this._Scheme != value))
+				{
+					this.OnSchemeChanging(value);
+					this.SendPropertyChanging();
+					this._Scheme = value;
+					this.SendPropertyChanged("Scheme");
+					this.OnSchemeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DefiningParameters", DbType="NText NOT NULL", CanBeNull=false, UpdateCheck=UpdateCheck.Never)]
+		public string DefiningParameters
+		{
+			get
+			{
+				return this._DefiningParameters;
+			}
+			set
+			{
+				if ((this._DefiningParameters != value))
+				{
+					this.OnDefiningParametersChanging(value);
+					this.SendPropertyChanging();
+					this._DefiningParameters = value;
+					this.SendPropertyChanged("DefiningParameters");
+					this.OnDefiningParametersChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_DefiningParametersHash", DbType="NVarChar(1024) NOT NULL", CanBeNull=false)]
+		public string DefiningParametersHash
+		{
+			get
+			{
+				return this._DefiningParametersHash;
+			}
+			set
+			{
+				if ((this._DefiningParametersHash != value))
+				{
+					this.OnDefiningParametersHashChanging(value);
+					this.SendPropertyChanging();
+					this._DefiningParametersHash = value;
+					this.SendPropertyChanged("DefiningParametersHash");
+					this.OnDefiningParametersHashChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_SchemeCode", DbType="NVarChar(MAX) NOT NULL", CanBeNull=false)]
+		public string SchemeCode
+		{
+			get
+			{
+				return this._SchemeCode;
+			}
+			set
+			{
+				if ((this._SchemeCode != value))
+				{
+					this.OnSchemeCodeChanging(value);
+					this.SendPropertyChanging();
+					this._SchemeCode = value;
+					this.SendPropertyChanged("SchemeCode");
+					this.OnSchemeCodeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_IsObsolete", DbType="Bit NOT NULL")]
+		public bool IsObsolete
+		{
+			get
+			{
+				return this._IsObsolete;
+			}
+			set
+			{
+				if ((this._IsObsolete != value))
+				{
+					this.OnIsObsoleteChanging(value);
+					this.SendPropertyChanging();
+					this._IsObsolete = value;
+					this.SendPropertyChanged("IsObsolete");
+					this.OnIsObsoleteChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RootSchemeCode", DbType="NVarChar(MAX)")]
+		public string RootSchemeCode
+		{
+			get
+			{
+				return this._RootSchemeCode;
+			}
+			set
+			{
+				if ((this._RootSchemeCode != value))
+				{
+					this.OnRootSchemeCodeChanging(value);
+					this.SendPropertyChanging();
+					this._RootSchemeCode = value;
+					this.SendPropertyChanged("RootSchemeCode");
+					this.OnRootSchemeCodeChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_RootSchemeId", DbType="UniqueIdentifier")]
+		public System.Nullable<System.Guid> RootSchemeId
+		{
+			get
+			{
+				return this._RootSchemeId;
+			}
+			set
+			{
+				if ((this._RootSchemeId != value))
+				{
+					this.OnRootSchemeIdChanging(value);
+					this.SendPropertyChanging();
+					this._RootSchemeId = value;
+					this.SendPropertyChanged("RootSchemeId");
+					this.OnRootSchemeIdChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_AllowedActivities", DbType="NVarChar(MAX)")]
+		public string AllowedActivities
+		{
+			get
+			{
+				return this._AllowedActivities;
+			}
+			set
+			{
+				if ((this._AllowedActivities != value))
+				{
+					this.OnAllowedActivitiesChanging(value);
+					this.SendPropertyChanging();
+					this._AllowedActivities = value;
+					this.SendPropertyChanged("AllowedActivities");
+					this.OnAllowedActivitiesChanged();
+				}
+			}
+		}
+		
+		[global::System.Data.Linq.Mapping.ColumnAttribute(Storage="_StartingTransition", DbType="NVarChar(MAX)")]
+		public string StartingTransition
+		{
+			get
+			{
+				return this._StartingTransition;
+			}
+			set
+			{
+				if ((this._StartingTransition != value))
+				{
+					this.OnStartingTransitionChanging(value);
+					this.SendPropertyChanging();
+					this._StartingTransition = value;
+					this.SendPropertyChanged("StartingTransition");
+					this.OnStartingTransitionChanged();
 				}
 			}
 		}

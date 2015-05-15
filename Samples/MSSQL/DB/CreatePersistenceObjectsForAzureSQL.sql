@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for Azure
-Version: 1.4.4
+Version: 1.5
 File: CreatePersistenceObjectsForAzure.sql
 */
 
@@ -17,6 +17,10 @@ BEGIN
 		[DefiningParametersHash] [nvarchar](1024) NOT NULL,
 		[SchemeCode] [nvarchar](max) NOT NULL,
 		[IsObsolete] [bit] NOT NULL DEFAULT (0),
+		[RootSchemeCode] nvarchar (max) NULL,
+		[RootSchemeId]  uniqueidentifier NULL,
+		[AllowedActivities] nvarchar (max) NULL,
+		[StartingTransition] nvarchar (max) NULL,
 		CONSTRAINT [PK_WorkflowProcessScheme] PRIMARY KEY CLUSTERED([Id] ASC)
 	 )
 
@@ -36,6 +40,8 @@ BEGIN
 		[PreviousActivity] [nvarchar](max) NULL,
 		[PreviousActivityForDirect] [nvarchar](max) NULL,
 		[PreviousActivityForReverse] [nvarchar](max) NULL,
+		[ParentProcessId] uniqueidentifier NULL,
+		[RootProcessId] uniqueidentifier NOT NULL,
 		[IsDeterminingParametersChanged] [bit] NOT NULL DEFAULT ((0)),
 		CONSTRAINT [PK_WorkflowProcessInstance_1] PRIMARY KEY CLUSTERED ([Id] ASC)
 	)

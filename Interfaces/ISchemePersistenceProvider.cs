@@ -29,19 +29,15 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// </summary>
         /// <param name="schemeCode">Name of the scheme</param>
         /// <param name="parameters">Parameters for creating the scheme</param>
+        /// <param name="rootSchemeId">Id of the root scheme in case of subprocess</param>
         /// <param name="ignoreObsolete">True if you need to ignore obsolete schemes</param>
         /// <returns>Not parsed scheme of the process</returns>
         SchemeDefinition<TSchemeMedium> GetProcessSchemeWithParameters(string schemeCode,
-                                                                       IDictionary<string, object> parameters,
-                                                                       bool ignoreObsolete);
-        /// <summary>
-        /// Gets not parsed scheme by scheme name and parameters    
-        /// </summary>
-        /// <param name="schemeCode">Name of the scheme</param>
-        /// <param name="parameters">Parameters for creating the scheme</param>
-        /// <returns>Not parsed scheme of the process</returns>
-        SchemeDefinition<TSchemeMedium> GetProcessSchemeWithParameters(string schemeCode,
-                                                                       IDictionary<string, object> parameters);
+            string parameters,
+            Guid? rootSchemeId,
+            bool ignoreObsolete);
+
+       
         /// <summary>
         /// Gets not parsed scheme by scheme name  
         /// </summary>
@@ -52,14 +48,8 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <summary>
         /// Saves scheme to a store
         /// </summary>
-        /// <param name="schemeCode">Name of the scheme</param>
-        /// <param name="schemeId">Id of the scheme</param>
-        /// <param name="scheme">Not parsed scheme</param>
-        /// <param name="parameters">Parameters for creating the scheme</param>
-        void SaveScheme(string schemeCode,
-                        Guid schemeId,
-                        TSchemeMedium scheme,
-                        IDictionary<string, object> parameters);
+        /// <param name="scheme">Not parsed scheme of the process</param>
+        void SaveScheme(SchemeDefinition<TSchemeMedium> scheme);
 
         /// <summary>
         /// Sets sign IsObsolete to the scheme

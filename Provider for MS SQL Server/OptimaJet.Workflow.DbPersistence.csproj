@@ -44,7 +44,7 @@
   <ItemGroup>
     <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ServiceStack.Text.Signed.4.0.36\lib\net40\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\packages\ServiceStack.Text.Signed.4.0.38\lib\net40\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -103,6 +103,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\update_1_4_to_1_4_3.sql" />
+    <Content Include="Scripts\update_1_4_5_to_1_5.sql" />
     <Content Include="Scripts\update_1_3_to_1_4.sql" />
     <Content Include="Scripts\CreatePersistenceObjects.sql" />
     <Content Include="Scripts\CreatePersistenceObjectsForAzureSQL.sql" />

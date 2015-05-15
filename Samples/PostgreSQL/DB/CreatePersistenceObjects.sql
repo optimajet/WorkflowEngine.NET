@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 1.4.4
+Version: 1.5
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -29,6 +29,8 @@ CREATE TABLE "WorkflowProcessInstance" (
   "PreviousActivityForDirect" character varying(256) NULL,
   "PreviousActivityForReverse" character varying(256) NULL,
   "IsDeterminingParametersChanged" boolean NOT NULL,
+  "ParentProcessId" uuid NULL,
+  "RootProcessId" uuid NOT NULL,
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
 
@@ -61,6 +63,10 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessScheme" (
   "DefiningParametersHash" character varying(1024) NOT NULL,
   "SchemeCode" character varying(256) NOT NULL,
   "IsObsolete" boolean NOT NULL,
+  "RootSchemeCode" character varying(256) NULL,
+  "RootSchemeId" uuid NULL,
+  "AllowedActivities" text NULL,
+  "StartingTransition" text NULL,
   CONSTRAINT "WorkflowProcessScheme_pkey" PRIMARY KEY ("Id")
 );
 CREATE INDEX "WorkflowProcessScheme_DefiningParametersHash_idx"  ON "WorkflowProcessScheme" USING btree ("DefiningParametersHash");

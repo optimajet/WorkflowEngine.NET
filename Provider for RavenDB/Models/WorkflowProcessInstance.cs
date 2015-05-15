@@ -1,8 +1,5 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace OptimaJet.Workflow.RavenDB
 {
@@ -20,5 +17,7 @@ namespace OptimaJet.Workflow.RavenDB
         public Guid? SchemeId { get; set; }
         public string StateName { get; set; }
         public List<WorkflowProcessInstancePersistence> Persistence { get; set; }
+        public Guid? ParentProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
     }
 }

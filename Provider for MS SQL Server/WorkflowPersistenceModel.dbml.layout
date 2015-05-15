@@ -1,59 +1,59 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
-<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11.625, 8.5" name="WorkflowPersistenceModel">
+<ordesignerObjectsDiagram dslVersion="1.0.0.0" absoluteBounds="0, 0, 11, 10.875" name="WorkflowPersistenceModel">
   <DataContextMoniker Name="/WorkflowPersistenceModelDataContext" />
   <nestedChildShapes>
-    <classShape Id="b2ad3732-ab18-4290-ae1d-87a63a654a9c" absoluteBounds="0.75, 4.75, 2, 1.5785953776041666">
+    <classShape Id="b2ad3732-ab18-4290-ae1d-87a63a654a9c" absoluteBounds="0.75, 0.75, 2, 1.5785953776041666">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessInstancePersistence" />
       <nestedChildShapes>
-        <elementListCompartment Id="b3b6030f-4dc8-44d7-a1b8-c7fc4bdc94ca" absoluteBounds="0.765, 5.21, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="b3b6030f-4dc8-44d7-a1b8-c7fc4bdc94ca" absoluteBounds="0.765, 1.21, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="06193af3-6e7f-4075-b4d6-693329030044" absoluteBounds="3.75, 4.75, 2, 1.3862939453125005">
+    <classShape Id="06193af3-6e7f-4075-b4d6-693329030044" absoluteBounds="3.75, 0.75, 2, 1.3862939453125005">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessInstanceStatus" />
       <nestedChildShapes>
-        <elementListCompartment Id="bf981b1f-5da6-40c1-91ea-95e70cd96a9f" absoluteBounds="3.765, 5.21, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="bf981b1f-5da6-40c1-91ea-95e70cd96a9f" absoluteBounds="3.765, 1.21, 1.9700000000000002, 0.8262939453125" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="a4c25900-2030-416e-a992-e0d804836824" absoluteBounds="7.875, 4, 2, 1.1939925130208333">
+    <classShape Id="a4c25900-2030-416e-a992-e0d804836824" absoluteBounds="0.75, 3.75, 2, 1.1939925130208327">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowRuntime" />
       <nestedChildShapes>
-        <elementListCompartment Id="14fb5e18-d98b-45a1-a237-0cff05e0e0fa" absoluteBounds="7.89, 4.46, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="14fb5e18-d98b-45a1-a237-0cff05e0e0fa" absoluteBounds="0.76499999999999968, 4.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="8f3dec62-c926-4882-8063-6fa3938f6bf0" absoluteBounds="9.375, 1.625, 2, 1.9631982421875">
-      <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessScheme" />
-      <nestedChildShapes>
-        <elementListCompartment Id="b0639585-10f6-457c-8253-b13f7d33f205" absoluteBounds="9.39, 2.085, 1.9700000000000002, 1.4031982421875" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
-      </nestedChildShapes>
-    </classShape>
-    <classShape Id="4993812e-d6f6-43e1-8a5c-c7df66fa1365" absoluteBounds="1.125, 0.875, 2, 2.9247054036458331">
-      <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessInstance" />
-      <nestedChildShapes>
-        <elementListCompartment Id="ec10fa6c-5e1e-42c2-acc8-ada1ffedf59f" absoluteBounds="1.1400000000000001, 1.335, 1.9700000000000002, 2.364705403645833" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
-      </nestedChildShapes>
-    </classShape>
-    <classShape Id="18ca534f-afa5-469b-86fb-f746ad4c1210" absoluteBounds="7.375, 0.5, 2, 1.1939925130208333">
+    <classShape Id="18ca534f-afa5-469b-86fb-f746ad4c1210" absoluteBounds="3.75, 3.75, 2, 1.193992513020834">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowScheme" />
       <nestedChildShapes>
-        <elementListCompartment Id="280f95a8-272c-4810-bc67-2a796037d9f7" absoluteBounds="7.3900000000000006, 0.96, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="280f95a8-272c-4810-bc67-2a796037d9f7" absoluteBounds="3.7650000000000006, 4.21, 1.9700000000000002, 0.63399251302083326" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="14388dbc-8cfe-473e-80d6-7a192f2520f0" absoluteBounds="6.625, 1.875, 2, 1.7708968098958331">
+    <classShape Id="14388dbc-8cfe-473e-80d6-7a192f2520f0" absoluteBounds="0.75, 5.75, 2, 1.7708968098958327">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessTimer" />
       <nestedChildShapes>
-        <elementListCompartment Id="c7be7878-352e-4651-9fe9-ec31a1648cda" absoluteBounds="6.64, 2.335, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="c7be7878-352e-4651-9fe9-ec31a1648cda" absoluteBounds="0.76499999999999968, 6.21, 1.9700000000000002, 1.2108968098958333" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="a762ad59-8a36-4cf3-b493-2d4c109d6010" absoluteBounds="3.5, 0.5, 2, 3.1170068359375">
+    <classShape Id="a762ad59-8a36-4cf3-b493-2d4c109d6010" absoluteBounds="3.75, 5.75, 2, 3.1170068359375005">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessTransitionHistory" />
       <nestedChildShapes>
-        <elementListCompartment Id="986fc344-f539-4888-a980-245ff75d1ee1" absoluteBounds="3.5149999999999997, 0.96, 1.9700000000000002, 2.5570068359375" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="986fc344-f539-4888-a980-245ff75d1ee1" absoluteBounds="3.7649999999999997, 6.21, 1.9700000000000002, 2.5570068359375" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
-    <classShape Id="e7819355-9a3d-4eb6-acf7-1a66c205f7fb" absoluteBounds="6.875, 5.25, 2, 1.5785953776041666">
+    <classShape Id="e7819355-9a3d-4eb6-acf7-1a66c205f7fb" absoluteBounds="6.75, 0.75, 2, 1.5785953776041666">
       <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowGlobalParameter" />
       <nestedChildShapes>
-        <elementListCompartment Id="69450101-7bde-45a2-a5fe-cf7ce67cd463" absoluteBounds="6.89, 5.71, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+        <elementListCompartment Id="69450101-7bde-45a2-a5fe-cf7ce67cd463" absoluteBounds="6.765, 1.21, 1.9700000000000002, 1.0185953776041665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="a57d450c-67c3-4ce7-9f56-261614cb46d7" absoluteBounds="6.75, 3.75, 2, 3.3093082682291666">
+      <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessInstance" />
+      <nestedChildShapes>
+        <elementListCompartment Id="bad68f28-baec-4673-a424-40d4e595744a" absoluteBounds="6.765, 4.21, 1.9700000000000002, 2.7493082682291665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
+      </nestedChildShapes>
+    </classShape>
+    <classShape Id="254441d4-b8d7-4de3-9384-8ec411f69efc" absoluteBounds="7.125, 7.875, 2, 2.7324039713541666">
+      <DataClassMoniker Name="/WorkflowPersistenceModelDataContext/WorkflowProcessScheme" />
+      <nestedChildShapes>
+        <elementListCompartment Id="01edc1bf-edeb-412b-a736-d8a307d43fa5" absoluteBounds="7.14, 8.335, 1.9700000000000002, 2.1724039713541665" name="DataPropertiesCompartment" titleTextColor="Black" itemTextColor="Black" />
       </nestedChildShapes>
     </classShape>
   </nestedChildShapes>

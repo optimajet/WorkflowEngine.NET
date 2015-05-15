@@ -1,13 +1,12 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
+using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core;
+using ServiceStack.Text;
 
 namespace OptimaJet.Workflow.DbPersistence
 {
@@ -46,37 +45,38 @@ namespace OptimaJet.Workflow.DbPersistence
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                 throw new SchemeNotFoundException();
 
-            return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete, processScheme.DefiningParameters);
+            return ConvertToSchemeDefinition(processScheme);
         }
 
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string, object> parameters)
+        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
+            Guid? rootSchemeId, bool ignoreObsolete)
         {
-            return GetProcessSchemeWithParameters(schemeCode, parameters, false);
-        }
-
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string,object> parameters, bool ignoreObsolete)
-        { 
             IEnumerable<WorkflowProcessScheme> processSchemes;
-            var definingParameters = SerializeParameters(parameters);
             var hash = HashHelper.GenerateStringHash(definingParameters);
-            
+
             using (var context = CreateContext())
             {
-                processSchemes = context.WorkflowProcessSchemes.Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && (!ignoreObsolete || !pss.IsObsolete)).ToList();
+                processSchemes =
+                    context.WorkflowProcessSchemes.Where(
+                        pss =>
+                            pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
+                            (!ignoreObsolete || !pss.IsObsolete) && ((!rootSchemeId.HasValue && pss.RootSchemeId == null) ||  pss.RootSchemeId == rootSchemeId)).ToList();
             }
 
             if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
-            
+
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, schemeCode, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
+                return ConvertToSchemeDefinition(scheme);
             }
 
-            foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
+            foreach (
+                var processScheme in
+                    processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
-                return new SchemeDefinition<XElement>(processScheme.Id, schemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return ConvertToSchemeDefinition(processScheme);
             }
 
             throw new SchemeNotFoundException();
@@ -84,7 +84,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = DefiningParametersSerializer.Serialize(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             using (var scope = PredefinedTransactionScopes.SerializableSupressedScope)
@@ -94,7 +94,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     var oldSchemes =
                         context.WorkflowProcessSchemes.Where(
                             wps =>
-                                wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == schemeCode &&
+                                wps.DefiningParametersHash == definingParametersHash && (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) &&
                                 !wps.IsObsolete).ToList();
 
                     foreach (var scheme in oldSchemes)
@@ -118,7 +118,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     var oldSchemes =
                         context.WorkflowProcessSchemes.Where(
                             wps =>
-                                wps.SchemeCode == schemeCode && !wps.IsObsolete).ToList();
+                                (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) && !wps.IsObsolete).ToList();
 
                     foreach (var scheme in oldSchemes)
                     {
@@ -132,9 +132,9 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public void SaveScheme(string schemeCode, Guid schemeId, XElement scheme, IDictionary<string, object> parameters)
+        public void SaveScheme(SchemeDefinition<XElement> scheme)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             using (var scope = PredefinedTransactionScopes.SerializableSupressedScope)
@@ -143,24 +143,29 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     var oldSchemes =
                         context.WorkflowProcessSchemes.Where(
-                            wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == schemeCode && !wps.IsObsolete).ToList();
+                            wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode && wps.IsObsolete == scheme.IsObsolete).ToList();
 
-                    if (oldSchemes.Count() > 0)
+                    if (oldSchemes.Any())
                     {
-                        foreach (var oldScheme in oldSchemes)
-                            if (oldScheme.DefiningParameters == definingParameters)
-                                throw new SchemeAlredyExistsException();
+                        if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
+                        {
+                            throw new SchemeAlredyExistsException();
+                        }
                     }
 
 
                     var newProcessScheme = new WorkflowProcessScheme
                                                {
-                                                   Id = schemeId,
+                                                   Id = scheme.Id,
                                                    DefiningParameters = definingParameters,
                                                    DefiningParametersHash = definingParametersHash,
-                                                   Scheme = scheme.ToString(),
-                                                   SchemeCode = schemeCode
-                                               };
+                                                   Scheme = scheme.Scheme.ToString(),
+                                                   SchemeCode = scheme.SchemeCode,
+                                                   RootSchemeCode =  scheme.RootSchemeCode,
+                                                   RootSchemeId = scheme.RootSchemeId,
+                                                   AllowedActivities = JsonSerializer.SerializeToString(scheme.AllowedActivities),
+                                                   StartingTransition = scheme.StartingTransition
+,                                               };
                     context.WorkflowProcessSchemes.InsertOnSubmit(newProcessScheme);
                     context.SubmitChanges();
                 }
@@ -170,58 +175,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         }
 
-        private string SerializeParameters (IDictionary<string, object> parameters)
-        {
-            var json = new StringBuilder("{");
-
-            bool isFirst = true;
-
-            foreach (var parameter in parameters.OrderBy(p=>p.Key))
-            {
-                if (string.IsNullOrEmpty(parameter.Key))
-                    continue;
-
-                if (!isFirst)
-                    json.Append(",");
-
-                json.AppendFormat("{0}:[",parameter.Key);
-
-                var isSubFirst = true;
-
-                if (parameter.Value is IEnumerable)
-                {
-                    var enumerableValue = (parameter.Value as IEnumerable);
-
-                    var valuesToString = new List<string>();
-
-                    foreach (var val in enumerableValue)
-                    {
-                        valuesToString.Add(val.ToString());
-                    }
-
-                    foreach (var parameterValue in valuesToString.OrderBy(p => p))
-                    {
-                        if (!isSubFirst)
-                            json.Append(",");
-                        json.AppendFormat("\"{0}\"", parameterValue);
-                        isSubFirst = false;
-                    }
-                }
-                else
-                {
-                    json.AppendFormat("\"{0}\"", parameter.Value);
-                }
-
-                json.Append("]");
-
-                isFirst = false;
-
-            }
-
-            json.Append("}");
-
-            return json.ToString();
-        }
+      
 
         public XElement GetScheme(string code)
         {
@@ -257,6 +211,15 @@ namespace OptimaJet.Workflow.DbPersistence
                 }
                 context.SubmitChanges();
             }
+        }
+
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        {
+            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
+                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+                JsonSerializer.DeserializeFromString<List<string>>(workflowProcessScheme.AllowedActivities), workflowProcessScheme.StartingTransition,
+                workflowProcessScheme.DefiningParameters); 
         }
     }
 }

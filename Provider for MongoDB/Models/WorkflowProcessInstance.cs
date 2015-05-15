@@ -1,10 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
+using MongoDB.Bson.Serialization.Attributes;
+using MongoDB.Driver;
 
 namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowProcessInstance
     {
+      
         public string ActivityName { get; set; }
         public Guid Id { get; set; }
         public bool IsDeterminingParametersChanged { get; set; }
@@ -17,5 +20,7 @@ namespace OptimaJet.Workflow.MongoDB
         public Guid? SchemeId { get; set; }
         public string StateName { get; set; }
         public List<WorkflowProcessInstancePersistence> Persistence { get; set; }
+        public Guid? ParentProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
     }
 }

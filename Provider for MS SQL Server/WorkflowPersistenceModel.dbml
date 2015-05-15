@@ -21,31 +21,6 @@
       <Column Name="Timer" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
     </Type>
   </Table>
-  <Table Name="dbo.WorkflowProcessScheme" Member="WorkflowProcessSchemes">
-    <Type Name="WorkflowProcessScheme">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="Scheme" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
-      <Column Name="DefiningParameters" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
-      <Column Name="DefiningParametersHash" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
-      <Column Name="SchemeCode" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
-      <Column Name="IsObsolete" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-    </Type>
-  </Table>
-  <Table Name="dbo.WorkflowProcessInstance" Member="WorkflowProcessInstances">
-    <Type Name="WorkflowProcessInstance">
-      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
-      <Column Name="StateName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="true" />
-      <Column Name="ActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
-      <Column Name="SchemeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
-      <Column Name="PreviousState" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="PreviousStateForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="PreviousStateForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="PreviousActivity" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="PreviousActivityForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="PreviousActivityForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
-      <Column Name="IsDeterminingParametersChanged" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
-    </Type>
-  </Table>
   <Table Name="dbo.WorkflowScheme" Member="WorkflowSchemes">
     <Type Name="WorkflowScheme">
       <Column Name="Code" Type="System.String" DbType="NVarChar(256) NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
@@ -83,6 +58,37 @@
       <Column Name="Type" Type="System.String" DbType="NVarChar(4000) NOT NULL" CanBeNull="false" />
       <Column Name="Name" Type="System.String" DbType="NVarChar(4000) NOT NULL" CanBeNull="false" />
       <Column Name="Value" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessInstance" Member="WorkflowProcessInstances">
+    <Type Name="WorkflowProcessInstance">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="StateName" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="ActivityName" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="SchemeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="PreviousState" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousStateForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousStateForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivity" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivityForDirect" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="PreviousActivityForReverse" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="IsDeterminingParametersChanged" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="ParentProcessId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="RootProcessId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+    </Type>
+  </Table>
+  <Table Name="dbo.WorkflowProcessScheme" Member="WorkflowProcessSchemes">
+    <Type Name="WorkflowProcessScheme">
+      <Column Name="Id" Type="System.Guid" DbType="UniqueIdentifier NOT NULL" IsPrimaryKey="true" CanBeNull="false" />
+      <Column Name="Scheme" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="DefiningParameters" Type="System.String" DbType="NText NOT NULL" CanBeNull="false" UpdateCheck="Never" />
+      <Column Name="DefiningParametersHash" Type="System.String" DbType="NVarChar(1024) NOT NULL" CanBeNull="false" />
+      <Column Name="SchemeCode" Type="System.String" DbType="NVarChar(MAX) NOT NULL" CanBeNull="false" />
+      <Column Name="IsObsolete" Type="System.Boolean" DbType="Bit NOT NULL" CanBeNull="false" />
+      <Column Name="RootSchemeCode" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="RootSchemeId" Type="System.Guid" DbType="UniqueIdentifier" CanBeNull="true" />
+      <Column Name="AllowedActivities" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
+      <Column Name="StartingTransition" Type="System.String" DbType="NVarChar(MAX)" CanBeNull="true" />
     </Type>
   </Table>
   <Function Name="dbo.spWorkflowProcessResetRunningStatus" Method="spWorkflowProcessResetRunningStatus">

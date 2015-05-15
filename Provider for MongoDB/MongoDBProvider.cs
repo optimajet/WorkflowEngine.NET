@@ -57,7 +57,9 @@ namespace OptimaJet.Workflow.MongoDB
                 Id = processInstance.ProcessId,
                 SchemeId = processInstance.SchemeId,
                 ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                StateName = processInstance.ProcessScheme.InitialActivity.State
+                StateName = processInstance.ProcessScheme.InitialActivity.State,
+                RootProcessId = processInstance.RootProcessId,
+                ParentProcessId = processInstance.ParentProcessId
             };
             dbcoll.Insert(newProcess);
         }
@@ -100,14 +102,12 @@ namespace OptimaJet.Workflow.MongoDB
             var parametersToPersistList =
               processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value,ptp.Type) })
                   .ToList();
-            var persistenceParameters = processInstance.ProcessScheme.PersistenceParameters.ToList();
-
+           
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             var process = dbcoll.FindOneById(processInstance.ProcessId);
             if (process != null && process.Persistence != null)
             {
-                var persistedParameters = process.Persistence.Where(
-                    WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
+                var persistedParameters = process.Persistence.ToList();
 
                 foreach (var parameterDefinitionWithValue in parametersToPersistList)
                 {
@@ -235,6 +235,9 @@ namespace OptimaJet.Workflow.MongoDB
                         inst.PreviousStateForReverse = transition.From.State;
                 }
 
+                inst.ParentProcessId = processInstance.ParentProcessId;
+                inst.RootProcessId = processInstance.RootProcessId;
+
                 dbcoll.Save(inst);
             }
 
@@ -343,7 +346,13 @@ namespace OptimaJet.Workflow.MongoDB
                     (object) processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
-                    false)
+                    false),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
+                    (object) processInstance.ParentProcessId),
+                 ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
+                    (object) processInstance.RootProcessId),
             };
             return parameters;
         }
@@ -354,23 +363,22 @@ namespace OptimaJet.Workflow.MongoDB
             var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count());
 
             List<WorkflowProcessInstancePersistence> persistedParameters;
-
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+            var process = dbcoll.FindOneById(processId);
+            if(process != null && process.Persistence != null)
             {
-                var process = dbcoll.FindOneById(processId);
-                if(process != null && process.Persistence != null)
-                {
-                    persistedParameters = process.Persistence.Where(WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
-                }
-                else
-                {
-                    persistedParameters = new List<WorkflowProcessInstancePersistence>();
-                }  
+                persistedParameters = process.Persistence.ToList();
             }
-
+            else
+            {
+                persistedParameters = new List<WorkflowProcessInstancePersistence>();
+            }  
+            
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.Single(p => p.Name == persistedParameter.ParameterName);
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+                if (parameterDefinition == null)
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
                 parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
             }
 
@@ -570,38 +578,43 @@ namespace OptimaJet.Workflow.MongoDB
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                 throw new SchemeNotFoundException();
 
-            return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+            return ConvertToSchemeDefinition(processScheme);
         }
 
 
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string processName, IDictionary<string, object> parameters)
-        {
-            return GetProcessSchemeWithParameters(processName, parameters, false);
-        }
-
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string, object> parameters, bool ignoreObsolete)
+        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
+            Guid? rootSchemeId, bool ignoreObsolete)
         {
             IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
-            var definingParameters = SerializeParameters(parameters);
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
             var dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
-            processSchemes = ignoreObsolete ?
-                    dbcoll.Find(Query<WorkflowProcessScheme>.Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash)).ToList() :
-                    dbcoll.Find(Query<WorkflowProcessScheme>.Where(pss => pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && !pss.IsObsolete)).ToList();
+            processSchemes = ignoreObsolete
+                ? dbcoll.Find(
+                    Query<WorkflowProcessScheme>.Where(
+                        pss =>
+                            pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
+                            pss.RootSchemeId == rootSchemeId))
+                    .ToList()
+                : dbcoll.Find(
+                    Query<WorkflowProcessScheme>.Where(
+                        pss =>
+                            pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
+                            pss.RootSchemeId == rootSchemeId &&
+                            !pss.IsObsolete)).ToList();
             
-            if (processSchemes.Count() < 1)
+            if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
 
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, scheme.SchemeCode, XElement.Parse(scheme.Scheme), scheme.IsObsolete);
+                return ConvertToSchemeDefinition(scheme);
             }
 
             foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
-                return new SchemeDefinition<XElement>(processScheme.Id, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return ConvertToSchemeDefinition(processScheme);
             }
 
             throw new SchemeNotFoundException();
@@ -609,12 +622,12 @@ namespace OptimaJet.Workflow.MongoDB
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = DefiningParametersSerializer.Serialize(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             var dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
             dbcoll.Update(
-                Query<WorkflowProcessScheme>.Where(item => item.SchemeCode == schemeCode && item.DefiningParametersHash == definingParametersHash),
+                Query<WorkflowProcessScheme>.Where(item => (item.SchemeCode == schemeCode || item.RootSchemeCode == schemeCode) && item.DefiningParametersHash == definingParametersHash),
                 Update<WorkflowProcessScheme>.Set(c => c.IsObsolete, true));
         }
 
@@ -622,36 +635,43 @@ namespace OptimaJet.Workflow.MongoDB
         {
             var dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
             dbcoll.Update(
-                Query<WorkflowProcessScheme>.Where(item => item.SchemeCode == schemeCode),
+                Query<WorkflowProcessScheme>.Where(item => (item.SchemeCode == schemeCode || item.RootSchemeCode == schemeCode)),
                 Update<WorkflowProcessScheme>.Set(c => c.IsObsolete, true));
         }
 
-        public void SaveScheme(string schemeCode, Guid schemeId, XElement scheme, IDictionary<string, object> parameters)
+        public void SaveScheme(SchemeDefinition<XElement> scheme)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             var dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
+            
             var oldSchemes =
                     dbcoll.Find(Query<WorkflowProcessScheme>.Where(
-                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == schemeCode && !wps.IsObsolete)).ToList();
+                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode && wps.IsObsolete == scheme.IsObsolete)).ToList();
 
-            if (oldSchemes.Count() > 0)
+            if (oldSchemes.Any())
             {
-                foreach (var oldScheme in oldSchemes)
-                    if (oldScheme.DefiningParameters == definingParameters)
-                        throw new SchemeAlredyExistsException();
+                if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
+                {
+                    throw new SchemeAlredyExistsException();
+                }
             }
 
-
             var newProcessScheme = new WorkflowProcessScheme
-                                        {
-                                            Id = schemeId,
-                                            DefiningParameters = definingParameters,
-                                            DefiningParametersHash = definingParametersHash,
-                                            Scheme = scheme.ToString(),
-                                            SchemeCode = schemeCode
-                                        };
+            {
+                Id = scheme.Id,
+                DefiningParameters = definingParameters,
+                DefiningParametersHash = definingParametersHash,
+                Scheme = scheme.Scheme.ToString(),
+                SchemeCode = scheme.SchemeCode,
+                RootSchemeCode = scheme.RootSchemeCode,
+                RootSchemeId = scheme.RootSchemeId,
+                AllowedActivities = scheme.AllowedActivities,
+                StartingTransition = scheme.StartingTransition
+,
+            };
+
             dbcoll.Insert(newProcessScheme);
         }
 
@@ -662,10 +682,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             if (wfScheme == null)
             {
-                wfScheme = new WorkflowScheme();
-                wfScheme.Id = schemaCode;
-                wfScheme.Code = schemaCode;
-                wfScheme.Scheme = scheme;
+                wfScheme = new WorkflowScheme {Id = schemaCode, Code = schemaCode, Scheme = scheme};
                 dbcoll.Insert(wfScheme);
             }
             else
@@ -675,59 +692,7 @@ namespace OptimaJet.Workflow.MongoDB
             }
         }
 
-        private string SerializeParameters(IDictionary<string, object> parameters)
-        {
-            var json = new StringBuilder("{");
-
-            bool isFirst = true;
-
-            foreach (var parameter in parameters.OrderBy(p => p.Key))
-            {
-                if (string.IsNullOrEmpty(parameter.Key))
-                    continue;
-
-                if (!isFirst)
-                    json.Append(",");
-
-                json.AppendFormat("{0}:[", parameter.Key);
-
-                var isSubFirst = true;
-
-                if (parameter.Value is IEnumerable)
-                {
-                    var enumerableValue = (parameter.Value as IEnumerable);
-
-                    var valuesToString = new List<string>();
-
-                    foreach (var val in enumerableValue)
-                    {
-                        valuesToString.Add(val.ToString());
-                    }
-
-                    foreach (var parameterValue in valuesToString.OrderBy(p => p))
-                    {
-                        if (!isSubFirst)
-                            json.Append(",");
-                        json.AppendFormat("\"{0}\"", parameterValue);
-                        isSubFirst = false;
-                    }
-                }
-                else
-                {
-                    json.AppendFormat("\"{0}\"", parameter.Value);
-                }
-
-                json.Append("]");
-
-                isFirst = false;
-
-            }
-
-            json.Append("}");
-
-            return json.ToString();
-        }
-       
+        
         public XElement GetScheme(string code)
         {
             var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
@@ -771,6 +736,15 @@ namespace OptimaJet.Workflow.MongoDB
         }
 
         #endregion
+
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        {
+            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
+                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+                workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
+                workflowProcessScheme.DefiningParameters);
+        }
 
         
     }

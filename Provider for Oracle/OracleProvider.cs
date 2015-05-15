@@ -13,6 +13,7 @@ using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Oracle;
 using Oracle.ManagedDataAccess.Client;
 using ServiceStack.Text;
+using ServiceStack.Text.Common;
 
 namespace OptimaJet.Workflow.DbPersistence
 {
@@ -93,12 +94,10 @@ namespace OptimaJet.Workflow.DbPersistence
             var parametersToPersistList =
               processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type) })
                   .ToList();
-            var persistenceParameters = processInstance.ProcessScheme.PersistenceParameters.ToList();
-
+           
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).Where(
-                        WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
+                var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).ToList();
 
                 foreach (var parameterDefinitionWithValue in parametersToPersistList)
                 {
@@ -348,7 +347,13 @@ namespace OptimaJet.Workflow.DbPersistence
                     (object) processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
-                    false)
+                    false),
+                 ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
+                    (object) processInstance.ParentProcessId),
+                 ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
+                    (object) processInstance.RootProcessId),
             };
             return parameters;
         }
@@ -362,13 +367,15 @@ namespace OptimaJet.Workflow.DbPersistence
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processId)
-                    .Where(WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
+                persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processId).ToList();
             }
 
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.Single(p => p.Name == persistedParameter.ParameterName);
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+                if (parameterDefinition == null)
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
+
                 parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
             }
 
@@ -577,40 +584,35 @@ namespace OptimaJet.Workflow.DbPersistence
                 if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                     throw new SchemeNotFoundException();
 
-                return new SchemeDefinition<XElement>(schemeId, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return ConvertToSchemeDefinition(processScheme);
             }
         }
 
-
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string processName, IDictionary<string, object> parameters)
-        {
-            return GetProcessSchemeWithParameters(processName, parameters, false);
-        }
-
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, IDictionary<string, object> parameters, bool ignoreObsolete)
+        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
+            Guid? rootSchemeId, bool ignoreObsolete)
         {
             IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
-            var definingParameters = SerializeParameters(parameters);
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 processSchemes =
-                WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete);
+               WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
+                   rootSchemeId);
             }
 
-            if (processSchemes.Count() < 1)
+            if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
 
             if (processSchemes.Count() == 1)
             {
                 var scheme = processSchemes.First();
-                return new SchemeDefinition<XElement>(scheme.Id, scheme.SchemeCode,  XElement.Parse(scheme.Scheme), scheme.IsObsolete);
+                return ConvertToSchemeDefinition(scheme);
             }
 
             foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
-                return new SchemeDefinition<XElement>(processScheme.Id, processScheme.SchemeCode, XElement.Parse(processScheme.Scheme), processScheme.IsObsolete);
+                return ConvertToSchemeDefinition(processScheme);
             }
 
             throw new SchemeNotFoundException();
@@ -618,7 +620,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = DefiningParametersSerializer.Serialize(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
@@ -637,15 +639,17 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public void SaveScheme(string schemeCode, Guid schemeId, XElement scheme, IDictionary<string, object> parameters)
+        public void SaveScheme(SchemeDefinition<XElement> scheme)
         {
-            var definingParameters = SerializeParameters(parameters);
+            var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, schemeCode, definingParametersHash, true);
-                if (oldSchemes.Count() > 0)
+                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
+                    scheme.IsObsolete, scheme.RootSchemeId);
+
+                if (oldSchemes.Any())
                 {
                     foreach (var oldScheme in oldSchemes)
                         if (oldScheme.DefiningParameters == definingParameters)
@@ -654,11 +658,15 @@ namespace OptimaJet.Workflow.DbPersistence
 
                 var newProcessScheme = new WorkflowProcessScheme
                 {
-                    Id = schemeId,
+                    Id = scheme.Id,
                     DefiningParameters = definingParameters,
                     DefiningParametersHash = definingParametersHash,
-                    Scheme = scheme.ToString(),
-                    SchemeCode = schemeCode
+                    Scheme = scheme.Scheme.ToString(),
+                    SchemeCode = scheme.SchemeCode,
+                    RootSchemeCode = scheme.RootSchemeCode,
+                    RootSchemeId = scheme.RootSchemeId,
+                    AllowedActivities = JsonSerializer.SerializeToString(scheme.AllowedActivities),
+                    StartingTransition = scheme.StartingTransition
                 };
 
                 newProcessScheme.Insert(connection);
@@ -688,59 +696,6 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        private string SerializeParameters(IDictionary<string, object> parameters)
-        {
-            var json = new StringBuilder("{");
-
-            bool isFirst = true;
-
-            foreach (var parameter in parameters.OrderBy(p => p.Key))
-            {
-                if (string.IsNullOrEmpty(parameter.Key))
-                    continue;
-
-                if (!isFirst)
-                    json.Append(",");
-
-                json.AppendFormat("{0}:[", parameter.Key);
-
-                var isSubFirst = true;
-
-                if (parameter.Value is IEnumerable)
-                {
-                    var enumerableValue = (parameter.Value as IEnumerable);
-
-                    var valuesToString = new List<string>();
-
-                    foreach (var val in enumerableValue)
-                    {
-                        valuesToString.Add(val.ToString());
-                    }
-
-                    foreach (var parameterValue in valuesToString.OrderBy(p => p))
-                    {
-                        if (!isSubFirst)
-                            json.Append(",");
-                        json.AppendFormat("\"{0}\"", parameterValue);
-                        isSubFirst = false;
-                    }
-                }
-                else
-                {
-                    json.AppendFormat("\"{0}\"", parameter.Value);
-                }
-
-                json.Append("]");
-
-                isFirst = false;
-
-            }
-
-            json.Append("}");
-
-            return json.ToString();
-        }
-
         public XElement GetScheme(string code)
         {
             using(OracleConnection connection = new OracleConnection(ConnectionString))
@@ -765,5 +720,13 @@ namespace OptimaJet.Workflow.DbPersistence
         }
         #endregion
 
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        {
+            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
+                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+                JsonSerializer.DeserializeFromString<List<string>>(workflowProcessScheme.AllowedActivities), workflowProcessScheme.StartingTransition,
+                workflowProcessScheme.DefiningParameters);
+        }
     }
 }

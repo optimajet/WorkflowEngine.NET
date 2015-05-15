@@ -1,11 +1,10 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 1.4.4
+Version: 1.5
 File: CreatePersistenceObjects.sql
 */
 
--- Dumping structure for table workflowinbox
 CREATE TABLE IF NOT EXISTS `workflowinbox` (
   `Id` binary(16) NOT NULL,
   `ProcessId` binary(16) default NULL,
@@ -15,10 +14,6 @@ CREATE TABLE IF NOT EXISTS `workflowinbox` (
   KEY `IdentityId` (`IdentityId`)
 );
 
-
-
-
--- Dumping structure for table workflowprocessinstance
 CREATE TABLE IF NOT EXISTS `workflowprocessinstance` (
   `Id` binary(16) NOT NULL,
   `StateName` varchar(256) default NULL,
@@ -31,14 +26,12 @@ CREATE TABLE IF NOT EXISTS `workflowprocessinstance` (
   `PreviousActivityForDirect` varchar(256) default NULL,
   `PreviousActivityForReverse` varchar(256) default NULL,
   `IsDeterminingParametersChanged` bit(1) NOT NULL,
+  `ParentProcessId` binary(16) NULL,
+  `RootProcessId` binary(16) NOT NULL,
   PRIMARY KEY  (`Id`),
   KEY `SchemeId` (`SchemeId`)
 );
 
-
-
-
--- Dumping structure for table workflowprocessinstancepersistence
 CREATE TABLE IF NOT EXISTS `workflowprocessinstancepersistence` (
   `Id` binary(16) NOT NULL,
   `ProcessId` binary(16) NOT NULL,
@@ -48,10 +41,6 @@ CREATE TABLE IF NOT EXISTS `workflowprocessinstancepersistence` (
   KEY `ProcessId` (`ProcessId`)
 );
 
-
-
-
--- Dumping structure for table workflowprocessinstancestatus
 CREATE TABLE IF NOT EXISTS `workflowprocessinstancestatus` (
   `Id` binary(16) NOT NULL,
   `Status` tinyint(4) NOT NULL,
@@ -60,10 +49,6 @@ CREATE TABLE IF NOT EXISTS `workflowprocessinstancestatus` (
   KEY `Status` (`Status`)
 );
 
-
-
-
--- Dumping structure for table workflowprocessscheme
 CREATE TABLE IF NOT EXISTS `workflowprocessscheme` (
   `Id` binary(16) NOT NULL,
   `Scheme` longtext NOT NULL,
@@ -71,13 +56,13 @@ CREATE TABLE IF NOT EXISTS `workflowprocessscheme` (
   `DefiningParametersHash` varchar(1024) NOT NULL,
   `SchemeCode` varchar(256) NOT NULL,
   `IsObsolete` bit(1) NOT NULL,
+  `RootSchemeCode` varchar(256) NULL,
+  `RootSchemeId` binary(16) NULL,
+  `AllowedActivities` longtext NULL,
+  `StartingTransition` longtext NULL,
   PRIMARY KEY  (`Id`)
 );
 
-
-
-
--- Dumping structure for table workflowprocesstimer
 CREATE TABLE IF NOT EXISTS `workflowprocesstimer` (
   `Id` binary(16) NOT NULL,
   `ProcessId` binary(16) NOT NULL,
@@ -90,10 +75,6 @@ CREATE TABLE IF NOT EXISTS `workflowprocesstimer` (
   KEY `NextExecutionDateTime` (`NextExecutionDateTime`)
 );
 
-
-
-
--- Dumping structure for table workflowprocesstransitionhistory
 CREATE TABLE IF NOT EXISTS `workflowprocesstransitionhistory` (
   `Id` binary(16) NOT NULL,
   `ProcessId` binary(16) NOT NULL,
@@ -113,17 +94,12 @@ CREATE TABLE IF NOT EXISTS `workflowprocesstransitionhistory` (
   KEY `ActorIdentityId` (`ActorIdentityId`)
 );
 
-
-
-
--- Dumping structure for table workflowscheme
 CREATE TABLE IF NOT EXISTS `workflowscheme` (
-  `Code` varchar(256) NOT NULL,
+  `Code` varchar(128) NOT NULL,
   `Scheme` longtext NOT NULL,
   PRIMARY KEY  (`Code`)
 );
 
--- Dumping structure for table workflowglobalparameter
 CREATE TABLE IF NOT EXISTS `workflowglobalparameter` (
   `Id` binary(16) NOT NULL,
   `Type` varchar(256)  NOT NULL,
