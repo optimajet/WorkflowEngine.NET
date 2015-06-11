@@ -66,9 +66,9 @@ namespace OptimaJet.Workflow.MySQL
                 case "StateName":
                     return StateName;
                 case "ParentProcessId":
-                    return ParentProcessId;
+                    return ParentProcessId.HasValue ? ParentProcessId.Value.ToByteArray() : null;
                 case "RootProcessId":
-                    return RootProcessId;
+                    return RootProcessId.ToByteArray();
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
