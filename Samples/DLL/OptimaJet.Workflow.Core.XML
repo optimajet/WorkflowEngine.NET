@@ -1246,6 +1246,44 @@
             Is system, storing can be different
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.ParametersCollection">
+            <summary>
+            Represent a collection of process's parameters
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ParametersCollection.GetParameter(System.String)">
+            <summary>
+            Returns parameter with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/> with specific name
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <returns>Parameter with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ParametersCollection.GetParameter``1(System.String)">
+            <summary>
+            Returns parameter's value by specific name
+            </summary>
+            <typeparam name="T">Type of the parameter</typeparam>
+            <param name="name">Name of the parameter</param>
+            <returns>Value of the parameter</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ParametersCollection.AddParameter(OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue)">
+            <summary>
+            Adds parameter to parameters collection
+            </summary>
+            <param name="parameter">Parameter with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/></param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ParametersCollection.AddParameters(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue})">
+            <summary>
+            Adds parameters to parameters collection
+            </summary>
+            <param name="parameters">Collection of parameters with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/></param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ParametersCollection.ReplaceParameters(System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue})">
+            <summary>
+            Replace parameters collection by new value
+            </summary>
+            <param name="parameters">&gt;Collection of parameters with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/></param>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ProcessDefinition">
             <summary>
             Represents object model of a scheme of a process
@@ -1453,6 +1491,16 @@
             Represent a instance of a specific process 
             </summary>
         </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessParameters">
+            <summary>
+            Returns the list of process parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/>
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ProcessInstance.MergedSubprocessParameters">
+            <summary>
+            Returns the list of process parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/> from a subprocess which was merged with current process. 
+            </summary>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.Create(System.Guid,System.Guid,OptimaJet.Workflow.Core.Model.ProcessDefinition,System.Boolean,System.Boolean)">
             <summary>
             Create ProcessInstance object
@@ -1629,6 +1677,16 @@
              Returns the name of the state  which is final for currently executing transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.To"/>
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ExecutedActivity">
+            <summary>
+             Returns the activity which is final for currently executing transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.To"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ExecutedTransition">
+            <summary>
+             Returns the currently executing transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.To"/>
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.CurrentActivityName">
             <summary>
             Returns the name of the current activity. Activity which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
@@ -1682,11 +1740,6 @@
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.IsDeterminingParametersChanged">
             <summary>
             Sign that parameters for creating scheme of the process was changed
-            </summary>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessParameters">
-            <summary>
-            Returns the list of process parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/>
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1">
@@ -3135,6 +3188,12 @@
             <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
             <param name="parameters">The parameters for creating scheme of process</param>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeleteInstance(System.Guid)">
+            <summary>
+            Delete instance of the process and all child subprocesses.
+            </summary>
+            <param name="processId">Process id</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessInstancesTree(System.Guid)">
             <summary>
             Returns process instance tree (root process and subprocesses)
@@ -3489,6 +3548,12 @@
             <param name="identityId">The user id which execute initial command if command is available</param>
             <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
             <param name="parameters">The parameters for creating scheme of process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeleteInstanceAsync(System.Guid)">
+            <summary>
+            Delete instance of the process and all child subprocesses.  (async version)
+            </summary>
+            <param name="processId">Process id</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetSchemeIsObsoleteAsync(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
             <summary>
