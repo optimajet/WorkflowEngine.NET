@@ -1,0 +1,69 @@
+<Process>
+  <Designer />
+  <Commands>
+    <Command Name="StartToRoute" />
+    <Command Name="Approve" />
+    <Command Name="Reject" />
+  </Commands>
+  <Activities>
+    <Activity Name="Draft" State="Draft" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="70" Y="200" />
+    </Activity>
+    <Activity Name="State1" State="State1" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="370" Y="200" />
+    </Activity>
+    <Activity Name="State2" State="State2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="670" Y="200" />
+    </Activity>
+    <Activity Name="Final" State="Final" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="970" Y="200" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_1_Activity_2_1" To="State1" From="Draft" Classifier="Direct">
+      <Triggers>
+        <Trigger Type="Command" NameRef="StartToRoute" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer />
+    </Transition>
+    <Transition Name="Activity_2_Activity_3_1" To="State2" From="State1" Classifier="Direct">
+      <Triggers>
+        <Trigger Type="Command" NameRef="Approve" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer />
+    </Transition>
+    <Transition Name="Activity_3_Activity_4_1" To="Final" From="State2" Classifier="Direct">
+      <Triggers>
+        <Trigger Type="Command" NameRef="Approve" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer />
+    </Transition>
+    <Transition Name="Activity_2_Activity_1_1" To="Draft" From="State1" Classifier="Reverse">
+      <Triggers>
+        <Trigger Type="Command" NameRef="Reject" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Bending="0.3991925493582423" />
+    </Transition>
+    <Transition Name="Activity_3_Activity_1_1" To="Draft" From="State2" Classifier="Reverse">
+      <Triggers>
+        <Trigger Type="Command" NameRef="Reject" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Bending="-0.2091841884353548" />
+    </Transition>
+  </Transitions>
+</Process>
