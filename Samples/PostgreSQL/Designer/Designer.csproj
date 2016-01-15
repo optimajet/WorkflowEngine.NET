@@ -43,6 +43,9 @@
     <Reference Include="Mono.Security">
       <HintPath>..\..\DLL\Mono.Security.dll</HintPath>
     </Reference>
+    <Reference Include="Newtonsoft.Json">
+      <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
+    </Reference>
     <Reference Include="Npgsql">
       <HintPath>..\..\DLL\Npgsql.dll</HintPath>
     </Reference>
@@ -51,9 +54,6 @@
     </Reference>
     <Reference Include="OptimaJet.Workflow.PostgreSQL">
       <HintPath>..\..\DLL\OptimaJet.Workflow.PostgreSQL.dll</HintPath>
-    </Reference>
-    <Reference Include="ServiceStack.Text">
-      <HintPath>..\..\DLL\ServiceStack.Text.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Data" />

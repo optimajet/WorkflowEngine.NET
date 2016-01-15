@@ -1,9 +1,9 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 1.5
+Version: 1.5.3
 File: CreatePersistenceObjects.sql
-*/
+*/WorkflowProcessTimerWorkflowProcessSchemeWorkflowProcessTimer
 -- WorkflowInbox
 CREATE TABLE "WorkflowInbox"
 (
@@ -78,7 +78,7 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessTimer" (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
   "Name" character varying(256) NOT NULL,
-  "NextExecutionDateTime" date NOT NULL,
+  "NextExecutionDateTime" timestamp NOT NULL,
   "Ignore" boolean NOT NULL,
   CONSTRAINT "WorkflowProcessTimer_pkey" PRIMARY KEY ("Id")
 );
@@ -96,7 +96,7 @@ CREATE TABLE "WorkflowProcessTransitionHistory" (
   "FromActivityName" character varying(256) NOT NULL,
   "ToActivityName" character varying(256) NOT NULL,
   "ToStateName" character varying(256) NULL,
-  "TransitionTime" date NOT NULL,
+  "TransitionTime" timestamp NOT NULL,
   "TransitionClassifier" character varying(256) NOT NULL,
   "FromStateName" character varying(256) NULL,
   "TriggerName" character varying(256) NULL,

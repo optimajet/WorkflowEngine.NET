@@ -9,12 +9,11 @@ namespace OptimaJet.Workflow.MySQL
         public Guid Lock { get; set; }
         public byte Status { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstanceStatus";
+        private const string TableName = "WorkflowProcessInstanceStatus";
 
         public WorkflowProcessInstanceStatus()
-            : base()
         {
-            db_TableName = _tableName;
+            db_TableName = TableName;
             db_Columns.AddRange(new ColumnInfo[]{
                 new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
                 new ColumnInfo(){Name="Lock", Type = MySqlDbType.Binary},
@@ -58,13 +57,22 @@ namespace OptimaJet.Workflow.MySQL
 
         public static int MassChangeStatus(MySqlConnection connection, byte stateFrom, byte stateTo)
         {
-            string command = string.Format("UPDATE {0} SET `Status` = @stateto WHERE `Status` = @statefrom", _tableName);
-            var p1 = new MySqlParameter("statefrom", MySqlDbType.Byte);
-            p1.Value = stateFrom;
-            var p2 = new MySqlParameter("stateto", MySqlDbType.Byte);
-            p2.Value = stateTo;
+            string command = string.Format("UPDATE {0} SET `Status` = @stateto WHERE `Status` = @statefrom", TableName);
+            var p1 = new MySqlParameter("statefrom", MySqlDbType.Byte) {Value = stateFrom};
+            var p2 = new MySqlParameter("stateto", MySqlDbType.Byte) {Value = stateTo};
 
             return ExecuteCommand(connection, command, p1, p2);
+        }
+
+        public static int ChangeStatus(MySqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
+        {
+            string command = string.Format("UPDATE {0} SET `Status` = @newstatus, `Lock` = @newlock WHERE `Id` = @id AND `Lock` = @oldlock", TableName);
+            var p1 = new MySqlParameter("newstatus", MySqlDbType.Byte) { Value = status.Status };
+            var p2 = new MySqlParameter("newlock", MySqlDbType.Binary) { Value = status.Lock.ToByteArray() };
+            var p3 = new MySqlParameter("id", MySqlDbType.Binary) { Value = status.Id.ToByteArray() };
+            var p4 = new MySqlParameter("oldlock", MySqlDbType.Binary) { Value = oldLock.ToByteArray() };
+
+            return ExecuteCommand(connection, command, p1, p2, p3, p4);
         }
     }
 }

@@ -1,8 +1,8 @@
-﻿using System;
+﻿using MySql.Data.MySqlClient;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
-using MySql.Data.MySqlClient;
 
 namespace OptimaJet.Workflow.MySQL
 {
@@ -15,11 +15,6 @@ namespace OptimaJet.Workflow.MySQL
     }
     public class DbObject<T> where T : DbObject<T>, new()
     {
-        public DbObject()
-        {
-
-        }
-
         public string db_TableName;
         public List<ColumnInfo> db_Columns = new List<ColumnInfo>();
 
@@ -81,7 +76,7 @@ namespace OptimaJet.Workflow.MySQL
             return Select(connection, selectText, p_id).FirstOrDefault();
         }
 
-        public static int Delete(MySqlConnection connection, object id)
+        public static int Delete(MySqlConnection connection, object id, MySqlTransaction transaction = null)
         {
             var t = new T();
             var key = t.db_Columns.Where(c => c.IsKey).FirstOrDefault();
@@ -92,10 +87,15 @@ namespace OptimaJet.Workflow.MySQL
             p_id.Value = ConvertToDBCompatibilityType(id);
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", t.db_TableName, key.Name.ToUpper()), p_id);
+                string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", t.db_TableName, key.Name.ToUpper()),transaction, p_id);
+        }
+        public static int ExecuteCommand(MySqlConnection connection, string commandText,
+            params MySqlParameter[] parameters)
+        {
+            return ExecuteCommand(connection, commandText, null, parameters);
         }
 
-        public static int ExecuteCommand(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
+        public static int ExecuteCommand(MySqlConnection connection, string commandText, MySqlTransaction transaction = null, params MySqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -105,6 +105,10 @@ namespace OptimaJet.Workflow.MySQL
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);

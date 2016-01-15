@@ -1,21 +1,17 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
+using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.Oracle;
 using Oracle.ManagedDataAccess.Client;
-using ServiceStack.Text;
-using ServiceStack.Text.Common;
 
-namespace OptimaJet.Workflow.DbPersistence
+namespace OptimaJet.Workflow.Oracle
 {
     public class OracleProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
@@ -46,7 +42,9 @@ namespace OptimaJet.Workflow.DbPersistence
                     Id = processInstance.ProcessId,
                     SchemeId = processInstance.SchemeId,
                     ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                    StateName = processInstance.ProcessScheme.InitialActivity.State
+                    StateName = processInstance.ProcessScheme.InitialActivity.State,
+                    RootProcessId = processInstance.RootProcessId,
+                    ParentProcessId = processInstance.ParentProcessId
                 };
                 newProcess.Insert(connection);
                 WorkflowProcessInstance.Commit(connection);
@@ -156,9 +154,16 @@ namespace OptimaJet.Workflow.DbPersistence
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
                     throw new ImpossibleToSetStatusException();
 
+                var oldLock = instanceStatus.LOCKFLAG;
+
                 instanceStatus.LOCKFLAG = Guid.NewGuid();
                 instanceStatus.Status = ProcessStatus.Running.Id;
-                instanceStatus.Update(connection);
+
+                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
+
+                if (cnt != 1)
+                    throw new ImpossibleToSetStatusException();
+
                 WorkflowProcessInstanceStatus.Commit(connection);
             }
         }
@@ -217,6 +222,9 @@ namespace OptimaJet.Workflow.DbPersistence
                         if (!string.IsNullOrEmpty(transition.From.State))
                             inst.PreviousStateForReverse = transition.From.State;
                     }
+
+                    inst.ParentProcessId = processInstance.ParentProcessId;
+                    inst.RootProcessId = processInstance.RootProcessId;
 
                     inst.Update(connection);
                 }
@@ -285,8 +293,15 @@ namespace OptimaJet.Workflow.DbPersistence
                 }
                 else
                 {
-                    instanceStatus.Status = ProcessStatus.Initialized.Id;
-                    instanceStatus.Update(connection);
+                    var oldLock = instanceStatus.LOCKFLAG;
+
+                    instanceStatus.Status = status.Id;
+                    instanceStatus.LOCKFLAG = Guid.NewGuid();
+
+                    var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
+
+                    if (cnt != 1)
+                        throw new ImpossibleToSetStatusException();
                 }
 
                 WorkflowProcessInstanceStatus.Commit(connection);
@@ -509,15 +524,19 @@ namespace OptimaJet.Workflow.DbPersistence
                         Id = Guid.NewGuid(),
                         Type = type,
                         Name = name,
-                        Value = JsonSerializer.SerializeToString(value)
+                        Value = JsonConvert.SerializeObject(value)
                     };
 
                     parameter.Insert(connection);
                 }
+                else
+                {
+                    parameter.Value = JsonConvert.SerializeObject(value);
 
-                parameter.Value = JsonSerializer.SerializeToString(value);
+                    parameter.Update(connection);
+                }
 
-                parameter.Update(connection);
+                WorkflowProcessInstance.Commit(connection);
             }
         }
 
@@ -529,8 +548,8 @@ namespace OptimaJet.Workflow.DbPersistence
 
                 if (parameter == null)
                     return default(T);
-
-                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+                
+                return JsonConvert.DeserializeObject<T>(parameter.Value);
             }
 
         }
@@ -541,7 +560,7 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var parameters = WorkflowGlobalParameter.SelectByTypeAndName(connection, type);
 
-                return parameters.Select(p => JsonSerializer.DeserializeFromString<T>(p.Value)).ToList();
+                return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
             }
         }
 
@@ -550,6 +569,7 @@ namespace OptimaJet.Workflow.DbPersistence
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 WorkflowGlobalParameter.DeleteByTypeAndName(connection, type, name);
+                WorkflowProcessInstance.Commit(connection);
             }
         }
 
@@ -665,7 +685,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     SchemeCode = scheme.SchemeCode,
                     RootSchemeCode = scheme.RootSchemeCode,
                     RootSchemeId = scheme.RootSchemeId,
-                    AllowedActivities = JsonSerializer.SerializeToString(scheme.AllowedActivities),
+                    AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
                     StartingTransition = scheme.StartingTransition
                 };
 
@@ -725,7 +745,8 @@ namespace OptimaJet.Workflow.DbPersistence
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
                 XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
-                JsonSerializer.DeserializeFromString<List<string>>(workflowProcessScheme.AllowedActivities), workflowProcessScheme.StartingTransition,
+                JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
+                workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }
     }

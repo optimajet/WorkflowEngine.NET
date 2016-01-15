@@ -2,7 +2,7 @@
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.DbPersistence;
+using OptimaJet.Workflow.Oracle;
 using System;
 using System.Collections.Generic;
 using System.Linq;

@@ -64,5 +64,16 @@ namespace OptimaJet.Workflow.Oracle
                 new OracleParameter("statefrom", OracleDbType.Byte, stateFrom, ParameterDirection.Input),
                     new OracleParameter("stateto", OracleDbType.Byte, stateTo, ParameterDirection.Input));
         }
+
+        public static int ChangeStatus(OracleConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
+        {
+            var command = string.Format("UPDATE {0} SET Status = :newstatus, Lock = :newlock WHERE Id = :id AND Lock = :oldlock", _tableName);
+            var p1 = new OracleParameter("newstatus", OracleDbType.Byte, status.Status, ParameterDirection.Input);
+            var p2 = new OracleParameter("newlock", OracleDbType.Raw, status.LOCKFLAG.ToByteArray(), ParameterDirection.Input);
+            var p3 = new OracleParameter("id", OracleDbType.Raw, status.Id.ToByteArray(), ParameterDirection.Input);
+            var p4 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
+
+            return ExecuteCommand(connection, command, p1, p2, p3, p4);
+        }
     }
 }

@@ -1,10 +1,8 @@
-﻿using OptimaJet.Workflow.Core.Runtime;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Threading;
-using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Runtime;
 
 namespace WorkflowApp
 {
@@ -75,7 +73,7 @@ namespace WorkflowApp
             processId = Guid.NewGuid();
             try
             {
-                WorkflowApp.WorkflowInit.Runtime.CreateInstance(schemeCode, processId.Value);
+                WorkflowInit.Runtime.CreateInstance(schemeCode, processId.Value);
                 Console.WriteLine("CreateInstance - OK.", processId);
             }
             catch (Exception ex)

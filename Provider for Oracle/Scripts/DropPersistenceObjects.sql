@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for Oracle
-Version: 1.5.0
+Version: 1.5.3
 File: DropPersistenceObjects.sql
 */
 

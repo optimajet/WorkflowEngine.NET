@@ -10,12 +10,12 @@ namespace OptimaJet.Workflow.PostgreSQL
         public Guid Lock { get; set; }
         public byte Status { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstanceStatus";
+        private const string TableName = "WorkflowProcessInstanceStatus";
 
         public WorkflowProcessInstanceStatus()
             : base()
         {
-            db_TableName = _tableName;
+            db_TableName = TableName;
             db_Columns.AddRange(new ColumnInfo[]{
                 new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
                 new ColumnInfo(){Name="Lock", Type = NpgsqlDbType.Uuid},
@@ -59,13 +59,22 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static int MassChangeStatus(NpgsqlConnection connection, byte stateFrom, byte stateTo)
         {
-            string command = string.Format("UPDATE \"{0}\" SET \"Status\" = @stateto WHERE \"Status\" = @statefrom", _tableName);
-            var p1 = new NpgsqlParameter("statefrom", NpgsqlDbType.Smallint);
-            p1.Value = stateFrom;
-            var p2 = new NpgsqlParameter("stateto", NpgsqlDbType.Smallint);
-            p2.Value = stateTo;
+            string command = string.Format("UPDATE \"{0}\" SET \"Status\" = @stateto WHERE \"Status\" = @statefrom", TableName);
+            var p1 = new NpgsqlParameter("statefrom", NpgsqlDbType.Smallint) {Value = stateFrom};
+            var p2 = new NpgsqlParameter("stateto", NpgsqlDbType.Smallint) {Value = stateTo};
 
             return ExecuteCommand(connection, command, p1, p2);
+        }
+
+        public static int ChangeStatus(NpgsqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
+        {
+            string command = string.Format("UPDATE \"{0}\" SET \"Status\" = @newstatus, \"Lock\" = @newlock WHERE \"Id\" = @id AND \"Lock\" = @oldlock", TableName);
+            var p1 = new NpgsqlParameter("newstatus", NpgsqlDbType.Smallint) { Value = status.Status };
+            var p2 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = status.Lock };
+            var p3 = new NpgsqlParameter("id", NpgsqlDbType.Uuid) { Value = status.Id };
+            var p4 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
+
+            return ExecuteCommand(connection, command, p1, p2, p3, p4);
         }
     }
 }

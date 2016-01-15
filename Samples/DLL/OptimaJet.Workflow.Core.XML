@@ -846,12 +846,12 @@
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.CodeActionType.RuleGet">
             <summary>
-            Code action uses like users get method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String)"/>
+            Code action uses like users get method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.String)"/>
             </summary>
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.CodeActionType.RuleCheck">
             <summary>
-            Code action uses like check rule method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String,System.String)"/>
+            Code action uses like check rule method <see cref="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.String,System.String)"/>
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.CodeActionDefinition">
@@ -2791,21 +2791,23 @@
             </summary>
             <returns>List of rule names</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.Check(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.String,System.String)">
             <summary>
             Check the rule
             </summary>
-            <param name="processId">Process id from which rule is checking</param>
+            <param name="processInstance">Reference to ProcessInstance for which rule is checked <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/></param>
+            <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
             <param name="identityId">User id for which rule is checking </param>
             <param name="ruleName">Name of the rule to check</param>
             <param name="parameter">Additional rule parameter <see cref="P:OptimaJet.Workflow.Core.Model.RestrictionDefinition.Actor"/> <see cref="P:OptimaJet.Workflow.Core.Model.ActorDefinition.Value"/></param>
             <returns>Rule check result</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider.GetIdentities(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.String)">
             <summary>
             Get the list of users which satisfies the rule
             </summary>
-            <param name="processId">Process id from which rule is checking</param>
+            <param name="processInstance">Reference to ProcessInstance for which rule is checked <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/></param>
+            <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
             <param name="ruleName">Name of the rule to get users list</param>
             <param name="parameter">Additional rule parameter <see cref="P:OptimaJet.Workflow.Core.Model.RestrictionDefinition.Actor"/> <see cref="P:OptimaJet.Workflow.Core.Model.ActorDefinition.Value"/></param>
             <returns>List of users which satisfies the rule</returns>

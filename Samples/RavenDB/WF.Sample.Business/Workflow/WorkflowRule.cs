@@ -53,12 +53,12 @@ namespace WF.Sample.Business.Workflow
         }
 
 
-        public bool Check(ProcessInstance processInstance, string identityId, string ruleName, string parameter)
+        public bool Check(ProcessInstance processInstance, WorkflowRuntime runtime, string identityId, string ruleName, string parameter)
         {
             return _funcs.ContainsKey(ruleName) && _funcs[ruleName].CheckFunction.Invoke(processInstance, identityId, parameter);
         }
 
-        public IEnumerable<string> GetIdentities(ProcessInstance processInstance, string ruleName, string parameter)
+        public IEnumerable<string> GetIdentities(ProcessInstance processInstance, WorkflowRuntime runtime, string ruleName, string parameter)
         {
             return !_funcs.ContainsKey(ruleName)
                 ? new List<string> {}

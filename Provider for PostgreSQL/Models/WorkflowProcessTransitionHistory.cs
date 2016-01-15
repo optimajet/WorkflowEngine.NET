@@ -20,13 +20,12 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
 
         public string TriggerName { get; set; }
 
-        private static string _tableName = "WorkflowProcessTransitionHistory";
+        private const string TableName = "WorkflowProcessTransitionHistory";
 
         public WorkflowProcessTransitionHistory()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
+            db_TableName = TableName;
+            db_Columns.AddRange(new[]{
                 new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
                 new ColumnInfo(){Name="ActorIdentityId"},
                 new ColumnInfo(){Name="ExecutorIdentityId"},
@@ -37,7 +36,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
                 new ColumnInfo(){Name="ToActivityName"},
                 new ColumnInfo(){Name="ToStateName"},
                 new ColumnInfo(){Name="TransitionClassifier"},
-                new ColumnInfo(){Name="TransitionTime", Type = NpgsqlDbType.Date },
+                new ColumnInfo(){Name="TransitionTime", Type = NpgsqlDbType.Timestamp },
                 new ColumnInfo(){Name="TriggerName"}
             });
         }
@@ -120,11 +119,12 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             }
         }
 
-        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId)
+        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId,NpgsqlTransaction transaction = null)
         {
-            var p_processId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid);
-            p_processId.Value = processId;
-            return ExecuteCommand(connection, string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid", _tableName), p_processId);
+            var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            return ExecuteCommand(connection,
+                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid", TableName), transaction,
+                pProcessId);
         }
     }
 }

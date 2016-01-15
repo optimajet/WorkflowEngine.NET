@@ -1,18 +1,16 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 using MongoDB.Driver;
 using MongoDB.Driver.Builders;
+using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
-using ServiceStack.Text;
 
 namespace OptimaJet.Workflow.MongoDB
 {
@@ -417,14 +415,14 @@ namespace OptimaJet.Workflow.MongoDB
                     Id = Guid.NewGuid(),
                     Name = name,
                     Type = type,
-                    Value = JsonSerializer.SerializeToString(value)
+                    Value = JsonConvert.SerializeObject(value)
                 };
 
                 dbcoll.Insert(parameter);
             }
             else
             {
-                parameter.Value = JsonSerializer.SerializeToString(value);
+                parameter.Value = JsonConvert.SerializeObject(value);
                 dbcoll.Save(parameter);
             }
         }
@@ -437,7 +435,7 @@ namespace OptimaJet.Workflow.MongoDB
                 .FirstOrDefault();
 
             if (parameter != null)
-                return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+                return JsonConvert.DeserializeObject<T>(parameter.Value);
 
             return default(T);
         }
@@ -449,7 +447,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             return
                 dbcoll.Find(Query<WorkflowGlobalParameter>.Where(item => item.Type == type))
-                    .Select(gp => JsonSerializer.DeserializeFromString<T>(gp.Value))
+                    .Select(gp => JsonConvert.DeserializeObject<T>(gp.Value))
                     .ToList();
         }
 
@@ -457,8 +455,6 @@ namespace OptimaJet.Workflow.MongoDB
         {
             var dbcoll =
                 Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
-
-            MongoCursor<WorkflowGlobalParameter> parameters;
 
             dbcoll.Remove(
                 Query<WorkflowGlobalParameter>.Where(

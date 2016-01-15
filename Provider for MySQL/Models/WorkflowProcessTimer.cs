@@ -71,18 +71,23 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static int DeleteByProcessId(MySqlConnection connection, Guid processId, List<string> timersIgnoreList = null)
+        public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
+            List<string> timersIgnoreList = null, MySqlTransaction transaction = null)
         {
-            string timerIgnoreListParam = timersIgnoreList != null ? string.Join(",", timersIgnoreList.Select(c=> string.Format("`{0}`", c))): "";
+            var timerIgnoreListParam = timersIgnoreList != null
+                ? string.Join(",", timersIgnoreList.Select(c => string.Format("`{0}`", c)))
+                : "";
 
-            var p_processId = new MySqlParameter("processId", MySqlDbType.Binary);
-            p_processId.Value = processId.ToByteArray();
+            var pProcessId = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
 
-            var p_timerIgnoreList = new MySqlParameter("timerIgnoreList", MySqlDbType.VarString);
-            p_timerIgnoreList.Value = timerIgnoreListParam;
+            var pTimerIgnoreList = new MySqlParameter("timerIgnoreList", MySqlDbType.VarString)
+            {
+                Value = timerIgnoreListParam
+            };
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid AND `Name` not in (@timerIgnoreList)", _tableName), p_processId, p_timerIgnoreList);
+                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid AND `Name` not in (@timerIgnoreList)",
+                    _tableName), transaction, pProcessId, pTimerIgnoreList);
         }
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(MySqlConnection connection, Guid processId, string name)

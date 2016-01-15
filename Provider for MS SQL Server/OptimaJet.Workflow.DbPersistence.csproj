@@ -42,9 +42,9 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="ServiceStack.Text, Version=4.0.0.0, Culture=neutral, PublicKeyToken=e06fbc6124f57c43, processorArchitecture=MSIL">
+    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\packages\ServiceStack.Text.Signed.4.0.38\lib\net40\ServiceStack.Text.dll</HintPath>
+      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -59,47 +59,37 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="DbPersistenceProvider.cs" />
-    <Compile Include="DbProvider.cs" />
-    <Compile Include="DbSchemePersistenceProvider.cs" />
-    <Compile Include="PredefinedTransactionScopes.cs" />
+    <Compile Include="DbObject.cs" />
+    <Compile Include="Obsolete\DbPersistenceProvider.cs" />
+    <Compile Include="Obsolete\DbProvider.cs" />
+    <Compile Include="Obsolete\DbSchemePersistenceProvider.cs" />
+    <Compile Include="Models\WorkflowGlobalParameter.cs" />
+    <Compile Include="Models\WorkflowProcessInstance.cs" />
+    <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />
+    <Compile Include="Models\WorkflowProcessInstanceStatus.cs" />
+    <Compile Include="Models\WorkflowProcessScheme.cs" />
+    <Compile Include="Models\WorkflowProcessTimer.cs" />
+    <Compile Include="Models\WorkflowProcessTransitionHistory.cs" />
+    <Compile Include="Models\WorkflowScheme.cs" />
+    <Compile Include="MSSQLProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="Properties\Settings.Designer.cs">
       <AutoGen>True</AutoGen>
       <DesignTimeSharedInput>True</DesignTimeSharedInput>
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
-    <Compile Include="WorkflowPersistenceModel.cs">
-      <DependentUpon>WorkflowPersistenceModel.dbml</DependentUpon>
-    </Compile>
-    <Compile Include="WorkflowPersistenceModel.designer.cs">
-      <AutoGen>True</AutoGen>
-      <DesignTime>True</DesignTime>
-      <DependentUpon>WorkflowPersistenceModel.dbml</DependentUpon>
-    </Compile>
-    <Compile Include="XmlWorkflowGenerator.cs" />
+    <Compile Include="Obsolete\XmlWorkflowGenerator.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
-    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
     </None>
     <None Include="Workflow.snk" />
-    <None Include="WorkflowPersistenceModel.dbml">
-      <Generator>MSLinqToSQLGenerator</Generator>
-      <LastGenOutput>WorkflowPersistenceModel.designer.cs</LastGenOutput>
-      <SubType>Designer</SubType>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
-  </ItemGroup>
-  <ItemGroup>
-    <None Include="WorkflowPersistenceModel.dbml.layout">
-      <DependentUpon>WorkflowPersistenceModel.dbml</DependentUpon>
-    </None>
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\update_1_4_to_1_4_3.sql" />
@@ -115,6 +105,7 @@
       <Name>OptimaJet.Workflow.Core</Name>
     </ProjectReference>
   </ItemGroup>
+  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
        Other similar extension points exist, see Microsoft.Common.targets.

@@ -11,7 +11,7 @@ using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using Raven.Client.Document;
-using ServiceStack.Text;
+using Raven.Imports.Newtonsoft.Json;
 
 namespace OptimaJet.Workflow.RavenDB
 {
@@ -452,7 +452,7 @@ namespace OptimaJet.Workflow.RavenDB
                     session.Store(parameter);
                 }
 
-                parameter.Value = JsonSerializer.SerializeToString(value);
+                parameter.Value = JsonConvert.SerializeObject(value);
 
                 session.SaveChanges();
             }
@@ -467,7 +467,7 @@ namespace OptimaJet.Workflow.RavenDB
 
                 if (parameter != null)
                 {
-                    return JsonSerializer.DeserializeFromString<T>(parameter.Value);
+                    return JsonConvert.DeserializeObject<T>(parameter.Value);
                 }
 
                 return default (T);
@@ -485,7 +485,7 @@ namespace OptimaJet.Workflow.RavenDB
                 {
                     var parameters = session.Query<WorkflowGlobalParameter>()
                         .Where(p => p.Type == type).Skip(skip).Take(session.Advanced.MaxNumberOfRequestsPerSession).ToList()
-                        .Select(p => JsonSerializer.DeserializeFromString<T>(p.Value))
+                        .Select(p => JsonConvert.DeserializeObject<T>(p.Value))
                         .ToList();
 
                     if (!parameters.Any())

@@ -2,7 +2,6 @@
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Runtime;
-using System.Collections.Generic;
 using System;
 using System.Collections.Specialized;
 using System.Configuration;
@@ -11,6 +10,7 @@ using System.Linq;
 using System.Text;
 using System.Web.Mvc;
 using System.Xml.Linq;
+using OptimaJet.Workflow.Oracle;
 using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
 
 namespace WF.Sample.Controllers
@@ -62,7 +62,7 @@ namespace WF.Sample.Controllers
                         if (_runtime == null)
                         {
                             var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                            var provider = new OptimaJet.Workflow.DbPersistence.OracleProvider(connectionString);
+                            var provider = new OracleProvider(connectionString);
                             var builder = new WorkflowBuilder<XElement>(
                                 provider,
                                 new OptimaJet.Workflow.Core.Parser.XmlWorkflowParser(),

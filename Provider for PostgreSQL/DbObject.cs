@@ -69,7 +69,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var t = new T();
 
-            var key = t.db_Columns.Where(c => c.IsKey).FirstOrDefault();
+            var key = t.db_Columns.FirstOrDefault(c => c.IsKey);
             if(key == null)
             {
                 throw new Exception(string.Format("Key for table {0} isn't defined.", t.db_TableName));
@@ -82,21 +82,26 @@ namespace OptimaJet.Workflow.PostgreSQL
             return Select(connection, selectText, p_id).FirstOrDefault();
         }
 
-        public static int Delete(NpgsqlConnection connection, object id)
+        public static int Delete(NpgsqlConnection connection, object id, NpgsqlTransaction transaction = null)
         {
             var t = new T();
-            var key = t.db_Columns.Where(c => c.IsKey).FirstOrDefault();
+            var key = t.db_Columns.FirstOrDefault(c => c.IsKey);
             if (key == null)
                 throw new Exception(string.Format("Key for table {0} isn't defined.", t.db_TableName));
 
-            var p_id = new NpgsqlParameter("p_id", key.Type);
-            p_id.Value = id;
+            var pId = new NpgsqlParameter("p_id", key.Type) {Value = id};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = @p_id", t.db_TableName, key.Name), p_id);
+                string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = @p_id", t.db_TableName, key.Name), transaction, pId);
         }
 
-        public static int ExecuteCommand(NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters)
+        public static int ExecuteCommand(NpgsqlConnection connection, string commandText,
+          params NpgsqlParameter[] parameters)
+        {
+            return ExecuteCommand(connection, commandText, null, parameters);
+        }
+
+        public static int ExecuteCommand(NpgsqlConnection connection, string commandText,NpgsqlTransaction transaction = null, params NpgsqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -106,6 +111,10 @@ namespace OptimaJet.Workflow.PostgreSQL
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);

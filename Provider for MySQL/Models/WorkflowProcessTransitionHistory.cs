@@ -119,11 +119,12 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static int DeleteByProcessId(MySqlConnection connection, Guid processId)
+        public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
+            MySqlTransaction transaction = null)
         {
-            var p_processId = new MySqlParameter("processId", MySqlDbType.Binary);
-            p_processId.Value = processId.ToByteArray();
-            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName), p_processId);
+            var pProcessId = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
+            return ExecuteCommand(connection,
+                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName), transaction, pProcessId);
         }
     }
 }

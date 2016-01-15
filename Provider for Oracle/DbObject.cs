@@ -157,7 +157,7 @@ namespace OptimaJet.Workflow.Oracle
 
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = string.Format("COMMIT");
+                command.CommandText = "COMMIT";
                 command.CommandType = CommandType.Text;
                 command.ExecuteNonQuery();
             }

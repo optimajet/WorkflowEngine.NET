@@ -73,7 +73,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             string selectText = string.Format("SELECT * FROM \"{0}\"  WHERE \"Type\" = @type", _tableName);
 
             if (!string.IsNullOrEmpty(name))
-                selectText = selectText + " OR \"Name\" = @name";
+                selectText = selectText + " AND \"Name\" = @name";
 
             var p = new NpgsqlParameter("type", NpgsqlDbType.Varchar) { Value = type };
 
@@ -90,7 +90,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             string selectText = string.Format("DELETE FROM \"{0}\"  WHERE \"Type\" = @type", _tableName);
 
             if (!string.IsNullOrEmpty(name))
-                selectText = selectText + " OR \"Name\" = @name";
+                selectText = selectText + " AND \"Name\" = @name";
 
             var p = new NpgsqlParameter("type", NpgsqlDbType.Varchar) { Value = type };
 

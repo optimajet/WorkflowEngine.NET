@@ -31,13 +31,13 @@ namespace OptimaJet.Workflow.Core.Runtime
     /// </summary>
     public sealed class TimerManager : ITimerManager
     {
-        private ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
         private WorkflowRuntime _runtime;
 
         private Timer _timer;
 
-        private bool _stopped = false;
+        private bool _stopped = true;
 
         /// <summary>
         /// Register all timers for all outgouing timer transitions for current actvity of the specified process.
@@ -46,9 +46,17 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processInstance">Process instance whose timers need to be registered</param>
         public void RegisterTimers(ProcessInstance processInstance)
         {
+            var usedTransitions = GetUsedTransitions(processInstance);
+            RegisterTimers(processInstance, usedTransitions);
+        }
+
+        private void RegisterTimers(ProcessInstance processInstance, List<string> usedTransitions)
+        {
             var timersToRegister =
-                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity)
-                    .Where(t => t.Trigger.Timer != null).Select(t=>t.Trigger.Timer).ToList();
+                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity,ForkTransitionSearchType.Both)
+                    .Where(t => t.Trigger.Timer != null && !usedTransitions.Contains(t.Name))
+                    .Select(t => t.Trigger.Timer)
+                    .ToList();
 
             if (!timersToRegister.Any())
                 return;
@@ -67,8 +75,9 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processInstance">Process instance whose timers need to be cleared an registered</param>
         public void ClearAndRegisterTimers(ProcessInstance processInstance)
         {
-            ClearTimers(processInstance);
-            RegisterTimers(processInstance);
+            var used = GetUsedTransitions(processInstance);
+            ClearTimers(processInstance, used);
+            RegisterTimers(processInstance, used);
         }
 
         private void RefreshInterval(ProcessInstance processInstance, List<TimerDefinition> timersToRegister)
@@ -104,11 +113,12 @@ namespace OptimaJet.Workflow.Core.Runtime
 
                 if (now < next)
                 {
-                    var res = _timer.Change((long)(next.Value - now).TotalMilliseconds, Timeout.Infinite);
+                    var timeout = (long) (next.Value - now).TotalMilliseconds;
+                    _timer.Change(timeout > 4294967294L ? 4294967294L : timeout, Timeout.Infinite);
                 }
                 else
                 {
-                  var res = _timer.Change(0, Timeout.Infinite);
+                    _timer.Change(0, Timeout.Infinite);
                 }
             }
             finally
@@ -130,21 +140,19 @@ namespace OptimaJet.Workflow.Core.Runtime
             switch (timerDefinition.Type)
             {
                 case TimerType.Date:
-                    var date1 = DateTime.ParseExact(timerDefinition.Value,
-                        _runtime.SchemeParsingCulture.DateTimeFormat.ShortDatePattern, CultureInfo.InvariantCulture);
+                    var date1 = DateTime.Parse(timerDefinition.Value, _runtime.SchemeParsingCulture);
                     return date1.Date;
                 case TimerType.DateAndTime:
-                    var date2 = DateTime.ParseExact(timerDefinition.Value,
-                        (string.Format("{0} {1}", _runtime.SchemeParsingCulture.DateTimeFormat.ShortDatePattern,
-                            _runtime.SchemeParsingCulture.DateTimeFormat.LongTimePattern)), CultureInfo.InvariantCulture);
+                    var date2 = DateTime.Parse(timerDefinition.Value, _runtime.SchemeParsingCulture);
                     return date2;
                 case TimerType.Interval:
                     var interval = Int32.Parse(timerDefinition.Value);
                     return _runtime.RuntimeDateTimeNow.AddMilliseconds(interval);
                 case TimerType.Time:
                     var now = _runtime.RuntimeDateTimeNow;
-                    var date3 = DateTime.ParseExact(timerDefinition.Value, _runtime.SchemeParsingCulture.DateTimeFormat.LongTimePattern, CultureInfo.InvariantCulture);
-                    if (date3 < now)
+                    var date3 = DateTime.Parse(timerDefinition.Value, _runtime.SchemeParsingCulture);
+                    date3 = now.Date + date3.TimeOfDay;
+                    if (date3.TimeOfDay < now.TimeOfDay)
                         date3 = date3.AddDays(1);
                     return date3;
             }
@@ -159,11 +167,27 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processInstance">Process instance whose timers need to be cleared</param>
         public void ClearTimers(ProcessInstance processInstance)
         {
-            var timersIgnoreList =
-                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity)
-                    .Where(t => t.Trigger.Timer != null && t.Trigger.Timer.NotOverrideIfExists).Select(t=>t.Trigger.Timer.Name).ToList();
+            var usedTransitions = GetUsedTransitions(processInstance);
+            ClearTimers(processInstance, usedTransitions);
+        }
 
-            _runtime.PersistenceProvider.ClearTimers(processInstance.ProcessId,timersIgnoreList);
+        private List<string> GetUsedTransitions(ProcessInstance processInstance)
+        {
+            var piTree = _runtime.GetProcessInstancesTree(processInstance);
+            var usedTransitions = piTree.Root.GetAllChildrenNames();
+            return usedTransitions;
+        }
+
+        private void ClearTimers(ProcessInstance processInstance, List<string> usedTransitions)
+        {
+            var timersIgnoreList =
+                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity, ForkTransitionSearchType.Both)
+                    .Where(
+                        t =>
+                            t.Trigger.Timer != null && !usedTransitions.Contains(t.Name) &&
+                            t.Trigger.Timer.NotOverrideIfExists).Select(t => t.Trigger.Timer.Name).ToList();
+
+            _runtime.PersistenceProvider.ClearTimers(processInstance.ProcessId, timersIgnoreList);
         }
 
         public void Init(WorkflowRuntime runtime)

@@ -24,7 +24,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
                 new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
                 new ColumnInfo(){Name="ProcessId", Type = NpgsqlDbType.Uuid},
                 new ColumnInfo(){Name="Name"},
-                new ColumnInfo(){Name="NextExecutionDateTime", Type = NpgsqlDbType.Date },
+                new ColumnInfo(){Name="NextExecutionDateTime", Type = NpgsqlDbType.Timestamp },
                 new ColumnInfo(){Name="Ignore", Type = NpgsqlDbType.Boolean },
             });
         }
@@ -72,16 +72,17 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             }
         }
 
-        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null)
+        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
         {
-            var p_processId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid);
-            p_processId.Value = processId;
+            var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
 
-            var p_timerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Text);
-            p_timerIgnoreList.Value = timersIgnoreList != null ? timersIgnoreList.ToArray() : new string[]{};
+            var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Text)
+            {
+                Value = timersIgnoreList != null ? timersIgnoreList.ToArray() : new string[] {}
+            };
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid AND \"Name\" != ANY(@timerIgnoreList)", _tableName), p_processId, p_timerIgnoreList);
+                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid AND \"Name\" != ANY(@timerIgnoreList)", _tableName), transaction, pProcessId, pTimerIgnoreList);
         }
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(NpgsqlConnection connection, Guid processId, string name)

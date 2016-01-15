@@ -70,13 +70,13 @@ namespace OptimaJet.Workflow.MySQL
             return Select(connection, selectText, p);
         }
 
-        public static int DeleteByProcessId(MySqlConnection connection, Guid processId)
+        public static int DeleteByProcessId(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
         {
             var p = new MySqlParameter("processId", MySqlDbType.Binary);
             p.Value = processId.ToByteArray();
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName), p);
+                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName),transaction, p);
         }
     }
 }
