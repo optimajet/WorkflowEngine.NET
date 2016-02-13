@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
@@ -14,18 +15,19 @@ namespace OptimaJet.Workflow.Oracle
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
 
-        private const string _tableName = "WorkflowProcessTimer";
+        static WorkflowProcessTimer()
+        {
+            DbTableName = "WorkflowProcessTimer";
+        }
 
         public WorkflowProcessTimer()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="Name"},
-                new ColumnInfo(){Name="NextExecutionDateTime", Type = OracleDbType.Date },
-                new ColumnInfo(){Name="Ignore", Type = OracleDbType.Byte },
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name="ProcessId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name="Name"},
+                new ColumnInfo {Name="NextExecutionDateTime", Type = OracleDbType.Date },
+                new ColumnInfo {Name="Ignore", Type = OracleDbType.Byte },
             });
         }
 
@@ -42,7 +44,7 @@ namespace OptimaJet.Workflow.Oracle
                 case "NextExecutionDateTime":
                     return NextExecutionDateTime;
                 case "Ignore":
-                    return Ignore ? (string)"1" : (string)"0";
+                    return Ignore ? "1" : "0";
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -74,18 +76,33 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int DeleteByProcessId(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
         {
-            string timerIgnoreListParam = timersIgnoreList != null ? string.Join(",", timersIgnoreList.Select(c=> string.Format("'{0}'", c))): "";
+            var pProcessId = new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid AND NAME not in (:timerIgnoreList)", _tableName),
-                new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
-                    new OracleParameter("timerIgnoreList", OracleDbType.NVarchar2, timerIgnoreListParam, ParameterDirection.Input)
-                    );
+            if (timersIgnoreList != null && timersIgnoreList.Any())
+            {
+                var parameters = new List<string>();
+                var sqlParameters = new List<OracleParameter>() {pProcessId};
+                var cnt = 0;
+                foreach (var timer in timersIgnoreList)
+                {
+                    var parameterName = string.Format("ignore{0}", cnt);
+                    parameters.Add(string.Format(":{0}", parameterName));
+                    sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.NVarchar2, timer, ParameterDirection.Input));
+                    cnt++;
+                }
+
+                var commandText = string.Format("DELETE FROM {0} WHERE PROCESSID = :processid AND NAME NOT IN ({1})", ObjectName, string.Join(",", parameters));
+
+                return ExecuteCommand(connection, commandText, sqlParameters.ToArray());
+            }
+
+            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName), pProcessId);
+
         }
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(OracleConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE PROCESSID = :processid AND NAME = :name", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE PROCESSID = :processid AND NAME = :name", ObjectName);
     
             return Select(connection, selectText,
                 new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
@@ -95,19 +112,19 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int ClearTimersIgnore(OracleConnection connection)
         {
-            string command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE IGNORE = 1", _tableName);
+            string command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE IGNORE = 1", ObjectName);
             return ExecuteCommand(connection, command);
         }
 
         public static WorkflowProcessTimer GetCloseExecutionTimer(OracleConnection connection)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE IGNORE = 0 AND ROWNUM = 1 ORDER BY NextExecutionDateTime", _tableName);
+            string selectText = string.Format("SELECT * FROM ( SELECT * FROM {0}  WHERE IGNORE = 0 ORDER BY NextExecutionDateTime) WHERE ROWNUM = 1", ObjectName);
             return Select(connection, selectText).FirstOrDefault();
         }
 
         public static WorkflowProcessTimer[] GetTimersToExecute(OracleConnection connection, DateTime now)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime", ObjectName);
             return Select(connection, selectText,
                 new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input));
         }
@@ -117,11 +134,20 @@ namespace OptimaJet.Workflow.Oracle
             if (timers.Length == 0)
                 return 0;
 
-            string timerListParam = string.Join(",", timers.Select(c => string.Format("'{0}'", c.Id)));
+            var parameters = new List<string>();
+            var sqlParameters = new List<OracleParameter>();
+            var cnt = 0;
+            foreach (var timer in timers)
+            {
+                var parameterName = string.Format("timer{0}", cnt);
+                parameters.Add(string.Format(":{0}", parameterName));
+                sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.Raw, timer.Id.ToByteArray(), ParameterDirection.Input));
+                cnt++;
+            }
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE ID in (:timerListParam)", _tableName),
-                new OracleParameter("timerListParam", OracleDbType.NVarchar2, timerListParam, ParameterDirection.Input));
-        }
+                string.Format("DELETE FROM {0} WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
+                sqlParameters.ToArray());
+         }
     }
 }

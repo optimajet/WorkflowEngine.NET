@@ -16,15 +16,18 @@ namespace OptimaJet.Workflow.Oracle
     public class OracleProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
         public string ConnectionString { get; set; }
+        public string Schema { get; set; }
         private WorkflowRuntime _runtime;
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public OracleProvider(string connectionString)
+        public OracleProvider(string connectionString, string schema = "SYS")
         {
+            DbObject.SchemaName = schema;
             ConnectionString = connectionString;
+            Schema = schema;
         }
 
         #region IPersistenceProvider
@@ -173,7 +176,9 @@ namespace OptimaJet.Workflow.Oracle
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
         }
 
+#pragma warning disable 612
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+#pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
         }
@@ -310,7 +315,7 @@ namespace OptimaJet.Workflow.Oracle
 
         private IEnumerable<ParameterDefinitionWithValue> GetProcessParameters(Guid processId, ProcessDefinition processDefinition)
         {
-            var parameters = new List<ParameterDefinitionWithValue>(processDefinition.Parameters.Count());
+            var parameters = new List<ParameterDefinitionWithValue>(processDefinition.Parameters.Count);
             parameters.AddRange(GetPersistedProcessParameters(processId, processDefinition));
             parameters.AddRange(GetSystemProcessParameters(processId, processDefinition));
             return parameters;
@@ -324,51 +329,50 @@ namespace OptimaJet.Workflow.Oracle
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
 
-            List<ParameterDefinitionWithValue> parameters;
-            parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
+            var parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count)
             {
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterProcessId.Name),
                     processId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousState.Name),
-                    (object) processInstance.PreviousState),
+                    processInstance.PreviousState),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentState.Name),
-                    (object) processInstance.StateName),
+                    processInstance.StateName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForDirect.Name),
-                    (object) processInstance.PreviousStateForDirect),
+                    processInstance.PreviousStateForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForReverse.Name),
-                    (object) processInstance.PreviousStateForReverse),
+                    processInstance.PreviousStateForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivity.Name),
-                    (object) processInstance.PreviousActivity),
+                    processInstance.PreviousActivity),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentActivity.Name),
-                    (object) processInstance.ActivityName),
+                    processInstance.ActivityName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForDirect.Name),
-                    (object) processInstance.PreviousActivityForDirect),
+                    processInstance.PreviousActivityForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForReverse.Name),
-                    (object) processInstance.PreviousActivityForReverse),
+                    processInstance.PreviousActivityForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeCode.Name),
-                    (object) processDefinition.Name),
+                    processDefinition.Name),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeId.Name),
-                    (object) processInstance.SchemeId),
+                    processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
                     false),
-                 ParameterDefinition.Create(
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
-                    (object) processInstance.ParentProcessId),
-                 ParameterDefinition.Create(
+                    processInstance.ParentProcessId),
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    (object) processInstance.RootProcessId),
+                    processInstance.RootProcessId),
             };
             return parameters;
         }
@@ -376,7 +380,7 @@ namespace OptimaJet.Workflow.Oracle
         private IEnumerable<ParameterDefinitionWithValue> GetPersistedProcessParameters(Guid processId, ProcessDefinition processDefinition)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
-            var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count());
+            var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count);
 
             List<WorkflowProcessInstancePersistence> persistedParameters;
 
@@ -387,9 +391,8 @@ namespace OptimaJet.Workflow.Oracle
 
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
-                if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName) ??
+                                          ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
 
                 parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
             }
@@ -436,19 +439,18 @@ namespace OptimaJet.Workflow.Oracle
                 var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
                 if (timer == null)
                 {
-                    timer = new WorkflowProcessTimer()
+                    timer = new WorkflowProcessTimer
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId
+                        ProcessId = processId,
+                        Ignore = false
                     };
 
-                    timer.Ignore = false;
                     timer.Insert(connection);
                 }
-
-                if (!notOverrideIfExists)
+                else if (!notOverrideIfExists)
                 {
                     timer.NextExecutionDateTime = nextExecutionDateTime;
                     timer.Update(connection);

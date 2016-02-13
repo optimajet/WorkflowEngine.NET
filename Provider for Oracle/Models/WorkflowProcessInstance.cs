@@ -19,23 +19,28 @@ namespace OptimaJet.Workflow.Oracle
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
-        public WorkflowProcessInstance(): base()
+
+        static WorkflowProcessInstance()
         {
-            db_TableName = "WorkflowProcessInstance";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ActivityName"},
-                new ColumnInfo(){Name="IsDeterminingParametersChanged", Type = OracleDbType.Byte},
-                new ColumnInfo(){Name="PreviousActivity"},
-                new ColumnInfo(){Name="PreviousActivityForDirect"},
-                new ColumnInfo(){Name="PreviousActivityForReverse"},
-                new ColumnInfo(){Name="PreviousState"},
-                new ColumnInfo(){Name="PreviousStateForDirect"},
-                new ColumnInfo(){Name="PreviousStateForReverse"},
-                new ColumnInfo(){Name="SchemeId", Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="StateName"},
-                new ColumnInfo() {Name = "ParentProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo() {Name = "RootProcessId", Type = OracleDbType.Raw},
+            DbTableName = "WorkflowProcessInstance";
+        }
+
+        public WorkflowProcessInstance()
+        {
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name="ActivityName"},
+                new ColumnInfo {Name="IsDeterminingParametersChanged", Type = OracleDbType.Byte},
+                new ColumnInfo {Name="PreviousActivity"},
+                new ColumnInfo {Name="PreviousActivityForDirect"},
+                new ColumnInfo {Name="PreviousActivityForReverse"},
+                new ColumnInfo {Name="PreviousState"},
+                new ColumnInfo {Name="PreviousStateForDirect"},
+                new ColumnInfo {Name="PreviousStateForReverse"},
+                new ColumnInfo {Name="SchemeId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name="StateName"},
+                new ColumnInfo {Name = "ParentProcessId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "RootProcessId", Type = OracleDbType.Raw},
             });
         }
 
@@ -48,7 +53,7 @@ namespace OptimaJet.Workflow.Oracle
                 case "ActivityName":
                     return ActivityName;
                 case "IsDeterminingParametersChanged":
-                    return IsDeterminingParametersChanged ? (string)"1" : (string)"0";
+                    return IsDeterminingParametersChanged ? "1" : "0";
                 case "PreviousActivity":
                     return PreviousActivity;
                 case "PreviousActivityForDirect":
@@ -66,9 +71,9 @@ namespace OptimaJet.Workflow.Oracle
                 case "StateName":
                     return StateName;
                 case "ParentProcessId":
-                    return ParentProcessId;
+                    return ParentProcessId.HasValue ? ParentProcessId.Value.ToByteArray() : null;
                 case "RootProcessId":
-                    return RootProcessId;
+                    return RootProcessId.ToByteArray();
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }

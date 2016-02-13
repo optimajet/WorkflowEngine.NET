@@ -2,6 +2,7 @@
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowProcessInstancePersistence : DbObject<WorkflowProcessInstancePersistence>
@@ -11,17 +12,19 @@ namespace OptimaJet.Workflow.Oracle
         public string ParameterName { get; set; }
         public string Value { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstanceP";
+        static WorkflowProcessInstancePersistence()
+        {
+            DbTableName = "WorkflowProcessInstanceP";
+        }
 
         public WorkflowProcessInstancePersistence()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ParameterName"},
-                new ColumnInfo(){Name="Value", Type = OracleDbType.Clob }
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "ProcessId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "ParameterName"},
+                new ColumnInfo {Name = "Value", Type = OracleDbType.Clob}
             });
         }
 
@@ -47,10 +50,10 @@ namespace OptimaJet.Workflow.Oracle
             switch (key)
             {
                 case "Id":
-                    Id = new Guid((byte[])value);
+                    Id = new Guid((byte[]) value);
                     break;
                 case "ProcessId":
-                    ProcessId = new Guid((byte[])value);
+                    ProcessId = new Guid((byte[]) value);
                     break;
                 case "ParameterName":
                     ParameterName = value as string;
@@ -65,7 +68,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(OracleConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE ProcessId = :processid", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE ProcessId = :processid", ObjectName);
             return Select(connection, selectText,
                 new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
@@ -73,7 +76,7 @@ namespace OptimaJet.Workflow.Oracle
         public static int DeleteByProcessId(OracleConnection connection, Guid processId)
         {
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", _tableName),
+                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName),
                 new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)
                 );
         }

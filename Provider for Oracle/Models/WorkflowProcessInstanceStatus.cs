@@ -2,6 +2,7 @@
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowProcessInstanceStatus : DbObject<WorkflowProcessInstanceStatus>
@@ -10,16 +11,18 @@ namespace OptimaJet.Workflow.Oracle
         public Guid LOCKFLAG { get; set; }
         public byte Status { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstanceS";
+        static WorkflowProcessInstanceStatus()
+        {
+            DbTableName = "WorkflowProcessInstanceS";
+        }
 
         public WorkflowProcessInstanceStatus()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="LOCKFLAG", Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="Status", Type = OracleDbType.Char}
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "LOCKFLAG", Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "Status", Type = OracleDbType.Char}
             });
         }
 
@@ -59,7 +62,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int MassChangeStatus(OracleConnection connection, byte stateFrom, byte stateTo)
         {
-            string command = string.Format("UPDATE {0} SET STATUS = :stateto WHERE STATUS = :statefrom", _tableName);
+            string command = string.Format("UPDATE {0} SET Status = :stateto WHERE Status = :statefrom", ObjectName);
             return ExecuteCommand(connection, command,
                 new OracleParameter("statefrom", OracleDbType.Byte, stateFrom, ParameterDirection.Input),
                     new OracleParameter("stateto", OracleDbType.Byte, stateTo, ParameterDirection.Input));
@@ -67,7 +70,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int ChangeStatus(OracleConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            var command = string.Format("UPDATE {0} SET Status = :newstatus, Lock = :newlock WHERE Id = :id AND Lock = :oldlock", _tableName);
+            var command = string.Format("UPDATE {0} SET Status = :newstatus, LOCKFLAG = :newlock WHERE Id = :id AND LOCKFLAG = :oldlock", ObjectName);
             var p1 = new OracleParameter("newstatus", OracleDbType.Byte, status.Status, ParameterDirection.Input);
             var p2 = new OracleParameter("newlock", OracleDbType.Raw, status.LOCKFLAG.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("id", OracleDbType.Raw, status.Id.ToByteArray(), ParameterDirection.Input);

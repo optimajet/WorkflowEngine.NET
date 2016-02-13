@@ -2,6 +2,7 @@
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowProcessTransitionHistory : DbObject<WorkflowProcessTransitionHistory>
@@ -17,28 +18,28 @@ namespace OptimaJet.Workflow.Oracle
         public string ToStateName { get; set; }
         public string TransitionClassifier { get; set; }
         public DateTime TransitionTime { get; set; }
-
         public string TriggerName { get; set; }
-        
-        private static string _tableName = "WorkflowProcessTransitionH";
+
+        static WorkflowProcessTransitionHistory()
+        {
+            DbTableName = "WorkflowProcessTransitionH";
+        }
 
         public WorkflowProcessTransitionHistory()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ActorIdentityId"},
-                new ColumnInfo(){Name="ExecutorIdentityId"},
-                new ColumnInfo(){Name="FromActivityName"},
-                new ColumnInfo(){Name="FromStateName"},
-                new ColumnInfo(){Name="IsFinalised", Type = OracleDbType.Byte},
-                new ColumnInfo(){Name="ProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo(){Name="ToActivityName"},
-                new ColumnInfo(){Name="ToStateName"},
-                new ColumnInfo(){Name="TransitionClassifier"},
-                new ColumnInfo(){Name="TransitionTime", Type = OracleDbType.Date },
-                new ColumnInfo(){Name="TriggerName"}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name="ActorIdentityId"},
+                new ColumnInfo {Name="ExecutorIdentityId"},
+                new ColumnInfo {Name="FromActivityName"},
+                new ColumnInfo {Name="FromStateName"},
+                new ColumnInfo {Name="IsFinalised", Type = OracleDbType.Byte},
+                new ColumnInfo {Name="ProcessId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name="ToActivityName"},
+                new ColumnInfo {Name="ToStateName"},
+                new ColumnInfo {Name="TransitionClassifier"},
+                new ColumnInfo {Name="TransitionTime", Type = OracleDbType.Date },
+                new ColumnInfo {Name="TriggerName"}
             });
         }
 
@@ -57,7 +58,7 @@ namespace OptimaJet.Workflow.Oracle
                 case "FromStateName":
                     return FromStateName;
                 case "IsFinalised":
-                    return IsFinalised ? (string)"1": (string)"0";
+                    return IsFinalised ? "1": "0";
                 case "ProcessId":
                     return ProcessId.ToByteArray();
                 case "ToActivityName":
@@ -123,7 +124,7 @@ namespace OptimaJet.Workflow.Oracle
         public static int DeleteByProcessId(OracleConnection connection, Guid processId)
         {
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", _tableName),
+                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName),
                 new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
     }

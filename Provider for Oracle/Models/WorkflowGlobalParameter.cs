@@ -3,7 +3,7 @@ using Oracle.ManagedDataAccess.Client;
 
 namespace OptimaJet.Workflow.Oracle
 {
-    public class WorkflowGlobalParameter : DbObject<WorkflowGlobalParameter>
+    public sealed class WorkflowGlobalParameter : DbObject<WorkflowGlobalParameter>
     {
         public Guid Id { get; set; }
 
@@ -13,18 +13,20 @@ namespace OptimaJet.Workflow.Oracle
 
         public string Value { get; set; }
 
-        private const string _tableName = "WorkflowGlobalParameter";
+       
+        static WorkflowGlobalParameter()
+        {
+            DbTableName = "WorkflowGlobalParameter";
+        }
 
         public WorkflowGlobalParameter()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]
+            DBColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo() {Name = "Type"},
-                new ColumnInfo() {Name = "Name"},
-                new ColumnInfo() {Name = "Value"}
+                new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "Type"},
+                new ColumnInfo {Name = "Name"},
+                new ColumnInfo {Name = "Value"}
             });
         }
 
@@ -68,7 +70,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static WorkflowGlobalParameter[] SelectByTypeAndName(OracleConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE Type = :type", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE Type = :type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND Name = :name";
@@ -85,7 +87,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int DeleteByTypeAndName(OracleConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM {0}  WHERE Type = :type", _tableName);
+            string selectText = string.Format("DELETE FROM {0}  WHERE Type = :type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND Name = :name";
@@ -99,5 +101,7 @@ namespace OptimaJet.Workflow.Oracle
 
             return ExecuteCommand(connection, selectText, p, p1);
         }
+
+   
     }
 }

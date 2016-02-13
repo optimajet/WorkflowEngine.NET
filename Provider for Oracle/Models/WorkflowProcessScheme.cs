@@ -2,6 +2,7 @@
 using System.Data;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowProcessScheme : DbObject<WorkflowProcessScheme>
@@ -17,24 +18,25 @@ namespace OptimaJet.Workflow.Oracle
         public string AllowedActivities { get; set; }
         public string StartingTransition { get; set; }
 
-        private const string _tableName = "WorkflowProcessScheme";
+        static WorkflowProcessScheme()
+        {
+            DbTableName = "WorkflowProcessScheme";
+        }
 
         public WorkflowProcessScheme()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]
+            DBColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo() {Name = "DefiningParameters"},
-                new ColumnInfo() {Name = "DefiningParametersHash"},
-                new ColumnInfo() {Name = "IsObsolete", Type = OracleDbType.Byte},
-                new ColumnInfo() {Name = "SchemeCode"},
-                new ColumnInfo() {Name = "Scheme"},
-                new ColumnInfo() {Name = "RootSchemeId", Type = OracleDbType.Raw},
-                new ColumnInfo() {Name = "RootSchemeCode"},
-                new ColumnInfo() {Name = "AllowedActivities"},
-                new ColumnInfo() {Name = "StartingTransition"}
+                new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "DefiningParameters"},
+                new ColumnInfo {Name = "DefiningParametersHash"},
+                new ColumnInfo {Name = "IsObsolete", Type = OracleDbType.Byte},
+                new ColumnInfo {Name = "SchemeCode"},
+                new ColumnInfo {Name = "Scheme"},
+                new ColumnInfo {Name = "RootSchemeId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "RootSchemeCode"},
+                new ColumnInfo {Name = "AllowedActivities"},
+                new ColumnInfo {Name = "StartingTransition"}
             });
         }
 
@@ -49,13 +51,13 @@ namespace OptimaJet.Workflow.Oracle
                 case "DefiningParametersHash":
                     return DefiningParametersHash;
                 case "IsObsolete":
-                    return IsObsolete ? (string)"1": (string)"0";
+                    return IsObsolete ? "1" : "0";
                 case "SchemeCode":
                     return SchemeCode;
                 case "Scheme":
                     return Scheme;
                 case "RootSchemeId":
-                    return RootSchemeId;
+                    return RootSchemeId.HasValue ? RootSchemeId.Value.ToByteArray() : null;
                 case "RootSchemeCode":
                     return RootSchemeCode;
                 case "AllowedActivities":
@@ -72,7 +74,7 @@ namespace OptimaJet.Workflow.Oracle
             switch (key)
             {
                 case "Id":
-                    Id = new Guid((byte[])value);
+                    Id = new Guid((byte[]) value);
                     break;
                 case "DefiningParameters":
                     DefiningParameters = value as string;
@@ -81,7 +83,7 @@ namespace OptimaJet.Workflow.Oracle
                     DefiningParametersHash = value as string;
                     break;
                 case "IsObsolete":
-                    IsObsolete = (string)value == "1";
+                    IsObsolete = (string) value == "1";
                     break;
                 case "SchemeCode":
                     SchemeCode = value as string;
@@ -115,7 +117,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             string selectText =
                 string.Format("SELECT * FROM {0}  WHERE SchemeCode = :schemecode AND DefiningParametersHash = :dphash",
-                    _tableName);
+                    ObjectName);
 
             if (isObsolete.HasValue)
             {
@@ -136,7 +138,7 @@ namespace OptimaJet.Workflow.Oracle
                     new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
                     new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
                         ParameterDirection.Input),
-                    new OracleParameter("rootschemeid", OracleDbType.Raw, rootSchemeId.Value, ParameterDirection.Input));
+                    new OracleParameter("rootschemeid", OracleDbType.Raw, rootSchemeId.Value.ToByteArray(), ParameterDirection.Input));
             }
             else
             {
@@ -151,18 +153,19 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int SetObsolete(OracleConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE {0} SET IsObsolete = 1 WHERE SchemeCode = :schemecode OR RootSchemeCode = :schemecode", _tableName);
-            return ExecuteCommand(connection, command, 
+            string command = string.Format("UPDATE {0} SET IsObsolete = 1 WHERE SchemeCode = :schemecode OR RootSchemeCode = :schemecode", ObjectName);
+            return ExecuteCommand(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input));
         }
 
         public static int SetObsolete(OracleConnection connection, string schemeCode, string definingParametersHash)
         {
-            string command = string.Format("UPDATE {0} SET IsObsolete = 1 WHERE (SchemeCode = :schemecode OR OR RootSchemeCode = :schemecode) AND DefiningParametersHash = :dphash", _tableName);
+            string command = string.Format(
+                "UPDATE {0} SET IsObsolete = 1 WHERE (SchemeCode = :schemecode OR OR RootSchemeCode = :schemecode) AND DefiningParametersHash = :dphash", ObjectName);
 
-            return ExecuteCommand(connection, command, 
+            return ExecuteCommand(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                    new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input));
+                new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input));
         }
     }
 }

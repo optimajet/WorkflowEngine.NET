@@ -1,6 +1,7 @@
 ﻿using System;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
@@ -8,12 +9,16 @@ namespace OptimaJet.Workflow.Oracle
         public string Code { get; set; }
         public string Scheme { get; set; }
 
+        static WorkflowScheme ()
+        {
+            DbTableName = "WorkflowScheme";
+        }
+
         public WorkflowScheme()
         {
-            db_TableName = "WorkflowScheme";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Code", IsKey = true},
-                new ColumnInfo(){Name="Scheme", Type = OracleDbType.Clob}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Code", IsKey = true},
+                new ColumnInfo {Name="Scheme", Type = OracleDbType.Clob}
             });
         }
 
