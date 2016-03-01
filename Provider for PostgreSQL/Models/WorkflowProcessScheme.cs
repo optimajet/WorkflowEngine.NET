@@ -2,7 +2,8 @@
 using Npgsql;
 using NpgsqlTypes;
 
-namespace OptimaJet.Workflow.PostgreSQL.Models
+// ReSharper disable once CheckNamespace
+namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowProcessScheme : DbObject<WorkflowProcessScheme>
     {
@@ -17,23 +18,24 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
         public string AllowedActivities { get; set; }
         public string StartingTransition { get; set; }
 
-        private const string _tableName = "WorkflowProcessScheme";
+        static WorkflowProcessScheme()
+        {
+            DbTableName = "WorkflowProcessScheme";
+        }
 
         public WorkflowProcessScheme()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="DefiningParameters"},
-                new ColumnInfo(){Name="DefiningParametersHash" },
-                new ColumnInfo(){Name="IsObsolete", Type = NpgsqlDbType.Boolean },
-                new ColumnInfo(){Name="SchemeCode" },
-                new ColumnInfo(){Name="Scheme" },
-                new ColumnInfo(){Name = "RootSchemeId",Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name = "RootSchemeCode"},
-                new ColumnInfo(){Name = "AllowedActivities"},
-                 new ColumnInfo(){Name = "StartingTransition"}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="DefiningParameters"},
+                new ColumnInfo {Name="DefiningParametersHash" },
+                new ColumnInfo {Name="IsObsolete", Type = NpgsqlDbType.Boolean },
+                new ColumnInfo {Name="SchemeCode" },
+                new ColumnInfo {Name="Scheme" },
+                new ColumnInfo {Name = "RootSchemeId",Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "RootSchemeCode"},
+                new ColumnInfo {Name = "AllowedActivities"},
+                 new ColumnInfo {Name = "StartingTransition"}
             });
         }
 
@@ -114,7 +116,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
 
         public static WorkflowProcessScheme[] Select(NpgsqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\" WHERE \"SchemeCode\" = @schemecode AND \"DefiningParametersHash\" = @dphash", _tableName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"SchemeCode\" = @schemecode AND \"DefiningParametersHash\" = @dphash", ObjectName);
 
             if (isObsolete.HasValue)
             {
@@ -127,45 +129,42 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
                     selectText += " AND \"IsObsolete\" = FALSE";
                 }
             }
-            
-            var p_schemecode = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar);
-            p_schemecode.Value = schemeCode;
- 
-            var p_dphash = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar);
-            p_dphash.Value = definingParametersHash;
+
+            var pSchemecode = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
+
+            var pDphash = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
 
             if (rootSchemeId.HasValue)
             {
                 selectText += " AND \"RootSchemeId\" = @rootschemeid";
-                var pRootSchemeId = new NpgsqlParameter("rootschemeid", NpgsqlDbType.Uuid);
-                pRootSchemeId.Value = rootSchemeId.Value;
+                var pRootSchemeId = new NpgsqlParameter("rootschemeid", NpgsqlDbType.Uuid) {Value = rootSchemeId.Value};
 
-                return Select(connection, selectText, p_schemecode, p_dphash, pRootSchemeId);
+                return Select(connection, selectText, pSchemecode, pDphash, pRootSchemeId);
             }
             else
             {
                 selectText += " AND \"RootSchemeId\" IS NULL";
-                return Select(connection, selectText, p_schemecode, p_dphash);
+                return Select(connection, selectText, pSchemecode, pDphash);
             }
         }
 
         public static int SetObsolete(NpgsqlConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE \"{0}\" SET \"IsObsolete\" = TRUE WHERE \"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode", _tableName);
-            var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar);
-            p.Value = schemeCode;
-            
+            string command = string.Format("UPDATE {0} SET \"IsObsolete\" = TRUE WHERE \"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode", ObjectName);
+            var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
+
             return ExecuteCommand(connection, command, p);
         }
 
         public static int SetObsolete(NpgsqlConnection connection, string schemeCode, string definingParametersHash)
         {
-            string command = string.Format("UPDATE \"{0}\" SET \"IsObsolete\" = TRUE WHERE (\"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode) AND \"DefiningParametersHash\" = @dphash", _tableName);
-            var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar);
-            p.Value = schemeCode;
+            string command =
+                string.Format(
+                    "UPDATE {0} SET \"IsObsolete\" = TRUE WHERE (\"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode) AND \"DefiningParametersHash\" = @dphash",
+                    ObjectName);
 
-            var p2 = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar);
-            p2.Value = definingParametersHash;
+            var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
+            var p2 = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
 
             return ExecuteCommand(connection, command, p, p2);
         }

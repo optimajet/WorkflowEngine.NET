@@ -4,7 +4,8 @@ using System.Linq;
 using Npgsql;
 using NpgsqlTypes;
 
-namespace OptimaJet.Workflow.PostgreSQL.Models
+// ReSharper disable once CheckNamespace
+namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
     {
@@ -14,18 +15,19 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
 
-        private const string _tableName = "WorkflowProcessTimer";
+        static WorkflowProcessTimer()
+        {
+            DbTableName = "WorkflowProcessTimer";
+        }
 
         public WorkflowProcessTimer()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="Name"},
-                new ColumnInfo(){Name="NextExecutionDateTime", Type = NpgsqlDbType.Timestamp },
-                new ColumnInfo(){Name="Ignore", Type = NpgsqlDbType.Boolean },
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="ProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="Name"},
+                new ColumnInfo {Name="NextExecutionDateTime", Type = NpgsqlDbType.Timestamp },
+                new ColumnInfo {Name="Ignore", Type = NpgsqlDbType.Boolean },
             });
         }
 
@@ -76,43 +78,47 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
         {
             var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
 
-            var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Text)
+            if (timersIgnoreList != null && timersIgnoreList.Any())
             {
-                Value = timersIgnoreList != null ? timersIgnoreList.ToArray() : new string[] {}
-            };
+                // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
+                var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Varchar)
+                {
+                    Value =timersIgnoreList.ToArray()
+                };
 
+                return ExecuteCommand(connection,
+                    string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid AND \"Name\" != ALL(@timerIgnoreList)", ObjectName), transaction, pProcessId, pTimerIgnoreList);
+            }
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid AND \"Name\" != ANY(@timerIgnoreList)", _tableName), transaction, pProcessId, pTimerIgnoreList);
+                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, pProcessId);
         }
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(NpgsqlConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\" WHERE \"ProcessId\" = @processid AND \"Name\" = @name", _tableName);
-            var p1 = new NpgsqlParameter("processId", NpgsqlDbType.Uuid);
-            p1.Value = processId;
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid AND \"Name\" = @name", ObjectName);
+            var p1 = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
 
-            var p2 = new NpgsqlParameter("name", NpgsqlDbType.Varchar);
-            p2.Value = name;
+            var p2 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) {Value = name};
             return Select(connection, selectText, p1, p2).FirstOrDefault();
         }
 
         public static int ClearTimersIgnore(NpgsqlConnection connection)
         {
-            string command = string.Format("UPDATE \"{0}\" SET \"Ignore\" = FALSE WHERE \"Ignore\" = TRUE", _tableName);
+            string command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Ignore\" = TRUE", ObjectName);
             return ExecuteCommand(connection, command);
         }
 
         public static WorkflowProcessTimer GetCloseExecutionTimer(NpgsqlConnection connection)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\" WHERE \"Ignore\" = FALSE ORDER BY \"NextExecutionDateTime\" LIMIT 1", _tableName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE ORDER BY \"NextExecutionDateTime\" LIMIT 1", ObjectName);
             return Select(connection, selectText).FirstOrDefault();
         }
 
         public static WorkflowProcessTimer[] GetTimersToExecute(NpgsqlConnection connection, DateTime now)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\" WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime", _tableName);
-            var p = new NpgsqlParameter("currentTime", NpgsqlDbType.Date);
-            p.Value = now;
+            
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime", ObjectName);
+            var p = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) { Value = now };
             return Select(connection, selectText, p);
         }
 
@@ -121,9 +127,9 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             if (timers.Length == 0)
                 return 0;
 
-            var p = new NpgsqlParameter("timerListParam", NpgsqlDbType.Array | NpgsqlDbType.Uuid);
-            p.Value = timers.Select(c => c.Id).ToArray();
-            return ExecuteCommand(connection, string.Format("DELETE FROM \"{0}\" WHERE \"Id\" = ANY(@timerListParam)", _tableName), p);
+            // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
+            var p = new NpgsqlParameter("timerListParam", NpgsqlDbType.Array | NpgsqlDbType.Uuid) {Value = timers.Select(c => c.Id).ToArray()};
+            return ExecuteCommand(connection, string.Format("UPDATE {0} SET \"Ignore\" = TRUE WHERE \"Id\" = ANY(@timerListParam)", ObjectName), p);
         }
     }
 }

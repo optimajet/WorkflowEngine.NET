@@ -3,6 +3,7 @@ using Npgsql;
 using NpgsqlTypes;
 
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowGlobalParameter : DbObject<WorkflowGlobalParameter>
@@ -15,18 +16,19 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public string Value { get; set; }
 
-        private const string _tableName = "WorkflowGlobalParameter";
+        static WorkflowGlobalParameter()
+        {
+            DbTableName = "WorkflowGlobalParameter";
+        }
 
         public WorkflowGlobalParameter()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]
+            DBColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo() {Name = "Type"},
-                new ColumnInfo() {Name = "Name"},
-                new ColumnInfo() {Name = "Value"}
+                new ColumnInfo {Name = "Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "Type"},
+                new ColumnInfo {Name = "Name"},
+                new ColumnInfo {Name = "Value"}
             });
         }
 
@@ -61,7 +63,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     Name = value as string;
                     break;
                 case "Value":
-                    Value = value as string;;
+                    Value = value as string;
                     break;
                default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
@@ -70,7 +72,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static WorkflowGlobalParameter[] SelectByTypeAndName(NpgsqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\"  WHERE \"Type\" = @type", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE \"Type\" = @type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND \"Name\" = @name";
@@ -87,7 +89,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static int DeleteByTypeAndName(NpgsqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM \"{0}\"  WHERE \"Type\" = @type", _tableName);
+            string selectText = string.Format("DELETE FROM {0}  WHERE \"Type\" = @type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND \"Name\" = @name";

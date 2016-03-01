@@ -10,7 +10,6 @@ using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.PostgreSQL.Models;
 
 namespace OptimaJet.Workflow.PostgreSQL
 {
@@ -23,15 +22,16 @@ namespace OptimaJet.Workflow.PostgreSQL
             _runtime = runtime;
         }
 
-        public PostgreSQLProvider(string connectionString)
+        public PostgreSQLProvider(string connectionString, string schema = "public")
         {
+            DbObject.SchemaName = schema;
             ConnectionString = connectionString;
         }
 
         #region IPersistenceProvider
         public void InitializeProcess(ProcessInstance processInstance)
         {
-            using(NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using(var connection = new NpgsqlConnection(ConnectionString))
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
@@ -58,7 +58,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void BindProcessToNewScheme(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess == null)
@@ -92,7 +92,7 @@ namespace OptimaJet.Workflow.PostgreSQL
               processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type) })
                   .ToList();
             
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).ToList();
 
@@ -143,7 +143,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processInstance.ProcessId);
 
@@ -170,14 +170,16 @@ namespace OptimaJet.Workflow.PostgreSQL
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
         }
 
+#pragma warning disable 612
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+#pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
         }
 
         public void ResetWorkflowRunning()
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id);
             }
@@ -191,9 +193,9 @@ namespace OptimaJet.Workflow.PostgreSQL
             var identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
             var impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
-                WorkflowProcessInstance inst = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
+                var inst = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 
                 if (inst != null)
                 {
@@ -248,7 +250,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public bool IsProcessExists(Guid processId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 return WorkflowProcessInstance.SelectByKey(connection, processId) != null;
             }
@@ -256,7 +258,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public ProcessStatus GetInstanceStatus(Guid processId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var instance = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
                 if (instance == null)
@@ -271,7 +273,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
         {
-            using(NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using(var connection = new NpgsqlConnection(ConnectionString))
             {
                 var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
                 if(instanceStatus == null)
@@ -319,51 +321,50 @@ namespace OptimaJet.Workflow.PostgreSQL
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
 
-            List<ParameterDefinitionWithValue> parameters;
-            parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
+            var parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
             {
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterProcessId.Name),
                     processId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousState.Name),
-                    (object) processInstance.PreviousState),
+                    processInstance.PreviousState),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentState.Name),
-                    (object) processInstance.StateName),
+                    processInstance.StateName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForDirect.Name),
-                    (object) processInstance.PreviousStateForDirect),
+                    processInstance.PreviousStateForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForReverse.Name),
-                    (object) processInstance.PreviousStateForReverse),
+                    processInstance.PreviousStateForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivity.Name),
-                    (object) processInstance.PreviousActivity),
+                    processInstance.PreviousActivity),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentActivity.Name),
-                    (object) processInstance.ActivityName),
+                    processInstance.ActivityName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForDirect.Name),
-                    (object) processInstance.PreviousActivityForDirect),
+                    processInstance.PreviousActivityForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForReverse.Name),
-                    (object) processInstance.PreviousActivityForReverse),
+                    processInstance.PreviousActivityForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeCode.Name),
-                    (object) processDefinition.Name),
+                    processDefinition.Name),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeId.Name),
-                    (object) processInstance.SchemeId),
+                    processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
                     false),
-                 ParameterDefinition.Create(
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
-                    (object) processInstance.ParentProcessId),
-                 ParameterDefinition.Create(
+                    processInstance.ParentProcessId),
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    (object) processInstance.RootProcessId),
+                    processInstance.RootProcessId),
 
             };
             return parameters;
@@ -376,7 +377,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             List<WorkflowProcessInstancePersistence> persistedParameters;
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processId).ToList();
             }
@@ -395,7 +396,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         private WorkflowProcessInstance GetProcessInstance(Guid processId)
         {
-            using(NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using(var connection = new NpgsqlConnection(ConnectionString))
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
@@ -430,24 +431,23 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
                 if (timer == null)
                 {
-                    timer = new WorkflowProcessTimer()
+                    timer = new WorkflowProcessTimer
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId
+                        ProcessId = processId,
+                        Ignore = false
                     };
 
-                    timer.Ignore = false;
                     timer.Insert(connection);
                 }
-
-                if (!notOverrideIfExists)
+                else if (!notOverrideIfExists)
                 {
                     timer.NextExecutionDateTime = nextExecutionDateTime;
                     timer.Update(connection);
@@ -457,7 +457,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void ClearTimers(Guid processId, List<string> timersIgnoreList)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessTimer.DeleteByProcessId(connection, processId, timersIgnoreList);
             }
@@ -465,7 +465,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void ClearTimersIgnore()
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessTimer.ClearTimersIgnore(connection);
             }
@@ -473,7 +473,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void ClearTimer(Guid timerId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessTimer.Delete(connection, timerId);
             }
@@ -481,7 +481,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public DateTime? GetCloseExecutionDateTime()
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var timer = WorkflowProcessTimer.GetCloseExecutionTimer(connection);
                 if (timer == null)
@@ -495,7 +495,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var now = _runtime.RuntimeDateTimeNow;
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
                 WorkflowProcessTimer.SetIgnore(connection, timers);
@@ -506,7 +506,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void SaveGlobalParameter<T>(string type, string name, T value)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
 
@@ -534,7 +534,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public T LoadGlobalParameter<T>(string type, string name)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
 
@@ -548,7 +548,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public List<T> LoadGlobalParameters<T>(string type)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var parameters = WorkflowGlobalParameter.SelectByTypeAndName(connection, type);
 
@@ -558,7 +558,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void DeleteGlobalParameters(string type, string name = null)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowGlobalParameter.DeleteByTypeAndName(connection, type, name);
             }
@@ -570,7 +570,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         #region ISchemePersistenceProvider
         public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
@@ -587,9 +587,9 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public SchemeDefinition<XElement> GetProcessSchemeBySchemeId(Guid schemeId)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
-                WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
+                var processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
 
                 if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
                     throw new SchemeNotFoundException();
@@ -601,17 +601,17 @@ namespace OptimaJet.Workflow.PostgreSQL
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
+            IEnumerable<WorkflowProcessScheme> processSchemes;
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 processSchemes =
                  WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
                         rootSchemeId);
             }
 
-            if (processSchemes.Count() < 1)
+            if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
 
             if (processSchemes.Count() == 1)
@@ -633,7 +633,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             var definingParameters = DefiningParametersSerializer.Serialize(parameters);
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessScheme.SetObsolete(connection, schemeCode, definingParametersHash);
             }
@@ -641,7 +641,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public void SetSchemeIsObsolete(string schemeCode)
         {
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessScheme.SetObsolete(connection, schemeCode);
             }
@@ -652,16 +652,17 @@ namespace OptimaJet.Workflow.PostgreSQL
             var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
+            using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
                     scheme.IsObsolete, scheme.RootSchemeId);
 
                 if (oldSchemes.Any())
                 {
-                    foreach (var oldScheme in oldSchemes)
-                        if (oldScheme.DefiningParameters == definingParameters)
-                            throw new SchemeAlredyExistsException();
+                    if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
+                    {
+                        throw new SchemeAlredyExistsException();
+                    }
                 }
 
                 var newProcessScheme = new WorkflowProcessScheme
@@ -685,12 +686,14 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
-                WorkflowScheme wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
+                var wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
                 if (wfScheme == null)
                 {
-                    wfScheme = new WorkflowScheme();
-                    wfScheme.Code = schemaCode;
-                    wfScheme.Scheme = scheme;
+                    wfScheme = new WorkflowScheme
+                    {
+                        Code = schemaCode,
+                        Scheme = scheme
+                    };
                     wfScheme.Insert(connection);
                 }
                 else
@@ -707,7 +710,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             using(NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
-                WorkflowScheme scheme = WorkflowScheme.SelectByKey(connection, code);
+                var scheme = WorkflowScheme.SelectByKey(connection, code);
                 if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
                     throw new SchemeNotFoundException();
 

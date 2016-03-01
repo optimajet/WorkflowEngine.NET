@@ -1,6 +1,7 @@
 ﻿using System;
 using NpgsqlTypes;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowProcessInstance: DbObject<WorkflowProcessInstance>
@@ -18,23 +19,28 @@ namespace OptimaJet.Workflow.PostgreSQL
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
-        public WorkflowProcessInstance(): base()
+
+        static WorkflowProcessInstance()
         {
-            db_TableName = "WorkflowProcessInstance";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ActivityName"},
-                new ColumnInfo(){Name="IsDeterminingParametersChanged", Type = NpgsqlDbType.Boolean},
-                new ColumnInfo(){Name="PreviousActivity"},
-                new ColumnInfo(){Name="PreviousActivityForDirect"},
-                new ColumnInfo(){Name="PreviousActivityForReverse"},
-                new ColumnInfo(){Name="PreviousState"},
-                new ColumnInfo(){Name="PreviousStateForDirect"},
-                new ColumnInfo(){Name="PreviousStateForReverse"},
-                new ColumnInfo(){Name="SchemeId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="StateName"},
-                new ColumnInfo() {Name = "ParentProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo() {Name = "RootProcessId", Type = NpgsqlDbType.Uuid},
+            DbTableName = "WorkflowProcessInstance";
+        }
+
+        public WorkflowProcessInstance()
+        {
+           DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="ActivityName"},
+                new ColumnInfo {Name="IsDeterminingParametersChanged", Type = NpgsqlDbType.Boolean},
+                new ColumnInfo {Name="PreviousActivity"},
+                new ColumnInfo {Name="PreviousActivityForDirect"},
+                new ColumnInfo {Name="PreviousActivityForReverse"},
+                new ColumnInfo {Name="PreviousState"},
+                new ColumnInfo {Name="PreviousStateForDirect"},
+                new ColumnInfo {Name="PreviousStateForReverse"},
+                new ColumnInfo {Name="SchemeId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="StateName"},
+                new ColumnInfo {Name = "ParentProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "RootProcessId", Type = NpgsqlDbType.Uuid},
             });
         }
 

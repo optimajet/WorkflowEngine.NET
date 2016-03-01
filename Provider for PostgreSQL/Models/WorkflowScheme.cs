@@ -1,19 +1,24 @@
 ﻿using System;
 using NpgsqlTypes;
 
-namespace OptimaJet.Workflow.PostgreSQL.Models
+// ReSharper disable once CheckNamespace
+namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
     {
         public string Code { get; set; }
         public string Scheme { get; set; }
 
+        static WorkflowScheme()
+        {
+            DbTableName = "WorkflowScheme";
+        }
+
         public WorkflowScheme()
         {
-            db_TableName = "WorkflowScheme";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Code", IsKey = true},
-                new ColumnInfo(){Name="Scheme", Type = NpgsqlDbType.Text}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Code", IsKey = true},
+                new ColumnInfo {Name="Scheme", Type = NpgsqlDbType.Text}
             });
         }
 

@@ -14,15 +14,23 @@ namespace OptimaJet.Workflow.PostgreSQL
         public bool IsKey = false;
         public int Size = 256;
     }
-    public class DbObject<T> where T : DbObject<T>, new()
-    {
-        public DbObject()
-        {
 
+    public abstract class DbObject
+    {
+        public static string SchemaName { get; set; }
+    }
+
+    public class DbObject<T> : DbObject where T : DbObject<T>, new()
+    {
+        // ReSharper disable once StaticMemberInGenericType
+        public static string DbTableName;
+
+        public static string ObjectName
+        {
+            get { return string.Format("\"{0}\".\"{1}\"", SchemaName, DbTableName); }
         }
 
-        public string db_TableName;
-        public List<ColumnInfo> db_Columns = new List<ColumnInfo>();
+        public List<ColumnInfo> DBColumns = new List<ColumnInfo>();
 
         public virtual object GetValue(string key)
         {
@@ -39,12 +47,12 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             using (var command = connection.CreateCommand())
             {
-                command.CommandText = string.Format("INSERT INTO \"{0}\" ({1}) VALUES ({2})",
-                    db_TableName, 
-                    String.Join(",", db_Columns.Select(c=> string.Format("\"{0}\"", c.Name) )),
-                    String.Join(",", db_Columns.Select(c=> "@" + c.Name)));
+                command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                    ObjectName, 
+                    String.Join(",", DBColumns.Select(c=> string.Format("\"{0}\"", c.Name) )),
+                    String.Join(",", DBColumns.Select(c=> "@" + c.Name)));
 
-                command.Parameters.AddRange(db_Columns.Select(c=> CreateParameter(c)).ToArray());
+                command.Parameters.AddRange(DBColumns.Select(CreateParameter).ToArray());
                 command.CommandType = CommandType.Text;
                 int cnt = command.ExecuteNonQuery();
                 return cnt;
@@ -53,13 +61,12 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public int Update(NpgsqlConnection connection)
         {
-            string command = string.Format("UPDATE \"{0}\" SET {1} WHERE {2}",
-                    db_TableName,
-                    String.Join(",", db_Columns.Where(c => !c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))),
-                    String.Join(" AND ", db_Columns.Where(c => c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))));
+            string command = string.Format("UPDATE {0} SET {1} WHERE {2}",
+                    ObjectName,
+                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))),
+                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))));
 
-            var parameters = db_Columns.Select(c =>
-                CreateParameter(c)).ToArray();
+            var parameters = DBColumns.Select(CreateParameter).ToArray();
 
             return ExecuteCommand(connection, command, parameters);
             
@@ -69,30 +76,29 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var t = new T();
 
-            var key = t.db_Columns.FirstOrDefault(c => c.IsKey);
+            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if(key == null)
             {
-                throw new Exception(string.Format("Key for table {0} isn't defined.", t.db_TableName));
+                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
             }
 
-            string selectText = string.Format("SELECT * FROM \"{0}\" WHERE \"{1}\" = @p_id", t.db_TableName, key.Name);
-            var p_id = new NpgsqlParameter("p_id", key.Type);
-            p_id.Value = id;
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"{1}\" = @p_id", ObjectName, key.Name);
+            var pId = new NpgsqlParameter("p_id", key.Type) {Value = id};
 
-            return Select(connection, selectText, p_id).FirstOrDefault();
+            return Select(connection, selectText, pId).FirstOrDefault();
         }
 
         public static int Delete(NpgsqlConnection connection, object id, NpgsqlTransaction transaction = null)
         {
             var t = new T();
-            var key = t.db_Columns.FirstOrDefault(c => c.IsKey);
+            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if (key == null)
-                throw new Exception(string.Format("Key for table {0} isn't defined.", t.db_TableName));
+                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
 
             var pId = new NpgsqlParameter("p_id", key.Type) {Value = id};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"{1}\" = @p_id", t.db_TableName, key.Name), transaction, pId);
+                string.Format("DELETE FROM {0} WHERE \"{1}\" = @p_id", ObjectName, key.Name), transaction, pId);
         }
 
         public static int ExecuteCommand(NpgsqlConnection connection, string commandText,
@@ -148,7 +154,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 foreach (DataRow row in dt.Rows)
                 {
                     T item = new T();
-                    foreach (var c in item.db_Columns)
+                    foreach (var c in item.DBColumns)
                         item.SetValue(c.Name, row[c.Name]);
                     res.Add(item);
                 }
@@ -160,8 +166,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual NpgsqlParameter CreateParameter(ColumnInfo c)
         {
-            var p = new NpgsqlParameter(c.Name, c.Type);
-            p.Value = GetValue(c.Name);
+            var p = new NpgsqlParameter(c.Name, c.Type) {Value = GetValue(c.Name)};
             return p;
         }
     }

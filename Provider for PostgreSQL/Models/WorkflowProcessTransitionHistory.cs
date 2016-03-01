@@ -2,7 +2,8 @@
 using Npgsql;
 using NpgsqlTypes;
 
-namespace OptimaJet.Workflow.PostgreSQL.Models
+// ReSharper disable once CheckNamespace
+namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowProcessTransitionHistory : DbObject<WorkflowProcessTransitionHistory>
     {
@@ -20,24 +21,27 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
 
         public string TriggerName { get; set; }
 
-        private const string TableName = "WorkflowProcessTransitionHistory";
+        static WorkflowProcessTransitionHistory()
+        {
+            DbTableName = "WorkflowProcessTransitionHistory";
+        }
 
         public WorkflowProcessTransitionHistory()
         {
-            db_TableName = TableName;
-            db_Columns.AddRange(new[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ActorIdentityId"},
-                new ColumnInfo(){Name="ExecutorIdentityId"},
-                new ColumnInfo(){Name="FromActivityName"},
-                new ColumnInfo(){Name="FromStateName"},
-                new ColumnInfo(){Name="IsFinalised", Type = NpgsqlDbType.Boolean},
-                new ColumnInfo(){Name="ProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ToActivityName"},
-                new ColumnInfo(){Name="ToStateName"},
-                new ColumnInfo(){Name="TransitionClassifier"},
-                new ColumnInfo(){Name="TransitionTime", Type = NpgsqlDbType.Timestamp },
-                new ColumnInfo(){Name="TriggerName"}
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "ActorIdentityId"},
+                new ColumnInfo {Name = "ExecutorIdentityId"},
+                new ColumnInfo {Name = "FromActivityName"},
+                new ColumnInfo {Name = "FromStateName"},
+                new ColumnInfo {Name = "IsFinalised", Type = NpgsqlDbType.Boolean},
+                new ColumnInfo {Name = "ProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "ToActivityName"},
+                new ColumnInfo {Name = "ToStateName"},
+                new ColumnInfo {Name = "TransitionClassifier"},
+                new ColumnInfo {Name = "TransitionTime", Type = NpgsqlDbType.Timestamp},
+                new ColumnInfo {Name = "TriggerName"}
             });
         }
 
@@ -123,7 +127,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
         {
             var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid", TableName), transaction,
+                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction,
                 pProcessId);
         }
     }

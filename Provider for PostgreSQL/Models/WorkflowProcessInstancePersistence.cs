@@ -2,6 +2,7 @@
 using Npgsql;
 using NpgsqlTypes;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.PostgreSQL
 {
     public class WorkflowProcessInstancePersistence : DbObject<WorkflowProcessInstancePersistence>
@@ -11,17 +12,18 @@ namespace OptimaJet.Workflow.PostgreSQL
         public string ParameterName { get; set; }
         public string Value { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstancePersistence";
+        static WorkflowProcessInstancePersistence()
+        {
+            DbTableName = "WorkflowProcessInstancePersistence";
+        }
 
         public WorkflowProcessInstancePersistence()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo(){Name="ParameterName"},
-                new ColumnInfo(){Name="Value", Type = NpgsqlDbType.Text }
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="ProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name="ParameterName"},
+                new ColumnInfo {Name="Value", Type = NpgsqlDbType.Text }
             });
         }
 
@@ -65,7 +67,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM \"{0}\"  WHERE \"ProcessId\" = @processid", _tableName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
             var p = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
             return Select(connection, selectText, p);
         }
@@ -75,7 +77,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             var p = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM \"{0}\" WHERE \"ProcessId\" = @processid", _tableName), transaction, p);
+                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, p);
         }
     }
 }

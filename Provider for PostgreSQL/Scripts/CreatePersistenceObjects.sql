@@ -3,7 +3,7 @@ Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
 Version: 1.5.3
 File: CreatePersistenceObjects.sql
-*/WorkflowProcessTimerWorkflowProcessSchemeWorkflowProcessTimer
+*/
 -- WorkflowInbox
 CREATE TABLE "WorkflowInbox"
 (
