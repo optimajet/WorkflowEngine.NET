@@ -146,7 +146,7 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
+                string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
                 sqlParameters.ToArray());
          }
     }

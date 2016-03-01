@@ -1,6 +1,7 @@
 ﻿using System;
 using Oracle.ManagedDataAccess.Client;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
     public sealed class WorkflowGlobalParameter : DbObject<WorkflowGlobalParameter>
