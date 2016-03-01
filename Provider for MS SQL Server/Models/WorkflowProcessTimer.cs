@@ -4,6 +4,7 @@ using System.Data;
 using System.Data.SqlClient;
 using System.Linq;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
@@ -154,7 +155,7 @@ namespace OptimaJet.Workflow.DbPersistence
             }
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM [{0}] WHERE [Id] IN ({1})", TableName, string.Join(",", parameters)),
+                string.Format("UPDATE [{0}] SET [Ignore] = 1 WHERE [Id] IN ({1})", TableName, string.Join(",", parameters)),
                 sqlParameters.ToArray());
         }
     }

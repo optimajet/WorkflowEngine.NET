@@ -1,6 +1,6 @@
 ﻿using System;
-using System.Data;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>

@@ -2,6 +2,7 @@
 using System.Data;
 using System.Data.SqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessScheme : DbObject<WorkflowProcessScheme>

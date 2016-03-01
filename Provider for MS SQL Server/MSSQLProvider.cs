@@ -499,19 +499,18 @@ namespace OptimaJet.Workflow.DbPersistence
                 var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
                 if (timer == null)
                 {
-                    timer = new WorkflowProcessTimer()
+                    timer = new WorkflowProcessTimer
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId
+                        ProcessId = processId,
+                        Ignore = false
                     };
 
-                    timer.Ignore = false;
                     timer.Insert(connection);
                 }
-
-                if (!notOverrideIfExists)
+                else if (!notOverrideIfExists)
                 {
                     timer.NextExecutionDateTime = nextExecutionDateTime;
                     timer.Update(connection);
