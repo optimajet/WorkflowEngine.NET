@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessInstanceStatus : DbObject<WorkflowProcessInstanceStatus>
@@ -9,15 +10,17 @@ namespace OptimaJet.Workflow.MySQL
         public Guid Lock { get; set; }
         public byte Status { get; set; }
 
-        private const string TableName = "WorkflowProcessInstanceStatus";
+        static WorkflowProcessInstanceStatus()
+        {
+            DbTableName = "workflowprocessinstancestatus";
+        }
 
         public WorkflowProcessInstanceStatus()
         {
-            db_TableName = TableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="Lock", Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="Status", Type = MySqlDbType.Byte}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="Lock", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="Status", Type = MySqlDbType.Byte}
             });
         }
 
@@ -57,7 +60,7 @@ namespace OptimaJet.Workflow.MySQL
 
         public static int MassChangeStatus(MySqlConnection connection, byte stateFrom, byte stateTo)
         {
-            string command = string.Format("UPDATE {0} SET `Status` = @stateto WHERE `Status` = @statefrom", TableName);
+            var command = string.Format("UPDATE {0} SET `Status` = @stateto WHERE `Status` = @statefrom", DbTableName);
             var p1 = new MySqlParameter("statefrom", MySqlDbType.Byte) {Value = stateFrom};
             var p2 = new MySqlParameter("stateto", MySqlDbType.Byte) {Value = stateTo};
 
@@ -66,7 +69,7 @@ namespace OptimaJet.Workflow.MySQL
 
         public static int ChangeStatus(MySqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            string command = string.Format("UPDATE {0} SET `Status` = @newstatus, `Lock` = @newlock WHERE `Id` = @id AND `Lock` = @oldlock", TableName);
+            var command = string.Format("UPDATE {0} SET `Status` = @newstatus, `Lock` = @newlock WHERE `Id` = @id AND `Lock` = @oldlock", DbTableName);
             var p1 = new MySqlParameter("newstatus", MySqlDbType.Byte) { Value = status.Status };
             var p2 = new MySqlParameter("newlock", MySqlDbType.Binary) { Value = status.Lock.ToByteArray() };
             var p3 = new MySqlParameter("id", MySqlDbType.Binary) { Value = status.Id.ToByteArray() };

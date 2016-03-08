@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessInstancePersistence : DbObject<WorkflowProcessInstancePersistence>
@@ -10,17 +11,18 @@ namespace OptimaJet.Workflow.MySQL
         public string ParameterName { get; set; }
         public string Value { get; set; }
 
-        private static string _tableName = "WorkflowProcessInstancePersistence";
+        static WorkflowProcessInstancePersistence()
+        {
+            DbTableName = "workflowprocessinstancepersistence";
+        }
 
         public WorkflowProcessInstancePersistence()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ProcessId", Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ParameterName"},
-                new ColumnInfo(){Name="Value", Type = MySqlDbType.LongText }
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="ProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="ParameterName"},
+                new ColumnInfo {Name="Value", Type = MySqlDbType.LongText }
             });
         }
 
@@ -64,19 +66,17 @@ namespace OptimaJet.Workflow.MySQL
 
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(MySqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE `ProcessId` = @processid", _tableName);
-            var p = new MySqlParameter("processId", MySqlDbType.Binary);
-            p.Value = processId.ToByteArray();
+            string selectText = string.Format("SELECT * FROM {0}  WHERE `ProcessId` = @processid", DbTableName);
+            var p = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
             return Select(connection, selectText, p);
         }
 
         public static int DeleteByProcessId(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
         {
-            var p = new MySqlParameter("processId", MySqlDbType.Binary);
-            p.Value = processId.ToByteArray();
+            var p = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName),transaction, p);
+                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), transaction, p);
         }
     }
 }

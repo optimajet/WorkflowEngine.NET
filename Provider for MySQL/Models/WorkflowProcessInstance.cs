@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessInstance: DbObject<WorkflowProcessInstance>
@@ -18,24 +19,29 @@ namespace OptimaJet.Workflow.MySQL
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
-        public WorkflowProcessInstance(): base()
+
+        static WorkflowProcessInstance()
         {
-            db_TableName = "WorkflowProcessInstance";
-            db_Columns.AddRange(new ColumnInfo[]
+            DbTableName = "workflowprocessinstance";
+        }
+
+        public WorkflowProcessInstance()
+        {
+            DBColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo() {Name = "ActivityName"},
-                new ColumnInfo() {Name = "IsDeterminingParametersChanged", Type = MySqlDbType.Bit},
-                new ColumnInfo() {Name = "PreviousActivity"},
-                new ColumnInfo() {Name = "PreviousActivityForDirect"},
-                new ColumnInfo() {Name = "PreviousActivityForReverse"},
-                new ColumnInfo() {Name = "PreviousState"},
-                new ColumnInfo() {Name = "PreviousStateForDirect"},
-                new ColumnInfo() {Name = "PreviousStateForReverse"},
-                new ColumnInfo() {Name = "SchemeId", Type = MySqlDbType.Binary},
-                new ColumnInfo() {Name = "StateName"},
-                new ColumnInfo() {Name = "ParentProcessId", Type = MySqlDbType.Binary},
-                new ColumnInfo() {Name = "RootProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "ActivityName"},
+                new ColumnInfo {Name = "IsDeterminingParametersChanged", Type = MySqlDbType.Bit},
+                new ColumnInfo {Name = "PreviousActivity"},
+                new ColumnInfo {Name = "PreviousActivityForDirect"},
+                new ColumnInfo {Name = "PreviousActivityForReverse"},
+                new ColumnInfo {Name = "PreviousState"},
+                new ColumnInfo {Name = "PreviousStateForDirect"},
+                new ColumnInfo {Name = "PreviousStateForReverse"},
+                new ColumnInfo {Name = "SchemeId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "StateName"},
+                new ColumnInfo {Name = "ParentProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "RootProcessId", Type = MySqlDbType.Binary},
             });
         }
 

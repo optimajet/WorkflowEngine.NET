@@ -105,7 +105,7 @@ namespace OptimaJet.Workflow.MySQL
                         {
                             if (parameterDefinitionWithValue.SerializedValue != null)
                             {
-                                persistence = new WorkflowProcessInstancePersistence()
+                                persistence = new WorkflowProcessInstancePersistence
                                 {
                                     Id = Guid.NewGuid(),
                                     ProcessId = processInstance.ProcessId,
@@ -168,7 +168,9 @@ namespace OptimaJet.Workflow.MySQL
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
         }
 
+#pragma warning disable 612
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+#pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
         }
@@ -224,7 +226,7 @@ namespace OptimaJet.Workflow.MySQL
                     inst.Update(connection);
                 }
 
-                var history = new WorkflowProcessTransitionHistory()
+                var history = new WorkflowProcessTransitionHistory
                 {
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
@@ -277,7 +279,7 @@ namespace OptimaJet.Workflow.MySQL
                     if(!createIfnotDefined)
                         throw new StatusNotDefinedException();
 
-                    instanceStatus = new WorkflowProcessInstanceStatus()
+                    instanceStatus = new WorkflowProcessInstanceStatus
                     {
                         Id = processId,
                         Lock = Guid.NewGuid(),
@@ -317,51 +319,50 @@ namespace OptimaJet.Workflow.MySQL
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
 
-            List<ParameterDefinitionWithValue> parameters;
-            parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
+            var parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
             {
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterProcessId.Name),
                     processId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousState.Name),
-                    (object) processInstance.PreviousState),
+                    processInstance.PreviousState),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentState.Name),
-                    (object) processInstance.StateName),
+                    processInstance.StateName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForDirect.Name),
-                    (object) processInstance.PreviousStateForDirect),
+                    processInstance.PreviousStateForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForReverse.Name),
-                    (object) processInstance.PreviousStateForReverse),
+                    processInstance.PreviousStateForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivity.Name),
-                    (object) processInstance.PreviousActivity),
+                    processInstance.PreviousActivity),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentActivity.Name),
-                    (object) processInstance.ActivityName),
+                    processInstance.ActivityName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForDirect.Name),
-                    (object) processInstance.PreviousActivityForDirect),
+                    processInstance.PreviousActivityForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForReverse.Name),
-                    (object) processInstance.PreviousActivityForReverse),
+                    processInstance.PreviousActivityForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeCode.Name),
-                    (object) processDefinition.Name),
+                    processDefinition.Name),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeId.Name),
-                    (object) processInstance.SchemeId),
+                    processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
                     false),
-                 ParameterDefinition.Create(
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
-                    (object) processInstance.ParentProcessId),
-                 ParameterDefinition.Create(
+                    processInstance.ParentProcessId),
+                ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    (object) processInstance.RootProcessId),
+                    processInstance.RootProcessId)
             };
             return parameters;
         }
@@ -410,13 +411,13 @@ namespace OptimaJet.Workflow.MySQL
 
         public void SaveGlobalParameter<T>(string type, string name, T value)
         {
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            using (var connection = new MySqlConnection(ConnectionString))
             {
                 var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection,type, name).FirstOrDefault();
 
                 if (parameter == null)
                 {
-                    parameter = new WorkflowGlobalParameter()
+                    parameter = new WorkflowGlobalParameter
                     {
                         Id = Guid.NewGuid(),
                         Type = type,
@@ -472,6 +473,8 @@ namespace OptimaJet.Workflow.MySQL
         {
             using (var connection = new MySqlConnection(ConnectionString))
             {
+                connection.Open();
+
                 using (var transaction = connection.BeginTransaction())
                 {
                     WorkflowProcessInstance.Delete(connection, processId, transaction);
@@ -491,19 +494,18 @@ namespace OptimaJet.Workflow.MySQL
                 var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
                 if (timer == null)
                 {
-                    timer = new WorkflowProcessTimer()
+                    timer = new WorkflowProcessTimer
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId
+                        ProcessId = processId,
+                        Ignore = false
                     };
 
-                    timer.Ignore = false;
                     timer.Insert(connection);
                 }
-
-                if (!notOverrideIfExists)
+                else if (!notOverrideIfExists)
                 {
                     timer.NextExecutionDateTime = nextExecutionDateTime;
                     timer.Update(connection);
@@ -556,7 +558,7 @@ namespace OptimaJet.Workflow.MySQL
                 var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
                 WorkflowProcessTimer.SetIgnore(connection, timers);
 
-                return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+                return timers.Select(t => new TimerToExecute { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
             }
         }
         #endregion
@@ -595,7 +597,7 @@ namespace OptimaJet.Workflow.MySQL
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
+            IEnumerable<WorkflowProcessScheme> processSchemes;
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
@@ -605,7 +607,7 @@ namespace OptimaJet.Workflow.MySQL
                         rootSchemeId);
             }
 
-            if (processSchemes.Count() < 1)
+            if (!processSchemes.Any())
                 throw new SchemeNotFoundException();
 
             if (processSchemes.Count() == 1)
@@ -684,9 +686,11 @@ namespace OptimaJet.Workflow.MySQL
                 WorkflowScheme wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
                 if (wfScheme == null)
                 {
-                    wfScheme = new WorkflowScheme();
-                    wfScheme.Code = schemaCode;
-                    wfScheme.Scheme = scheme;
+                    wfScheme = new WorkflowScheme
+                    {
+                        Code = schemaCode,
+                        Scheme = scheme
+                    };
                     wfScheme.Insert(connection);
                 }
                 else

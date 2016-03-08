@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessScheme : DbObject<WorkflowProcessScheme>
@@ -17,23 +18,25 @@ namespace OptimaJet.Workflow.MySQL
         public string AllowedActivities { get; set; }
         public string StartingTransition { get; set; }
 
-        private const string _tableName = "WorkflowProcessScheme";
+        static WorkflowProcessScheme()
+        {
+            DbTableName = "workflowprocessscheme";
+        }
 
         public WorkflowProcessScheme()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="DefiningParameters"},
-                new ColumnInfo(){Name="DefiningParametersHash" },
-                new ColumnInfo(){Name="IsObsolete", Type = MySqlDbType.Bit },
-                new ColumnInfo(){Name="SchemeCode" },
-                new ColumnInfo(){Name="Scheme" },
-                new ColumnInfo(){Name = "RootSchemeId",Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name = "RootSchemeCode"},
-                new ColumnInfo(){Name = "AllowedActivities"},
-                 new ColumnInfo(){Name = "StartingTransition"}
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "DefiningParameters"},
+                new ColumnInfo {Name = "DefiningParametersHash"},
+                new ColumnInfo {Name = "IsObsolete", Type = MySqlDbType.Bit},
+                new ColumnInfo {Name = "SchemeCode"},
+                new ColumnInfo {Name = "Scheme"},
+                new ColumnInfo {Name = "RootSchemeId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "RootSchemeCode"},
+                new ColumnInfo {Name = "AllowedActivities"},
+                new ColumnInfo {Name = "StartingTransition"}
             });
         }
 
@@ -54,7 +57,7 @@ namespace OptimaJet.Workflow.MySQL
                 case "Scheme":
                     return Scheme;
                 case "RootSchemeId":
-                    return RootSchemeId;
+                    return RootSchemeId.HasValue ? RootSchemeId.Value.ToByteArray() : null;
                 case "RootSchemeCode":
                     return RootSchemeCode;
                 case "AllowedActivities":
@@ -111,13 +114,11 @@ namespace OptimaJet.Workflow.MySQL
 
         public static WorkflowProcessScheme[] Select(MySqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId )
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE `SchemeCode` = @schemecode AND `DefiningParametersHash` = @dphash", _tableName);
+            var selectText = string.Format("SELECT * FROM {0} WHERE `SchemeCode` = @schemecode AND `DefiningParametersHash` = @dphash", DbTableName);
 
-            var pSchemecode = new MySqlParameter("schemecode", MySqlDbType.VarString);
-            pSchemecode.Value = schemeCode;
- 
-            var pDphash = new MySqlParameter("dphash", MySqlDbType.VarString);
-            pDphash.Value = definingParametersHash;
+            var pSchemecode = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
+
+            var pDphash = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
             if (isObsolete.HasValue)
             {
@@ -134,9 +135,8 @@ namespace OptimaJet.Workflow.MySQL
             if (rootSchemeId.HasValue)
             {
                 selectText += " AND `ROOTSCHEMEID` = @drootschemeid";
-                var pRootSchemeId = new MySqlParameter("drootschemeid", MySqlDbType.Binary);
-                pRootSchemeId.Value = rootSchemeId.Value;
-               
+                var pRootSchemeId = new MySqlParameter("drootschemeid", MySqlDbType.Binary) {Value = rootSchemeId.Value.ToByteArray()};
+
                 return Select(connection, selectText, pSchemecode, pDphash, pRootSchemeId);
             }
             else
@@ -148,21 +148,21 @@ namespace OptimaJet.Workflow.MySQL
 
         public static int SetObsolete(MySqlConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE `SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode", _tableName);
-            var p = new MySqlParameter("schemecode", MySqlDbType.VarString);
-            p.Value = schemeCode;
-            
+            var command = string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE `SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode", DbTableName);
+            var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
+
             return ExecuteCommand(connection, command, p);
         }
 
         public static int SetObsolete(MySqlConnection connection, string schemeCode, string definingParametersHash)
         {
-            string command = string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE (`SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode) AND `DefiningParametersHash` = @dphash", _tableName);
-            var p = new MySqlParameter("schemecode", MySqlDbType.VarString);
-            p.Value = schemeCode;
+            var command =
+                string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE (`SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode) AND `DefiningParametersHash` = @dphash",
+                    DbTableName);
 
-            var p2 = new MySqlParameter("dphash", MySqlDbType.VarString);
-            p2.Value = definingParametersHash;
+            var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
+
+            var p2 = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
             return ExecuteCommand(connection, command, p, p2);
         }

@@ -1,8 +1,10 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data;
 using System.Linq;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
@@ -13,18 +15,19 @@ namespace OptimaJet.Workflow.MySQL
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
 
-        private const string _tableName = "WorkflowProcessTimer";
+        static WorkflowProcessTimer()
+        {
+            DbTableName = "workflowprocesstimer";
+        }
 
         public WorkflowProcessTimer()
-            : base()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ProcessId", Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="Name"},
-                new ColumnInfo(){Name="NextExecutionDateTime", Type = MySqlDbType.DateTime },
-                new ColumnInfo(){Name="Ignore", Type = MySqlDbType.Bit },
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="ProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="Name"},
+                new ColumnInfo {Name="NextExecutionDateTime", Type = MySqlDbType.DateTime },
+                new ColumnInfo {Name="Ignore", Type = MySqlDbType.Bit },
             });
         }
 
@@ -74,42 +77,47 @@ namespace OptimaJet.Workflow.MySQL
         public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
             List<string> timersIgnoreList = null, MySqlTransaction transaction = null)
         {
-            var timerIgnoreListParam = timersIgnoreList != null
-                ? string.Join(",", timersIgnoreList.Select(c => string.Format("`{0}`", c)))
-                : "";
-
             var pProcessId = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
 
-            var pTimerIgnoreList = new MySqlParameter("timerIgnoreList", MySqlDbType.VarString)
+            if (timersIgnoreList != null && timersIgnoreList.Any())
             {
-                Value = timerIgnoreListParam
-            };
+                var parameters = new List<string>();
+                var sqlParameters = new List<MySqlParameter>() { pProcessId };
+                var cnt = 0;
+                foreach (var timer in timersIgnoreList)
+                {
+                    var parameterName = string.Format("ignore{0}", cnt);
+                    parameters.Add(string.Format("@{0}", parameterName));
+                    sqlParameters.Add(new MySqlParameter(parameterName, MySqlDbType.VarString) {Value = timer});
+                    cnt++;
+                }
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid AND `Name` not in (@timerIgnoreList)",
-                    _tableName), transaction, pProcessId, pTimerIgnoreList);
+                var commandText = string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid AND `Name` not in ({1})", DbTableName, string.Join(",", parameters));
+
+                return ExecuteCommand(connection, commandText, sqlParameters.ToArray());
+            }
+
+            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), pProcessId);
         }
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(MySqlConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid AND `Name` = @name", _tableName);
-            var p1 = new MySqlParameter("processId", MySqlDbType.Binary);
-            p1.Value = processId.ToByteArray();
+            var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid AND `Name` = @name", DbTableName);
+            var p1 = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
 
-            var p2 = new MySqlParameter("name", MySqlDbType.VarString);
-            p2.Value = name;
+            var p2 = new MySqlParameter("name", MySqlDbType.VarString) {Value = name};
             return Select(connection, selectText, p1, p2).FirstOrDefault();
         }
 
         public static int ClearTimersIgnore(MySqlConnection connection)
         {
-            string command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Ignore` = 1", _tableName);
+            var command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Ignore` = 1", DbTableName);
             return ExecuteCommand(connection, command);
         }
 
         public static WorkflowProcessTimer GetCloseExecutionTimer(MySqlConnection connection)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 ORDER BY `NextExecutionDateTime` LIMIT 1", _tableName);
+            var selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 ORDER BY `NextExecutionDateTime` LIMIT 1", DbTableName);
             var parameters = new MySqlParameter[]{};
 
             return Select(connection, selectText, parameters).FirstOrDefault();
@@ -117,9 +125,8 @@ namespace OptimaJet.Workflow.MySQL
 
         public static WorkflowProcessTimer[] GetTimersToExecute(MySqlConnection connection, DateTime now)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 AND `NextExecutionDateTime` <= @currentTime", _tableName);
-            var p = new MySqlParameter("currentTime", MySqlDbType.DateTime);
-            p.Value = now;
+            var selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 AND `NextExecutionDateTime` <= @currentTime", DbTableName);
+            var p = new MySqlParameter("currentTime", MySqlDbType.DateTime) {Value = now};
             return Select(connection, selectText, p);
         }
 
@@ -128,10 +135,20 @@ namespace OptimaJet.Workflow.MySQL
             if (timers.Length == 0)
                 return 0;
 
-            string timerListParam = string.Join(",", timers.Select(c => string.Format("`{0}`", c.Id)));
-            var p = new MySqlParameter("timerListParam",  MySqlDbType.VarString);
-            p.Value = timerListParam;
-            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE `Id` in (@timerListParam)", _tableName), p);
+            var parameters = new List<string>();
+            var sqlParameters = new List<MySqlParameter>();
+            var cnt = 0;
+            foreach (var timer in timers)
+            {
+                var parameterName = string.Format("timer{0}", cnt);
+                parameters.Add(string.Format("@{0}", parameterName));
+                sqlParameters.Add(new MySqlParameter(parameterName, MySqlDbType.Binary) {Value = timer.Id.ToByteArray()});
+                cnt++;
+            }
+
+            return ExecuteCommand(connection,
+                string.Format("UPDATE {0} SET `Ignore` = 1 WHERE `Id` in ({1})", DbTableName, string.Join(",", parameters)),
+                sqlParameters.ToArray());
         }
     }
 }

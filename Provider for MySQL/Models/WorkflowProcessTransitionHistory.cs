@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowProcessTransitionHistory : DbObject<WorkflowProcessTransitionHistory>
@@ -19,25 +20,26 @@ namespace OptimaJet.Workflow.MySQL
 
         public string TriggerName { get; set; }
 
-        private static string _tableName = "WorkflowProcessTransitionHistory";
-
-        public WorkflowProcessTransitionHistory()
-            : base()
+        static WorkflowProcessTransitionHistory()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ActorIdentityId"},
-                new ColumnInfo(){Name="ExecutorIdentityId"},
-                new ColumnInfo(){Name="FromActivityName"},
-                new ColumnInfo(){Name="FromStateName"},
-                new ColumnInfo(){Name="IsFinalised", Type = MySqlDbType.Byte},
-                new ColumnInfo(){Name="ProcessId", Type = MySqlDbType.Binary},
-                new ColumnInfo(){Name="ToActivityName"},
-                new ColumnInfo(){Name="ToStateName"},
-                new ColumnInfo(){Name="TransitionClassifier"},
-                new ColumnInfo(){Name="TransitionTime", Type = MySqlDbType.DateTime },
-                new ColumnInfo(){Name="TriggerName"}
+            DbTableName = "workflowprocesstransitionhistory";
+        }
+
+       public WorkflowProcessTransitionHistory()
+       {
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="ActorIdentityId"},
+                new ColumnInfo {Name="ExecutorIdentityId"},
+                new ColumnInfo {Name="FromActivityName"},
+                new ColumnInfo {Name="FromStateName"},
+                new ColumnInfo {Name="IsFinalised", Type = MySqlDbType.Byte},
+                new ColumnInfo {Name="ProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name="ToActivityName"},
+                new ColumnInfo {Name="ToStateName"},
+                new ColumnInfo {Name="TransitionClassifier"},
+                new ColumnInfo {Name="TransitionTime", Type = MySqlDbType.DateTime },
+                new ColumnInfo {Name="TriggerName"}
             });
         }
 
@@ -124,7 +126,7 @@ namespace OptimaJet.Workflow.MySQL
         {
             var pProcessId = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", _tableName), transaction, pProcessId);
+                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), transaction, pProcessId);
         }
     }
 }

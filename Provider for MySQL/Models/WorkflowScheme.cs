@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
@@ -8,12 +9,16 @@ namespace OptimaJet.Workflow.MySQL
         public string Code { get; set; }
         public string Scheme { get; set; }
 
+        static WorkflowScheme()
+        {
+            DbTableName = "workflowscheme";
+        }
+
         public WorkflowScheme()
         {
-            db_TableName = "WorkflowScheme";
-            db_Columns.AddRange(new ColumnInfo[]{
-                new ColumnInfo(){Name="Code", IsKey = true},
-                new ColumnInfo(){Name="Scheme", Type = MySqlDbType.LongText}
+            DBColumns.AddRange(new[]{
+                new ColumnInfo {Name="Code", IsKey = true},
+                new ColumnInfo {Name="Scheme", Type = MySqlDbType.LongText}
             });
         }
 

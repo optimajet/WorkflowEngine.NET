@@ -1,6 +1,7 @@
 ﻿using System;
 using MySql.Data.MySqlClient;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
     public class WorkflowGlobalParameter : DbObject<WorkflowGlobalParameter>
@@ -13,18 +14,19 @@ namespace OptimaJet.Workflow.MySQL
 
         public string Value { get; set; }
 
-        private const string _tableName = "workflowglobalparameter";
-
-        public WorkflowGlobalParameter()
-            : base()
+        static WorkflowGlobalParameter()
         {
-            db_TableName = _tableName;
-            db_Columns.AddRange(new ColumnInfo[]
+            DbTableName = "workflowglobalparameter";
+        }
+        
+        public WorkflowGlobalParameter()
+        {
+            DBColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo() {Name = "Type"},
-                new ColumnInfo() {Name = "Name"},
-                new ColumnInfo() {Name = "Value"}
+                new ColumnInfo {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "Type"},
+                new ColumnInfo {Name = "Name"},
+                new ColumnInfo {Name = "Value"}
             });
         }
 
@@ -68,7 +70,7 @@ namespace OptimaJet.Workflow.MySQL
 
         public static WorkflowGlobalParameter[] SelectByTypeAndName(MySqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE `Type` = @type", _tableName);
+            string selectText = string.Format("SELECT * FROM {0}  WHERE `Type` = @type", DbTableName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND `Name` = @name";
@@ -85,7 +87,7 @@ namespace OptimaJet.Workflow.MySQL
 
         public static int DeleteByTypeAndName(MySqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM {0}  WHERE `Type` = @type", _tableName);
+            string selectText = string.Format("DELETE FROM {0}  WHERE `Type` = @type", DbTableName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND `Name` = @name";
