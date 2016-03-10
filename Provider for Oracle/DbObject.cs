@@ -26,7 +26,12 @@ namespace OptimaJet.Workflow.Oracle
 
         public static string ObjectName
         {
-            get { return string.Format("{0}.{1}", SchemaName, DbTableName); }
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(SchemaName))
+                    return string.Format("{0}.{1}", SchemaName, DbTableName);
+                return string.Format("{0}",DbTableName);
+            }
         }
 
         public List<ColumnInfo> DBColumns = new List<ColumnInfo>();

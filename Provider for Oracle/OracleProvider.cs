@@ -23,7 +23,7 @@ namespace OptimaJet.Workflow.Oracle
             _runtime = runtime;
         }
 
-        public OracleProvider(string connectionString, string schema = "SYS")
+        public OracleProvider(string connectionString, string schema = null)
         {
             DbObject.SchemaName = schema;
             ConnectionString = connectionString;
