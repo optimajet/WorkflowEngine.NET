@@ -18,16 +18,20 @@ namespace OptimaJet.Workflow.Core.Bus
         /// Starts the bus
         /// </summary>
         void Start();
+
         /// <summary>
         /// Queue execution with the list of <see cref="ExecutionRequestParameters"/>
         /// </summary>
         /// <param name="requestParameters">List of <see cref="ExecutionRequestParameters"/></param>
-        void QueueExecution(IEnumerable<ExecutionRequestParameters> requestParameters);
+        /// <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
+        void QueueExecution(IEnumerable<ExecutionRequestParameters> requestParameters, bool notFireExecutionComplete = false);
+
         /// <summary>
         /// Queue execution with the <see cref="ExecutionRequestParameters"/>
         /// </summary>
         /// <param name="requestParameters">Instance of <see cref="ExecutionRequestParameters"/></param>
-        void QueueExecution(ExecutionRequestParameters requestParameters);
+        /// <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
+        void QueueExecution(ExecutionRequestParameters requestParameters, bool notFireExecutionComplete = false);
 
         /// <summary>
         /// Event raised after the execution was complete
