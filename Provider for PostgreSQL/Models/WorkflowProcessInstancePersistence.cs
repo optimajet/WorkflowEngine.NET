@@ -68,13 +68,13 @@ namespace OptimaJet.Workflow.PostgreSQL
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
         {
             string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
-            var p = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            var p = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
             return Select(connection, selectText, p);
         }
 
         public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction)
         {
-            var p = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            var p = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, p);

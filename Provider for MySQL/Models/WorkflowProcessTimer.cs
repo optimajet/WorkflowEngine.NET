@@ -77,7 +77,7 @@ namespace OptimaJet.Workflow.MySQL
         public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
             List<string> timersIgnoreList = null, MySqlTransaction transaction = null)
         {
-            var pProcessId = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
+            var pProcessId = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
@@ -103,7 +103,7 @@ namespace OptimaJet.Workflow.MySQL
         public static WorkflowProcessTimer SelectByProcessIdAndName(MySqlConnection connection, Guid processId, string name)
         {
             var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid AND `Name` = @name", DbTableName);
-            var p1 = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
+            var p1 = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
             var p2 = new MySqlParameter("name", MySqlDbType.VarString) {Value = name};
             return Select(connection, selectText, p1, p2).FirstOrDefault();

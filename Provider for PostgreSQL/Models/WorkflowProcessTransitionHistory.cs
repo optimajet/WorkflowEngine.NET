@@ -125,7 +125,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId,NpgsqlTransaction transaction = null)
         {
-            var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction,
                 pProcessId);

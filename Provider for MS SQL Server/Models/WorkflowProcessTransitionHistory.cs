@@ -122,7 +122,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
-            var pProcessId = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
+            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM [{0}] WHERE [ProcessId] = @processid", TableName), transaction, pProcessId);

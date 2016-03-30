@@ -76,7 +76,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static int DeleteByProcessId(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
         {
-            var pProcessId = new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
+            var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
@@ -105,7 +105,7 @@ namespace OptimaJet.Workflow.Oracle
             string selectText = string.Format("SELECT * FROM {0}  WHERE PROCESSID = :processid AND NAME = :name", ObjectName);
     
             return Select(connection, selectText,
-                new OracleParameter("processId", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
                 new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input))
                 .FirstOrDefault();
         }

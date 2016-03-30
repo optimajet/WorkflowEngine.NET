@@ -76,7 +76,7 @@ namespace OptimaJet.Workflow.DbPersistence
             List<string> timersIgnoreList = null, SqlTransaction transaction = null)
         {
 
-            var pProcessId = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
+            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
@@ -106,8 +106,8 @@ namespace OptimaJet.Workflow.DbPersistence
         public static WorkflowProcessTimer SelectByProcessIdAndName(SqlConnection connection, Guid processId, string name)
         {
             var selectText = string.Format("SELECT * FROM [{0}] WHERE [ProcessId] = @processid AND [Name] = @name", TableName);
-            
-            var p1 = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
+
+            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
             
             var p2 = new SqlParameter("name", SqlDbType.NVarChar) {Value = name};
             

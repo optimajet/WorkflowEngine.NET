@@ -67,13 +67,13 @@ namespace OptimaJet.Workflow.MySQL
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(MySqlConnection connection, Guid processId)
         {
             string selectText = string.Format("SELECT * FROM {0}  WHERE `ProcessId` = @processid", DbTableName);
-            var p = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
+            var p = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
             return Select(connection, selectText, p);
         }
 
         public static int DeleteByProcessId(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
         {
-            var p = new MySqlParameter("processId", MySqlDbType.Binary) {Value = processId.ToByteArray()};
+            var p = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), transaction, p);

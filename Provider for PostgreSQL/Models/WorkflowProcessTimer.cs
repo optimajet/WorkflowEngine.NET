@@ -76,7 +76,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
         {
-            var pProcessId = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
@@ -96,7 +96,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         public static WorkflowProcessTimer SelectByProcessIdAndName(NpgsqlConnection connection, Guid processId, string name)
         {
             string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid AND \"Name\" = @name", ObjectName);
-            var p1 = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) {Value = processId};
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
             var p2 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) {Value = name};
             return Select(connection, selectText, p1, p2).FirstOrDefault();

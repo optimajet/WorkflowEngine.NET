@@ -66,13 +66,13 @@ namespace OptimaJet.Workflow.DbPersistence
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(SqlConnection connection, Guid processId)
         {
             string selectText = string.Format("SELECT * FROM [{0}]  WHERE [ProcessId] = @processid", TableName);
-            var p = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
+            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
             return Select(connection, selectText, p);
         }
 
         public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
-            var p = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
+            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM [{0}] WHERE [ProcessId] = @processid", TableName), transaction, p);
