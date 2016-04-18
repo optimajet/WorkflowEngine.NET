@@ -4,8 +4,33 @@ using System.Data;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
-    public class WorkflowProcessInstance: DbObject<WorkflowProcessInstance>
+    public class WorkflowProcessInstance : DbObject<WorkflowProcessInstance>
     {
+        static WorkflowProcessInstance()
+        {
+            DbTableName = "WorkflowProcessInstance";
+        }
+
+        public WorkflowProcessInstance()
+        {
+            DbColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "ActivityName"},
+                new ColumnInfo {Name = "IsDeterminingParametersChanged", Type = SqlDbType.Bit},
+                new ColumnInfo {Name = "PreviousActivity"},
+                new ColumnInfo {Name = "PreviousActivityForDirect"},
+                new ColumnInfo {Name = "PreviousActivityForReverse"},
+                new ColumnInfo {Name = "PreviousState"},
+                new ColumnInfo {Name = "PreviousStateForDirect"},
+                new ColumnInfo {Name = "PreviousStateForReverse"},
+                new ColumnInfo {Name = "SchemeId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "StateName"},
+                new ColumnInfo {Name = "ParentProcessId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier}
+            });
+        }
+
         public string ActivityName { get; set; }
         public Guid Id { get; set; }
         public bool IsDeterminingParametersChanged { get; set; }
@@ -19,26 +44,6 @@ namespace OptimaJet.Workflow.DbPersistence
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
-        public WorkflowProcessInstance()
-        {
-            DbTableName = "WorkflowProcessInstance";
-            DbColumns.AddRange(new[]
-            {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo() {Name = "ActivityName"},
-                new ColumnInfo() {Name = "IsDeterminingParametersChanged", Type = SqlDbType.Bit},
-                new ColumnInfo() {Name = "PreviousActivity"},
-                new ColumnInfo() {Name = "PreviousActivityForDirect"},
-                new ColumnInfo() {Name = "PreviousActivityForReverse"},
-                new ColumnInfo() {Name = "PreviousState"},
-                new ColumnInfo() {Name = "PreviousStateForDirect"},
-                new ColumnInfo() {Name = "PreviousStateForReverse"},
-                new ColumnInfo() {Name = "SchemeId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo() {Name = "StateName"},
-                new ColumnInfo() {Name = "ParentProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo() {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier},
-            });
-        }
 
         public override object GetValue(string key)
         {
@@ -80,7 +85,7 @@ namespace OptimaJet.Workflow.DbPersistence
             switch (key)
             {
                 case "Id":
-                    Id = (Guid)value;
+                    Id = (Guid) value;
                     break;
                 case "ActivityName":
                     ActivityName = value as string;
@@ -116,7 +121,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     ParentProcessId = value as Guid?;
                     break;
                 case "RootProcessId":
-                    RootProcessId = (Guid)value;
+                    RootProcessId = (Guid) value;
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

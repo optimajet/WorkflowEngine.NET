@@ -15,17 +15,19 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public string Value { get; set; }
 
-        private const string TableName = "WorkflowGlobalParameter";
+        static WorkflowGlobalParameter()
+        {
+            DbTableName = "WorkflowGlobalParameter";
+        }
 
         public WorkflowGlobalParameter()
         {
-            DbTableName = TableName;
             DbColumns.AddRange(new[]
             {
-                new ColumnInfo() {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo() {Name = "Type"},
-                new ColumnInfo() {Name = "Name"},
-                new ColumnInfo() {Name = "Value"}
+                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "Type"},
+                new ColumnInfo {Name = "Name"},
+                new ColumnInfo {Name = "Value"}
             });
         }
 
@@ -69,7 +71,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static WorkflowGlobalParameter[] SelectByTypeAndName(SqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM [{0}] WHERE [Type] = @type", TableName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE [Type] = @type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND [Name] = @name";
@@ -86,7 +88,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static int DeleteByTypeAndName(SqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM [{0}]  WHERE [Type] = @type", TableName);
+            string selectText = string.Format("DELETE FROM {0}  WHERE [Type] = @type", ObjectName);
 
             if (!string.IsNullOrEmpty(name))
                 selectText = selectText + " AND [Name] = @name";

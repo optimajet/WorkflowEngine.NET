@@ -3,10 +3,33 @@ using System.Data;
 using System.Data.SqlClient;
 
 // ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessScheme : DbObject<WorkflowProcessScheme>
     {
+        static WorkflowProcessScheme()
+        {
+            DbTableName = "WorkflowProcessScheme";
+        }
+
+        public WorkflowProcessScheme()
+        {
+            DbColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "DefiningParameters"},
+                new ColumnInfo {Name = "DefiningParametersHash"},
+                new ColumnInfo {Name = "IsObsolete", Type = SqlDbType.Bit},
+                new ColumnInfo {Name = "SchemeCode"},
+                new ColumnInfo {Name = "Scheme", Type = SqlDbType.NVarChar, Size = -1},
+                new ColumnInfo {Name = "RootSchemeId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "RootSchemeCode"},
+                new ColumnInfo {Name = "AllowedActivities"},
+                new ColumnInfo {Name = "StartingTransition"}
+            });
+        }
+
         public string DefiningParameters { get; set; }
         public string DefiningParametersHash { get; set; }
         public Guid Id { get; set; }
@@ -18,25 +41,6 @@ namespace OptimaJet.Workflow.DbPersistence
         public string RootSchemeCode { get; set; }
         public string AllowedActivities { get; set; }
         public string StartingTransition { get; set; }
-
-        private const string TableName = "WorkflowProcessScheme";
-
-        public WorkflowProcessScheme()
-        {
-            DbTableName = TableName;
-            DbColumns.AddRange(new[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name="DefiningParameters"},
-                new ColumnInfo(){Name="DefiningParametersHash" },
-                new ColumnInfo(){Name="IsObsolete", Type = SqlDbType.Bit },
-                new ColumnInfo(){Name="SchemeCode" },
-                new ColumnInfo(){Name="Scheme", Type = SqlDbType.NVarChar, Size = -1 },
-                new ColumnInfo(){Name = "RootSchemeId",Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name = "RootSchemeCode"},
-                new ColumnInfo(){Name = "AllowedActivities"},
-                 new ColumnInfo(){Name = "StartingTransition"}
-            });
-        }
 
         public override object GetValue(string key)
         {
@@ -72,7 +76,7 @@ namespace OptimaJet.Workflow.DbPersistence
             switch (key)
             {
                 case "Id":
-                    Id = (Guid)value;
+                    Id = (Guid) value;
                     break;
                 case "DefiningParameters":
                     DefiningParameters = value as string;
@@ -81,7 +85,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     DefiningParametersHash = value as string;
                     break;
                 case "IsObsolete":
-                    IsObsolete = (bool)value;
+                    IsObsolete = (bool) value;
                     break;
                 case "SchemeCode":
                     SchemeCode = value as string;
@@ -106,9 +110,9 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static WorkflowProcessScheme[] Select(SqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId )
+        public static WorkflowProcessScheme[] Select(SqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
         {
-            string selectText = string.Format("SELECT * FROM [{0}] WHERE [SchemeCode] = @schemecode AND [DefiningParametersHash] = @dphash", TableName);
+            var selectText = string.Format("SELECT * FROM {0} WHERE [SchemeCode] = @schemecode AND [DefiningParametersHash] = @dphash", ObjectName);
 
             var pSchemecode = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
@@ -120,7 +124,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     selectText += " AND [IsObsolete] = 1";
                 }
-                else 
+                else
                 {
                     selectText += " AND [IsObsolete] = 0";
                 }
@@ -143,7 +147,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static int SetObsolete(SqlConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE {0} SET [IsObsolete] = 1 WHERE [SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode", TableName);
+            var command = string.Format("UPDATE {0} SET [IsObsolete] = 1 WHERE [SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode", ObjectName);
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
             return ExecuteCommand(connection, command, p);
@@ -151,10 +155,11 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static int SetObsolete(SqlConnection connection, string schemeCode, string definingParametersHash)
         {
-            string command =
+            var command =
                 string.Format(
-                    "UPDATE [{0}] SET [IsObsolete] = 1 WHERE ([SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode) AND [DefiningParametersHash] = @dphash",
-                    TableName);
+                    "UPDATE {0} SET [IsObsolete] = 1 WHERE ([SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode) AND [DefiningParametersHash] = @dphash",
+                    ObjectName);
+
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
             var p2 = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};

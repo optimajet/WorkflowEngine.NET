@@ -22,9 +22,10 @@ namespace OptimaJet.Workflow.DbPersistence
             _runtime = runtime;
         }
 
-        public MSSQLProvider(string connectionString)
+        public MSSQLProvider(string connectionString, string schema = "dbo" )
         {
             ConnectionString = connectionString;
+            DbObject.SchemaName = schema;
         }
 
         #region IPersistenceProvider

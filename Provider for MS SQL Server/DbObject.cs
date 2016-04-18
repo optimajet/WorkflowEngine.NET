@@ -13,9 +13,27 @@ namespace OptimaJet.Workflow.DbPersistence
         public bool IsKey = false;
         public int Size = 256;
     }
-    public class DbObject<T> where T : DbObject<T>, new()
+
+    public abstract class DbObject
     {
-        public string DbTableName;
+        public static string SchemaName { get; set; }
+    }
+
+    public class DbObject<T> : DbObject where T : DbObject<T>, new()
+    {
+        // ReSharper disable once StaticMemberInGenericType
+        public static string DbTableName;
+
+        public static string ObjectName
+        {
+            get
+            {
+                if (!string.IsNullOrWhiteSpace(SchemaName))
+                    return string.Format("[{0}].[{1}]", SchemaName, DbTableName);
+                return string.Format("[{0}]", DbTableName);
+            }
+        }
+
         public List<ColumnInfo> DbColumns = new List<ColumnInfo>();
 
         public virtual object GetValue(string key)
@@ -65,10 +83,10 @@ namespace OptimaJet.Workflow.DbPersistence
             var key = t.DbColumns.FirstOrDefault(c => c.IsKey);
             if(key == null)
             {
-                throw new Exception(string.Format("Key for table {0} isn't defined.", t.DbTableName));
+                throw new Exception(string.Format("Key for table {0} isn't defined.", ObjectName));
             }
 
-            string selectText = string.Format("SELECT * FROM {0} WHERE [{1}] = @p_id", t.DbTableName, key.Name);
+            string selectText = string.Format("SELECT * FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name);
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
             return Select(connection, selectText, pId).FirstOrDefault();
@@ -79,12 +97,12 @@ namespace OptimaJet.Workflow.DbPersistence
             var t = new T();
             var key = t.DbColumns.FirstOrDefault(c => c.IsKey);
             if (key == null)
-                throw new Exception(string.Format("Key for table {0} isn't defined.", t.DbTableName));
+                throw new Exception(string.Format("Key for table {0} isn't defined.", ObjectName));
 
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", t.DbTableName, key.Name.ToUpper()), transaction, pId);
+                string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name.ToUpper()), transaction, pId);
         }
 
         public static int ExecuteCommand(SqlConnection connection, string commandText, 

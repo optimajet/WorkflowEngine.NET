@@ -3,10 +3,35 @@ using System.Data;
 using System.Data.SqlClient;
 
 // ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessTransitionHistory : DbObject<WorkflowProcessTransitionHistory>
     {
+        static WorkflowProcessTransitionHistory()
+        {
+            DbTableName = "WorkflowProcessTransitionHistory";
+        }
+
+        public WorkflowProcessTransitionHistory()
+        {
+            DbColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "ActorIdentityId"},
+                new ColumnInfo {Name = "ExecutorIdentityId"},
+                new ColumnInfo {Name = "FromActivityName"},
+                new ColumnInfo {Name = "FromStateName"},
+                new ColumnInfo {Name = "IsFinalised", Type = SqlDbType.Bit},
+                new ColumnInfo {Name = "ProcessId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "ToActivityName"},
+                new ColumnInfo {Name = "ToStateName"},
+                new ColumnInfo {Name = "TransitionClassifier"},
+                new ColumnInfo {Name = "TransitionTime", Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = "TriggerName"}
+            });
+        }
+
         public string ActorIdentityId { get; set; }
         public string ExecutorIdentityId { get; set; }
         public string FromActivityName { get; set; }
@@ -20,27 +45,6 @@ namespace OptimaJet.Workflow.DbPersistence
         public DateTime TransitionTime { get; set; }
 
         public string TriggerName { get; set; }
-
-        private const string TableName = "WorkflowProcessTransitionHistory";
-
-        public WorkflowProcessTransitionHistory()
-        {
-            DbTableName = TableName;
-            DbColumns.AddRange(new[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name="ActorIdentityId"},
-                new ColumnInfo(){Name="ExecutorIdentityId"},
-                new ColumnInfo(){Name="FromActivityName"},
-                new ColumnInfo(){Name="FromStateName"},
-                new ColumnInfo(){Name="IsFinalised", Type = SqlDbType.Bit},
-                new ColumnInfo(){Name="ProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name="ToActivityName"},
-                new ColumnInfo(){Name="ToStateName"},
-                new ColumnInfo(){Name="TransitionClassifier"},
-                new ColumnInfo(){Name="TransitionTime", Type = SqlDbType.DateTime },
-                new ColumnInfo(){Name="TriggerName"}
-            });
-        }
 
         public override object GetValue(string key)
         {
@@ -80,7 +84,7 @@ namespace OptimaJet.Workflow.DbPersistence
             switch (key)
             {
                 case "Id":
-                    Id = (Guid)value;
+                    Id = (Guid) value;
                     break;
                 case "ActorIdentityId":
                     ActorIdentityId = value as string;
@@ -95,10 +99,10 @@ namespace OptimaJet.Workflow.DbPersistence
                     FromStateName = value as string;
                     break;
                 case "IsFinalised":
-                    IsFinalised = (bool)value;
+                    IsFinalised = (bool) value;
                     break;
                 case "ProcessId":
-                    ProcessId = (Guid)value;
+                    ProcessId = (Guid) value;
                     break;
                 case "ToActivityName":
                     ToActivityName = value as string;
@@ -110,7 +114,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     TransitionClassifier = value as string;
                     break;
                 case "TransitionTime":
-                    TransitionTime = (DateTime)value;
+                    TransitionTime = (DateTime) value;
                     break;
                 case "TriggerName":
                     TriggerName = value as string;
@@ -122,10 +126,10 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
-            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM [{0}] WHERE [ProcessId] = @processid", TableName), transaction, pProcessId);
+                string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, pProcessId);
         }
     }
 }

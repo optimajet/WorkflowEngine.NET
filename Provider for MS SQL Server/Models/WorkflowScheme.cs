@@ -1,25 +1,31 @@
 ﻿using System;
 
 // ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowScheme : DbObject<WorkflowScheme>
     {
-        public string Code { get; set; }
-        public string Scheme { get; set; }
+        static WorkflowScheme()
+        {
+            DbTableName = "WorkflowScheme";
+        }
 
         public WorkflowScheme()
         {
-            DbTableName = "WorkflowScheme";
-            DbColumns.AddRange(new[]{
-                new ColumnInfo(){Name="Code", IsKey = true},
-                new ColumnInfo(){Name="Scheme", Size = -1}
+            DbColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Code", IsKey = true},
+                new ColumnInfo {Name = "Scheme", Size = -1}
             });
         }
 
+        public string Code { get; set; }
+        public string Scheme { get; set; }
+
         public override object GetValue(string key)
         {
-            switch(key)
+            switch (key)
             {
                 case "Code":
                     return Code;

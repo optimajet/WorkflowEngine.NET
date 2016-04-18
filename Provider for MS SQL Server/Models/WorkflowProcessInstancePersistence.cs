@@ -1,29 +1,33 @@
 ﻿using System;
-using System.Data.SqlClient;
 using System.Data;
+using System.Data.SqlClient;
 
 // ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessInstancePersistence : DbObject<WorkflowProcessInstancePersistence>
     {
+        static WorkflowProcessInstancePersistence()
+        {
+            DbTableName = "WorkflowProcessInstancePersistence";
+        }
+
+        public WorkflowProcessInstancePersistence()
+        {
+            DbColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "ProcessId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "ParameterName"},
+                new ColumnInfo {Name = "Value", Type = SqlDbType.NVarChar, Size = -1}
+            });
+        }
+
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }
         public string ParameterName { get; set; }
         public string Value { get; set; }
-
-        private const string TableName = "WorkflowProcessInstancePersistence";
-
-        public WorkflowProcessInstancePersistence()
-        {
-            DbTableName = "WorkflowProcessInstancePersistence";
-            DbColumns.AddRange(new[]{
-                new ColumnInfo(){Name="Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name="ProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo(){Name="ParameterName"},
-                new ColumnInfo(){Name="Value", Type = SqlDbType.NVarChar, Size = -1}
-            });
-        }
 
         public override object GetValue(string key)
         {
@@ -47,10 +51,10 @@ namespace OptimaJet.Workflow.DbPersistence
             switch (key)
             {
                 case "Id":
-                    Id = (Guid)value;
+                    Id = (Guid) value;
                     break;
                 case "ProcessId":
-                    ProcessId = (Guid)value;
+                    ProcessId = (Guid) value;
                     break;
                 case "ParameterName":
                     ParameterName = value as string;
@@ -65,17 +69,17 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public static WorkflowProcessInstancePersistence[] SelectByProcessId(SqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM [{0}]  WHERE [ProcessId] = @processid", TableName);
-            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var selectText = string.Format("SELECT * FROM {0}  WHERE [ProcessId] = @processid", ObjectName);
+            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
             return Select(connection, selectText, p);
         }
 
         public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
-            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM [{0}] WHERE [ProcessId] = @processid", TableName), transaction, p);
+                string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, p);
         }
     }
 }
