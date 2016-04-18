@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.RavenDB
 {
     public class WorkflowProcessScheme

@@ -1,8 +1,6 @@
 ﻿using System;
-using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
@@ -11,19 +9,14 @@ using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using Raven.Client.Document;
+using Raven.Client.Linq;
 using Raven.Imports.Newtonsoft.Json;
 
 namespace OptimaJet.Workflow.RavenDB
 {
     public class RavenDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
     {
-        public DocumentStore Store { get; set; }
-
-        private Core.Runtime.WorkflowRuntime _runtime;
-        public void Init(WorkflowRuntime runtime)
-        {
-            _runtime = runtime;
-        }
+        private WorkflowRuntime _runtime;
 
         public RavenDBProvider(DocumentStore store)
         {
@@ -31,24 +24,43 @@ namespace OptimaJet.Workflow.RavenDB
             Store.Initialize();
         }
 
+        public DocumentStore Store { get; set; }
+
+        public void Init(WorkflowRuntime runtime)
+        {
+            _runtime = runtime;
+        }
+
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        {
+            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
+                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+                workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
+                workflowProcessScheme.DefiningParameters);
+        }
+
         #region IPersistenceProvider
+
         public void InitializeProcess(ProcessInstance processInstance)
         {
-            using(var session = Store.OpenSession())
+            using (var session = Store.OpenSession())
             {
                 var oldProcess = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
                 if (oldProcess != null)
                 {
                     throw new ProcessAlredyExistsException();
                 }
-                var newProcess = new WorkflowProcessInstance {
-                                         Id = processInstance.ProcessId,
-                                         SchemeId = processInstance.SchemeId,
-                                         ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                                         StateName = processInstance.ProcessScheme.InitialActivity.State,
-                                         RootProcessId = processInstance.RootProcessId,
-                                         ParentProcessId = processInstance.ParentProcessId
-                                     };
+                var newProcess = new WorkflowProcessInstance
+                {
+                    Id = processInstance.ProcessId,
+                    SchemeId = processInstance.SchemeId,
+                    ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
+                    StateName = processInstance.ProcessScheme.InitialActivity.State,
+                    RootProcessId = processInstance.RootProcessId,
+                    ParentProcessId = processInstance.ParentProcessId,
+                    Persistence = new List<WorkflowProcessInstancePersistence>()
+                };
                 session.Store(newProcess);
                 session.SaveChanges();
             }
@@ -93,9 +105,10 @@ namespace OptimaJet.Workflow.RavenDB
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-              processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value,ptp.Type) })
-                  .ToList();
-           
+                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
+                    .ToList();
+
             using (var session = Store.OpenSession())
             {
                 var process = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
@@ -113,7 +126,7 @@ namespace OptimaJet.Workflow.RavenDB
                             {
                                 if (parameterDefinitionWithValue.SerializedValue != null)
                                 {
-                                    persistence = new WorkflowProcessInstancePersistence()
+                                    persistence = new WorkflowProcessInstancePersistence
                                     {
                                         ParameterName = parameterDefinitionWithValue.Parameter.Name,
                                         Value = parameterDefinitionWithValue.SerializedValue
@@ -129,8 +142,6 @@ namespace OptimaJet.Workflow.RavenDB
                                     process.Persistence.Remove(persistence);
                             }
                         }
-
-
                     }
                 }
                 session.SaveChanges();
@@ -144,7 +155,7 @@ namespace OptimaJet.Workflow.RavenDB
                 var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processInstance.ProcessId);
                 if (instanceStatus == null)
                 {
-                    instanceStatus = new WorkflowProcessInstanceStatus()
+                    instanceStatus = new WorkflowProcessInstanceStatus
                     {
                         Id = processInstance.ProcessId,
                         Lock = Guid.NewGuid(),
@@ -152,7 +163,6 @@ namespace OptimaJet.Workflow.RavenDB
                     };
 
                     session.Store(instanceStatus);
-
                 }
                 else
                 {
@@ -175,7 +185,7 @@ namespace OptimaJet.Workflow.RavenDB
                 var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processInstance.ProcessId);
                 if (instanceStatus == null)
                     throw new StatusNotDefinedException();
-                
+
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
                     throw new ImpossibleToSetStatusException();
 
@@ -191,7 +201,9 @@ namespace OptimaJet.Workflow.RavenDB
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
         }
 
+#pragma warning disable 612
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+#pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
         }
@@ -201,9 +213,9 @@ namespace OptimaJet.Workflow.RavenDB
             var session = Store.OpenSession();
             do
             {
-                var prInst = session.Query<WorkflowProcessInstanceStatus>().Where(c=> c.Status == 1).ToArray();
-                
-                if(prInst.Length == 0)
+                var prInst = session.Query<WorkflowProcessInstanceStatus>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(c => c.Status == 1).ToArray();
+               
+                if (prInst.Length == 0)
                     break;
                 foreach (var item in prInst)
                 {
@@ -212,7 +224,7 @@ namespace OptimaJet.Workflow.RavenDB
 
                 session.SaveChanges();
 
-                if(session.Advanced.NumberOfRequests >= session.Advanced.MaxNumberOfRequestsPerSession - 2)
+                if (session.Advanced.NumberOfRequests >= session.Advanced.MaxNumberOfRequestsPerSession - 2)
                 {
                     session.Dispose();
                     session = Store.OpenSession();
@@ -227,13 +239,13 @@ namespace OptimaJet.Workflow.RavenDB
             var paramIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterIdentityId.Name);
             var paramImpIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterImpersonatedIdentityId.Name);
 
-            string identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
-            string impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
+            var identityId = paramIdentityId == null ? string.Empty : (string) paramIdentityId.Value;
+            var impIdentityId = paramImpIdentityId == null ? identityId : (string) paramImpIdentityId.Value;
 
             using (var session = Store.OpenSession())
             {
-                WorkflowProcessInstance inst = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
-                if(inst != null)
+                var inst = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
+                if (inst != null)
                 {
                     if (!string.IsNullOrEmpty(transition.To.State))
                         inst.StateName = transition.To.State;
@@ -262,7 +274,7 @@ namespace OptimaJet.Workflow.RavenDB
                     inst.RootProcessId = processInstance.RootProcessId;
                 }
 
-                var history = new WorkflowProcessTransitionHistory()
+                var history = new WorkflowProcessTransitionHistory
                 {
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
@@ -336,51 +348,50 @@ namespace OptimaJet.Workflow.RavenDB
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
 
-            List<ParameterDefinitionWithValue> parameters;
-            parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
+            var parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
             {
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterProcessId.Name),
                     processId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousState.Name),
-                    (object) processInstance.PreviousState),
+                    processInstance.PreviousState),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentState.Name),
-                    (object) processInstance.StateName),
+                    processInstance.StateName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForDirect.Name),
-                    (object) processInstance.PreviousStateForDirect),
+                    processInstance.PreviousStateForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousStateForReverse.Name),
-                    (object) processInstance.PreviousStateForReverse),
+                    processInstance.PreviousStateForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivity.Name),
-                    (object) processInstance.PreviousActivity),
+                    processInstance.PreviousActivity),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCurrentActivity.Name),
-                    (object) processInstance.ActivityName),
+                    processInstance.ActivityName),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForDirect.Name),
-                    (object) processInstance.PreviousActivityForDirect),
+                    processInstance.PreviousActivityForDirect),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterPreviousActivityForReverse.Name),
-                    (object) processInstance.PreviousActivityForReverse),
+                    processInstance.PreviousActivityForReverse),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeCode.Name),
-                    (object) processDefinition.Name),
+                    processDefinition.Name),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSchemeId.Name),
-                    (object) processInstance.SchemeId),
+                    processInstance.SchemeId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterIsPreExecution.Name),
                     false),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterParentProcessId.Name),
-                    (object) processInstance.ParentProcessId),
+                    processInstance.ParentProcessId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    (object) processInstance.RootProcessId),
+                    processInstance.RootProcessId)
             };
             return parameters;
         }
@@ -395,14 +406,15 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var process = session.Load<WorkflowProcessInstance>(processId);
-                if(process != null && process.Persistence != null)
+                if (process != null && process.Persistence != null)
                 {
-                    persistedParameters = process.Persistence.Where(WorkflowProcessInstancep => persistenceParameters.Select(pp => pp.Name).Contains(WorkflowProcessInstancep.ParameterName)).ToList();
+                    persistedParameters = process.Persistence;
                 }
                 else
                 {
-                    persistedParameters = new List<WorkflowProcessInstancePersistence>();
-                }  
+                    return parameters;
+                    //persistedParameters = new List<WorkflowProcessInstancePersistence>();
+                }
             }
 
             foreach (var persistedParameter in persistedParameters)
@@ -410,13 +422,13 @@ namespace OptimaJet.Workflow.RavenDB
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
                     parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-                
+
                 parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
             }
 
             return parameters;
         }
-        
+
         private WorkflowProcessInstance GetProcessInstance(Guid processId)
         {
             using (var session = Store.OpenSession())
@@ -433,16 +445,16 @@ namespace OptimaJet.Workflow.RavenDB
             foreach (var processId in processIds)
                 DeleteProcess(processId);
         }
-
+     
         public void SaveGlobalParameter<T>(string type, string name, T value)
         {
             using (var session = Store.OpenSession())
             {
-                var parameter = session.Query<WorkflowGlobalParameter>().FirstOrDefault(p => p.Type == type && p.Name == name);
+                var parameter = session.Query<WorkflowGlobalParameter>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(p => p.Type == type && p.Name == name);
 
                 if (parameter == null)
                 {
-                    parameter = new WorkflowGlobalParameter()
+                    parameter = new WorkflowGlobalParameter
                     {
                         Id = Guid.NewGuid(),
                         Name = name,
@@ -463,14 +475,14 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var parameter =
-                    session.Query<WorkflowGlobalParameter>().FirstOrDefault(p => p.Type == type && p.Name == name);
+                    session.Query<WorkflowGlobalParameter>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(p => p.Type == type && p.Name == name);
 
                 if (parameter != null)
                 {
                     return JsonConvert.DeserializeObject<T>(parameter.Value);
                 }
 
-                return default (T);
+                return default(T);
             }
         }
 
@@ -483,10 +495,13 @@ namespace OptimaJet.Workflow.RavenDB
             {
                 do
                 {
-                    var parameters = session.Query<WorkflowGlobalParameter>()
-                        .Where(p => p.Type == type).Skip(skip).Take(session.Advanced.MaxNumberOfRequestsPerSession).ToList()
-                        .Select(p => JsonConvert.DeserializeObject<T>(p.Value))
-                        .ToList();
+                    var parameters =
+                        session.Query<WorkflowGlobalParameter>()
+                            .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                            .Where(p => p.Type == type)
+                            .Skip(skip)
+                            .Take(session.Advanced.MaxNumberOfRequestsPerSession).ToList().Select(p => JsonConvert.DeserializeObject<T>(p.Value))
+                            .ToList();
 
                     if (!parameters.Any())
                         break;
@@ -494,7 +509,6 @@ namespace OptimaJet.Workflow.RavenDB
                     result.AddRange(parameters);
 
                     skip += session.Advanced.MaxNumberOfRequestsPerSession;
-
                 } while (true);
             }
             finally
@@ -507,37 +521,23 @@ namespace OptimaJet.Workflow.RavenDB
 
         public void DeleteGlobalParameters(string type, string name = null)
         {
+            WorkflowGlobalParameter[] wpths;
 
-            var session = Store.OpenSession();
-            try
+            do
             {
-
-                do
+                using (var session = Store.OpenSession())
                 {
-                    var pInst =
-                        session.Query<WorkflowGlobalParameter>()
-                            .Where(p => p.Type == type && (string.IsNullOrEmpty(name) || p.Name == name))
-                            .Take(session.Advanced.MaxNumberOfRequestsPerSession - 1)
-                            .ToArray();
+                    wpths = string.IsNullOrEmpty(name)
+                        ? session.Query<WorkflowGlobalParameter>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(p => p.Type == type).ToArray()
+                        : session.Query<WorkflowGlobalParameter>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(p => p.Type == type && p.Name == name).ToArray();
+                       
 
-                    if (pInst.Length == 0)
-                        break;
-
-                    foreach (var item in pInst)
-                    {
-                        session.Delete(item);
-                    }
+                    foreach (var wpth in wpths)
+                        session.Delete(wpth);
 
                     session.SaveChanges();
-                    session.Dispose();
-                    session = Store.OpenSession();
-
-                } while (true);
-            }
-            finally
-            {
-                session.Dispose();
-            }
+                }
+            } while (wpths.Length > 0);
 
         }
 
@@ -547,37 +547,38 @@ namespace OptimaJet.Workflow.RavenDB
             {
                 var wpi = session.Load<WorkflowProcessInstance>(processId);
                 if (wpi != null)
-                    session.Delete<WorkflowProcessInstance>(wpi);
+                    session.Delete(wpi);
 
                 var wpis = session.Load<WorkflowProcessInstanceStatus>(processId);
                 if (wpis != null)
-                    session.Delete<WorkflowProcessInstanceStatus>(wpis);
+                    session.Delete(wpis);
 
                 session.SaveChanges();
             }
 
-            WorkflowProcessTransitionHistory[] wpths = null;
+            WorkflowProcessTransitionHistory[] wpths;
             do
             {
                 using (var session = Store.OpenSession())
                 {
-                    wpths = session.Query<WorkflowProcessTransitionHistory>().Where(c => c.ProcessId == processId).ToArray();
+                    wpths = session.Query<WorkflowProcessTransitionHistory>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(c => c.ProcessId == processId).ToArray();
+
                     foreach (var wpth in wpths)
-                        session.Delete<WorkflowProcessTransitionHistory>(wpth);
+                        session.Delete(wpth);
 
                     session.SaveChanges();
                 }
             } while (wpths.Length > 0);
 
 
-            WorkflowProcessTimer[] wpts = null;
+            WorkflowProcessTimer[] wpts;
             do
             {
                 using (var session = Store.OpenSession())
                 {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(c => c.ProcessId == processId).ToArray();
+                    wpts = session.Query<WorkflowProcessTimer>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(c => c.ProcessId == processId).ToArray();
                     foreach (var wpt in wpts)
-                        session.Delete<WorkflowProcessTimer>(wpt);
+                        session.Delete(wpt);
 
                     session.SaveChanges();
                 }
@@ -589,7 +590,7 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var oldTimer =
-                    session.Query<WorkflowProcessTimer>().SingleOrDefault(wpt => wpt.ProcessId == processId && wpt.Name == name);
+                    session.Query<WorkflowProcessTimer>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).SingleOrDefault(wpt => wpt.ProcessId == processId && wpt.Name == name);
 
                 if (oldTimer == null)
                 {
@@ -617,23 +618,33 @@ namespace OptimaJet.Workflow.RavenDB
 
         public void ClearTimers(Guid processId, List<string> timersIgnoreList)
         {
-            using (var session = Store.OpenSession())
+            List<WorkflowProcessTimer> timers;
+            do
             {
-                var timers = session.Query<WorkflowProcessTimer>().Where(wpt => wpt.ProcessId == processId).ToList();
-                timers.Where(wpt => !timersIgnoreList.Contains(wpt.Name)).ToList().ForEach((t) => session.Delete(t));                    
-                session.SaveChanges();
-            }
+                using (var session = Store.OpenSession())
+                {
+                    timers =
+                        session.Query<WorkflowProcessTimer>()
+                            .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                            .Where(wpt => wpt.ProcessId == processId && !wpt.Name.In(timersIgnoreList))
+                            .ToList();
+                    foreach (var timer in timers)
+                        session.Delete(timer);
+
+                    session.SaveChanges();
+                }
+            } while (timers.Count > 0);
         }
 
         public void ClearTimersIgnore()
         {
-            WorkflowProcessTimer[] wpts = null;
+            WorkflowProcessTimer[] wpts;
 
             do
             {
                 using (var session = Store.OpenSession())
                 {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(t => t.Ignore).ToArray();
+                    wpts = session.Query<WorkflowProcessTimer>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(t => t.Ignore).ToArray();
                     foreach (var wpth in wpts)
                         wpth.Ignore = false;
 
@@ -646,7 +657,7 @@ namespace OptimaJet.Workflow.RavenDB
         {
             using (var session = Store.OpenSession())
             {
-                var timer = session.Load <WorkflowProcessTimer>(timerId);
+                var timer = session.Load<WorkflowProcessTimer>(timerId);
                 if (timer != null)
                 {
                     session.Delete(timer);
@@ -660,7 +671,11 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var timer =
-                    session.Query<WorkflowProcessTimer>().Where(t => !t.Ignore).OrderBy(wpt => wpt.NextExecutionDateTime).FirstOrDefault();
+                    session.Query<WorkflowProcessTimer>()
+                        .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                        .Where(t => !t.Ignore)
+                        .OrderBy(t => t.NextExecutionDateTime)
+                        .FirstOrDefault();
 
                 if (timer == null)
                     return null;
@@ -671,15 +686,16 @@ namespace OptimaJet.Workflow.RavenDB
 
         public List<TimerToExecute> GetTimersToExecute()
         {
-            WorkflowProcessTimer[] wpts = null;
-            List<WorkflowProcessTimer> timers = new List<WorkflowProcessTimer>();
+            WorkflowProcessTimer[] wpts;
+            var timers = new List<WorkflowProcessTimer>();
             var now = _runtime.RuntimeDateTimeNow;
 
             do
             {
                 using (var session = Store.OpenSession())
                 {
-                    wpts = session.Query<WorkflowProcessTimer>().Where(t => !t.Ignore && t.NextExecutionDateTime <= now).ToArray();
+                    wpts = session.Query<WorkflowProcessTimer>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(t => !t.Ignore && t.NextExecutionDateTime <= now).ToArray();
+                        // Queryable.Where(session.Query<WorkflowProcessTimer>(), t => !t.Ignore && t.NextExecutionDateTime <= now).ToArray();
                     foreach (var wpth in wpts)
                         wpth.Ignore = true;
 
@@ -688,15 +704,16 @@ namespace OptimaJet.Workflow.RavenDB
                 }
             } while (wpts.Length > 0);
 
-            return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+            return timers.Select(t => new TimerToExecute {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
         }
 
-        #endregion 
+        #endregion
 
         #region ISchemePersistenceProvider
+
         public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
         {
-            WorkflowProcessInstance processInstance = new WorkflowProcessInstance();
+            WorkflowProcessInstance processInstance;
             using (var session = Store.OpenSession())
             {
                 processInstance = session.Load<WorkflowProcessInstance>(processId);
@@ -714,7 +731,7 @@ namespace OptimaJet.Workflow.RavenDB
 
         public SchemeDefinition<XElement> GetProcessSchemeBySchemeId(Guid schemeId)
         {
-            WorkflowProcessScheme processScheme = new WorkflowProcessScheme();
+            WorkflowProcessScheme processScheme;
             using (var session = Store.OpenSession())
             {
                 processScheme = session.Load<WorkflowProcessScheme>(schemeId);
@@ -730,22 +747,18 @@ namespace OptimaJet.Workflow.RavenDB
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
+            IEnumerable<WorkflowProcessScheme> processSchemes;
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
             using (var session = Store.OpenSession())
             {
                 processSchemes = ignoreObsolete
-                    ? session.Query<WorkflowProcessScheme>()
-                        .Where(
-                            pss =>
+                    ? session.Query<WorkflowProcessScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where( pss =>
                                 pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
-                                    pss.RootSchemeId == rootSchemeId)
+                                pss.RootSchemeId == rootSchemeId && !pss.IsObsolete)
                         .ToList()
-                    : session.Query<WorkflowProcessScheme>()
-                        .Where(
-                            pss =>
-                                pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash && !pss.IsObsolete &&
+                    : session.Query<WorkflowProcessScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(pss =>
+                                pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
                                 pss.RootSchemeId == rootSchemeId)
                         .ToList();
             }
@@ -776,10 +789,9 @@ namespace OptimaJet.Workflow.RavenDB
             do
             {
                 var oldSchemes =
-                         session.Query<WorkflowProcessScheme>().Where(
-                             wps =>
-                                 wps.DefiningParametersHash == definingParametersHash && (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) &&
-                                 !wps.IsObsolete).ToList();
+                    session.Query<WorkflowProcessScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(wps =>
+                            wps.DefiningParametersHash == definingParametersHash && (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) &&
+                            !wps.IsObsolete).ToList();
 
                 if (oldSchemes.Count == 0)
                     break;
@@ -807,10 +819,9 @@ namespace OptimaJet.Workflow.RavenDB
             do
             {
                 var oldSchemes =
-                         session.Query<WorkflowProcessScheme>().Where(
-                             wps =>
-                                  (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) &&
-                                 !wps.IsObsolete).ToList();
+                    session.Query<WorkflowProcessScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(wps =>
+                            (wps.SchemeCode == schemeCode || wps.RootSchemeCode == schemeCode) &&
+                            !wps.IsObsolete).ToList();
 
                 if (oldSchemes.Count == 0)
                     break;
@@ -840,8 +851,10 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var oldSchemes =
-                    session.Query<WorkflowProcessScheme>().Where(
-                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode && wps.IsObsolete == scheme.IsObsolete).ToList();
+                    session.Query<WorkflowProcessScheme>()
+                        .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                        .Where(wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode && wps.IsObsolete == scheme.IsObsolete)
+                        .ToList();
 
                 if (oldSchemes.Any())
                 {
@@ -863,7 +876,6 @@ namespace OptimaJet.Workflow.RavenDB
                     RootSchemeId = scheme.RootSchemeId,
                     AllowedActivities = scheme.AllowedActivities,
                     StartingTransition = scheme.StartingTransition
-    ,
                 };
 
                 session.Store(newProcessScheme);
@@ -876,11 +888,11 @@ namespace OptimaJet.Workflow.RavenDB
             using (var session = Store.OpenSession())
             {
                 var wfscheme =
-                    session.Query<WorkflowScheme>().FirstOrDefault(wps => wps.Code == schemeCode);
-
+                    session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(wps => wps.Code == schemeCode);
+              
                 if (wfscheme == null)
                 {
-                    wfscheme = new WorkflowScheme()
+                    wfscheme = new WorkflowScheme
                     {
                         Code = schemeCode,
                         Scheme = scheme
@@ -895,12 +907,13 @@ namespace OptimaJet.Workflow.RavenDB
                 session.SaveChanges();
             }
         }
+
         public XElement GetScheme(string code)
         {
             using (var session = Store.OpenSession())
             {
                 var wfscheme =
-                    session.Query<WorkflowScheme>().FirstOrDefault(wps => wps.Code == code);
+                    session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(wps => wps.Code == code);
 
                 if (wfscheme == null || string.IsNullOrEmpty(wfscheme.Scheme))
                     throw new SchemeNotFoundException();
@@ -912,6 +925,7 @@ namespace OptimaJet.Workflow.RavenDB
         #endregion
 
         #region IWorkflowGenerator
+
         protected IDictionary<string, string> TemplateTypeMapping = new Dictionary<string, string>();
 
         public XElement Generate(string processName, Guid schemeId, IDictionary<string, object> parameters)
@@ -920,14 +934,14 @@ namespace OptimaJet.Workflow.RavenDB
                 throw new InvalidOperationException("Parameters not supported");
 
             var code = !TemplateTypeMapping.ContainsKey(processName.ToLower()) ? processName : TemplateTypeMapping[processName.ToLower()];
-            WorkflowScheme scheme = null;
+            WorkflowScheme scheme;
             using (var session = Store.OpenSession())
             {
-                scheme = session.Load<WorkflowScheme>(code);
+                scheme = session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(wps => wps.Code == code);
             }
 
             if (scheme == null)
-                throw new InvalidOperationException(string.Format("Scheme with Code={0} not found",code));
+                throw new InvalidOperationException(string.Format("Scheme with Code={0} not found", code));
 
             return XElement.Parse(scheme.Scheme);
         }
@@ -940,17 +954,6 @@ namespace OptimaJet.Workflow.RavenDB
             TemplateTypeMapping.Add(processName.ToLower(), value);
         }
 
-        #endregion  
-     
-        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
-        {
-            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
-                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
-                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
-                workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
-                workflowProcessScheme.DefiningParameters);
-        }
-
-       
+        #endregion
     }
 }
