@@ -473,17 +473,19 @@
             Starts the bus
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters})">
+        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Boolean)">
             <summary>
             Queue execution with the list of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">List of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Boolean)">
             <summary>
             Queue execution with the <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">Instance of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.IWorkflowBus.ExecutionComplete">
             <summary>
@@ -511,17 +513,19 @@
             Starts the bus
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters})">
+        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Boolean)">
             <summary>
             Queue execution with the list of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">List of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Boolean)">
             <summary>
             Queue execution with the <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">Instance of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.NullBus.ExecutionComplete">
             <summary>
@@ -2105,6 +2109,48 @@
             Fork transition with unknown status in case of process definition is not marked
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams">
+            <summary>
+             Represents parameters for creaition of an instance of a process
+             </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.#ctor(System.String,System.Guid)">
+            <summary>
+            Constructor of CreateInstanceParams class
+            </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="processId">Process id</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.SchemeCode">
+            <summary>
+            Code of the scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.ProcessId">
+            <summary>
+            Process id
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.IdentityId">
+            <summary>
+            The user id which execute initial command if command is available
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.ImpersonatedIdentityId">
+            <summary>
+            The user id for whom executes initial command if command is available
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.SchemeCreationParameters">
+            <summary>
+            The parameters for creating scheme of process (defining parameters)
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.InitialProcessParameters">
+            <summary>
+            Parameters to be passed to the process as the initial
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.StartingTransitionNotFoundEventArgs">
             <summary>
             Represent information about case when we try to update a subprocess's scheme but there are no starting transition in a new sccheme of a root process
@@ -3178,7 +3224,7 @@
             </summary>
             <param name="schemeCode">Code of the scheme</param>
             <param name="processId">Process id</param>
-            <param name="parameters">Parameters for creating the scheme of the process</param>
+            <param name="schemeCreationParameters">Parameters for creating the scheme of the process (defining parameters)</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstance(System.String,System.Guid,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
@@ -3188,7 +3234,13 @@
             <param name="processId">Process id</param>
             <param name="identityId">The user id which execute initial command if command is available</param>
             <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
-            <param name="parameters">The parameters for creating scheme of process</param>
+            <param name="schemeCreationParameters">The parameters for creating scheme of process (defining parameters)</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstance(OptimaJet.Workflow.Core.Runtime.CreateInstanceParams)">
+            <summary>
+            Create instance of the process.
+            </summary>
+            <param name="createInstanceParams">Parameters for creaition of an instance of a process</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeleteInstance(System.Guid)">
             <summary>
@@ -3550,6 +3602,12 @@
             <param name="identityId">The user id which execute initial command if command is available</param>
             <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
             <param name="parameters">The parameters for creating scheme of process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.CreateInstanceParams)">
+            <summary>
+            Create instance of the process (async version)
+            </summary>
+            <param name="createInstanceParams">Parameters for creaition of an instance of a process</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeleteInstanceAsync(System.Guid)">
             <summary>

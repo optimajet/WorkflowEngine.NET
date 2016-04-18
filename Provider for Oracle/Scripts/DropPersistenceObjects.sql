@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for Oracle
-Version: 1.5.3
+Version: 1.5.4
 File: DropPersistenceObjects.sql
 */
 
@@ -14,3 +14,5 @@ DROP TABLE WORKFLOWPROCESSINSTANCEP;
 DROP TABLE WORKFLOWSCHEME;
 DROP TABLE WORKFLOWPROCESSINSTANCES;
 DROP TABLE WORKFLOWGLOBALPARAMETER;
+
+COMMIT;

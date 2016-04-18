@@ -73,16 +73,16 @@
     <None Include="Workflow.snk" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj">
-      <Project>{d92ef824-b99d-4955-8078-aa8ece917187}</Project>
-      <Name>OptimaJet.Workflow.Core</Name>
-    </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
     <Content Include="Scripts\CreatePersistenceObjects.sql" />
     <Content Include="Scripts\DropPersistenceObjects.sql" />
     <Content Include="Scripts\update_1_4_4_to_1_5.sql" />
     <Content Include="Scripts\update_1_4_3_to_1_4_4.sql" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj">
+      <Project>{d92ef824-b99d-4955-8078-aa8ece917187}</Project>
+      <Name>OptimaJet.Workflow.Core</Name>
+    </ProjectReference>
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 
