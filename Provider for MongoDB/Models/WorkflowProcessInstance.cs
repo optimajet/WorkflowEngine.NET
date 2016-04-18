@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using MongoDB.Bson.Serialization.Attributes;
-using MongoDB.Driver;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowProcessInstance

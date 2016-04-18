@@ -85,7 +85,6 @@
       <Name>OptimaJet.Workflow.Core</Name>
     </ProjectReference>
   </ItemGroup>
-  <ItemGroup />
   <ItemGroup>
     <Content Include="Scripts\update_1_4_to_1_5.js" />
   </ItemGroup>
