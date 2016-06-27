@@ -108,3 +108,12 @@ table.WorkflowDesignerTable tr.odd:hover td.active {
 .field-validation-error {
     border-color:#FF0033;
 }  
+
+.ui-autocomplete {
+    max-height: 400px;
+    overflow-y: auto;   /* prevent horizontal scrollbar */
+    overflow-x: hidden; /* add padding to account for vertical scrollbar */
+    z-index:9999!important;
+}
+
+.ui-dialog, .ui-dialog-content { overflow: visible; }

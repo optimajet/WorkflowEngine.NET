@@ -4,28 +4,15 @@ using System.Reflection;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Bus;
-using OptimaJet.Workflow.Core.CodeActions;
 using OptimaJet.Workflow.Core.Parser;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.Core.Model;
 using WF.Sample.Business.Helpers;
 
 namespace WF.Sample.Business.Workflow
 {
     public static class WorkflowInit
     {
-        private static IWorkflowBuilder GetDefaultBuilder(string connectionString)
-        {
-            var generator = new OptimaJet.Workflow.DbPersistence.DbXmlWorkflowGenerator(connectionString);
-
-            var builder = new WorkflowBuilder<XElement>(generator,
-                new XmlWorkflowParser(),
-                new OptimaJet.Workflow.DbPersistence.DbSchemePersistenceProvider(connectionString)
-                ).WithDefaultCache();
-            return builder;
-        }
-
         private static volatile WorkflowRuntime _runtime;
 
         private static readonly object _sync = new object();
@@ -42,13 +29,19 @@ namespace WF.Sample.Business.Workflow
                         {
 
                             var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-                            var builder = GetDefaultBuilder(connectionString);
+                           
+                            var provider = new OptimaJet.Workflow.DbPersistence.MSSQLProvider(connectionString);
+
+                            var builder = new WorkflowBuilder<XElement>(provider,
+                                new XmlWorkflowParser(),
+                                provider
+                                ).WithDefaultCache();
 
                             _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
                                 .WithBuilder(builder)
                                 .WithActionProvider(new WorkflowActions())
                                 .WithRuleProvider(new WorkflowRule())
-                                .WithPersistenceProvider(new OptimaJet.Workflow.DbPersistence.DbPersistenceProvider(connectionString))
+                                .WithPersistenceProvider(provider)
                                 .WithTimerManager(new TimerManager())
                                 .WithBus(new NullBus())
                                 .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()

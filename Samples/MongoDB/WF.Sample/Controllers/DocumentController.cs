@@ -217,7 +217,7 @@ namespace WF.Sample.Controllers
             if (command.Parameters.Count(p => p.ParameterName == "Comment") == 1)
                 command.Parameters.Single(p => p.ParameterName == "Comment").Value = document.Comment ?? string.Empty;
 
-            WorkflowInit.Runtime.ExecuteCommand(id, currentUser, currentUser, command);
+            WorkflowInit.Runtime.ExecuteCommand(command, currentUser, currentUser);
         }
 
         private void CreateWorkflowIfNotExists(Guid id)

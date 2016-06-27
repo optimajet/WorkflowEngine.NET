@@ -224,18 +224,20 @@
             Provides choice of activity for execution <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.Conditions"/> and execution of actions <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.Implementation"/> and <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.PreExecutionImplementation"/> in chosen activity
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.#ctor(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.#ctor(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Action{OptimaJet.Workflow.Core.Model.ProcessInstance})">
             <summary>
             Create ActivityExecutor object
             </summary>
             <param name="runtime">WorkflowRuntime instance which owned executor</param>
+            <param name="beforeExecutionAction">Action will be called before execution</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.#ctor(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.#ctor(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean,System.Action{OptimaJet.Workflow.Core.Model.ProcessInstance})">
             <summary>
             Create ActivityExecutor object
             </summary>
             <param name="runtime">WorkflowRuntime instance which owned executor</param>
-            <param name="considerResultOnPreExecution">If true then Result Pre Execution will be considered in time of the check of conditions</param>
+            <param name="isPreExecution">If true then Result Pre Execution will be considered in time of the check of conditions</param>
+               /// <param name="beforeExecutionAction">Action will be called before execution</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.Execute(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters})">
             <summary>
@@ -489,7 +491,12 @@
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.IWorkflowBus.ExecutionComplete">
             <summary>
-            Event raised after the execution was complete
+            Raises after the execution was complete
+            </summary>
+        </member>
+        <member name="E:OptimaJet.Workflow.Core.Bus.IWorkflowBus.BeforeExecution">
+            <summary>
+            Raises before execution of choosen activity
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Bus.IWorkflowBus.IsAsync">
@@ -529,7 +536,12 @@
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.NullBus.ExecutionComplete">
             <summary>
-            Event raised after the execution was complete
+            Raises after the execution was complete
+            </summary>
+        </member>
+        <member name="E:OptimaJet.Workflow.Core.Bus.NullBus.BeforeExecution">
+            <summary>
+            Raises before execution of choosen activity
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Bus.NullBus.IsAsync">
@@ -609,6 +621,7 @@
             - JSON uploadscheme(filestream) Converts scheme uploaded as XML file to JSON.
             - XML downloadscheme(data) Converts scheme from JSON object to XML.
             - object compile(data) Method for test compile of code actions
+            -JSON getemptytype(typename) returns serialized empty type
             Type of the operation determined by "operation" parameter from request parameters 
             </summary>
             <param name="runtime">The instance of the runtime</param>
@@ -906,12 +919,21 @@
             <param name="name">Name of the command</param>
             <returns></returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.CommandDefinition.AddParameterRef(System.String,System.Boolean,System.String,OptimaJet.Workflow.Core.Model.ParameterDefinition)">
+            <summary>
+            Add the reference on the parameter to InputParameters collection
+            </summary>
+            <param name="name">Name of the reference</param>
+            <param name="isRequired">Indicates that the parameter is required</param>
+            <param name="defaultValue">JSON serialized default value or string</param>
+            <param name="parameter">Parameter definition</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.CommandDefinition.AddParameterRef(System.String,OptimaJet.Workflow.Core.Model.ParameterDefinition)">
             <summary>
             Add the reference on the parameter to InputParameters collection
             </summary>
-            <param name="name"></param>
-            <param name="parameter"></param>
+            <param name="name">Name of the reference</param>
+            <param name="parameter">Parameter definition</param>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.CommandDefinition.InputParameters">
             <summary>
@@ -920,12 +942,22 @@
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference">
             <summary>
-             Represent a named reference on a parameter in a process scheme
+             Represents a named reference on a parameter in a process scheme
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.Name">
             <summary>
             Name of the reference
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.IsRequired">
+            <summary>
+            Indicates that the parameter is required
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.DefaultValue">
+            <summary>
+            JSON serialized default value or string
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.Parameter">
@@ -1161,7 +1193,7 @@
             <param name="name">Name of the parameter</param>
             <param name="type">Type of the parameter</param>
             <param name="purpose">Specifies the method of storing parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterPurpose"/></param>
-            <param name="serializedValue">Serialized default value of the parameter</param>
+            <param name="initialValue">Serialized default value of the parameter</param>
             <returns>ParameterDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.Type,OptimaJet.Workflow.Core.Model.ParameterPurpose,System.String)">
@@ -1171,7 +1203,7 @@
             <param name="name">Name of the parameter</param>
             <param name="type">Type of the parameter</param>
             <param name="purpose">Specifies the method of storing parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterPurpose"/></param>
-            <param name="serializedValue">Serialized default value of the parameter</param>
+            <param name="initialValue">Serialized default value of the parameter</param>
             <returns>ParameterDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.String,System.String)">
@@ -1180,7 +1212,7 @@
             </summary>
             <param name="name">Name of the parameter</param>
             <param name="type">Type of the parameter</param>
-            <param name="serializedValue">Serialized default value of the parameter</param>
+            <param name="initialValue">Serialized default value of the parameter</param>
             <returns>ParameterDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(OptimaJet.Workflow.Core.Model.ParameterDefinition,System.Object)">
@@ -1200,7 +1232,7 @@
             Specifies the method of storing parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterPurpose"/>
             </summary>
         </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.SerializedDefaultValue">
+        <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.InitialValue">
             <summary>
             Serialized default value of the parameter
             </summary>
@@ -1698,7 +1730,17 @@
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.IdentityIds">
             <summary>
-            Returns the list of user ids which have the ability to execute current transition. It availiable only on pre-execution mode
+            Returns the list of user ids which have the ability to execute a transition which leads to set executed activity. 
+            (which have the ability to execute current transition)
+            It availiable only on pre-execution mode
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.IdentityIdsForCurrentActivity">
+            <summary>
+            Returns the list of user ids which have the ability to execute a transition which leads to set executed activity. 
+            (which have the ability to execute current transition)
+            The main difference between this property and IdentityIds, is that it takes into account only the last transition that leads into current activity
+            It availiable only on pre-execution mode
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.SchemeCode">
@@ -1874,7 +1916,7 @@
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.TransitionClassifier.NotSpecified">
             <summary>
-            Direction not specifiet
+            Direction not specified
             </summary>
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.TransitionClassifier.Direct">
@@ -2109,6 +2151,83 @@
             Fork transition with unknown status in case of process definition is not marked
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs">
+            <summary>
+            Represent information about an activity which was set as a current acivity of process, contains ProcessInstance object
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.#ctor(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <param name="transitionalProcessWasCompleted">Indicates that a transitional process was completed and a process will stop in current activity</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.ProcessId">
+            <summary>
+            Id of the process whose current activity was changed
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.IsSubprocess">
+            <summary>
+            If true means that the current activity was changed for subprocess
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.SchemeCode">
+            <summary>
+            Code of the scheme of the process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.ProcessInstance">
+            <summary>
+            Instance of the process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.PreviousActivityName">
+            <summary>
+            Returns the name of previous activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.PreviousActivity">
+            <summary>
+            Returns the previous activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.CurrentActivity">
+            <summary>
+            Returns the current activity. Activity which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.CurrentActivityName">
+            <summary>
+            Returns the name of current activity. Activity which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.StateWasChanged">
+            <summary>
+            Returns true if a state of process was changed
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.TransitionalProcessWasCompleted">
+            <summary>
+            Indicates that a transitional process was completed and a process will stop in current activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.CurrentState">
+            <summary>
+            Returns the name of the current state. State which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.PreviousState">
+            <summary>
+            Returns the name of the state  which was initial for last executed direct transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs.ExecutedTransition">
+            <summary>
+            Returns the executed transition.
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams">
             <summary>
              Represents parameters for creaition of an instance of a process
@@ -2149,6 +2268,72 @@
         <member name="P:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams.InitialProcessParameters">
             <summary>
             Parameters to be passed to the process as the initial
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs">
+            <summary>
+            Represent information about an activity which was planned to execute, contains ProcessInstance object
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.#ctor(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ProcessId">
+            <summary>
+            Id of the process whose current activity was changed
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.IsSubprocess">
+            <summary>
+            If true means that the current activity was changed for subprocess
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.SchemeCode">
+            <summary>
+            Code of the scheme of the process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ProcessInstance">
+            <summary>
+            Instance of the process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ExecutedActivityName">
+            <summary>
+            Returns the name of executed activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ExecutedActivityState">
+            <summary>
+            Returns the state name of executed activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ExecutedActivity">
+            <summary>
+            Returns the executed activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.ExecutedTransition">
+            <summary>
+            Returns the executed transition.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.CurrentActivity">
+            <summary>
+            Returns the current activity. Activity which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.CurrentActivityName">
+            <summary>
+            Returns the name of current activity. Activity which was final for last executed transition <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BeforeActivityExecutionEventArgs.CurrentState">
+            <summary>
+            Returns the current state.
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.StartingTransitionNotFoundEventArgs">
@@ -3054,9 +3239,19 @@
             Localized name of the parameter
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CommandParameter.IsRequired">
+            <summary>
+            Indicates that the parameter is required
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.CommandParameter.Value">
             <summary>
             Value of the parameter
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CommandParameter.DefaultValue">
+            <summary>
+            Default value of the parameter
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.CommandParameter.Type">
@@ -3093,13 +3288,14 @@
             <param name="name">Parameter name</param>
             <param name="value">Parameter value</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.Create(System.Guid,OptimaJet.Workflow.Core.Model.TransitionDefinition,OptimaJet.Workflow.Core.Model.ProcessDefinition)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.Create(System.Guid,OptimaJet.Workflow.Core.Model.TransitionDefinition,OptimaJet.Workflow.Core.Model.ProcessDefinition,System.Func{System.String,System.Type,System.Object})">
             <summary>
             Create a workflow command object
             </summary>
             <param name="processId">Procees id</param>
             <param name="transitionDefinition">Command transition <see cref="T:OptimaJet.Workflow.Core.Model.TransitionDefinition"/></param>
             <param name="processDefinition"><see cref="T:OptimaJet.Workflow.Core.Model.ProcessDefinition"/> object which represent parsed workflow scheme</param>
+            <param name="deserializer">Function for deserialize InitialValue of Parameter from JSON</param>
             <returns><see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.AddIdentity(System.String)">
@@ -3107,6 +3303,24 @@
             Add an identity in Identities collection
             </summary>
             <param name="identityId"></param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.Validate(System.String@)">
+            <summary>
+            Validates a command
+            </summary>
+            <param name="errorMessage">Errors summary</param>
+            <returns>true if the command is valid</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.SetAllParametersToDefault">
+            <summary>
+            Sets all value of parameters to their default values
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.SetParameterToDefault(System.String)">
+            <summary>
+            Sets value of parameter with specific name to default value
+            </summary>
+            <param name="name">Name of parameter</param>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowCommand.ProcessId">
             <summary>
@@ -3194,6 +3408,11 @@
             Register the license to remove license restrictions
             </summary>
             <param name="licenseText">License text</param>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ParameterSerializerSettings">
+            <summary>
+            Serializer setting for JSON serializer
+            </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.IsProcessExists(System.Guid)">
             <summary>
@@ -3498,6 +3717,16 @@
             <param name="classifiers">Filter for transitions by transition classifier</param>
             <param name="beginningWithRoot">If true the list of actors will be obtained from the root process, even if you passed Id of the subprocess</param>
             <param name="activityName">Activity name in which transitions are checked. Current activity if null.</param>
+            <returns>List of user ids</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAllActorsForCommandTransitions(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionClassifier})">
+            <summary>
+            Get the list of user ids which can execute any command bound whith a transitions selected by filter (by transition classifier)
+            for executed activity (inside of a transitional process) or for current activity (when a process is idled).
+            Using of this method is preferable for notification of users which can execute next commands.
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="classifiers">Filter for transitions by transition classifier</param>
             <returns>List of user ids</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessScheme(System.Guid)">
@@ -3816,6 +4045,17 @@
             <param name="activityName">Activity name in which transitions are checked. Current activity if null.</param>
             <returns>List of user ids</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAllActorsForCommandTransitionsAsync(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionClassifier})">
+            <summary>
+            Get the list of user ids which can execute any command bound whith a transitions selected by filter (by transition classifier)
+            for executed activity (inside of a transitional process) or for current activity (when a process is idled).
+            Using of this method is preferable for notification of users which can execute next commands. 
+            (async version)
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="classifiers">Filter for transitions by transition classifier</param>
+            <returns>List of user ids</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessSchemeAsync(System.Guid)">
             <summary>
             Get procees definition (parsed scheme) for specified process (async version)
@@ -3906,6 +4146,16 @@
         <member name="E:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.OnStartingTransitionNotFound">
             <summary>
             Raises when runtime can not find starting transition of a subprocess in a new root schem
+            </summary>
+        </member>
+        <member name="E:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ProcessActivityChanged">
+            <summary>
+            Raises when current activity of a process was changed
+            </summary>
+        </member>
+        <member name="E:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.BeforeActivityExecution">
+            <summary>
+            Raises before execution of choosen activity
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.RuleProvider">
@@ -4127,11 +4377,22 @@
             <param name="runtime">The instance of the runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.RegisterAssemblyForCodeActions(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Reflection.Assembly)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.RegisterAssemblyForCodeActions(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Reflection.Assembly,System.Boolean,System.Func{System.Type,System.Boolean})">
             <summary>
             Register reference on assembly for compilation of code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
+            <param name="assembly">Assembly for register</param>
+            <param name="ignoreForDesigner">If true then types from the assembly will not be registered in the designer</param>
+            <param name="designerTypeFilter">Function which filters a types for designer</param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.SetParameterSerializerSettings(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,Newtonsoft.Json.JsonSerializerSettings)">
+            <summary>
+            Changes a JsonSerializerSettings which are using to serialise parameters in runtime
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="settings">JsonSerializerSettings object</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowState">

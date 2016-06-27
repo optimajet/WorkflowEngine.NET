@@ -1,5 +1,5 @@
 /*
- * Worflow Engine.NET 1.4.4
+ * Worflow Engine.NET 1.5
  * http://workflowenginenet.com
  */
  
@@ -7,6 +7,10 @@
  It can be fully integrated into your application, or be in the form of a specific service (such as a web service).
 
 Demo on-line: http://demo.workflowenginenet.com
+
+Please note. All samples was assembled with ASP.NET MVC 5.0. If you need samples wich was assembled with ASP.NET MVC 4.0 you could take them here
+http://workflowenginenet.com/Cms_Data/Contents/WFE/Media/downloads/1.5.4/Samples.zip
+
  
 1. MongoDB - Sample for MongoDB
 
@@ -56,11 +60,5 @@ Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engi
 2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
 3. Check connection string in Console\App.config (connectionStrings section)
 
+Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
 
-7 WebFormsSample - Sample for ASP.NET WebForms
-
-1. Execute SQL\CreatePersistenceObjects.sql
-2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
-3. Check connection string in Console\App.config (connectionStrings section)
-
-Additional Information: http://worklfowenginenet.com

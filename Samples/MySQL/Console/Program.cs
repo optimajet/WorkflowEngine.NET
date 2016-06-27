@@ -133,8 +133,8 @@ namespace WorkflowApp
                     Console.WriteLine("The command isn't found.");
             } while (command == null);
 
-            WorkflowInit.Runtime.ExecuteCommand(processId.Value, string.Empty, string.Empty, command);
-            Console.WriteLine("ExecuteCommand - OK.", processId);
+            WorkflowInit.Runtime.ExecuteCommand(command, string.Empty, string.Empty);
+            Console.WriteLine("ExecuteCommand - OK.");
         }
 
         private static void GetAvailableState()

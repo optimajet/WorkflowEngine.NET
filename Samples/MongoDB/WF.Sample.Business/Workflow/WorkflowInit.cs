@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Configuration;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using MongoDB.Driver;
@@ -41,7 +42,9 @@ namespace WF.Sample.Business.Workflow
                         if (_runtime == null)
                         {
                             var provider = new MongoDBProvider(new MongoClient(
+
                                         ConfigurationManager.AppSettings["Url"]).GetServer().
+
                                         GetDatabase(ConfigurationManager.AppSettings["Database"]));
                             var builder = GetDefaultBuilder(provider).WithDefaultCache();
 
@@ -126,8 +129,11 @@ namespace WF.Sample.Business.Workflow
                 items.Add(new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newActor, ProcessId = processId });
             }
 
-            var dbcoll = Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
-            dbcoll.InsertBatch<WorkflowInbox>(items);
+            if (items.Any())
+            {
+                var dbcoll = Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
+                dbcoll.InsertBatch<WorkflowInbox>(items);
+            }
         }
 
 

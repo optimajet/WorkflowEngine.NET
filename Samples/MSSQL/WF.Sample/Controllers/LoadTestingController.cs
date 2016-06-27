@@ -68,7 +68,7 @@ namespace WF.Sample.Controllers
         private void DocumentCreateWorkflow(Guid id)
         {
             DateTime opStart = DateTime.Now;
-            WorkflowInit.Runtime.CreateInstance("Document", id);
+            WorkflowInit.Runtime.CreateInstance("SimpleWF", id);
             AddOperation(opStart, DateTime.Now, "CreatingWorkflow");
         }
 
@@ -86,7 +86,7 @@ namespace WF.Sample.Controllers
                 doc.Id = id;
                 doc.AuthorId = author.Id;
                 doc.StateName = "Draft";
-                doc.Name = "AG_Doc " + doc.Number.ToString();
+                doc.Name = "AG_Doc " + doc.Number;
 
                 if (r.Next(0, 2) == 1)
                 {
@@ -151,14 +151,15 @@ namespace WF.Sample.Controllers
 
                             try
                             {
-                                WorkflowInit.Runtime.ExecuteCommand(docId.Value, employee.Id.ToString("N"), employee.Id.ToString("N"), c);
+                                var userid = employee.Id.ToString("N");
+                                WorkflowInit.Runtime.ExecuteCommand(c,userid,userid);
                             }
-                            catch (ImpossibleToSetStatusException ex)
+                            catch (ImpossibleToSetStatusException)
                             {
                                 //If process is Running then ignore it's
                                 continue;
                             }
-                            catch (CommandNotValidForStateException ex)
+                            catch (CommandNotValidForStateException)
                             {
                                 //If process is changed state then ignore it's
                                 continue;

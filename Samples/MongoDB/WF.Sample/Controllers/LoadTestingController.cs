@@ -1,11 +1,9 @@
 ﻿using MongoDB.Driver.Builders;
 using OptimaJet.Workflow.Core.Fault;
-using OptimaJet.Workflow.Core.Runtime;
 using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
-using System.Web;
 using System.Web.Mvc;
 using WF.Sample.Business.Helpers;
 using WF.Sample.Business.Models;
@@ -162,14 +160,15 @@ namespace WF.Sample.Controllers
 
                                 try
                                 {
-                                    WorkflowInit.Runtime.ExecuteCommand(docId.Value, employee.Id.ToString("N"), employee.Id.ToString("N"), c);
+                                    var userId = employee.Id.ToString("N");
+                                    WorkflowInit.Runtime.ExecuteCommand(c, userId, userId);
                                 }
-                                catch (ImpossibleToSetStatusException ex)
+                                catch (ImpossibleToSetStatusException)
                                 {
                                     //If process is Running then ignore it's
                                     continue;
                                 }
-                                catch (CommandNotValidForStateException ex)
+                                catch (CommandNotValidForStateException)
                                 {
                                     //If process is changed state then ignore it's
                                     continue;
