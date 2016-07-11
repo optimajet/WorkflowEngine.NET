@@ -2387,6 +2387,93 @@
             Old staring transition name
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Subprocess.TreeSearchStart">
+            <summary>
+            Specifies starting point of search something in the Process Instance Tree
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchStart.FromMe">
+            <summary>
+            From specified node
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchStart.FromRoot">
+            <summary>
+            From tree root
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchStart.FromParent">
+            <summary>
+            From parent of specified node
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude">
+            <summary>
+            Specifies which kind of nodes will be included in search
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude.AllDownIncludeStartPoint">
+            <summary>
+            All children nodes and start point
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude.AllUpIncludeStartPoint">
+            <summary>
+            All parent nodes and start point
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude.OnlyStartPoint">
+            <summary>
+            Only start point
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude.AllDownExcludeStartPoint">
+            <summary>
+            All children nodes
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Subprocess.TreeSearchInclude.AllUpExcludeWithoutStartPoint">
+            <summary>
+            All parent nodes
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter">
+            <summary>
+            Specifies the current process and the method of searching in the Process Instances tree
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.#ctor(System.Guid)">
+            <summary>
+            Use this constructor when you know ProcessId only
+            </summary>
+            <param name="processId">Process id, which will be specified to search</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.#ctor(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Use this constructor when you have an access to a  ProcessInstance
+            </summary>
+            <param name="processInstance">ProcessInstance , wich will be specified to search</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.ProcessId">
+            <summary>
+            Process id, which will be specified to search
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.StartFrom">
+            <summary>
+            Specifies starting point of search something in the Process Instance Tree
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.ProcessInstance">
+            <summary>
+            ProcessInstance, wich will be specified to search
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter.Include">
+            <summary>
+            Specifies which kind of nodes will be included in search
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs">
             <summary>
             Represent information about an error occurred due to execution of a workflow process
@@ -3729,6 +3816,14 @@
             <param name="classifiers">Filter for transitions by transition classifier</param>
             <returns>List of user ids</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAllActorsForCommandTransitions(OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionClassifier})">
+            <summary>
+            Get the list of user ids which can execute any command bound whith a transitions selected by filter. This method is prefearable to use when you are using subprocesses
+            </summary>
+            <param name="filter">Sets the current process and the method of searching in the Process Instances tree</param>
+            <param name="classifiers">Filter for transitions by transition classifier</param>
+            <returns>List of user ids</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessScheme(System.Guid)">
             <summary>
             Get procees definition (parsed scheme) for specified process
@@ -4053,6 +4148,15 @@
             (async version)
             </summary>
             <param name="processInstance">Process instance</param>
+            <param name="classifiers">Filter for transitions by transition classifier</param>
+            <returns>List of user ids</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAllActorsForCommandTransitionsAsync(OptimaJet.Workflow.Core.Subprocess.TreeSearchFilter,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionClassifier})">
+            <summary>
+            Get the list of user ids which can execute any command bound whith a transitions selected by filter. This method is prefearable to use when you are using subprocesses
+            (async version)
+            </summary>
+            <param name="filter">Sets the current process and the method of searching in the Process Instances tree</param>
             <param name="classifiers">Filter for transitions by transition classifier</param>
             <returns>List of user ids</returns>
         </member>
