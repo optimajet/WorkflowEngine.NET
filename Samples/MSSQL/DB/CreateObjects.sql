@@ -1,6 +1,6 @@
 /*
 Company: OptimaJet
-Project: WF.Sample WorkflowEngine.NET 1.4.4
+Project: WF.Sample WorkflowEngine.NET
 File: CreateObjects.sql
 */
 
@@ -101,7 +101,7 @@ BEGIN
 	  AllowedToEmployeeNames nvarchar(max) NOT NULL,
 	  TransitionTime datetime NULL,
 	  [Order] bigint IDENTITY,
-	  TransitionTimeForSort AS (coalesce([TransitionTime],CONVERT([datetime],'9999-12-31',(0)))),
+	  TransitionTimeForSort AS (coalesce([TransitionTime],CONVERT([datetime],'9999-12-31',(20)))),
 	  InitialState nvarchar(1024) NOT NULL,
 	  DestinationState nvarchar(1024) NOT NULL,
 	  Command nvarchar(1024) NOT NULL,
