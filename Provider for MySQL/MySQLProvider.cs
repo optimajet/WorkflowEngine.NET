@@ -651,7 +651,7 @@ namespace OptimaJet.Workflow.MySQL
 
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
+                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, definingParametersHash,
                     scheme.IsObsolete, scheme.RootSchemeId);
 
                 if (oldSchemes.Any())

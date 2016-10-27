@@ -657,7 +657,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
+                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, definingParametersHash,
                     scheme.IsObsolete, scheme.RootSchemeId);
 
                 if (oldSchemes.Any())
