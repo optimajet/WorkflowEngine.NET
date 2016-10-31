@@ -38,7 +38,7 @@ namespace OptimaJet.Workflow.Oracle
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
                 {
-                    throw new ProcessAlredyExistsException();
+                    throw new ProcessAlreadyExistsException(processInstance.ProcessId);
                 }
                 var newProcess = new WorkflowProcessInstance
                 {
@@ -65,7 +65,7 @@ namespace OptimaJet.Workflow.Oracle
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
                 if (resetIsDeterminingParametersChanged)
@@ -93,8 +93,9 @@ namespace OptimaJet.Workflow.Oracle
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-              processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence).Select(ptp => new { Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type) })
-                  .ToList();
+                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
+                    .ToList();
            
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
@@ -407,7 +408,7 @@ namespace OptimaJet.Workflow.Oracle
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
                 return processInstance;
             }
         }
@@ -489,13 +490,10 @@ namespace OptimaJet.Workflow.Oracle
 
         public DateTime? GetCloseExecutionDateTime()
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 var timer = WorkflowProcessTimer.GetCloseExecutionTimer(connection);
-                if (timer == null)
-                    return null;
-
-                return timer.NextExecutionDateTime;
+                return timer != null ? timer.NextExecutionDateTime : (DateTime?) null;
             }
         }
 
@@ -503,7 +501,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             var now = _runtime.RuntimeDateTimeNow;
 
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
                 WorkflowProcessTimer.SetIgnore(connection, timers);
@@ -515,7 +513,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public void SaveGlobalParameter<T>(string type, string name, T value)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
 
@@ -582,14 +580,14 @@ namespace OptimaJet.Workflow.Oracle
         #region ISchemePersistenceProvider
         public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
 
                 if (!processInstance.SchemeId.HasValue)
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
 
                 var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
                 schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
@@ -604,7 +602,7 @@ namespace OptimaJet.Workflow.Oracle
                 WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
 
                 if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
                 return ConvertToSchemeDefinition(processScheme);
             }
@@ -613,7 +611,7 @@ namespace OptimaJet.Workflow.Oracle
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes = new List<WorkflowProcessScheme>();
+            IEnumerable<WorkflowProcessScheme> processSchemes;
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
@@ -624,7 +622,7 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             if (!processSchemes.Any())
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
 
             if (processSchemes.Count() == 1)
             {
@@ -637,7 +635,7 @@ namespace OptimaJet.Workflow.Oracle
                 return ConvertToSchemeDefinition(processScheme);
             }
 
-            throw new SchemeNotFoundException();
+            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
@@ -675,7 +673,7 @@ namespace OptimaJet.Workflow.Oracle
                 {
                     foreach (var oldScheme in oldSchemes)
                         if (oldScheme.DefiningParameters == definingParameters)
-                            throw new SchemeAlredyExistsException();
+                            throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                 }
 
                 var newProcessScheme = new WorkflowProcessScheme
@@ -688,7 +686,8 @@ namespace OptimaJet.Workflow.Oracle
                     RootSchemeCode = scheme.RootSchemeCode,
                     RootSchemeId = scheme.RootSchemeId,
                     AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
-                    StartingTransition = scheme.StartingTransition
+                    StartingTransition = scheme.StartingTransition,
+                    IsObsolete = scheme.IsObsolete
                 };
 
                 newProcessScheme.Insert(connection);
@@ -703,9 +702,11 @@ namespace OptimaJet.Workflow.Oracle
                 WorkflowScheme wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
                 if (wfScheme == null)
                 {
-                    wfScheme = new WorkflowScheme();
-                    wfScheme.Code = schemaCode;
-                    wfScheme.Scheme = scheme;
+                    wfScheme = new WorkflowScheme
+                    {
+                        Code = schemaCode,
+                        Scheme = scheme
+                    };
                     wfScheme.Insert(connection);
                 }
                 else
@@ -722,9 +723,9 @@ namespace OptimaJet.Workflow.Oracle
         {
             using(OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                WorkflowScheme scheme = WorkflowScheme.SelectByKey(connection, code);
+                var scheme = WorkflowScheme.SelectByKey(connection, code);
                 if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
                 return XElement.Parse(scheme.Scheme);
             }

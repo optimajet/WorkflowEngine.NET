@@ -58,7 +58,7 @@ namespace OptimaJet.Workflow.MongoDB
             var oldProcess = dbcoll.FindOneById(processInstance.ProcessId);
             if (oldProcess != null)
             {
-                throw new ProcessAlredyExistsException();
+                throw new ProcessAlreadyExistsException(processInstance.ProcessId);
             }
             var newProcess = new WorkflowProcessInstance
             {
@@ -83,7 +83,7 @@ namespace OptimaJet.Workflow.MongoDB
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             var oldProcess = dbcoll.FindOneById(processInstance.ProcessId);
             if (oldProcess == null)
-                throw new ProcessNotFoundException();
+                throw new ProcessNotFoundException(processInstance.ProcessId);
 
             oldProcess.SchemeId = processInstance.SchemeId;
             if (resetIsDeterminingParametersChanged)
@@ -319,8 +319,7 @@ namespace OptimaJet.Workflow.MongoDB
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
 
-            List<ParameterDefinitionWithValue> parameters;
-            parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count())
+            var parameters = new List<ParameterDefinitionWithValue>(systemParameters.Count)
             {
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterProcessId.Name),
@@ -404,7 +403,7 @@ namespace OptimaJet.Workflow.MongoDB
             {
                 var processInstance = dbcoll.FindOneById(processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
                 return processInstance;
             }
         }
@@ -569,10 +568,11 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             if (processInstance == null)
-                throw new ProcessNotFoundException();
+                throw new ProcessNotFoundException(processId);
 
             if (!processInstance.SchemeId.HasValue)
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
+
             var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
             schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
             return schemeDefinition;
@@ -587,7 +587,7 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
             return ConvertToSchemeDefinition(processScheme);
         }
@@ -614,7 +614,7 @@ namespace OptimaJet.Workflow.MongoDB
                             pss.RootSchemeId == rootSchemeId)).ToList();
 
             if (!processSchemes.Any())
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
 
             if (processSchemes.Count() == 1)
             {
@@ -627,7 +627,7 @@ namespace OptimaJet.Workflow.MongoDB
                 return ConvertToSchemeDefinition(processScheme);
             }
 
-            throw new SchemeNotFoundException();
+            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
@@ -665,7 +665,7 @@ namespace OptimaJet.Workflow.MongoDB
             {
                 if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                 {
-                    throw new SchemeAlredyExistsException();
+                    throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                 }
             }
 
@@ -679,7 +679,8 @@ namespace OptimaJet.Workflow.MongoDB
                 RootSchemeCode = scheme.RootSchemeCode,
                 RootSchemeId = scheme.RootSchemeId,
                 AllowedActivities = scheme.AllowedActivities,
-                StartingTransition = scheme.StartingTransition
+                StartingTransition = scheme.StartingTransition,
+                IsObsolete = scheme.IsObsolete
             };
 
             dbcoll.Insert(newProcessScheme);
@@ -709,7 +710,7 @@ namespace OptimaJet.Workflow.MongoDB
             var scheme = dbcoll.FindOne(Query<WorkflowScheme>.Where(c => c.Code == code));
 
             if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
             return XElement.Parse(scheme.Scheme);
         }

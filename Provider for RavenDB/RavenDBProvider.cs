@@ -49,7 +49,7 @@ namespace OptimaJet.Workflow.RavenDB
                 var oldProcess = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
                 if (oldProcess != null)
                 {
-                    throw new ProcessAlredyExistsException();
+                    throw new ProcessAlreadyExistsException(processInstance.ProcessId);
                 }
                 var newProcess = new WorkflowProcessInstance
                 {
@@ -77,7 +77,7 @@ namespace OptimaJet.Workflow.RavenDB
             {
                 var oldProcess = session.Load<WorkflowProcessInstance>(processInstance.ProcessId);
                 if (oldProcess == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
                 if (resetIsDeterminingParametersChanged)
@@ -435,7 +435,7 @@ namespace OptimaJet.Workflow.RavenDB
             {
                 var processInstance = session.Load<WorkflowProcessInstance>(processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
                 return processInstance;
             }
         }
@@ -720,10 +720,11 @@ namespace OptimaJet.Workflow.RavenDB
             }
 
             if (processInstance == null)
-                throw new ProcessNotFoundException();
+                throw new ProcessNotFoundException(processId);
 
             if (!processInstance.SchemeId.HasValue)
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
+
             var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
             schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
             return schemeDefinition;
@@ -738,7 +739,7 @@ namespace OptimaJet.Workflow.RavenDB
             }
 
             if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
             return ConvertToSchemeDefinition(processScheme);
         }
@@ -764,7 +765,7 @@ namespace OptimaJet.Workflow.RavenDB
             }
 
             if (!processSchemes.Any())
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
 
             if (processSchemes.Count() == 1)
             {
@@ -777,7 +778,7 @@ namespace OptimaJet.Workflow.RavenDB
                 return ConvertToSchemeDefinition(processScheme);
             }
 
-            throw new SchemeNotFoundException();
+            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
@@ -860,7 +861,7 @@ namespace OptimaJet.Workflow.RavenDB
                 {
                     if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                     {
-                        throw new SchemeAlredyExistsException();
+                        throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                     }
                 }
 
@@ -875,7 +876,8 @@ namespace OptimaJet.Workflow.RavenDB
                     RootSchemeCode = scheme.RootSchemeCode,
                     RootSchemeId = scheme.RootSchemeId,
                     AllowedActivities = scheme.AllowedActivities,
-                    StartingTransition = scheme.StartingTransition
+                    StartingTransition = scheme.StartingTransition,
+                    IsObsolete = scheme.IsObsolete
                 };
 
                 session.Store(newProcessScheme);
@@ -916,8 +918,7 @@ namespace OptimaJet.Workflow.RavenDB
                     session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).FirstOrDefault(wps => wps.Code == code);
 
                 if (wfscheme == null || string.IsNullOrEmpty(wfscheme.Scheme))
-                    throw new SchemeNotFoundException();
-
+                    throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
                 return XElement.Parse(wfscheme.Scheme);
             }
         }

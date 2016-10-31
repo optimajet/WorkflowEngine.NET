@@ -29,14 +29,15 @@ namespace OptimaJet.Workflow.DbPersistence
         }
 
         #region IPersistenceProvider
+
         public void InitializeProcess(ProcessInstance processInstance)
         {
-            using(SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
                 {
-                    throw new ProcessAlredyExistsException();
+                    throw new ProcessAlreadyExistsException(processInstance.ProcessId);
                 }
                 var newProcess = new WorkflowProcessInstance
                 {
@@ -62,7 +63,7 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
                 if (resetIsDeterminingParametersChanged)
@@ -404,7 +405,7 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
                 return processInstance;
             }
         }
@@ -576,10 +577,10 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
 
                 if (!processInstance.SchemeId.HasValue)
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
 
                 var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
                 schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
@@ -594,19 +595,19 @@ namespace OptimaJet.Workflow.DbPersistence
                 WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
 
                 if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
                 return ConvertToSchemeDefinition(processScheme);
             }
         }
-        
+
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
             IEnumerable<WorkflowProcessScheme> processSchemes;
             var hash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (SqlConnection connection = new SqlConnection(ConnectionString))
+            using (var connection = new SqlConnection(ConnectionString))
             {
                 processSchemes =
                     WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?) null,
@@ -614,7 +615,7 @@ namespace OptimaJet.Workflow.DbPersistence
             }
 
             if (!processSchemes.Any())
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
 
             if (processSchemes.Count() == 1)
             {
@@ -627,7 +628,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 return ConvertToSchemeDefinition(processScheme);
             }
 
-            throw new SchemeNotFoundException();
+            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
@@ -664,7 +665,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                     {
-                        throw new SchemeAlredyExistsException();
+                        throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                     }
                 }
 
@@ -678,7 +679,8 @@ namespace OptimaJet.Workflow.DbPersistence
                     RootSchemeCode = scheme.RootSchemeCode,
                     RootSchemeId = scheme.RootSchemeId,
                     AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
-                    StartingTransition = scheme.StartingTransition
+                    StartingTransition = scheme.StartingTransition,
+                    IsObsolete = scheme.IsObsolete
                 };
 
                 newProcessScheme.Insert(connection);
@@ -706,15 +708,15 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-       
+
 
         public XElement GetScheme(string code)
         {
-            using(SqlConnection connection = new SqlConnection(ConnectionString))
+            using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 WorkflowScheme scheme = WorkflowScheme.SelectByKey(connection, code);
                 if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowProcessScheme);
 
                 return XElement.Parse(scheme.Scheme);
             }

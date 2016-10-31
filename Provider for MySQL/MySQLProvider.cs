@@ -35,7 +35,7 @@ namespace OptimaJet.Workflow.MySQL
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
                 {
-                    throw new ProcessAlredyExistsException();
+                    throw new ProcessAlreadyExistsException(processInstance.ProcessId);
                 }
                 var newProcess = new WorkflowProcessInstance
                 {
@@ -61,7 +61,7 @@ namespace OptimaJet.Workflow.MySQL
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
                 if (resetIsDeterminingParametersChanged)
@@ -398,7 +398,7 @@ namespace OptimaJet.Workflow.MySQL
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
                 return processInstance;
             }
         }
@@ -558,7 +558,7 @@ namespace OptimaJet.Workflow.MySQL
                 var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
                 WorkflowProcessTimer.SetIgnore(connection, timers);
 
-                return timers.Select(t => new TimerToExecute { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+                return timers.Select(t => new TimerToExecute { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
             }
         }
         #endregion
@@ -570,10 +570,10 @@ namespace OptimaJet.Workflow.MySQL
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
-                    throw new ProcessNotFoundException();
+                    throw new ProcessNotFoundException(processId);
 
                 if (!processInstance.SchemeId.HasValue)
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
 
                 var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
                 schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
@@ -588,12 +588,12 @@ namespace OptimaJet.Workflow.MySQL
                 WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
 
                 if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
                 return ConvertToSchemeDefinition(processScheme);
             }
         }
-        
+
         public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
@@ -608,7 +608,7 @@ namespace OptimaJet.Workflow.MySQL
             }
 
             if (!processSchemes.Any())
-                throw new SchemeNotFoundException();
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
 
             if (processSchemes.Count() == 1)
             {
@@ -621,7 +621,7 @@ namespace OptimaJet.Workflow.MySQL
                 return ConvertToSchemeDefinition(processScheme);
             }
 
-            throw new SchemeNotFoundException();
+            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
         public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
@@ -658,7 +658,7 @@ namespace OptimaJet.Workflow.MySQL
                 {
                     if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                     {
-                        throw new SchemeAlredyExistsException();
+                        throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                     }
                 }
 
@@ -672,7 +672,8 @@ namespace OptimaJet.Workflow.MySQL
                     RootSchemeCode = scheme.RootSchemeCode,
                     RootSchemeId = scheme.RootSchemeId,
                     AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
-                    StartingTransition = scheme.StartingTransition
+                    StartingTransition = scheme.StartingTransition,
+                    IsObsolete = scheme.IsObsolete
                 };
 
                 newProcessScheme.Insert(connection);
@@ -708,9 +709,9 @@ namespace OptimaJet.Workflow.MySQL
         {
             using(MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
-                WorkflowScheme scheme = WorkflowScheme.SelectByKey(connection, code);
+                var scheme = WorkflowScheme.SelectByKey(connection, code);
                 if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
-                    throw new SchemeNotFoundException();
+                    throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
                 return XElement.Parse(scheme.Scheme);
             }
