@@ -654,7 +654,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
+                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, definingParametersHash,
                     scheme.IsObsolete, scheme.RootSchemeId);
 
                 if (oldSchemes.Any())

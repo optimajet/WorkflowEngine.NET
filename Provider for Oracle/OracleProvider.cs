@@ -668,7 +668,7 @@ namespace OptimaJet.Workflow.Oracle
 
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, scheme.DefiningParameters,
+                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, definingParametersHash,
                     scheme.IsObsolete, scheme.RootSchemeId);
 
                 if (oldSchemes.Any())
