@@ -72,7 +72,7 @@ namespace WF.Sample.Controllers
                                 provider
                                 ).WithDefaultCache();
 
-                            _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
+                            _runtime = new WorkflowRuntime()
                                 .WithBuilder(builder)
                                 .WithPersistenceProvider(provider)
                                 .WithTimerManager(new TimerManager())

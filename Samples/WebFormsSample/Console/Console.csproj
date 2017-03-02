@@ -35,13 +35,13 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.Core">
-      <HintPath>..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.DbPersistence">
-      <HintPath>..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.configuration" />
@@ -60,14 +60,6 @@
   <ItemGroup>
     <None Include="App.config" />
     <None Include="packages.config" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="SQL\CreatePersistenceObjects.sql" />
-    <Content Include="SQL\CreatePersistenceObjectsForAzureSQL.sql" />
-    <Content Include="SQL\DropPersistenceObjects.sql" />
-    <Content Include="SQL\update_1_3_to_1_4.sql" />
-    <Content Include="SQL\update_1_4_to_1_4_3.sql" />
-    <Content Include="SQL\update_1_4_to_1_4_4.sql" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <!-- To modify your build process, add your task inside one of the targets below and uncomment it. 

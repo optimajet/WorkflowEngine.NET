@@ -1688,6 +1688,13 @@
             </summary>
             <param name="parameters">Collection of parameters with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/></param>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.IsParameterExisting(System.String)">
+            <summary>
+            Checks that the parameter whether exists or not
+            </summary>
+            <param name="name">Name of the parameter</param>
+            <returns>true if exists</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetParameter(System.String)">
             <summary>
             Returns parameter with value <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/> with specific name
@@ -1711,6 +1718,12 @@
             <typeparam name="T">Type of the parameter</typeparam>
             <param name="name">Name of the parameter</param>
             <param name="value">Value of the parameter</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.RemoveParameter(System.String)">
+            <summary>
+            Remove parameter from process parameters
+            </summary>
+            <param name="name">Parameter name</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.SetProcessParameters(System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue})">
             <summary>
@@ -2314,6 +2327,143 @@
             </summary>
             <param name="processInstance">Instance of the process</param>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs">
+            <summary>
+            Event args for request timer value
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.TimerValueRequest.Name">
+            <summary>
+            The Timer name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.TimerValueRequest.Definition">
+            <summary>
+            The timer definition object
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.TimerValueRequest.OriginalValue">
+            <summary>
+            The timer value that was specified in the scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.TimerValueRequest.NewValue">
+            <summary>
+            New value of the timer
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.ProcessInstance">
+            <summary>
+            Instance of the process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.ProcessId">
+            <summary>
+            Id of the process
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs.#ctor(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionDefinition})">
+            <summary>
+            Constructor
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <param name="timerTransitions">Timer triggered transitions</param>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Runtime.ParametersSerializer.Settings">
+            <summary>
+            Serializer setting for JSON serializer
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ParametersSerializer.Deserialize(System.String,System.Type)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters serialization mechanism
+            </summary>
+            <param name="serializedValue">Serialized value</param>
+            <param name="parameterType">Parameter type</param>
+            <returns>Deserialized object</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ParametersSerializer.Deserialize``1(System.String)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters serialization mechanism
+            </summary>
+            <param name="serializedValue">Serialized value</param>
+            <returns>Deserialized object</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ParametersSerializer.Serialize(System.Object,System.Type)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters deserialization mechanism
+            </summary>
+            <param name="value">Parameter value</param>
+            <param name="parameterType">Parameter type</param>
+            <returns>Serialized string</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ParametersSerializer.Serialize(System.Object)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters deserialization mechanism
+            </summary>
+            <param name="value">Parameter value</param>
+            <returns>Serialized string</returns>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem">
+            <summary>
+            Represents a record of transition of process from one Activity to another
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.ProcessId">
+            <summary>
+            Id of a process instance
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.ActorIdentityId">
+            <summary>
+            An user id for whom a command was executed
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.ExecutorIdentityId">
+            <summary>
+            An user id who executed a command
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.FromActivityName">
+            <summary>
+            Source activity name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.FromStateName">
+            <summary>
+            Source state name if the state name was specified in source activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.IsFinalised">
+            <summary>
+            If true specifies that process was finalized by this transition.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.ToActivityName">
+            <summary>
+            Destination activity name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.ToStateName">
+            <summary>
+            Source state name if the state name was specified in destination activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.TransitionClassifier">
+            <summary>
+            Classifier of a transition direction
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.TransitionTime">
+            <summary>
+            Time of an execution of transition
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessHistoryItem.TriggerName">
+            <summary>
+            Name of a command or timer an execution of which led to an execution of transition
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.StartingTransitionNotFoundEventArgs">
             <summary>
             Represent information about case when we try to update a subprocess's scheme but there are no starting transition in a new sccheme of a root process
@@ -2414,6 +2564,56 @@
             Interface of a timer manager, which control timers functioning inside a workflow runtime
             </summary>
         </member>
+        <member name="E:OptimaJet.Workflow.Core.Runtime.ITimerManager.NeedTimerValue">
+            <summary>
+            Raises when the timer value must be obtained 
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.RequestTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.ActivityDefinition)">
+            <summary>
+            Sends request for timer value for all timer transitions that are outgoing from the CurrentActivity if timer value is equal 0 or -1
+            </summary>
+            <param name="activity">Activity to get outbound transition, if null the CurrentActivity will be used</param>
+            <param name="processInstance">Process instance</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.GetTransitionsForImmediateExecution(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.ActivityDefinition)">
+            <summary>
+            Returns transitions triggered by a timer which value is equal to 0
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="activity">Activity to get outbound transition, if null the CurrentActivity will be used</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.SetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.SetTimerValue(System.Guid,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.ResetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String)">
+            <summary>
+            Resets value of named timer
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.ResetTimerValue(System.Guid,System.String)">
+            <summary>
+            Resets value of named timer
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.RegisterTimers(OptimaJet.Workflow.Core.Model.ProcessInstance)">
             <summary>
             Register all timers for all outgouing timer transitions for current actvity of the specified process.
@@ -2433,15 +2633,17 @@
             </summary>
             <param name="processInstance">Process instance whose timers need to be cleared</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.Start">
-            <summary>
-            Start the timer
-            </summary>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.Start(System.Nullable{System.Int32})">
+             <summary>
+             Starts the timer
+             </summary>
+            <param name="timeout">Wait timeout in milliseconds</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.Stop">
-            <summary>
-            Stop the timer
-            </summary>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.Stop(System.Nullable{System.Int32})">
+             <summary>
+             Stops the timer
+             </summary>
+            <param name="timeout">Wait timeout in milliseconds</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.ITimerManager.Refresh">
             <summary>
@@ -2475,9 +2677,15 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.GetActions">
             <summary>
-            Return all user conditions and actions names
+            Return all user actions names
             </summary>
-            <returns>List of conditions and actions names</returns>
+            <returns>List of actions names</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.GetConditions">
+            <summary>
+            Return all user conditions names
+            </summary>
+            <returns>List of conditions names</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider">
             <summary>
@@ -2619,6 +2827,74 @@
             Default timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/>
             </summary>
         </member>
+        <member name="F:OptimaJet.Workflow.Core.Runtime.TimerManager.ImmediateTimerValue">
+            <summary>
+            Value of Unspecified Timer which indicates that the timer transition will be executed immediately
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Runtime.TimerManager.InfinityTimerValue">
+            <summary>
+            Value of Unspecified Timer which indicates that the timer transition will be never executed
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerManager.DefaultWaitTimeout">
+            <summary>
+            Wait timeout for start/stop operations in milliseconds. Default value is 1000.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.#ctor">
+            <summary>
+            Timer manager constructor
+            </summary>
+        </member>
+        <member name="E:OptimaJet.Workflow.Core.Runtime.TimerManager.NeedTimerValue">
+            <summary>
+            Raises when the timer value must be obtained 
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.RequestTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.ActivityDefinition)">
+            <summary>
+            Sends request for timer value for all timer transitions that are outgoing from the CurrentActivity if timer value is equal 0 or -1
+            </summary>
+            <param name="processInstance">Process instance</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.GetTransitionsForImmediateExecution(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.ActivityDefinition)">
+            <summary>
+            Returns transitions triggered by a timer which value is equal to 0
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.SetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.SetTimerValue(System.Guid,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.ResetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String)">
+            <summary>
+            Resets value of named timer
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.ResetTimerValue(System.Guid,System.String)">
+            <summary>
+            Resets value of named timer
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.RegisterTimers(OptimaJet.Workflow.Core.Model.ProcessInstance)">
             <summary>
             Register all timers for all outgouing timer transitions for current actvity of the specified process.
@@ -2638,15 +2914,17 @@
             </summary>
             <param name="processInstance">Process instance whose timers need to be cleared</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.Start">
-            <summary>
-            Start the timer
-            </summary>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.Start(System.Nullable{System.Int32})">
+             <summary>
+             Starts the timer
+             </summary>
+            <param name="timeout">Wait timeout in milliseconds</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.Stop">
-            <summary>
-            Stop the timer
-            </summary>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.Stop(System.Nullable{System.Int32})">
+             <summary>
+             Stop the timer
+             </summary>
+            <param name="timeout">Wait timeout in milliseconds</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.TimerManager.Refresh">
             <summary>
@@ -2796,6 +3074,17 @@
             Provides main API to operations with workflow processes
             </summary>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.#ctor(System.Guid)">
+            <summary>
+            Creates the WFE runtime object
+            </summary>
+            <param name="runtimeId">Id of the runtime (reserved for further extension)</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.#ctor">
+            <summary>
+            Creates the WFE runtime object
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Id">
             <summary>
             Runtime identifier
@@ -2836,6 +3125,16 @@
             Raises before execution of choosen activity
             </summary>
         </member>
+        <member name="E:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.NeedTimerValue">
+            <summary>
+            Raises when the timer value must be obtained 
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DesignerAutocompleteProvider">
+            <summary>
+            Instance of the autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/>
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.RuleProvider">
             <summary>
             Instance of the Workflow rule provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/>
@@ -2865,22 +3164,6 @@
             <summary>
             Raises when the status of the procees <see cref="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus"/> was changed
             </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeserializeParameter(System.String,System.Type)">
-            <summary>
-            Provides access to Workflow Engine .NET Persistence Process Parameters serialization mechanism
-            </summary>
-            <param name="serializedValue">Serialized value</param>
-            <param name="parameterType">Parameter type</param>
-            <returns>Deserialized object</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SerializeParameter(System.Object,System.Type)">
-            <summary>
-            Provides access to Workflow Engine .NET Persistence Process Parameters deserialization mechanism
-            </summary>
-            <param name="value">Parameter value</param>
-            <param name="parameterType">Parameter type</param>
-            <returns>Serialized string</returns>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SchemeParsingCulture">
             <summary>
@@ -2932,11 +3215,6 @@
             Register the license to remove license restrictions
             </summary>
             <param name="licenseText">License text</param>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ParameterSerializerSettings">
-            <summary>
-            Serializer setting for JSON serializer
-            </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.IsProcessExists(System.Guid)">
             <summary>
@@ -3017,6 +3295,36 @@
             Set flag IsObsolete for all schemas of process with specific code
             </summary>
             <param name="schemeCode">Code of the scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetTimerValue(System.Guid,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer. Use this method outside of your process. 
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer.  Use this method inside of your process (in actions). 
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ResetTimerValue(System.Guid,System.String)">
+            <summary>
+            Resets value of named timer.  Use this method outside of your process. 
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ResetTimerValue(OptimaJet.Workflow.Core.Model.ProcessInstance,System.String)">
+            <summary>
+            Resets value of named timer. Use this method inside of your process (in actions). 
+            </summary>
+            <param name="processInstance">Process instance</param>
+            <param name="timerName">Timer name in Scheme</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.UpdateSchemeIfObsolete(System.Guid,System.Boolean)">
             <summary>
@@ -3325,6 +3633,13 @@
             <param name="processId">Process id</param>
             <returns><see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/> object</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessHistory(System.Guid)">
+            <summary>
+            Returns the history of process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.IsProcessExistsAsync(System.Guid)">
             <summary>
             Check existence of the specified process 
@@ -3390,6 +3705,21 @@
             Set flag IsObsolete for all schemas of process with specific code (async version)
             </summary>
             <param name="schemeCode">Code of the scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetTimerValueAsync(System.Guid,System.String,System.DateTime)">
+            <summary>
+            Sets new value of named timer (async version)
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
+            <param name="newValue">New value of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ResetTimerValueAsync(System.Guid,System.String)">
+            <summary>
+            Resets value of named timer (async version)
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="timerName">Timer name in Scheme</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.UpdateSchemeIfObsoleteAsync(System.Guid)">
             <summary>
@@ -3461,6 +3791,14 @@
             <param name="commandNameFilter">Selects only the specified command if not null</param>
             <param name="mainIdentityId">User id for priority check of rules</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String)">
+            <summary>
+            Execute specified command for specified users (async version)
+            </summary>
+            <param name="command">Command to execute</param>
+            <param name="identityId">The user id which execute command</param>
+            <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(System.Guid,System.String,System.String,OptimaJet.Workflow.Core.Runtime.WorkflowCommand)">
             <summary>
@@ -3661,6 +3999,13 @@
             <param name="processId">Process id</param>
             <returns><see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/> object</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessHistoryAsync(System.Guid)">
+            <summary>
+            Returns the history of process (async version)
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithBuilder(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Builder.IWorkflowBuilder)">
             <summary>
             Сonfigures the runtime with specified builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/>
@@ -3698,6 +4043,14 @@
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="persistenceProvider">The instance of the persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/></param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDesignerAutocompleteProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider)">
+            <summary>
+            Сonfigures the runtime with specified autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/>
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="autocompleteProvider">The instance of the autocomplete provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/></param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithBus(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Bus.IWorkflowBus)">
@@ -3837,6 +4190,24 @@
             <param name="runtime">The instance of the runtime</param>
             <param name="settings">JsonSerializerSettings object</param>
             <returns>Configured instance of the workflow runtime</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.DeserializeParameter(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.Type)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters serialization mechanism
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="serializedValue">Serialized value</param>
+            <param name="parameterType">Parameter type</param>
+            <returns>Deserialized object</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.SerializeParameter(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Object,System.Type)">
+            <summary>
+            Provides access to Workflow Engine .NET Persistence Process Parameters serialization mechanism
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="value">Parameter value</param>
+            <param name="parameterType">Parameter type</param>
+            <returns>Deserialized object</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowState">
             <summary>
@@ -4375,6 +4746,11 @@
             Clears sign Ignore for all timers
             </summary>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimerIgnore(System.Guid)">
+            <summary>
+            Clears sign Ignore for specific timers
+            </summary>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimer(System.Guid)">
             <summary>
             Remove specific timer
@@ -4437,6 +4813,13 @@
             </summary>
             <param name="type">Logical type of the parameter</param>
             <param name="name">Name of the parameter</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetProcessHistory(System.Guid)">
+            <summary>
+            Returns the history of process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1">
             <summary>
@@ -4521,7 +4904,8 @@
             - JSON uploadscheme(filestream) Converts scheme uploaded as XML file to JSON.
             - XML downloadscheme(data) Converts scheme from JSON object to XML.
             - object compile(data) Method for test compile of code actions
-            -JSON getemptytype(typename) returns serialized empty type
+            - JSON getemptytype(typename) returns serialized empty type
+            - array getautocompletesuggestions (category, value) returns a list of autocomplete suggestions
             Type of the operation determined by "operation" parameter from request parameters 
             </summary>
             <param name="runtime">The instance of the runtime</param>

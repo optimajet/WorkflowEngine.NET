@@ -46,7 +46,7 @@ namespace WF.Sample.Business.Workflow
                             });
                             var builder = GetDefaultBuilder(provider).WithDefaultCache();
 
-                            _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
+                            _runtime = new WorkflowRuntime()
                                 .WithBuilder(builder)
                                 .WithActionProvider(new WorkflowActions())
                                 .WithRuleProvider(new WorkflowRule())

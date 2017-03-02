@@ -175,281 +175,281 @@ namespace WF.Sample.Controllers
   <Activities>
     <Activity Name=""DraftInitial"" State=""Draft"" IsInitial=""True"" IsFinal=""False"" IsForSetState=""False"" IsAutoSchemeUpdate=""False"">
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""100"" Y=""90"" />
+      <Designer X=""40"" Y=""80""/>
     </Activity>
     <Activity Name=""Draft"" State=""Draft"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""120"" Y=""270"" />
+      <Designer X=""450"" Y=""390""/>
     </Activity>
     <Activity Name=""DraftStartProcessingExecute"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""False"" IsAutoSchemeUpdate=""False"">
-      <Designer X=""400"" Y=""90"" />
+      <Designer X=""40"" Y=""240""/>
     </Activity>
     <Activity Name=""ControllerSighting"" State=""ControllerSighting"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""400"" Y=""270"" />
+      <Designer X=""310"" Y=""240""/>
     </Activity>
     <Activity Name=""ControllerSightingExecute"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""False"" IsAutoSchemeUpdate=""False"">
-      <Designer X=""650"" Y=""130"" />
+      <Designer X=""310"" Y=""80""/>
     </Activity>
     <Activity Name=""AuthorBossSighting"" State=""AuthorBossSighting"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""650"" Y=""320"" />
+      <Designer X=""620"" Y=""80""/>
     </Activity>
     <Activity Name=""AuthorConfirmation"" State=""AuthorConfirmation"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""970"" Y=""210"" />
+      <Designer X=""600"" Y=""240""/>
     </Activity>
     <Activity Name=""BigBossSighting"" State=""BigBossSighting"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""970"" Y=""410"" />
+      <Designer X=""890"" Y=""390""/>
     </Activity>
     <Activity Name=""AccountantProcessing"" State=""AccountantProcessing"" IsInitial=""False"" IsFinal=""False"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""1240"" Y=""300"" />
+      <Designer X=""890"" Y=""240""/>
     </Activity>
     <Activity Name=""Paid"" State=""Paid"" IsInitial=""False"" IsFinal=""True"" IsForSetState=""True"" IsAutoSchemeUpdate=""True"">
       <Implementation>
-        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""UpdateTransitionHistory""/>
       </Implementation>
       <PreExecutionImplementation>
-        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory"" />
+        <ActionRef Order=""1"" NameRef=""WriteTransitionHistory""/>
       </PreExecutionImplementation>
-      <Designer X=""1240"" Y=""480"" />
+      <Designer X=""880"" Y=""80""/>
     </Activity>
   </Activities>
   <Transitions>
-    <Transition Name=""DraftInitial"" To=""DraftStartProcessingExecute"" From=""DraftInitial"" Classifier=""Direct"">
+    <Transition Name=""DraftInitial"" To=""DraftStartProcessingExecute"" From=""DraftInitial"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Author"" />
+        <Restriction Type=""Allow"" NameRef=""Author""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""StartProcessing"" />
+        <Trigger Type=""Command"" NameRef=""StartProcessing""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0"" />
+      <Designer/>
     </Transition>
-    <Transition Name=""Draft"" To=""ControllerSighting"" From=""Draft"" Classifier=""Direct"">
+    <Transition Name=""Draft"" To=""ControllerSighting"" From=""Draft"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Author"" />
+        <Restriction Type=""Allow"" NameRef=""Author""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""StartProcessing"" />
+        <Trigger Type=""Command"" NameRef=""StartProcessing""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0"" />
+      <Designer X=""470.5"" Y=""346""/>
     </Transition>
-    <Transition Name=""DraftStartProcessingExecute_1"" To=""ControllerSighting"" From=""DraftStartProcessingExecute"" Classifier=""Direct"">
+    <Transition Name=""DraftStartProcessingExecute_1"" To=""ControllerSighting"" From=""DraftStartProcessingExecute"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Triggers>
-        <Trigger Type=""Auto"" />
+        <Trigger Type=""Auto""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Action"" NameRef=""CheckDocumentHasController"" />
+        <Condition Type=""Action"" NameRef=""CheckDocumentHasController"" ConditionInversion=""false""/>
       </Conditions>
-      <Designer Bending="""" />
+      <Designer X=""263.5"" Y=""270""/>
     </Transition>
-    <Transition Name=""DraftStartProcessingExecute_2"" To=""ControllerSightingExecute"" From=""DraftStartProcessingExecute"" Classifier=""Direct"">
+    <Transition Name=""DraftStartProcessingExecute_2"" To=""ControllerSightingExecute"" From=""DraftStartProcessingExecute"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Triggers>
-        <Trigger Type=""Auto"" />
+        <Trigger Type=""Auto""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Otherwise"" />
+        <Condition Type=""Otherwise""/>
       </Conditions>
-      <Designer Bending=""0"" />
+      <Designer X=""265"" Y=""188""/>
     </Transition>
-    <Transition Name=""ControllerSighting"" To=""ControllerSightingExecute"" From=""ControllerSighting"" Classifier=""Direct"">
+    <Transition Name=""ControllerSighting"" To=""ControllerSightingExecute"" From=""ControllerSighting"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Controller"" />
+        <Restriction Type=""Allow"" NameRef=""Controller""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Sighting"" />
+        <Trigger Type=""Command"" NameRef=""Sighting""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0.18861156996410458"" />
+      <Designer X=""373"" Y=""190.5""/>
     </Transition>
-    <Transition Name=""ControllerSighting_R"" To=""Draft"" From=""ControllerSighting"" Classifier=""Reverse"">
+    <Transition Name=""ControllerSighting_R"" To=""Draft"" From=""ControllerSighting"" Classifier=""Reverse"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Controller"" />
+        <Restriction Type=""Allow"" NameRef=""Controller""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Denial"" />
+        <Trigger Type=""Command"" NameRef=""Denial""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending="""" />
+      <Designer X=""380.5"" Y=""354.5""/>
     </Transition>
-    <Transition Name=""ControllerSightingExecute_1"" To=""AuthorConfirmation"" From=""ControllerSightingExecute"" Classifier=""Direct"">
+    <Transition Name=""ControllerSightingExecute_1"" To=""AuthorConfirmation"" From=""ControllerSightingExecute"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Triggers>
-        <Trigger Type=""Auto"" />
+        <Trigger Type=""Auto""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Action"" NameRef=""CheckDocumentsAuthorIsBoss"" />
+        <Condition Type=""Action"" NameRef=""CheckDocumentsAuthorIsBoss"" ConditionInversion=""false""/>
       </Conditions>
-      <Designer Bending=""0.13091527870458927"" />
+      <Designer X=""528.5"" Y=""177""/>
     </Transition>
-    <Transition Name=""ControllerSightingExecute_2"" To=""AuthorBossSighting"" From=""ControllerSightingExecute"" Classifier=""Direct"">
+    <Transition Name=""ControllerSightingExecute_2"" To=""AuthorBossSighting"" From=""ControllerSightingExecute"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Triggers>
-        <Trigger Type=""Auto"" />
+        <Trigger Type=""Auto""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Otherwise"" />
+        <Condition Type=""Otherwise""/>
       </Conditions>
-      <Designer Bending="""" />
+      <Designer X=""558.5"" Y=""101""/>
     </Transition>
-    <Transition Name=""AuthorBossSighting"" To=""AuthorConfirmation"" From=""AuthorBossSighting"" Classifier=""Direct"">
+    <Transition Name=""AuthorBossSighting"" To=""AuthorConfirmation"" From=""AuthorBossSighting"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""AuthorsBoss"" />
+        <Restriction Type=""Allow"" NameRef=""AuthorsBoss""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Sighting"" />
+        <Trigger Type=""Command"" NameRef=""Sighting""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0"" />
+      <Designer X=""692"" Y=""190""/>
     </Transition>
-    <Transition Name=""AuthorBossSighting_R"" To=""Draft"" From=""AuthorBossSighting"" Classifier=""Reverse"">
+    <Transition Name=""AuthorBossSighting_R"" To=""Draft"" From=""AuthorBossSighting"" Classifier=""Reverse"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""AuthorsBoss"" />
+        <Restriction Type=""Allow"" NameRef=""AuthorsBoss""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Denial"" />
+        <Trigger Type=""Command"" NameRef=""Denial""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""-0.10762234343917368"" />
+      <Designer X=""560"" Y=""274""/>
     </Transition>
-    <Transition Name=""AuthorConfirmation_1"" To=""BigBossSighting"" From=""AuthorConfirmation"" Classifier=""Direct"">
+    <Transition Name=""AuthorConfirmation_1"" To=""BigBossSighting"" From=""AuthorConfirmation"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Author"" />
+        <Restriction Type=""Allow"" NameRef=""Author""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Sighting"" />
+        <Trigger Type=""Command"" NameRef=""Sighting""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Action"" NameRef=""CheckBigBossMustSight"" />
+        <Condition Type=""Action"" NameRef=""CheckBigBossMustSight"" ConditionInversion=""false""/>
       </Conditions>
-      <Designer Bending="""" />
+      <Designer X=""755.5"" Y=""345.5""/>
     </Transition>
-    <Transition Name=""AuthorConfirmation_2"" To=""AccountantProcessing"" From=""AuthorConfirmation"" Classifier=""Direct"">
+    <Transition Name=""AuthorConfirmation_2"" To=""AccountantProcessing"" From=""AuthorConfirmation"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Author"" />
+        <Restriction Type=""Allow"" NameRef=""Author""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Sighting"" />
+        <Trigger Type=""Command"" NameRef=""Sighting""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Otherwise"" />
+        <Condition Type=""Otherwise""/>
       </Conditions>
-      <Designer Bending=""-0.3508719297850871"" />
+      <Designer X=""840"" Y=""251""/>
     </Transition>
-    <Transition Name=""AuthorConfirmation_R"" To=""Draft"" From=""AuthorConfirmation"" Classifier=""Reverse"">
+    <Transition Name=""AuthorConfirmation_R"" To=""Draft"" From=""AuthorConfirmation"" Classifier=""Reverse"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Author"" />
+        <Restriction Type=""Allow"" NameRef=""Author""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Denial"" />
+        <Trigger Type=""Command"" NameRef=""Denial""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""-0.2916249379586396"" />
+      <Designer/>
     </Transition>
-    <Transition Name=""BigBossSighting"" To=""AccountantProcessing"" From=""BigBossSighting"" Classifier=""Direct"">
+    <Transition Name=""BigBossSighting"" To=""AccountantProcessing"" From=""BigBossSighting"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""BigBoss"" />
+        <Restriction Type=""Allow"" NameRef=""BigBoss""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Sighting"" />
+        <Trigger Type=""Command"" NameRef=""Sighting""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0"" />
+      <Designer X=""982"" Y=""351.5""/>
     </Transition>
-    <Transition Name=""BigBossSighting_R"" To=""Draft"" From=""BigBossSighting"" Classifier=""Reverse"">
+    <Transition Name=""BigBossSighting_R"" To=""Draft"" From=""BigBossSighting"" Classifier=""Reverse"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""BigBoss"" />
+        <Restriction Type=""Allow"" NameRef=""BigBoss""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Denial"" />
+        <Trigger Type=""Command"" NameRef=""Denial""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""-0.20253979975959344"" />
+      <Designer X=""765"" Y=""431""/>
     </Transition>
-    <Transition Name=""AccountantProcessing"" To=""Paid"" From=""AccountantProcessing"" Classifier=""Direct"">
+    <Transition Name=""AccountantProcessing"" To=""Paid"" From=""AccountantProcessing"" Classifier=""Direct"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Accountant"" />
+        <Restriction Type=""Allow"" NameRef=""Accountant""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Paid"" />
+        <Trigger Type=""Command"" NameRef=""Paid""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending="""" />
+      <Designer X=""980"" Y=""196.5""/>
     </Transition>
-    <Transition Name=""AccountantProcessing_R"" To=""AuthorConfirmation"" From=""AccountantProcessing"" Classifier=""Reverse"">
+    <Transition Name=""AccountantProcessing_R"" To=""AuthorConfirmation"" From=""AccountantProcessing"" Classifier=""Reverse"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Restrictions>
-        <Restriction Type=""Allow"" NameRef=""Accountant"" />
+        <Restriction Type=""Allow"" NameRef=""Accountant""/>
       </Restrictions>
       <Triggers>
-        <Trigger Type=""Command"" NameRef=""Denial"" />
+        <Trigger Type=""Command"" NameRef=""Denial""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""0.19834025131435484"" />
+      <Designer X=""842"" Y=""290""/>
     </Transition>
-    <Transition Name=""ControllerSighting_ControllerSightingExecute_1"" To=""ControllerSightingExecute"" From=""ControllerSighting"" Classifier=""NotSpecified"">
+    <Transition Name=""ControllerSighting_ControllerSightingExecute_1"" To=""ControllerSightingExecute"" From=""ControllerSighting"" Classifier=""NotSpecified"" AllowConcatenationType=""And"" RestrictConcatenationType=""And"" ConditionsConcatenationType=""And"" IsFork=""false"" MergeViaSetState=""false"" DisableParentStateControl=""false"">
       <Triggers>
-        <Trigger Type=""Timer"" NameRef=""ControllerTimer"" />
+        <Trigger Type=""Timer"" NameRef=""ControllerTimer""/>
       </Triggers>
       <Conditions>
-        <Condition Type=""Always"" />
+        <Condition Type=""Always""/>
       </Conditions>
-      <Designer Bending=""-0.14296569235026"" />
+      <Designer X=""433"" Y=""190""/>
     </Transition>
   </Transitions>
   <CodeActions>

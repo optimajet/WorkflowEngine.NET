@@ -4,8 +4,6 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
-using System.Transactions;
-using System.Web;
 using WF.Sample.Business.Helpers;
 using WF.Sample.Business.Models;
 
@@ -24,7 +22,7 @@ namespace WF.Sample.Business.Workflow
 
             var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
 
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection("Document");
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection("Document");
             var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
             if (doc != null)
             {
@@ -151,7 +149,12 @@ namespace WF.Sample.Business.Workflow
 
         public List<string> GetActions()
         {
-            return _actions.Keys.Concat(_conditions.Keys).ToList();
+            return _actions.Keys.ToList();
+        }
+
+        public List<string> GetConditions()
+        {
+            return _conditions.Keys.ToList();
         }
     }
 }

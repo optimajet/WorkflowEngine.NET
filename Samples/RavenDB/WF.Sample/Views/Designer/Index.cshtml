@@ -4,12 +4,12 @@
     Layout = "~/Views/Shared/_LayoutWithoutUserSelect.cshtml";
 }
 
-<script src="@Url.Content("~/Scripts/kinetic-v5.1.0.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/konva.min.js")" type="text/javascript"></script>
 <script src="@Url.Content("~/Scripts/ace.js")" type="text/javascript"></script>
 <link href="@Url.Content("~/Content/workflowdesigner.css")" rel="stylesheet" type="text/css" />
 <script src="@Url.Content("~/Scripts/workflowdesigner.min.js")" type="text/javascript"></script>
 <script src="@Url.Content("~/Scripts/json5.js")" type="text/javascript"></script>
-@*<script src="@Url.Content("~/Scripts/WFED/include-wfed.js")" type="text/javascript"></script>*@
+
 
 
 <form action="" id="uploadform" method="post" enctype="multipart/form-data" onsubmit="tmp()" >
@@ -90,13 +90,12 @@
             graphwidth: $('#graphwidth').val(),
             graphheight: $('#graphheight').val()
         });
+
+        if (processid != undefined && processid != '')
+            wfdesigner.readonlymode();
         
         if (data == undefined) {
-            var isreadonly = false;
-            if (processid != undefined && processid != '')
-                isreadonly = true;
-
-            var p = { schemecode: schemecode, processid: processid, readonly: isreadonly };
+            var p = { schemecode: schemecode, processid: processid };
             if (wfdesigner.exists(p))
                 wfdesigner.load(p);
             else

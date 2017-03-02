@@ -1,5 +1,5 @@
 /*
- * Worflow Engine.NET 1.5
+ * Worflow Engine.NET
  * http://workflowenginenet.com
  */
  
@@ -41,7 +41,7 @@ The order of execution of scripts:
 4. Oracle - Sample for Oracle
 
 1. Execute Designer\SQL\CreatePersistenceObjects.sql
-2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+2. Check connection string in Designer\Web.config (connectionStrings section)
 3. Check connection string in Console\App.config (connectionStrings section)
 
 Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
@@ -49,7 +49,7 @@ Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engi
 5. MySQL - Sample for MySQL
 
 1. Execute Designer\SQL\CreatePersistenceObjects.sql
-2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+2. Check connection string in Designer\Web.config (connectionStrings section)
 3. Check connection string in Console\App.config (connectionStrings section)
 
 Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
@@ -57,8 +57,20 @@ Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engi
 6. PostgreSQL - Sample for PostgreSQL
 
 1. Execute Designer\SQL\CreatePersistenceObjects.sql
-2. Check connection string in Designer\ConnectionString.config (connectionStrings section)
+2. Check connection string in Designer\Web.config (connectionStrings section)
 3. Check connection string in Console\App.config (connectionStrings section)
 
 Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engine-NET
+
+7. Redis - Sample for Redis
+
+Specify connection to your Redis server in Console\WorkflowInit.cs and in Designer\Controllers\DesignerController.cs To setup connection to your Redis server 
+you need to configure ConnectionMultiplexer object and pass it to the Redis provider consctructor. You can read about ConnectionMultiplexer configuration here
+https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/Configuration.md
+
+8. Ignite - Sample for Apache Ignite
+
+You can use SimpleNode console application as Ignite Server Node. Designer and Console projects are running in Client mode. To configure your node use following instructions
+  var store = Ignition.TryGetIgnite() ?? Ignition.Start(IgniteProvider.GetDefaultIgniteConfiguration());
+Then you need to pass store object to the Ignite provider constructor.
 

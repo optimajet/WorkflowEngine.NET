@@ -19,6 +19,7 @@
     <IISExpressAnonymousAuthentication />
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -40,13 +41,13 @@
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
     <Reference Include="Newtonsoft.Json">
-      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
+      <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.Core">
-      <HintPath>..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="OptimaJet.Workflow.DbPersistence">
-      <HintPath>..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
     </Reference>
     <Reference Include="System.Web.DynamicData" />
     <Reference Include="System.Web.Entity" />
@@ -73,6 +74,24 @@
     <None Include="Web.Release.config">
       <DependentUpon>Web.config</DependentUpon>
     </None>
+    <Content Include="Scripts\ext-searchbox.js" />
+    <Content Include="Scripts\json5.js" />
+    <Content Include="Scripts\konva.min.js" />
+    <Content Include="Scripts\mode-json.js" />
+    <Content Include="Scripts\WFED\Designer.js" />
+    <Content Include="Scripts\WFED\DesignerActivity.js" />
+    <Content Include="Scripts\WFED\DesignerActivityControl.js" />
+    <Content Include="Scripts\WFED\DesignerBackground.js" />
+    <Content Include="Scripts\WFED\DesignerConstants.js" />
+    <Content Include="Scripts\WFED\DesignerForm.js" />
+    <Content Include="Scripts\WFED\DesignerKeyboard.js" />
+    <Content Include="Scripts\WFED\DesignerToolbar.js" />
+    <Content Include="Scripts\WFED\DesignerTooltip.js" />
+    <Content Include="Scripts\WFED\DesignerTransition.js" />
+    <Content Include="Scripts\WFED\DesignerTransitionControl.js" />
+    <Content Include="Scripts\WFED\Graph.js" />
+    <Content Include="Scripts\WFED\include-wfed.js" />
+    <Content Include="Scripts\worker-json.js" />
     <Content Include="WFEDesigner.ashx" />
   </ItemGroup>
   <ItemGroup>
@@ -136,11 +155,12 @@
     <Content Include="Scripts\ace.js" />
     <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\jquery.js" />
-    <Content Include="Scripts\kinetic-v5.1.0.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\theme-monokai.js" />
     <Content Include="Scripts\workflowdesigner.min.js" />
-    <Content Include="Web.config" />
+    <Content Include="Web.config">
+      <SubType>Designer</SubType>
+    </Content>
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Global.asax.cs">

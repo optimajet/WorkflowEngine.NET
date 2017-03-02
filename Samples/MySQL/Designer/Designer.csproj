@@ -22,6 +22,7 @@
     <IISExpressUseClassicPipelineMode />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -177,6 +178,7 @@
     <Content Include="Images\designer.tb.add.png" />
     <Content Include="Images\designer.tb.additionalparameters.png" />
     <Content Include="Images\designer.tb.arrangment.png" />
+    <Content Include="Images\designer.tb.codeactions.png" />
     <Content Include="Images\designer.tb.command.png" />
     <Content Include="Images\designer.tb.copy.png" />
     <Content Include="Images\designer.tb.copyprops.png" />
@@ -192,16 +194,8 @@
     <Content Include="Images\designer.tb.zoomIn.png" />
     <Content Include="Images\designer.tb.zoomnorm.png" />
     <Content Include="Images\designer.tb.zoomOut.png" />
-    <Content Include="Images\designer.tran.aa.png" />
-    <Content Include="Images\designer.tran.ac.png" />
-    <Content Include="Images\designer.tran.ao.png" />
-    <Content Include="Images\designer.tran.ca.png" />
-    <Content Include="Images\designer.tran.cc.png" />
-    <Content Include="Images\designer.tran.co.png" />
     <Content Include="Images\error.png" />
-    <Content Include="Images\findHosting.png" />
     <Content Include="Images\grid.gif" />
-    <Content Include="Images\heroAccent.png" />
     <Content Include="Images\loading.gif" />
     <Content Include="Images\x.png" />
     <Content Include="README.txt" />
@@ -216,7 +210,7 @@
     <Content Include="Scripts\jquery.js" />
     <Content Include="Scripts\jquery.treeTable.min.js" />
     <Content Include="Scripts\json5.js" />
-    <Content Include="Scripts\kinetic-v5.1.0.min.js" />
+    <Content Include="Scripts\konva.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\mode-json.js" />
     <Content Include="Scripts\modernizr-2.6.2.js" />
@@ -224,6 +218,7 @@
     <Content Include="Scripts\respond.min.js" />
     <Content Include="Scripts\theme-monokai.js" />
     <Content Include="Scripts\theme-twilight.js" />
+    <Content Include="Scripts\worker-json.js" />
     <Content Include="Scripts\workflowdesigner.min.js" />
     <Content Include="Scripts\_references.js" />
     <Content Include="Web.config">

@@ -41,14 +41,11 @@ namespace WF.Sample.Business.Workflow
                     {
                         if (_runtime == null)
                         {
-                            var provider = new MongoDBProvider(new MongoClient(
-
-                                        ConfigurationManager.AppSettings["Url"]).GetServer().
-
-                                        GetDatabase(ConfigurationManager.AppSettings["Database"]));
+                            var provider =
+                                new MongoDBProvider(new MongoClient(ConfigurationManager.AppSettings["Url"]).GetServer().GetDatabase(ConfigurationManager.AppSettings["Database"]));
                             var builder = GetDefaultBuilder(provider).WithDefaultCache();
 
-                            _runtime = new WorkflowRuntime(new Guid("{8D38DB8F-F3D5-4F26-A989-4FDD40F32D9D}"))
+                            _runtime = new WorkflowRuntime()
                                 .WithBuilder(builder)
                                 .WithActionProvider(new WorkflowActions())
                                 .WithRuleProvider(new WorkflowRule())
@@ -59,7 +56,7 @@ namespace WF.Sample.Business.Workflow
                                 .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
                                 .Start();
 
-                            _runtime.ProcessStatusChanged += new EventHandler<ProcessStatusChangedEventArgs>(_runtime_ProcessStatusChanged);
+                            _runtime.ProcessStatusChanged += _runtime_ProcessStatusChanged;
                         }
                     }
                 }

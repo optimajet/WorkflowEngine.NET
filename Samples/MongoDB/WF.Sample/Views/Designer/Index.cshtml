@@ -3,7 +3,7 @@
     Layout = "~/Views/Shared/_LayoutWithoutUserSelect.cshtml";
 }
 
-<script src="@Url.Content("~/Scripts/kinetic-v5.1.0.min.js")" type="text/javascript"></script>
+<script src="@Url.Content("~/Scripts/konva.min.js")" type="text/javascript"></script>
 <script src="@Url.Content("~/Scripts/ace.js")" type="text/javascript"></script>
 <link href="@Url.Content("~/Content/workflowdesigner.css")" rel="stylesheet" type="text/css" />
 <script src="@Url.Content("~/Scripts/workflowdesigner.min.js")" type="text/javascript"></script>
@@ -80,6 +80,7 @@
             data = wfdesigner.data;
             wfdesigner.destroy();
         }
+      
 
         wfdesigner = new WorkflowDesigner({
             name: 'simpledesigner',
@@ -87,15 +88,14 @@
             renderTo: 'wfdesigner',
             imagefolder: '/images/',
             graphwidth: $('#graphwidth').val(),
-            graphheight: $('#graphheight').val()
+            graphheight: $('#graphheight').val(),
         });
 
-        if (data == undefined) {
-            var isreadonly = false;
-            if (processid != undefined && processid != '')
-                isreadonly = true;
+        if (processid != undefined && processid != '')
+            wfdesigner.readonlymode();
 
-            var p = { schemecode: schemecode, processid: processid, readonly: isreadonly };
+        if (data == undefined) {
+            var p = { schemecode: schemecode, processid: processid };
             if (wfdesigner.exists(p))
                 wfdesigner.load(p);
             else

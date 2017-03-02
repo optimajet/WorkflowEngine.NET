@@ -227,14 +227,7 @@ namespace WF.Sample.Controllers
             if (WorkflowInit.Runtime.IsProcessExists(id))
                 return;
 
-            using (var sync = new WorkflowSync(WorkflowInit.Runtime, id))
-            {
-                WorkflowInit.Runtime.CreateInstance("SimpleWF", id);
-
-                sync.StatrtWaitingFor(new List<ProcessStatus> { ProcessStatus.Idled, ProcessStatus.Initialized });
-
-                sync.Wait(new TimeSpan(0, 0, 10));
-            }
+            WorkflowInit.Runtime.CreateInstance("SimpleWF", id);
         }
         #endregion
 

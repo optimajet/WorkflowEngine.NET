@@ -157,7 +157,12 @@ namespace WF.Sample.Business.Workflow
 
         public List<string> GetActions()
         {
-            return _actions.Keys.Concat(_conditions.Keys).ToList();
+            return _actions.Keys.ToList();
+        }
+
+        public List<string> GetConditions()
+        {
+            return _conditions.Keys.ToList();
         }
     }
 }

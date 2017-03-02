@@ -8,7 +8,7 @@
     </ProductVersion>
     <SchemaVersion>2.0</SchemaVersion>
     <ProjectGuid>{47E53F85-D71C-4D5E-8BB6-B03C7839A686}</ProjectGuid>
-    <ProjectTypeGuids>{E3E379DF-F4C6-4180-9B81-6769533ABE47};{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
+    <ProjectTypeGuids>{349c5851-65df-11da-9384-00065b846f21};{fae04ec0-301f-11d3-bf4b-00c04f79efbc}</ProjectTypeGuids>
     <OutputType>Library</OutputType>
     <AppDesignerFolder>Properties</AppDesignerFolder>
     <RootNamespace>WF.Sample</RootNamespace>
@@ -28,6 +28,7 @@
     <TargetFrameworkProfile />
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
+    <UseGlobalApplicationHostFile />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -161,6 +162,7 @@
     <Content Include="Images\designer.tb.add.png" />
     <Content Include="Images\designer.tb.additionalparameters.png" />
     <Content Include="Images\designer.tb.arrangment.png" />
+    <Content Include="Images\designer.tb.codeactions.png" />
     <Content Include="Images\designer.tb.command.png" />
     <Content Include="Images\designer.tb.copy.png" />
     <Content Include="Images\designer.tb.copyprops.png" />
@@ -176,12 +178,6 @@
     <Content Include="Images\designer.tb.zoomIn.png" />
     <Content Include="Images\designer.tb.zoomnorm.png" />
     <Content Include="Images\designer.tb.zoomOut.png" />
-    <Content Include="Images\designer.tran.aa.png" />
-    <Content Include="Images\designer.tran.ac.png" />
-    <Content Include="Images\designer.tran.ao.png" />
-    <Content Include="Images\designer.tran.ca.png" />
-    <Content Include="Images\designer.tran.cc.png" />
-    <Content Include="Images\designer.tran.co.png" />
     <Content Include="Images\error.png" />
     <Content Include="Images\grid.gif" />
     <Content Include="Images\loading.gif" />
@@ -193,16 +189,15 @@
     <Content Include="Scripts\jquery.js" />
     <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\json5.js" />
+    <Content Include="Scripts\konva.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\mode-json.js" />
     <Content Include="Scripts\theme-monokai.js" />
+    <Content Include="Scripts\worker-json.js" />
     <Content Include="Scripts\workflowdesigner.min.js" />
     <Content Include="Scripts\jquery.treeTable.min.js" />
-    <Content Include="Scripts\kinetic-v5.1.0.min.js" />
     <Content Include="Web.config" />
     <Content Include="Content\Site.css" />
-    <Content Include="Images\heroAccent.png" />
-    <Content Include="Images\findHosting.png" />
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
     <Content Include="Views\Web.config">

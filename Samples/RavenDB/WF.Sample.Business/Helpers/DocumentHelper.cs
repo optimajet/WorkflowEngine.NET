@@ -1,11 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Data.Linq;
 using System.Linq;
-using System.Text;
 using WF.Sample.Business.Models;
-using WF.Sample.Business.Properties;
-using OptimaJet.Workflow.RavenDB;
 using Raven.Abstractions.Indexing;
 using WF.Sample.Business.Workflow;
 
