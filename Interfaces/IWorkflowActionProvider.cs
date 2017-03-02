@@ -30,9 +30,15 @@ namespace OptimaJet.Workflow.Core.Runtime
             string actionParameter);
 
         /// <summary>
-        /// Return all user conditions and actions names
+        /// Return all user actions names
         /// </summary>
-        /// <returns>List of conditions and actions names</returns>
+        /// <returns>List of actions names</returns>
         List<string> GetActions();
+
+        /// <summary>
+        /// Return all user conditions names
+        /// </summary>
+        /// <returns>List of conditions names</returns>
+        List<string> GetConditions();
     }
 }

@@ -34,9 +34,15 @@ namespace OptimaJet.Workflow.Core.Bus
         void QueueExecution(ExecutionRequestParameters requestParameters, bool notFireExecutionComplete = false);
 
         /// <summary>
-        /// Event raised after the execution was complete
+        /// Raises after the execution was complete
         /// </summary>
         event EventHandler<ExecutionResponseEventArgs> ExecutionComplete;
+
+        /// <summary>
+        /// Raises before execution of choosen activity
+        /// </summary>
+        event EventHandler<BeforeActivityExecutionEventArgs> BeforeExecution;
+
         /// <summary>
         /// Returns true if the bus supports asynchronous model of execution
         /// </summary>

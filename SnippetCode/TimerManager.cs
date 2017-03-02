@@ -1,9 +1,13 @@
 ﻿using System;
 using System.Collections.Generic;
-using System.Globalization;
 using System.Linq;
+using System.Linq.Expressions;
+using System.Text.RegularExpressions;
 using System.Threading;
+using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.Core.Runtime
 {
@@ -31,13 +35,222 @@ namespace OptimaJet.Workflow.Core.Runtime
     /// </summary>
     public sealed class TimerManager : ITimerManager
     {
-        private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+        /// <summary>
+        /// Value of Unspecified Timer which indicates that the timer transition will be executed immediately
+        /// </summary>
+        public const string ImmediateTimerValue = "0";
+
+        /// <summary>
+        /// Value of Unspecified Timer which indicates that the timer transition will be never executed
+        /// </summary>
+        public const string InfinityTimerValue = "-1";
+
+        //private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
+
+        private readonly SemaphoreSlim _startStopSemaphore = new SemaphoreSlim(1);
+
+        private CancellationTokenSource _cancellationTokenSource = new CancellationTokenSource();
+
+        /// <summary>
+        /// Wait timeout for start/stop operations in milliseconds. Default value is 1000.
+        /// </summary>
+        public int DefaultWaitTimeout { get; set; }
 
         private WorkflowRuntime _runtime;
 
         private Timer _timer;
 
         private bool _stopped = true;
+
+        /// <summary>
+        /// Timer manager constructor
+        /// </summary>
+        public TimerManager()
+        {
+            DefaultWaitTimeout = 1000;
+            _cancellationTokenSource.Cancel();
+        }
+
+        /// <summary>
+        /// Raises when the timer value must be obtained 
+        /// </summary>
+        public event EventHandler<NeedTimerValueEventArgs> NeedTimerValue;
+
+        /// <summary>
+        /// Sends request for timer value for all timer transitions that are outgoing from the CurrentActivity if timer value is equal 0 or -1
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        public void RequestTimerValue(ProcessInstance processInstance, ActivityDefinition activity = null)
+        {
+            if (NeedTimerValue == null)
+                return;
+
+            var notDefinedTimerTransitions =
+                processInstance.ProcessScheme.GetTimerTransitionForActivity(activity ?? processInstance.CurrentActivity, ForkTransitionSearchType.Both)
+                    .Where(
+                        t =>
+                            (t.Trigger.Timer.Value.Equals(ImmediateTimerValue) || t.Trigger.Timer.Value.Equals(InfinityTimerValue)) &&
+                            !processInstance.IsParameterExisting(GetTimerValueParameterName(t.Trigger.Timer))).ToList();
+
+            if (!notDefinedTimerTransitions.Any())
+                return;
+
+            var eventArgs = new NeedTimerValueEventArgs(processInstance, notDefinedTimerTransitions);
+
+            NeedTimerValue(this, eventArgs);
+
+            foreach (var request in eventArgs.TimerValueRequests)
+            {
+                if (request.NewValue.HasValue)
+                    processInstance.SetParameter(GetTimerValueParameterName(request.Definition), request.NewValue.Value, ParameterPurpose.Persistence);
+            }
+        }
+
+        /// <summary>
+        /// Returns transitions triggered by a timer which value is equal to 0
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <returns></returns>
+        public IEnumerable<TransitionDefinition> GetTransitionsForImmediateExecution(ProcessInstance processInstance, ActivityDefinition activity = null)
+        {
+            return
+                processInstance.ProcessScheme.GetTimerTransitionForActivity(activity ?? processInstance.CurrentActivity, ForkTransitionSearchType.Both)
+                    .Where(t => t.Trigger.Timer.Value.Equals(ImmediateTimerValue) && !processInstance.IsParameterExisting(GetTimerValueParameterName(t.Trigger.Timer)));
+        }
+
+        private string GetTimerValueParameterName(TimerDefinition timerDefinition)
+        {
+            return GetTimerValueParameterName(timerDefinition.Name);
+        }
+
+        private string GetTimerValueParameterName(string timerName)
+        {
+            return string.Format("TimerValue_{0}", timerName);
+        }
+
+        /// <summary>
+        /// Sets new value of named timer
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        /// <param name="newValue">New value of the timer</param>
+        public void SetTimerValue(ProcessInstance processInstance, string timerName, DateTime newValue)
+        {
+            var parameterName = GetTimerValueParameterName(timerName);
+
+            processInstance.SetParameter(parameterName, newValue, ParameterPurpose.Persistence);
+        }
+
+        /// <summary>
+        /// Sets new value of named timer
+        /// </summary>
+        /// <param name="processId">Process id</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        /// <param name="newValue">New value of the timer</param>
+        public void SetTimerValue(Guid processId, string timerName, DateTime newValue)
+        {
+            SetOrResetTimerValue(processId, timerName, newValue);
+        }
+
+        /// <summary>
+        /// Resets value of named timer
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        public void ResetTimerValue(ProcessInstance processInstance, string timerName)
+        {
+            var parameterName = GetTimerValueParameterName(timerName);
+
+            if (!processInstance.IsParameterExisting(parameterName))
+                return;
+
+            processInstance.SetParameter<DateTime?>(parameterName, null, ParameterPurpose.Persistence);
+
+        }
+
+        /// <summary>
+        /// Resets value of named timer
+        /// </summary>
+        /// <param name="processId">Process id</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        public void ResetTimerValue(Guid processId, string timerName)
+        {
+            SetOrResetTimerValue(processId, timerName, null);
+        }
+
+        private void SetOrResetTimerValue(Guid processId, string timerName, DateTime? newValue)
+        {
+
+            var parameterName = GetTimerValueParameterName(timerName);
+
+            var processInstance = _runtime.Builder.GetProcessInstance(processId);
+            var oldStatus = _runtime.PersistenceProvider.GetInstanceStatus(processId);
+            _runtime.SetProcessNewStatus(processInstance, ProcessStatus.Running, true);
+
+            try
+            {
+                _runtime.PersistenceProvider.FillProcessParameters(processInstance);
+
+                if (newValue.HasValue)
+                    processInstance.SetParameter(parameterName, newValue.Value, ParameterPurpose.Persistence);
+                else
+                    processInstance.SetParameter<DateTime?>(parameterName, null, ParameterPurpose.Persistence);
+
+                var currentTimers = processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity, ForkTransitionSearchType.Both).ToList();
+                var timer = currentTimers.Where(t => t.Trigger.Timer != null && t.Trigger.Timer.Name.Equals(timerName)).Select(t => t.Trigger.Timer).FirstOrDefault();
+
+                if (timer != null && !timer.NotOverrideIfExists)
+                {
+                    if (_startStopSemaphore.Wait(DefaultWaitTimeout))
+                    {
+                        try
+                        {
+                            var wasRunning = !_stopped;
+                            _stopped = true;
+                            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                            _cancellationTokenSource.Cancel();
+                            var needToClearTimer = !newValue.HasValue && (timer.Value.Equals(ImmediateTimerValue) || timer.Value.Equals(InfinityTimerValue));
+                            if (needToClearTimer)
+                            {
+                                var timersIgnoreList = currentTimers.Where(t => t.Trigger.Timer != null && !t.Trigger.Timer.Name.Equals(timerName))
+                                    .Select(t => t.Trigger.Timer.Name)
+                                    .Distinct()
+                                    .ToList();
+                                _runtime.PersistenceProvider.ClearTimers(processInstance.ProcessId, timersIgnoreList);
+                            }
+                            RefreshOrRegisterTimer(processInstance, new List<TimerDefinition> {timer});
+                            _runtime.PersistenceProvider.SavePersistenceParameters(processInstance);
+                            _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                            if (wasRunning)
+                            {
+                                _stopped = false;
+                                _cancellationTokenSource = new CancellationTokenSource();
+                                RefreshInterval();
+                            }
+                        }
+                        finally
+                        {
+                            _startStopSemaphore.Release();
+                        }
+                    }
+                    else
+                    {
+                        throw new TimerManagerException("Can't start change timer value. Wait timeout expired.");
+                    }
+
+                }
+                else
+                {
+                    _runtime.PersistenceProvider.SavePersistenceParameters(processInstance);
+                    _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                }
+            }
+            catch
+            {
+                _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                throw;
+            }
+        }
 
         /// <summary>
         /// Register all timers for all outgouing timer transitions for current actvity of the specified process.
@@ -53,14 +266,23 @@ namespace OptimaJet.Workflow.Core.Runtime
         private void RegisterTimers(ProcessInstance processInstance, List<string> usedTransitions)
         {
             var timersToRegister =
-                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity,ForkTransitionSearchType.Both)
+                processInstance.ProcessScheme.GetTimerTransitionForActivity(processInstance.CurrentActivity, ForkTransitionSearchType.Both)
                     .Where(t => t.Trigger.Timer != null && !usedTransitions.Contains(t.Name))
+                    .Where(
+                        t =>
+                            (!t.Trigger.Timer.Value.Equals(InfinityTimerValue) && !t.Trigger.Timer.Value.Equals(ImmediateTimerValue)) ||
+                            processInstance.IsParameterExisting(GetTimerValueParameterName(t.Trigger.Timer)))
                     .Select(t => t.Trigger.Timer)
                     .ToList();
 
             if (!timersToRegister.Any())
                 return;
 
+            RefreshOrRegisterTimer(processInstance, timersToRegister);
+        }
+
+        private void RefreshOrRegisterTimer(ProcessInstance processInstance, List<TimerDefinition> timersToRegister)
+        {
             if (!_stopped)
                 RefreshInterval(processInstance, timersToRegister);
             else
@@ -82,61 +304,83 @@ namespace OptimaJet.Workflow.Core.Runtime
 
         private void RefreshInterval(ProcessInstance processInstance, List<TimerDefinition> timersToRegister)
         {
-            _lock.EnterUpgradeableReadLock();
+            //_lock.EnterUpgradeableReadLock();
 
             try
             {
                 _timer.Change(Timeout.Infinite, Timeout.Infinite);
-
                 RegisterTimers(processInstance, timersToRegister);
-
-                RefreshInterval();
             }
             finally
             {
-                _lock.ExitUpgradeableReadLock();
+                RefreshInterval();
+                //_lock.ExitUpgradeableReadLock();
             }
         }
 
         private void RefreshInterval()
         {
-            _lock.EnterWriteLock();
+            //_lock.EnterWriteLock();
 
-            try
+            //try
+            //{
+            var next = _runtime.PersistenceProvider.GetCloseExecutionDateTime();
+
+            if (!next.HasValue)
+                return;
+
+            var now = _runtime.RuntimeDateTimeNow;
+
+            if (now < next)
             {
-                var next = _runtime.PersistenceProvider.GetCloseExecutionDateTime();
-
-                if (!next.HasValue)
-                    return;
-
-                var now = _runtime.RuntimeDateTimeNow;
-
-                if (now < next)
-                {
-                    var timeout = (long) (next.Value - now).TotalMilliseconds;
-                    _timer.Change(timeout > 4294967294L ? 4294967294L : timeout, Timeout.Infinite);
-                }
-                else
-                {
-                    _timer.Change(0, Timeout.Infinite);
-                }
+                var timeout = (long) (next.Value - now).TotalMilliseconds;
+                _timer.Change(timeout > 4294967294L ? 4294967294L : timeout, Timeout.Infinite);
             }
-            finally
+            else
             {
-                _lock.ExitWriteLock();
+                _timer.Change(0, Timeout.Infinite);
             }
+            //}
+            //finally
+            //{
+            //    //_lock.ExitWriteLock();
+            //}
         }
 
         private void RegisterTimers(ProcessInstance processInstance, List<TimerDefinition> timersToRegister)
         {
-            timersToRegister.ForEach(
+            var timersWithDate = new List<Tuple<TimerDefinition, DateTime?>>();
+
+            timersToRegister.ForEach(t => timersWithDate.Add(new Tuple<TimerDefinition, DateTime?>(t, GetNextExecutionDateTime(processInstance, t))));
+
+
+            timersWithDate.ForEach(
                 t =>
-                    _runtime.PersistenceProvider.RegisterTimer(processInstance.ProcessId, t.Name, GetNextExecutionDateTime(t),
-                        t.NotOverrideIfExists));
+                {
+                    if (t.Item2 != null)
+                        _runtime.PersistenceProvider.RegisterTimer(processInstance.ProcessId, t.Item1.Name, t.Item2.Value,
+                            t.Item1.NotOverrideIfExists);
+                });
         }
 
-        private DateTime GetNextExecutionDateTime(TimerDefinition timerDefinition)
+        private DateTime? GetNextExecutionDateTime(ProcessInstance processInstance, TimerDefinition timerDefinition)
         {
+            var timerValueParameterName = GetTimerValueParameterName(timerDefinition);
+            if (timerDefinition.Value.Equals(ImmediateTimerValue) || timerDefinition.Value.Equals(InfinityTimerValue))
+            {
+
+                if (!processInstance.IsParameterExisting(timerValueParameterName))
+                    return null;
+                return processInstance.GetParameter<DateTime?>(timerValueParameterName);
+            }
+
+            if (processInstance.IsParameterExisting(timerValueParameterName))
+            {
+                var value = processInstance.GetParameter<DateTime?>(timerValueParameterName);
+                if (value != null)
+                    return value;
+            }
+
             switch (timerDefinition.Type)
             {
                 case TimerType.Date:
@@ -146,7 +390,9 @@ namespace OptimaJet.Workflow.Core.Runtime
                     var date2 = DateTime.Parse(timerDefinition.Value, _runtime.SchemeParsingCulture);
                     return date2;
                 case TimerType.Interval:
-                    var interval = Int32.Parse(timerDefinition.Value);
+                    var interval = GetInterval(timerDefinition.Value);
+                    if (interval <= 0)
+                        return null;
                     return _runtime.RuntimeDateTimeNow.AddMilliseconds(interval);
                 case TimerType.Time:
                     var now = _runtime.RuntimeDateTimeNow;
@@ -160,6 +406,36 @@ namespace OptimaJet.Workflow.Core.Runtime
             return _runtime.RuntimeDateTimeNow;
         }
 
+        private double GetInterval(string value)
+        {
+            int res;
+
+            if (int.TryParse(value, out res))
+                return res;
+
+            var daysRegex = @"\d*\s*((days)|(day)|(d))(\W|\d|$)";
+            var hoursRegex = @"\d*\s*((hours)|(hour)|(h))(\W|\d|$)";
+            var minutesRegex = @"\d*\s*((minutes)|(minute)|(m))(\W|\d|$)";
+            var secondsRegex = @"\d*\s*((seconds)|(second)|(s))(\W|\d|$)";
+            var millisecondsRegex = @"\d*\s*((milliseconds)|(millisecond)|(ms))(\W|\d|$)";
+
+            return new TimeSpan(GetTotal(value, daysRegex), GetTotal(value, hoursRegex), GetTotal(value, minutesRegex), GetTotal(value, secondsRegex),
+                GetTotal(value, millisecondsRegex)).TotalMilliseconds;
+        }
+
+        private static int GetTotal(string s, string regex)
+        {
+            int total = 0;
+            foreach (var match in Regex.Matches(s, regex, RegexOptions.IgnoreCase))
+            {
+                int parsed;
+                var value = Regex.Match(match.ToString(), @"\d*").Value;
+                int.TryParse(value, out parsed);
+                total += parsed;
+            }
+
+            return total;
+        }
 
         /// <summary>
         /// Clear all registerd timers except present in outgouing timer transitions for current actvity of the specified process and marked as NotOverrideIfExists <see cref="TimerDefinition"/>
@@ -198,24 +474,56 @@ namespace OptimaJet.Workflow.Core.Runtime
 
 
         /// <summary>
-        /// Start the timer
+        /// Starts the timer
         /// </summary>
-        public void Start()
+        ///<param name="timeout">Wait timeout in milliseconds</param>
+        public void Start(int? timeout = null)
         {
-            if (!_stopped)
-                return;
+            if (_startStopSemaphore.Wait(timeout ?? DefaultWaitTimeout))
+            {
+                try
+                {
+                    if (!_stopped)
+                        return;
 
-            _stopped = false;
-            RefreshInterval();
+                    _stopped = false;
+                    _cancellationTokenSource = new CancellationTokenSource();
+                    RefreshInterval();
+                }
+                finally
+                {
+                    _startStopSemaphore.Release();
+                }
+            }
+            else
+            {
+                throw new TimerManagerException("Can't start timer. Wait timeout expired.");
+            }
         }
 
         /// <summary>
         /// Stop the timer
         /// </summary>
-        public void Stop()
+        ///<param name="timeout">Wait timeout in milliseconds</param>
+        public void Stop(int? timeout = null)
         {
-            _stopped = true;
-            _timer.Change(Timeout.Infinite, Timeout.Infinite);
+            if (_startStopSemaphore.Wait(timeout ?? DefaultWaitTimeout))
+            {
+                try
+                {
+                    _stopped = true;
+                    _timer.Change(Timeout.Infinite, Timeout.Infinite);
+                    _cancellationTokenSource.Cancel();
+                }
+                finally
+                {
+                    _startStopSemaphore.Release();
+                }
+            }
+            else
+            {
+                throw new TimerManagerException("Can't stop timer. Wait timeout expired.");
+            }
         }
 
         /// <summary>
@@ -230,19 +538,57 @@ namespace OptimaJet.Workflow.Core.Runtime
 
         private void OnTimer(object state)
         {
-            var timers = _runtime.PersistenceProvider.GetTimersToExecute();
-            foreach (var timer in timers)
+            ThreadPool.QueueUserWorkItem(async (obj) =>
             {
+                await _startStopSemaphore.WaitAsync();
+
+                if (_stopped)
+                    return;
+
+                List<TimerToExecute> timers;
+
                 try
                 {
-                    _runtime.ExecuteTimer(timer.ProcessId,timer.Name);
+                    timers = _runtime.PersistenceProvider.GetTimersToExecute();
                 }
                 finally
                 {
-                    _runtime.PersistenceProvider.ClearTimer(timer.TimerId);
+                    _startStopSemaphore.Release();
                 }
+
+                try
+                {
+
+                    await Task.WhenAll(timers.Select(t => ExecuteTimer(t, _cancellationTokenSource.Token)));
+                }
+                finally
+                {
+                    RefreshInterval();
+                }
+
+            });
+        }
+
+        private async Task ExecuteTimer(TimerToExecute timer, CancellationToken token)
+        {
+            if (token.IsCancellationRequested)
+            {
+                _runtime.PersistenceProvider.ClearTimerIgnore(timer.TimerId);
+                return;
             }
-            RefreshInterval();
+
+            try
+            {
+                var timerToExecute = timer;
+                await Task.Run(() => _runtime.ExecuteTimer(timerToExecute.ProcessId, timerToExecute.Name));
+            }
+            // After implementing logger insert log here
+            catch(ImpossibleToSetStatusException){}
+            catch(ProcessNotFoundException){}
+            finally 
+            {
+                _runtime.PersistenceProvider.ClearTimer(timer.TimerId);
+            }
         }
     }
 }

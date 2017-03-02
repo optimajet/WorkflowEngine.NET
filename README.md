@@ -15,11 +15,11 @@ WorkflowEngine.NET - component that adds workflow in your application. It can be
 </ul>
 
 <h2>Workflow Engine NET includes a html5 designer:</h2>
-<a href="http://workflowenginenet.com/Designer"><img src="http://workflowenginenet.com/Cms_Data/Contents/WFE/Media/content_images/graph.jpg" alt="graph.jpg" width="580" style="
+<a href="https://workflowengine.io/demo/designer"><img src="https://workflowengine.io/images/schemes/scheme.png" alt="graph.jpg" width="580" style="
     border: 1px solid;
     border-color: #3e4d5c;"></a>
 
-<h2>Samles:</h2>
+<h2>Samples:</h2>
 
 <b>1. Samples/MSSQL - Sample for MS SQL Server</b>
 
@@ -51,12 +51,12 @@ Check connection string in Configuration\AppSettings.config<br/>
 When you first start the application on an empty database, click on button "Generate data" (at the top right of this page)
 
 
-<b>Official web site</b> - <a href="http://workflowenginenet.com">http://workflowenginenet.com</a><br/>
-<b>Documentation</b> - <a href="http://workflowenginenet.com/Documentation">http://workflowenginenet.com/Documentation</a><br/>
-<b>Demo</b> - <a href="http://demo.workflowenginenet.com">http://demo.workflowenginenet.com</a><br/>
-<b>Designer</b> - <a href="http://workflowenginenet.com/Designer">http://workflowenginenet.com/Designer</a><br/>
-For technical questions, please contact <a href="mailto:wf@optimajet.com?subject=Qustion from hithub">wf@optimajet.com<a><br/>
-For commercial use, please contact <a href="mailto:sales@optimajet.com?subject=Qustion from hithub">sales@optimajet.com</a><br/>
+<b>Official web site</b> - <a href="https://workflowengine.io">https://workflowengine.io</a><br/>
+<b>Documentation</b> - <a href="https://workflowengine.io/documentation/">https://workflowengine.io/documentation/</a><br/>
+<b>Designer</b> - <a href="https://workflowengine.io/demo/designer">https://workflowengine.io/demo/designer</a><br/>
+<b>Demo</b> - <a href="https://workflowengine.io/demo/">https://workflowengine.io/demo/</a><br/>
+For technical questions, please contact <a href="mailto:wf@optimajet.com?subject=Question from github">wf@optimajet.com</a><br/>
+For commercial use, please contact <a href="mailto:sales@optimajet.com?subject=Question from github">sales@optimajet.com</a><br/>
 
 <b>Free limits:</b>
 <ul>

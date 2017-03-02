@@ -1,4 +1,6 @@
-﻿using OptimaJet.Workflow.Core.Model;
+﻿using System;
+using System.Collections.Generic;
+using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.Core.Runtime
@@ -8,6 +10,56 @@ namespace OptimaJet.Workflow.Core.Runtime
     /// </summary>
     public interface ITimerManager
     {
+        /// <summary>
+        /// Raises when the timer value must be obtained 
+        /// </summary>
+        event EventHandler<NeedTimerValueEventArgs> NeedTimerValue;
+
+        /// <summary>
+        /// Sends request for timer value for all timer transitions that are outgoing from the CurrentActivity if timer value is equal 0 or -1
+        /// </summary>
+        /// <param name="activity">Activity to get outbound transition, if null the CurrentActivity will be used</param>
+        /// <param name="processInstance">Process instance</param>
+        void RequestTimerValue(ProcessInstance processInstance, ActivityDefinition activity = null);
+
+        /// <summary>
+        /// Returns transitions triggered by a timer which value is equal to 0
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <param name="activity">Activity to get outbound transition, if null the CurrentActivity will be used</param>
+        /// <returns></returns>
+        IEnumerable<TransitionDefinition> GetTransitionsForImmediateExecution(ProcessInstance processInstance, ActivityDefinition activity = null);
+
+        /// <summary>
+        /// Sets new value of named timer
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        /// <param name="newValue">New value of the timer</param>
+        void SetTimerValue(ProcessInstance processInstance, string timerName, DateTime newValue);
+
+        /// <summary>
+        /// Sets new value of named timer
+        /// </summary>
+        /// <param name="processId">Process id</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        /// <param name="newValue">New value of the timer</param>
+        void SetTimerValue(Guid processId, string timerName, DateTime newValue);
+
+        /// <summary>
+        /// Resets value of named timer
+        /// </summary>
+        /// <param name="processInstance">Process instance</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        void ResetTimerValue(ProcessInstance processInstance, string timerName);
+
+        /// <summary>
+        /// Resets value of named timer
+        /// </summary>
+        /// <param name="processId">Process id</param>
+        /// <param name="timerName">Timer name in Scheme</param>
+        void ResetTimerValue(Guid processId, string timerName);
+
         /// <summary>
         /// Register all timers for all outgouing timer transitions for current actvity of the specified process.
         /// All timers registered before which are present in transitions will be rewrited except timers marked as NotOverrideIfExists <see cref="TimerDefinition"/>
@@ -30,14 +82,16 @@ namespace OptimaJet.Workflow.Core.Runtime
         void Init(WorkflowRuntime runtime);
 
         /// <summary>
-        /// Start the timer
+        /// Starts the timer
         /// </summary>
-        void Start();
+        ///<param name="timeout">Wait timeout in milliseconds</param>
+        void Start(int? timeout = null);
 
         /// <summary>
-        /// Stop the timer
+        /// Stops the timer
         /// </summary>
-        void Stop();
+        ///<param name="timeout">Wait timeout in milliseconds</param>
+        void Stop(int? timeout = null);
 
         /// <summary>
         /// Refresh interval of the timer

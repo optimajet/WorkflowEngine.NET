@@ -1,0 +1,70 @@
+<h1 id="release-notes">Release Notes</h1>
+<hr>
+<h2 id="2-0">2.0</h2>
+<ul>
+<li>Designer UI has been improved, transitions are now linear for better usability</li>
+<li>Scheme rendering library <a href="https://github.com/ericdrowell/KineticJS">KineticJS</a> has been replaced with <a href="https://konvajs.github.io/">Konva.js</a></li>
+<li><code>WorkflowDesigner.readonlymode()</code>, <code>WorkflowDesigner.printablemode()</code> and <code>WorkflowDesigner.ediatblemode()</code> methods have been added to <code>WorkflowDesigner</code> object in the client. <code>readonlymode</code> makes Designer uneditable. <code>printablemode</code> removes the toolbar, the grid and all controls, zooming designer so that the scheme occupies the entire canvas. This mode can be used to print Designer&#39;s viewport to a PDF within a browser. <code>editablemode</code> makes Designer editable.</li>
+<li>Designer now allows users to make an autocomplete list for the following fields: <code>Actor.Value</code>, <code>Activity.Implementation.Action parameter</code>, <code>Transition.Condition.ActionParameter</code>. The autocomplete list is being populated server-side via the <code>IDesignerAutocompleteProvider</code> interface and by transferring implementation to the <code>WorkflowRuntime</code> object via <code>_runtime.WithDesignerAutocompleteProvider(provider)</code>.</li>
+<li>The <code>GetConditions</code> method has been added to the <code>IWorkflowActionProvider</code> interface. Now, the choice of conditions and actions in Designer can be split.</li>
+<li>Parameters of any type not mentioned in the scheme can now be used in Actions&#39; code. The type should be serialized in JSON. Three methods are available: <code>_processInstance.SetParameter(&quot;parameterName&quot;,parameterValue,ParameterPurpose.Persistence)</code>, <code>_processInstance.GetParameter&lt;ParameterType&gt;(&quot;parameterName&quot;)</code> and <code>_processInstance.RemoveParameter(&quot;parameterName&quot;)</code>.</li>
+<li>Ability to create Timers with a value which is undefined at the time of creation of a process has been added. <code>Timer.Value == -1</code> means that the current transition will not be executed until the respective timer has a defined value.  <code>Timer.Value == 0</code> means that in case the timer connected to a transition does not have a value, this transition shall be processed automatically. Initial value of a timer can be set with the <code>_runtime.NeedTimerValue</code> event.</li>
+<li>Ability to modify execution time for timers in running processes has been added. Use methods <code>_runtime.SetTimerValue(processId,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processId, timerName)</code> to change and reset timer values outside the process.  Use methods <code>_runtime.SetTimerValue(processInstance,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processInstance, timerName)</code> to change and reset timer values from within your Actions. </li>
+<li>Newtonsoft.Json version has been changed from 7.0.1 to 9.0.0.</li>
+</ul>
+<p><strong>The following additional actions must be taken to update to Workflow Engine 2.0:</strong></p>
+<ul>
+<li>Replace the link to KineticJS with the link to konva.min.js. Konva.js library is included in the ZIP archive and in <code>nuget package WorkflowEngine.NET-Designer</code>.</li>
+<li>Update Newtonsoft.Json.dll to 9.0.0. The library is included in the ZIP archive and in <code>nuget package WorkflowEngine.NET-Core</code>.</li>
+<li>If you use <code>implementation</code> of <code>IWorkflowActionProvider</code> you should add a <code>public List&lt;string&gt; GetConditions()</code> method to it. It is advisable that the <code>GetActions</code> returns only the list of available Actions, whereas the <code>GetConditions</code> method should return the list of available Conditions. In this case they should be filtered properly in the Designer. However, if you do not want to modify your code, make sure that the <code>GetConditions</code> method throws a <code>NotImplementedException</code>. In this case, everything should work as it used to.</li>
+<li>IF you use Oracle, you should run an <code>update_1_5_to_2_0.sql</code> script from the Oracle provider ZIP archive or a NuGet package.</li>
+</ul>
+<hr>
+<h2 id="1-5-6">1.5.6</h2>
+<ul>
+<li>Two new persistence providers were added to WorkflowEngine.NET Redis Provider for <a href="http://redis.io/">Redis</a> and Ignite Provider for <a href="https://ignite.apache.org/">Apache Ignite</a></li>
+<li>notrendertoolbar property was added to the Designer object configuration (client side javascript). You can hide toobar in the workflow designer for end users.</li>
+<li>Second parameter which allow ignore AutoSchemeUpdate sign of Activity was added to the WorkflowRuntime.UpdateSchemeIfObsolete method.</li>
+<li>Several redundat operations related to subprocess features were removed to increase performance.</li>
+<li>Conditions are checked for transitions that creating subprocesses.</li>
+</ul>
+<hr>
+<h2 id="1-5-5">1.5.5</h2>
+<p>In this release several features have been added to simplify the generation of forms based ot commands. </p>
+<ul>
+<li>The sign <code>IsRequired</code> for command parameter. You can take it into account when generating forms, also it is used in the command valudation before the execution of command.</li>
+<li>The <code>Default value</code> for command parameter. You can access it using <code>CommandParameter.DefaultValue</code> property, after you have received the list of available commands. You can set all command parameters to default value using <code>WorkflowCommand.SetAllParametersToDefault</code> or <code>WorkflowCommand.SetParameterToDefault</code> functions. The Default value must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string.</li>
+<li>An <code>autocompete</code> was added in the field <code>Type of Parameter</code> (editing window Parameters). It makes a suugestions about types which can be used such as primitive types (Int32, String etc) or your custom types. Types from assemblies which was registerd using <code>_runtime.RegisterAssemblyForCodeActions</code> function are added in the autocomplete list. To prevent registration or filter the list you can use the last two optional parameters of _runtime.RegisterAssemblyForCodeActions function - ignoreForDesigner and designerTypeFilter.</li>
+<li>The <code>Initial values</code> were added for Parameters. You can yse Initial value only for Parameters which have Purpose = Persistence. This values must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string. These values will be set to the process when it is created.</li>
+<li>The JSON editor was added for edit <code>Parameter.InitialValue</code> (Parameters window), <code>Command.InputParameters.DefaultValue</code> (Commands window), <code>Actor.Value</code> (Actors window),
+<code>Activity.Implementation.ActionParameter</code> (Activity window), <code>Transition.Condition.ActionParameter</code> (Transition window). The JSON editor includes a syntax highlight and Format button. The Format button can be used to format your JSON. Please note that if you use JSON with unquoted property names, you must add reference on <code>json5.js</code> library on Designer page. For Parameter.InitialValue (Parameters window) and Command.InputParameters.DefaultValue (Commands window) the JSON editor aso includes Create button. This button can be used to create an empty object based on Parameter.Type. Designer (on server) uses only parameterless constructor to create the empty object.</li>
+<li>There are two new events was added to <code>WorkflowRuntime</code>. Both are occured only in normal execution mode (not in pre-execution). <code>BeforeActivityExecution</code> - is occured after the Runtime has chosen an appropriate transition for execution but before Actions in an Activity were executed. <code>ProcessActivityChanged</code> - is occured after some Activity was executed. You can use <code>ProcessActivityChanged.TransitionalProcessWasCompleted</code> property to ensure that the command (or timer) execution was finished. Using of these events could be more convenient than <code>ProcessStatusChanged</code> in some cases.</li>
+<li><code>GetAllActorsForCommandTransitions(ProcessInstance)</code> method was added to <code>WorkflowRuntime</code>. You can use this method to get next potential approvers for current state.</li>
+<li>You can change the JSON Serializer settings for Parameters derialization using SetParameterSerializerSettings configuration method.</li>
+</ul>
+<hr>
+<h2 id="1-5-4">1.5.4</h2>
+<ul>
+<li>Schema was added in constructors of all SQL providers. For MsSQL the default schema is &quot;dbo&quot;. For PostgreSql the default schema is &quot;public&quot;. For Oracle the default schema is null.</li>
+<li>You are able to specify an interval timer value with milliseconds, seconds, minutes and days. For example &quot;1d 2h 4m 30s&quot; - one day two hours four minutes thirty seconds or &quot;5m 30s&quot;, &quot;14d&quot;, &quot;12h&quot;, &quot;10m&quot;, &quot;10s&quot; etc. You are able to use following names. d, day or days to specify interval in days. h, hour or hours to specify interval in hours. m, minute or minutes to specify interval in minutes.  s, second or seconds to specify interval in seconds. ms, millisecond or milliseconds to specify interval in milliseconds. If the interval is specified as just a numeric value, it  is interpreted as the interval in milliseconds.</li>
+<li>You are able to pass initial parameters of a process by using <code>_runtime.CreateInstance(CreateInstanceParams createInstanceParams)</code> method. Parameters passed in the createInstanceParams.InitialProcessParameters property will be used as initial for parameters of a process.</li>
+</ul>
+<hr>
+<h2 id="1-5-3">1.5.3</h2>
+<ul>
+<li>The JSON serializer used by the engine was changed from <code>ServiceStack.Text to Newtonsoft.JSON</code>. 1.5.3 version of WFE was built with the <code>verion 7.0 of Newtonsoft.JSON</code>.</li>
+<li><em>MSSQL provider</em> was rewritten from LINQtoSQL to ordinary SQL queries.</li>
+<li>The <em>Parameter</em> window in the designer was implroved. Now you can hide System parameters. They are hidden by default.</li>
+<li>Working with types in the <em>Parameter</em> window  in the designer was improved. Now you are able to use short type&#39;s names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use &lt;&gt; for generic types and [] for arrays.</li>
+<li>Fixed a bug in the timers for their correct restart after restart of the workflow runtime.</li>
+</ul>
+<hr>
+<h2 id="1-5-2">1.5.2</h2>
+<ul>
+<li><code>ExecutedActivity</code> and <code>ExecutedTransition</code> properties added in <code>ProcessInstance</code> class. Via them, you can access executed transition and activity during a transitional process.</li>
+<li>A scheme of a process downloaded from the designer with not ecoded <em>Code Actions</em>. You can upload a scheme with encoded or not encoded code actions.</li>
+<li>The algorithm of sub-process scheme separation improved for it to work properly with the different schemes.</li>
+<li><code>GetAvailableCommands</code> method returns distinct commands.</li>
+<li>Fixed parsing of the values of the <em>Timers</em> in different cultures</li>
+<li>While merging the processes you can access the parameters of a subprocess using the property <code>MergedSubprocessParameters</code> of the <code>ProcessInstance</code> class.</li>
+</ul>
