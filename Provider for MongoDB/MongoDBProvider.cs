@@ -109,9 +109,14 @@ namespace OptimaJet.Workflow.MongoDB
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
-                    .ToList();
+                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                     .Select(ptp =>
+                     {
+                         if (ptp.Type == typeof(UnknownParameterType))
+                             return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
+                         return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
+                     })
+                     .ToList();
 
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             var process = dbcoll.FindOneById(processInstance.ProcessId);
@@ -257,7 +262,7 @@ namespace OptimaJet.Workflow.MongoDB
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
                 Id = Guid.NewGuid(),
-                IsFinalised = false,
+                IsFinalised = transition.To.IsFinal,
                 ProcessId = processInstance.ProcessId,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
@@ -389,8 +394,14 @@ namespace OptimaJet.Workflow.MongoDB
             {
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition,persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -527,6 +538,12 @@ namespace OptimaJet.Workflow.MongoDB
                 Update<WorkflowProcessTimer>.Set(c => c.Ignore, false),UpdateFlags.Multi);
         }
 
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            dbcoll.Update(Query<WorkflowProcessTimer>.Where(item => item.Id == timerId), Update<WorkflowProcessTimer>.Set(c => c.Ignore, false));
+        }
+
         public void ClearTimer(Guid timerId)
         {
             var dbcollTimer = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
@@ -548,11 +565,30 @@ namespace OptimaJet.Workflow.MongoDB
             var now = _runtime.RuntimeDateTimeNow;
             var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             var timers = dbcoll.Find(Query<WorkflowProcessTimer>.Where(item => !item.Ignore && item.NextExecutionDateTime <= now)).ToArray();
-            dbcoll.Update(
-                Query<WorkflowProcessTimer>.Where(item => !item.Ignore && item.NextExecutionDateTime <= now),
-                Update<WorkflowProcessTimer>.Set(c => c.Ignore, true),UpdateFlags.Multi);
-
+            var selectedIds = timers.Select(t => t.Id).ToList();
+            dbcoll.Update(Query<WorkflowProcessTimer>.Where(item => selectedIds.Contains(item.Id)), Update<WorkflowProcessTimer>.Set(c => c.Ignore, true), UpdateFlags.Multi);
             return timers.Select(t => new TimerToExecute {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
+        }
+
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
+            var history = dbcoll.Find(Query<WorkflowProcessTransitionHistory>.Where(hi => hi.ProcessId == processId)).ToArray();
+            return history.Select(hi => new ProcessHistoryItem
+                {
+                    ActorIdentityId = hi.ActorIdentityId,
+                    ExecutorIdentityId = hi.ExecutorIdentityId,
+                    FromActivityName = hi.FromActivityName,
+                    FromStateName = hi.FromStateName,
+                    IsFinalised = hi.IsFinalised,
+                    ProcessId = hi.ProcessId,
+                    ToActivityName = hi.ToActivityName,
+                    ToStateName = hi.ToStateName,
+                    TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                    TransitionTime = hi.TransitionTime,
+                    TriggerName = hi.TriggerName
+                })
+                .ToList();
         }
 
         #endregion

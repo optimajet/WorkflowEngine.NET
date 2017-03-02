@@ -10,7 +10,6 @@ using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using Apache.Ignite.Core;
-using Apache.Ignite.Core.Cache.Query;
 using Apache.Ignite.Core.Binary;
 using Apache.Ignite.Core.Cache.Configuration;
 using Apache.Ignite.Core.Transactions;
@@ -133,8 +132,12 @@ namespace OptimaJet.Workflow.Ignite
         {
             var parametersToPersistList =
                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(
-                        ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
+                    .Select(ptp =>
+                    {
+                        if (ptp.Type == typeof(UnknownParameterType))
+                            return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
+                        return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
+                    })
                     .ToList();
 
             var cache =
@@ -240,6 +243,7 @@ namespace OptimaJet.Workflow.Ignite
         }
 
 #pragma warning disable 612
+
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
 #pragma warning restore 612
         {
@@ -310,7 +314,7 @@ namespace OptimaJet.Workflow.Ignite
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
                 Id = Guid.NewGuid(),
-                IsFinalised = false,
+                IsFinalised = transition.To.IsFinal,
                 ProcessId = processInstance.ProcessId,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
@@ -444,8 +448,7 @@ namespace OptimaJet.Workflow.Ignite
             return parameters;
         }
 
-        private IEnumerable<ParameterDefinitionWithValue> GetPersistedProcessParameters(Guid processId,
-            ProcessDefinition processDefinition)
+        private IEnumerable<ParameterDefinitionWithValue> GetPersistedProcessParameters(Guid processId, ProcessDefinition processDefinition)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
             var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count());
@@ -466,12 +469,16 @@ namespace OptimaJet.Workflow.Ignite
 
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition =
-                    persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName) ??
-                    ParameterDefinition.Create(persistedParameter.ParameterName, "System.String",
-                        ParameterPurpose.Persistence.ToString(), null);
-                parameters.Add(ParameterDefinition.Create(parameterDefinition,
-                    _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+                if (parameterDefinition == null)
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -556,8 +563,11 @@ namespace OptimaJet.Workflow.Ignite
                 Store.GetOrCreateCache<Guid, WorkflowGlobalParameter>(IgniteConstants.WorkflowGlobalParameterCacheName);
 
             return
-                cache.AsCacheQueryable().Where(item => item.Value.Type == type).ToList()
-                    .Select(gp => JsonConvert.DeserializeObject<T>(gp.Value.Value)).ToList();
+                cache.AsCacheQueryable()
+                    .Where(item => item.Value.Type == type)
+                    .ToList()
+                    .Select(gp => JsonConvert.DeserializeObject<T>(gp.Value.Value))
+                    .ToList();
 
         }
 
@@ -566,15 +576,16 @@ namespace OptimaJet.Workflow.Ignite
             var cache =
                 Store.GetOrCreateCache<Guid, WorkflowGlobalParameter>(IgniteConstants.WorkflowGlobalParameterCacheName);
 
-            var keys = cache.AsCacheQueryable().Where(
+            var keys = cache.AsCacheQueryable()
+                .Where(
                     c => c.Value.Type == type);
 
             if (!string.IsNullOrEmpty(name))
             {
                 keys = keys.Where(c => c.Value.Name == name);
             }
-            
-            cache.RemoveAll(keys.Select(c=>c.Key).ToList());
+
+            cache.RemoveAll(keys.Select(c => c.Key).ToList());
         }
 
         public void DeleteProcess(Guid processId)
@@ -632,8 +643,8 @@ namespace OptimaJet.Workflow.Ignite
                 Store.GetOrCreateCache<Guid, WorkflowProcessTimer>(IgniteConstants.WorkflowProcessTimerCacheName);
 
             var timers =
-            cacheTimer.AsCacheQueryable()
-                .Where(c => c.Value.ProcessId == processId);
+                cacheTimer.AsCacheQueryable()
+                    .Where(c => c.Value.ProcessId == processId);
 
             foreach (var ignore in timersIgnoreList)
             {
@@ -641,7 +652,7 @@ namespace OptimaJet.Workflow.Ignite
             }
 
 
-            var timersIds = timers.Select(c=>c.Key).ToList();
+            var timersIds = timers.Select(c => c.Key).ToList();
 
             cacheTimer.RemoveAll(timersIds);
         }
@@ -653,6 +664,14 @@ namespace OptimaJet.Workflow.Ignite
             foreach (var timer in timers)
                 timer.Ignore = false;
             cache.PutAll(timers.ToDictionary(c => c.Id));
+        }
+
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            var cache = Store.GetOrCreateCache<Guid, WorkflowProcessTimer>(IgniteConstants.WorkflowProcessTimerCacheName);
+            var timer = cache.Get(timerId);
+            timer.Ignore = false;
+            cache.Put(timer.Id, timer);
         }
 
         public void ClearTimer(Guid timerId)
@@ -692,7 +711,8 @@ namespace OptimaJet.Workflow.Ignite
                 var timers =
                     cache.AsCacheQueryable()
                         .Where(item => !item.Value.Ignore && item.Value.NextExecutionDateTime <= now)
-                        .Select(c => c.Value).ToList();
+                        .Select(c => c.Value)
+                        .ToList();
 
                 foreach (var timer in timers)
                     timer.Ignore = true;
@@ -705,6 +725,33 @@ namespace OptimaJet.Workflow.Ignite
                         .ToList();
             }
         }
+
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            var cacheTransition =
+                Store.GetOrCreateCache<Guid, WorkflowProcessTransitionHistory>(
+                    IgniteConstants.WorkflowProcessTransitionHistoryCacheName);
+
+            return cacheTransition.AsCacheQueryable()
+                .Where(hi => hi.Value.ProcessId == processId)
+                .ToList()
+                .Select(hi => new ProcessHistoryItem
+                {
+                    ActorIdentityId = hi.Value.ActorIdentityId,
+                    ExecutorIdentityId = hi.Value.ExecutorIdentityId,
+                    FromActivityName = hi.Value.FromActivityName,
+                    FromStateName = hi.Value.FromStateName,
+                    IsFinalised = hi.Value.IsFinalised,
+                    ProcessId = hi.Value.ProcessId,
+                    ToActivityName = hi.Value.ToActivityName,
+                    ToStateName = hi.Value.ToStateName,
+                    TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.Value.TransitionClassifier),
+                    TransitionTime = hi.Value.TransitionTime,
+                    TriggerName = hi.Value.TriggerName
+                })
+                .ToList();
+        }
+
 
         #endregion
 

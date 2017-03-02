@@ -123,6 +123,13 @@ namespace OptimaJet.Workflow.DbPersistence
             return ExecuteCommand(connection, command);
         }
 
+        public static int ClearTimerIgnore(SqlConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET [Ignore] = 0 WHERE [Id] = @timerid", ObjectName);
+            var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) {Value = timerId};
+            return ExecuteCommand(connection, command, p1);
+        }
+
         public static WorkflowProcessTimer GetCloseExecutionTimer(SqlConnection connection)
         {
             var selectText = string.Format("SELECT TOP 1 * FROM {0}  WHERE [Ignore] = 0 ORDER BY [NextExecutionDateTime]", ObjectName);

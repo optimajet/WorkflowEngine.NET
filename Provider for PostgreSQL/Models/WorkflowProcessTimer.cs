@@ -108,6 +108,13 @@ namespace OptimaJet.Workflow.PostgreSQL
             return ExecuteCommand(connection, command);
         }
 
+        public static int ClearTimerIgnore(NpgsqlConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Id\" = @timerid", ObjectName);
+            var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) { Value = timerId };
+            return ExecuteCommand(connection, command, p1);
+        }
+
         public static WorkflowProcessTimer GetCloseExecutionTimer(NpgsqlConnection connection)
         {
             string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE ORDER BY \"NextExecutionDateTime\" LIMIT 1", ObjectName);

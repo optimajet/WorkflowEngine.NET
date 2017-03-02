@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core;
@@ -105,9 +106,14 @@ namespace OptimaJet.Workflow.RavenDB
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
-                    .ToList();
+               processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                   .Select(ptp =>
+                   {
+                       if (ptp.Type == typeof(UnknownParameterType))
+                           return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
+                       return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
+                   })
+                   .ToList();
 
             using (var session = Store.OpenSession())
             {
@@ -279,7 +285,7 @@ namespace OptimaJet.Workflow.RavenDB
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
-                    IsFinalised = false,
+                    IsFinalised = transition.To.IsFinal,
                     ProcessId = processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
@@ -421,9 +427,14 @@ namespace OptimaJet.Workflow.RavenDB
             {
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -653,6 +664,19 @@ namespace OptimaJet.Workflow.RavenDB
             } while (wpts.Length > 0);
         }
 
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            using (var session = Store.OpenSession())
+            {
+                var timer = session.Load<WorkflowProcessTimer>(timerId);
+                if (timer != null)
+                {
+                    timer.Ignore = false;
+                    session.SaveChanges();
+                }
+            }
+        }
+
         public void ClearTimer(Guid timerId)
         {
             using (var session = Store.OpenSession())
@@ -705,6 +729,54 @@ namespace OptimaJet.Workflow.RavenDB
             } while (wpts.Length > 0);
 
             return timers.Select(t => new TimerToExecute {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
+        }
+
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            var result = new List<ProcessHistoryItem>();
+            var skip = 0;
+            var session = Store.OpenSession();
+            try
+            {
+                do
+                {
+                    var history =
+                        session.Query<WorkflowProcessTransitionHistory>()
+                            .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                            .Where(p => p.ProcessId == processId)
+                            .Skip(skip)
+                            .Take(session.Advanced.MaxNumberOfRequestsPerSession)
+                            .ToList()
+                            .Select(hi => new ProcessHistoryItem
+                            {
+                                ActorIdentityId = hi.ActorIdentityId,
+                                ExecutorIdentityId = hi.ExecutorIdentityId,
+                                FromActivityName = hi.FromActivityName,
+                                FromStateName = hi.FromStateName,
+                                IsFinalised = hi.IsFinalised,
+                                ProcessId = hi.ProcessId,
+                                ToActivityName = hi.ToActivityName,
+                                ToStateName = hi.ToStateName,
+                                TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                                TransitionTime = hi.TransitionTime,
+                                TriggerName = hi.TriggerName
+                            })
+                            .ToList();
+
+                    if (!history.Any())
+                        break;
+
+                    result.AddRange(history);
+
+                    skip += session.Advanced.MaxNumberOfRequestsPerSession;
+                } while (true);
+            }
+            finally
+            {
+                session.Dispose();
+            }
+
+            return result;
         }
 
         #endregion

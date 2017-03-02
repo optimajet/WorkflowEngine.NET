@@ -116,6 +116,13 @@ namespace OptimaJet.Workflow.Oracle
             return ExecuteCommand(connection, command);
         }
 
+        public static int ClearTimerIgnore(OracleConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE ID = :timerid", ObjectName);
+            var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
+            return ExecuteCommand(connection, command, p1);
+        }
+
         public static WorkflowProcessTimer GetCloseExecutionTimer(OracleConnection connection)
         {
             string selectText = string.Format("SELECT * FROM ( SELECT * FROM {0}  WHERE IGNORE = 0 ORDER BY NextExecutionDateTime) WHERE ROWNUM = 1", ObjectName);

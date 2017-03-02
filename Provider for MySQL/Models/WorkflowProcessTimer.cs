@@ -115,6 +115,13 @@ namespace OptimaJet.Workflow.MySQL
             return ExecuteCommand(connection, command);
         }
 
+        public static int ClearTimerIgnore(MySqlConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Id` = @timerid", DbTableName);
+            var p1 = new MySqlParameter("timerid", MySqlDbType.Binary) { Value = timerId.ToByteArray() };
+            return ExecuteCommand(connection, command, p1);
+        }
+
         public static WorkflowProcessTimer GetCloseExecutionTimer(MySqlConnection connection)
         {
             var selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 ORDER BY `NextExecutionDateTime` LIMIT 1", DbTableName);

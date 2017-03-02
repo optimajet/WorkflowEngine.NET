@@ -1,6 +1,5 @@
 ﻿using System;
-using System.Data;
-using System.Data.SqlClient;
+using Apache.Ignite.Core.Cache.Configuration;
 
 // ReSharper disable once CheckNamespace
 
@@ -33,7 +32,10 @@ namespace OptimaJet.Workflow.Ignite
         public string FromStateName { get; set; }
         public Guid Id { get; set; }
         public bool IsFinalised { get; set; }
+
+        [QuerySqlField]
         public Guid ProcessId { get; set; }
+
         public string ToActivityName { get; set; }
         public string ToStateName { get; set; }
         public string TransitionClassifier { get; set; }

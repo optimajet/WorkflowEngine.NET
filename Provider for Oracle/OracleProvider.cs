@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Data.SqlClient;
 using System.Linq;
 using System.Xml.Linq;
 using Newtonsoft.Json;
@@ -93,9 +94,14 @@ namespace OptimaJet.Workflow.Oracle
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
-                    .ToList();
+                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                     .Select(ptp =>
+                     {
+                         if (ptp.Type == typeof(UnknownParameterType))
+                             return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
+                         return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
+                     })
+                     .ToList();
            
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
@@ -189,6 +195,7 @@ namespace OptimaJet.Workflow.Oracle
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id);
+                WorkflowProcessInstanceStatus.Commit(connection);
             }
         }
 
@@ -240,7 +247,7 @@ namespace OptimaJet.Workflow.Oracle
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
-                    IsFinalised = false,
+                    IsFinalised = transition.To.IsFinal,
                     ProcessId = processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
@@ -293,7 +300,7 @@ namespace OptimaJet.Workflow.Oracle
                     {
                         Id = processId,
                         LOCKFLAG = Guid.NewGuid(),
-                        Status = ProcessStatus.Initialized.Id
+                        Status = status.Id
                     };
                     instanceStatus.Insert(connection);
                 }
@@ -392,10 +399,16 @@ namespace OptimaJet.Workflow.Oracle
 
             foreach (var persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName) ??
-                                          ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+                if (parameterDefinition == null)
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -475,6 +488,15 @@ namespace OptimaJet.Workflow.Oracle
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 WorkflowProcessTimer.ClearTimersIgnore(connection);
+                WorkflowProcessTimer.Commit(connection);
+            }
+        }
+
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
                 WorkflowProcessTimer.Commit(connection);
             }
         }
@@ -573,6 +595,28 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return WorkflowProcessTransitionHistory.SelectByProcessId(connection, processId)
+                    .Select(hi => new ProcessHistoryItem
+                    {
+                        ActorIdentityId = hi.ActorIdentityId,
+                        ExecutorIdentityId = hi.ExecutorIdentityId,
+                        FromActivityName = hi.FromActivityName,
+                        FromStateName = hi.FromStateName,
+                        IsFinalised = hi.IsFinalised,
+                        ProcessId = hi.ProcessId,
+                        ToActivityName = hi.ToActivityName,
+                        ToStateName = hi.ToStateName,
+                        TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                        TransitionTime = hi.TransitionTime,
+                        TriggerName = hi.TriggerName
+                    })
+                    .ToList();
+            }
+        }
        
 
         #endregion

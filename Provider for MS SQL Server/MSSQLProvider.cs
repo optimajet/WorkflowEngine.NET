@@ -91,8 +91,12 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             var parametersToPersistList =
                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(
-                        ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
+                    .Select(ptp =>
+                    {
+                        if (ptp.Type == typeof(UnknownParameterType))
+                            return new {Parameter = ptp, SerializedValue = (string) ptp.Value};
+                        return new {Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type)};
+                    })
                     .ToList();
             
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -154,6 +158,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     throw new StatusNotDefinedException();
 
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
+                    
                     throw new ImpossibleToSetStatusException();
 
                 var oldLock = instanceStatus.Lock;
@@ -237,7 +242,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
-                    IsFinalised = false,
+                    IsFinalised = transition.To.IsFinal,
                     ProcessId = processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
@@ -289,7 +294,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     {
                         Id = processId,
                         Lock = Guid.NewGuid(),
-                        Status = ProcessStatus.Initialized.Id
+                        Status = status.Id
                     };
 
                     instanceStatus.Insert(connection);
@@ -390,9 +395,14 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -536,6 +546,14 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
+            }
+        }
+
         public void ClearTimer(Guid timerId)
         {
             using (SqlConnection connection = new SqlConnection(ConnectionString))
@@ -568,6 +586,30 @@ namespace OptimaJet.Workflow.DbPersistence
                 return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
             }
         }
+
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                return WorkflowProcessTransitionHistory.SelectByProcessId(connection, processId)
+                    .Select(hi => new ProcessHistoryItem
+                    {
+                        ActorIdentityId = hi.ActorIdentityId,
+                        ExecutorIdentityId = hi.ExecutorIdentityId,
+                        FromActivityName = hi.FromActivityName,
+                        FromStateName = hi.FromStateName,
+                        IsFinalised = hi.IsFinalised,
+                        ProcessId = hi.ProcessId,
+                        ToActivityName = hi.ToActivityName,
+                        ToStateName = hi.ToStateName,
+                        TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                        TransitionTime = hi.TransitionTime,
+                        TriggerName = hi.TriggerName
+                    })
+                    .ToList();
+            }
+        }
+
         #endregion
 
         #region ISchemePersistenceProvider
@@ -744,5 +786,5 @@ namespace OptimaJet.Workflow.DbPersistence
                 workflowProcessScheme.DefiningParameters);
         }
 
-    }
+      }
 }

@@ -131,11 +131,13 @@ namespace OptimaJet.Workflow.Redis
                 workflowProcessScheme.DefiningParameters);
         }
 
-        private void SetCustomStatus(ProcessInstance processInstance, ProcessStatus status)
+        private void SetCustomStatus(ProcessInstance processInstance, ProcessStatus status, bool createIfnotDefined = false)
         {
             var db = _connector.GetDatabase();
-            var batch = db.CreateBatch();
             var hash = string.Format("{0:N}", processInstance.ProcessId);
+            if (!createIfnotDefined && !db.HashExists(GetKeyProcessStatus(), hash))
+                throw new StatusNotDefinedException();
+            var batch = db.CreateBatch();
             batch.HashDeleteAsync(GetKeyProcessRunning(), hash);
             batch.HashSetAsync(GetKeyProcessStatus(), hash, status.Id);
             batch.Execute();
@@ -450,9 +452,14 @@ namespace OptimaJet.Workflow.Redis
             {
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.Key);
                 if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.Key, "System.String", ParameterPurpose.Persistence.ToString(), null);
-
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.Key, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             processInstance.AddParameters(parameters);
@@ -531,7 +538,13 @@ namespace OptimaJet.Workflow.Redis
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToSave = processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Value != null)
-                .ToDictionary(ptp => ptp.Name, ptp => _runtime.SerializeParameter(ptp.Value, ptp.Type));
+                .ToDictionary(ptp => ptp.Name, ptp =>
+                {
+                    if (ptp.Type == typeof(UnknownParameterType))
+                        return (string) ptp.Value;
+                    return ParametersSerializer.Serialize(ptp.Value, ptp.Type);
+
+                });
 
             var parametersToRemove =
                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Value == null).Select(ptp => ptp.Name).ToList();
@@ -582,7 +595,7 @@ namespace OptimaJet.Workflow.Redis
         /// <exception cref="ImpossibleToSetStatusException"></exception>
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
-            SetCustomStatus(processInstance, ProcessStatus.Initialized);
+            SetCustomStatus(processInstance, ProcessStatus.Initialized, true);
         }
 
 
@@ -605,8 +618,12 @@ namespace OptimaJet.Workflow.Redis
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
             var db = _connector.GetDatabase();
-            var tran = db.CreateTransaction();
             var hash = string.Format("{0:N}", processInstance.ProcessId);
+            
+            if (!db.HashExists(GetKeyProcessStatus(), hash))
+                throw new StatusNotDefinedException();
+            
+            var tran = db.CreateTransaction();
             tran.AddCondition(Condition.HashNotExists(GetKeyProcessRunning(), hash));
             tran.HashSetAsync(GetKeyProcessRunning(), hash, true);
             tran.HashSetAsync(GetKeyProcessStatus(), hash, ProcessStatus.Running.Id);
@@ -709,7 +726,7 @@ namespace OptimaJet.Workflow.Redis
             {
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
-                IsFinalised = false,
+                IsFinalised = transition.To.IsFinal,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
                 ToActivityName = transition.To.Name,
@@ -838,6 +855,16 @@ namespace OptimaJet.Workflow.Redis
         {
             var db = _connector.GetDatabase();
             db.KeyDelete(GetKeyTimerIgnore());
+        }
+
+        /// <summary>
+        /// Clears sign Ignore for specific timers
+        /// </summary>
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            var db = _connector.GetDatabase();
+            var keyTimerIgnore = GetKeyTimerIgnore();
+            db.HashDelete(keyTimerIgnore, timerId.ToString("N"));
         }
 
         /// <summary>
@@ -1030,6 +1057,30 @@ namespace OptimaJet.Workflow.Redis
             {
                 db.KeyDelete(GetKeyGlobalParameter(type));
             }
+        }
+
+        /// <inheritdoc />
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            var db = _connector.GetDatabase();
+
+            return db.ListRange(GetKeyForProcessHistory(processId))
+                .Select(hi => JsonConvert.DeserializeObject<WorkflowProcessTransitionHistory>(hi))
+                .Select(hi => new ProcessHistoryItem
+                {
+                    ActorIdentityId = hi.ActorIdentityId,
+                    ExecutorIdentityId = hi.ExecutorIdentityId,
+                    FromActivityName = hi.FromActivityName,
+                    FromStateName = hi.FromStateName,
+                    IsFinalised = hi.IsFinalised,
+                    ProcessId = processId,
+                    ToActivityName = hi.ToActivityName,
+                    ToStateName = hi.ToStateName,
+                    TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                    TransitionTime = hi.TransitionTime,
+                    TriggerName = hi.TriggerName
+                })
+                .ToList();
         }
 
         #endregion

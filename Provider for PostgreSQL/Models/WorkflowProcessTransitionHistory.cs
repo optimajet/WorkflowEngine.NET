@@ -130,5 +130,14 @@ namespace OptimaJet.Workflow.PostgreSQL
                 string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction,
                 pProcessId);
         }
+
+        public static WorkflowProcessTransitionHistory[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0}  WHERE \"ProcessId\" = @processid", ObjectName);
+
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
+
+            return Select(connection, selectText, p1);
+        }
     }
 }

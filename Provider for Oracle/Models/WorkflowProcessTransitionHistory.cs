@@ -127,5 +127,14 @@ namespace OptimaJet.Workflow.Oracle
                 string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName),
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
+
+        public static WorkflowProcessTransitionHistory[] SelectByProcessId(OracleConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid", ObjectName);
+
+            var p1 = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
+
+            return Select(connection, selectText, p1);
+        }
     }
 }

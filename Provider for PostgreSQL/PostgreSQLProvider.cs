@@ -92,7 +92,12 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var parametersToPersistList =
                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(ptp => new {Parameter = ptp, SerializedValue = _runtime.SerializeParameter(ptp.Value, ptp.Type)})
+                    .Select(ptp =>
+                    {
+                        if (ptp.Type == typeof(UnknownParameterType))
+                            return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
+                        return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
+                    })
                     .ToList();
 
             using (var connection = new NpgsqlConnection(ConnectionString))
@@ -236,7 +241,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
-                    IsFinalised = false,
+                    IsFinalised = transition.To.IsFinal,
                     ProcessId = processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
@@ -288,7 +293,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     {
                         Id = processId,
                         Lock = Guid.NewGuid(),
-                        Status = ProcessStatus.Initialized.Id
+                        Status = status.Id
                     };
                     instanceStatus.Insert(connection);
                 }
@@ -389,8 +394,14 @@ namespace OptimaJet.Workflow.PostgreSQL
             {
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, "System.String", ParameterPurpose.Persistence.ToString(), null);
-                parameters.Add(ParameterDefinition.Create(parameterDefinition, _runtime.DeserializeParameter(persistedParameter.Value, parameterDefinition.Type)));
+                {
+                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
+                }
+                else
+                {
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                }
             }
 
             return parameters;
@@ -471,6 +482,14 @@ namespace OptimaJet.Workflow.PostgreSQL
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessTimer.ClearTimersIgnore(connection);
+            }
+        }
+
+        public void ClearTimerIgnore(Guid timerId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
             }
         }
 
@@ -567,6 +586,28 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
+        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return WorkflowProcessTransitionHistory.SelectByProcessId(connection, processId)
+                    .Select(hi => new ProcessHistoryItem
+                    {
+                        ActorIdentityId = hi.ActorIdentityId,
+                        ExecutorIdentityId = hi.ExecutorIdentityId,
+                        FromActivityName = hi.FromActivityName,
+                        FromStateName = hi.FromStateName,
+                        IsFinalised = hi.IsFinalised,
+                        ProcessId = hi.ProcessId,
+                        ToActivityName = hi.ToActivityName,
+                        ToStateName = hi.ToStateName,
+                        TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                        TransitionTime = hi.TransitionTime,
+                        TriggerName = hi.TriggerName
+                    })
+                    .ToList();
+            }
+        }
 
         #endregion
 
