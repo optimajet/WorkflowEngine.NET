@@ -1,12 +1,12 @@
 /*
- * Worflow Engine.NET
- * http://workflowenginenet.com
+ * WorkflowEngine.NET
+ * https://workflowengine.io
  */
  
  WorkflowEngine.NET - component that adds workflow in your application. 
  It can be fully integrated into your application, or be in the form of a specific service (such as a web service).
 
-Demo on-line: http://demo.workflowenginenet.com
+Demo on-line: https://workflowengine.io/demo/designer
 
 Please note. All samples was assembled with ASP.NET MVC 5.0. If you need samples wich was assembled with ASP.NET MVC 4.0 you could take them here
 http://workflowenginenet.com/Cms_Data/Contents/WFE/Media/downloads/1.5.4/Samples.zip
