@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
@@ -1025,6 +1027,25 @@ namespace OptimaJet.Workflow.RavenDB
             if (value == null)
                 throw new InvalidOperationException("Generator source must be a string");
             TemplateTypeMapping.Add(processName.ToLower(), value);
+        }
+
+        #endregion
+
+        #region Bulk methods
+
+        public bool IsBulkOperationsSupported
+        {
+            get { return false; }
+        }
+
+        public async Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

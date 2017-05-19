@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Reflection;
 using System.Xml.Linq;
 
 namespace OptimaJet.Workflow.Core.Generator
@@ -21,9 +22,9 @@ namespace OptimaJet.Workflow.Core.Generator
         public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
             var processTemplateType = TemplateTypeMapping[schemeCode.ToLower()];
-            var sessionProperty = processTemplateType.GetProperty("Session", typeof(IDictionary<string, object>));
-            var transformTextMethod = processTemplateType.GetMethod("TransformText");
-            var initializeMethod = processTemplateType.GetMethod("Initialize");
+            var sessionProperty = processTemplateType.GetTypeInfo().GetProperty("Session", typeof(IDictionary<string, object>));
+            var transformTextMethod = processTemplateType.GetTypeInfo().GetMethod("TransformText");
+            var initializeMethod = processTemplateType.GetTypeInfo().GetMethod("Initialize");
             var obj = Activator.CreateInstance(processTemplateType, false);
 
             var session = (IDictionary<string, object>)sessionProperty.GetGetMethod(false).Invoke(obj,new object[]{});

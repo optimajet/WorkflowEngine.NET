@@ -11,6 +11,16 @@ namespace OptimaJet.Workflow.Core.Runtime
     public interface ITimerManager
     {
         /// <summary>
+        /// Value of Unspecified Timer which indicates that the timer transition will be executed immediately
+        /// </summary>
+        string ImmediateTimerValue { get; }
+
+        /// <summary>
+        /// Value of Unspecified Timer which indicates that the timer transition will be never executed
+        /// </summary>
+        string InfinityTimerValue { get; }
+    
+        /// <summary>
         /// Raises when the timer value must be obtained 
         /// </summary>
         event EventHandler<NeedTimerValueEventArgs> NeedTimerValue;
@@ -66,6 +76,17 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// </summary>
         /// <param name="processInstance">Process instance whose timers need to be registered</param>
         void RegisterTimers(ProcessInstance processInstance);
+
+
+        List<TimerToRegister> GetTimersToRegister(ProcessDefinition processDefinition, string activityName);
+        List<TimerToRegister> GetTimersToRegister(ProcessInstance processInstance, string activityName);
+         
+        ///// <summary>
+        ///// Register all timers for all outgouing timer transitions for current actvity of the specified process.
+        ///// All timers registered before which are present in transitions will be rewrited except timers marked as NotOverrideIfExists <see cref="TimerDefinition"/>
+        ///// </summary>
+        ///// <param name="processInstances">List of Process instance whose timers need to be registered</param>
+        //void BulkRegisterTimers(List<ProcessInstance> processInstances);
 
         /// <summary>
         /// Clear timers <see cref="ClearTimers"/> and then register new timers <see cref="RegisterTimers"/>

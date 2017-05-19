@@ -1,6 +1,8 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
@@ -1081,6 +1083,25 @@ namespace OptimaJet.Workflow.Redis
                     TriggerName = hi.TriggerName
                 })
                 .ToList();
+        }
+
+        #endregion
+
+        #region Bulk methods
+
+        public bool IsBulkOperationsSupported
+        {
+            get { return false; }
+        }
+
+        public async Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public async Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
+        {
+            throw new NotImplementedException();
         }
 
         #endregion

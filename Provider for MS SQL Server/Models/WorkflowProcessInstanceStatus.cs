@@ -80,5 +80,15 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return ExecuteCommand(connection, command, p1, p2, p3, p4);
         }
+#if !NETCOREAPP
+        public static DataTable ToDataTable()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(Guid));
+            dt.Columns.Add("Lock", typeof(Guid));
+            dt.Columns.Add("Status", typeof(byte));
+            return dt;
+        }
+#endif
     }
 }

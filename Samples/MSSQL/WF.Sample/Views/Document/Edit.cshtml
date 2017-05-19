@@ -7,7 +7,7 @@
 @model WF.Sample.Models.DocumentModel
 
 @{
-    var designerUrl = "/Designer?schemeName=SimpleWF";
+    var designerUrl = "/Designer";
     if (Model.Id != Guid.Empty)
     {
         designerUrl = "/Designer?processid=" + Model.Id.ToString();

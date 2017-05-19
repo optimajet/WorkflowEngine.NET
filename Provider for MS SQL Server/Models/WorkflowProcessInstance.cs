@@ -2,6 +2,7 @@
 using System.Data;
 
 // ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class WorkflowProcessInstance : DbObject<WorkflowProcessInstance>
@@ -126,6 +127,27 @@ namespace OptimaJet.Workflow.DbPersistence
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
+
         }
+#if !NETCOREAPP
+        public static DataTable ToDataTable()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(Guid));
+            dt.Columns.Add("ActivityName", typeof(string));
+            dt.Columns.Add("IsDeterminingParametersChanged", typeof(bool));
+            dt.Columns.Add("PreviousActivity", typeof(string));
+            dt.Columns.Add("PreviousActivityForDirect", typeof(string));
+            dt.Columns.Add("PreviousActivityForReverse", typeof(string));
+            dt.Columns.Add("PreviousState", typeof(string));
+            dt.Columns.Add("PreviousStateForDirect", typeof(string));
+            dt.Columns.Add("PreviousStateForReverse", typeof(string));
+            dt.Columns.Add("SchemeId", typeof(Guid));
+            dt.Columns.Add("StateName", typeof(string));
+            dt.Columns.Add("ParentProcessId", typeof(Guid));
+            dt.Columns.Add("RootProcessId", typeof(Guid));
+            return dt;
+        }
+#endif
     }
 }

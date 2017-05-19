@@ -51,7 +51,6 @@
   </PropertyGroup>
   <ItemGroup>
     <Reference Include="Microsoft.CSharp" />
-    <Reference Include="Microsoft.QualityTools.Testing.Fakes, Version=11.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a, processorArchitecture=MSIL" />
     <Reference Include="Microsoft.Web.Infrastructure, Version=1.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Web.Infrastructure.1.0.0.0\lib\net40\Microsoft.Web.Infrastructure.dll</HintPath>
       <Private>True</Private>
@@ -62,13 +61,16 @@
     <Reference Include="OptimaJet.Workflow.Core">
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.RavenDB">
+    <Reference Include="OptimaJet.Workflow.RavenDB, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.RavenDB.dll</HintPath>
     </Reference>
-    <Reference Include="Raven.Abstractions">
+    <Reference Include="Raven.Abstractions, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\Raven.Abstractions.dll</HintPath>
     </Reference>
-    <Reference Include="Raven.Client.Lightweight">
+    <Reference Include="Raven.Client.Lightweight, Version=3.0.0.0, Culture=neutral, PublicKeyToken=37f41c7f99471593, processorArchitecture=MSIL">
+      <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\Raven.Client.Lightweight.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -82,6 +84,8 @@
     <Reference Include="System.Web.ApplicationServices" />
     <Reference Include="System.ComponentModel.DataAnnotations" />
     <Reference Include="System.Web.Extensions" />
+    <Reference Include="System.Web" />
+    <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Helpers, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.WebPages.3.2.3\lib\net45\System.Web.Helpers.dll</HintPath>
       <Private>True</Private>
@@ -90,8 +94,6 @@
       <HintPath>..\packages\Microsoft.AspNet.Mvc.5.2.3\lib\net45\System.Web.Mvc.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="System.Web" />
-    <Reference Include="System.Web.Abstractions" />
     <Reference Include="System.Web.Razor, Version=3.0.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.AspNet.Razor.3.2.3\lib\net45\System.Web.Razor.dll</HintPath>
       <Private>True</Private>
@@ -133,47 +135,30 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Configuration\AppSettings.config">
+      <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Configuration\Logging.config" />
+    <Content Include="Content\Site.css" />
     <Content Include="Content\style.css" />
-    <Content Include="Content\themes\base\images\loading.gif" />
-    <Content Include="Content\themes\base\images\toggle-collapse-dark.png" />
-    <Content Include="Content\themes\base\images\toggle-collapse-light.png" />
-    <Content Include="Content\themes\base\images\toggle-expand-dark.png" />
-    <Content Include="Content\themes\base\images\toggle-expand-light.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_0_aaaaaa_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_flat_75_ffffff_40x100.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_55_fbf9ee_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_dadada_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_75_e6e6e6_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_glass_95_fef1ec_1x400.png" />
-    <Content Include="Content\themes\base\images\ui-bg_highlight-soft_75_cccccc_1x100.png" />
-    <Content Include="Content\themes\base\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_2e83ff_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_454545_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_888888_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cd0a0a_256x240.png" />
-    <Content Include="Content\themes\base\jquery.loadmask.css" />
+    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
+    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
+    <Content Include="Content\themes\base\jquery-ui.min.css" />
+    <Content Include="Content\themes\base\jquery-ui.structure.min.css" />
+    <Content Include="Content\themes\base\jquery-ui.theme.min.css" />
     <Content Include="Content\themes\base\jquery.treeTable.css" />
-    <Content Include="Content\themes\base\jquery.ui.accordion.css" />
-    <Content Include="Content\themes\base\jquery.ui.all.css" />
-    <Content Include="Content\themes\base\jquery.ui.autocomplete.css" />
-    <Content Include="Content\themes\base\jquery.ui.base.css" />
-    <Content Include="Content\themes\base\jquery.ui.button.css" />
-    <Content Include="Content\themes\base\jquery.ui.core.css" />
-    <Content Include="Content\themes\base\jquery.ui.datepicker.css" />
-    <Content Include="Content\themes\base\jquery.ui.dialog.css" />
-    <Content Include="Content\themes\base\jquery.ui.progressbar.css" />
-    <Content Include="Content\themes\base\jquery.ui.resizable.css" />
-    <Content Include="Content\themes\base\jquery.ui.selectable.css" />
-    <Content Include="Content\themes\base\jquery.ui.slider.css" />
-    <Content Include="Content\themes\base\jquery.ui.tabs.css" />
-    <Content Include="Content\themes\base\jquery.ui.theme.css" />
     <Content Include="Content\workflowdesigner.css" />
     <Content Include="Global.asax" />
     <Content Include="Images\designer.command.png" />
     <Content Include="Images\designer.createat.png" />
     <Content Include="Images\designer.createt.png" />
     <Content Include="Images\designer.delete.png" />
+    <Content Include="Images\designer.form.delete.png" />
+    <Content Include="Images\designer.form.settings.png" />
     <Content Include="Images\designer.tb.actor.png" />
     <Content Include="Images\designer.tb.add.png" />
     <Content Include="Images\designer.tb.additionalparameters.png" />
@@ -194,11 +179,15 @@
     <Content Include="Images\designer.tb.zoomIn.png" />
     <Content Include="Images\designer.tb.zoomnorm.png" />
     <Content Include="Images\designer.tb.zoomOut.png" />
+    <Content Include="Images\download.png" />
     <Content Include="Images\error.png" />
     <Content Include="Images\grid.gif" />
     <Content Include="Images\loading.gif" />
+    <Content Include="Images\upload.png" />
     <Content Include="Images\x.png" />
+    <Content Include="Logs\logs.txt" />
     <Content Include="Scripts\ace.js" />
+    <Content Include="Scripts\DesignerConstants-ru.js" />
     <Content Include="Scripts\ext-searchbox.js" />
     <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\jquery.flot.js" />
@@ -208,16 +197,39 @@
     <Content Include="Scripts\json5.js" />
     <Content Include="Scripts\konva.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
+    <Content Include="Scripts\mode-javascript.js" />
     <Content Include="Scripts\mode-json.js" />
     <Content Include="Scripts\theme-monokai.js" />
+    <Content Include="Scripts\theme-twilight.js" />
+    <Content Include="Scripts\worker-javascript.js" />
     <Content Include="Scripts\worker-json.js" />
+    <Content Include="Scripts\workflowdesigner.localization.js" />
     <Content Include="Scripts\workflowdesigner.min.js" />
-    <Content Include="Web.config" />
-    <Content Include="Content\Site.css" />
-    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Views\Designer\Index.cshtml" />
+    <Content Include="Views\Document\DocumentHistory.cshtml" />
+    <Content Include="Views\Document\Edit.cshtml" />
+    <Content Include="Views\Document\Index.cshtml" />
+    <Content Include="Views\LoadTesting\Index.cshtml" />
+    <Content Include="Views\Settings\Edit.cshtml" />
+    <Content Include="Views\Settings\Roles.cshtml" />
+    <Content Include="Views\Settings\StructDivision.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
+    <Content Include="Views\Shared\Partial\Folders.cshtml" />
+    <Content Include="Views\Shared\Partial\Footer.cshtml" />
+    <Content Include="Views\Shared\Partial\Header.cshtml" />
+    <Content Include="Views\Shared\Partial\MainMenu.cshtml" />
+    <Content Include="Views\Shared\_Layout.cshtml" />
+    <Content Include="Views\Shared\_LayoutWithoutUserSelect.cshtml" />
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
+    </Content>
+    <Content Include="Views\_ViewStart.cshtml" />
+    <Content Include="Web.config" />
+    <Content Include="Web.Debug.config">
+      <DependentUpon>Web.config</DependentUpon>
+    </Content>
+    <Content Include="Web.Release.config">
+      <DependentUpon>Web.config</DependentUpon>
     </Content>
   </ItemGroup>
   <ItemGroup>
@@ -227,36 +239,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Views\Shared\Partial\Footer.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj">
       <Project>{6F156EA6-2B81-4C09-9FCC-3CF0A69C5967}</Project>
       <Name>WF.Sample.Business</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Shared\Partial\Header.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Views\Settings\Edit.cshtml" />
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Configuration\AppSettings.config">
-      <SubType>Designer</SubType>
-    </Content>
-    <Content Include="Configuration\Logging.config" />
-    <Content Include="Views\Settings\Roles.cshtml" />
-    <Content Include="Views\Settings\StructDivision.cshtml" />
-    <Content Include="Views\Document\Index.cshtml" />
-    <Content Include="Views\Document\Edit.cshtml" />
-    <Content Include="Views\Shared\Partial\MainMenu.cshtml" />
-    <Content Include="Views\Document\DocumentHistory.cshtml" />
-    <Content Include="Views\Designer\Index.cshtml" />
-    <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_LayoutWithoutUserSelect.cshtml" />
-    <Content Include="Views\Shared\Partial\Folders.cshtml" />
-    <Content Include="Views\LoadTesting\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

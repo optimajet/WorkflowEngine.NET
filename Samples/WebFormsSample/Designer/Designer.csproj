@@ -67,6 +67,10 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Images\designer.form.delete.png" />
+    <Content Include="Images\designer.form.settings.png" />
+    <Content Include="Images\download.png" />
+    <Content Include="Images\upload.png" />
     <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>

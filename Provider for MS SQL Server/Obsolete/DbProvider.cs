@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCOREAPP
+using System;
 using System.Configuration;
 
 namespace OptimaJet.Workflow.DbPersistence
@@ -12,3 +13,4 @@ namespace OptimaJet.Workflow.DbPersistence
         }
     }
 }
+#endif

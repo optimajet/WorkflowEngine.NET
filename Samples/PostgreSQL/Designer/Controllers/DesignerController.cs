@@ -45,8 +45,12 @@ namespace WF.Sample.Controllers
             }
 
             var res = getRuntime.DesignerAPI(pars, filestream, true);
-            if (pars["operation"].ToLower() == "downloadscheme")
+            var operation = pars["operation"].ToLower();
+            if (operation == "downloadscheme")
                 return File(Encoding.UTF8.GetBytes(res), "text/xml", "scheme.xml");
+            else if (operation == "downloadschemebpmn")
+                return File(UTF8Encoding.UTF8.GetBytes(res), "text/xml", "scheme.bpmn");
+
             return Content(res);
         }
 

@@ -12,6 +12,27 @@ using OptimaJet.Workflow.Core.Persistence;
 namespace OptimaJet.Workflow.Core.Runtime
 {
     /// <summary>
+    /// Represent a timer to register in persistence store
+    /// </summary>
+    public class TimerToRegister
+    {
+        /// <summary>
+        /// Timer name <see cref="TimerDefinition.Name"/>
+        /// </summary>
+        public string Name { get; set; }
+
+        /// <summary>
+        /// Id of the process which owned the timer
+        /// </summary>
+        public Guid ProcessId { get; set; }
+
+        /// <summary>
+        /// Execution DateTime of timer
+        /// </summary>
+        public DateTime ExecutionDateTime { get; set; }
+    }
+
+    /// <summary>
     /// Represent a timer information
     /// </summary>
     public class TimerToExecute
@@ -38,12 +59,12 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <summary>
         /// Value of Unspecified Timer which indicates that the timer transition will be executed immediately
         /// </summary>
-        public const string ImmediateTimerValue = "0";
+        public string ImmediateTimerValue { get; } = "0";
 
         /// <summary>
         /// Value of Unspecified Timer which indicates that the timer transition will be never executed
         /// </summary>
-        public const string InfinityTimerValue = "-1";
+        public string InfinityTimerValue { get; } = "-1";
 
         //private readonly ReaderWriterLockSlim _lock = new ReaderWriterLockSlim();
 
@@ -333,8 +354,17 @@ namespace OptimaJet.Workflow.Core.Runtime
 
             if (now < next)
             {
-                var timeout = (long) (next.Value - now).TotalMilliseconds;
-                _timer.Change(timeout > 4294967294L ? 4294967294L : timeout, Timeout.Infinite);
+
+
+#if NETCOREAPP
+                var doubleTimeout = (next.Value - now).TotalMilliseconds;
+                doubleTimeout = Math.Max(0d, doubleTimeout);
+                var timeout = Math.Min(4294967294L, (long)doubleTimeout);
+                _timer.Change(TimeSpan.FromMilliseconds(timeout),  TimeSpan.FromMilliseconds(Timeout.Infinite));
+#else
+                var timeout = (long)(next.Value - now).TotalMilliseconds;
+               _timer.Change(timeout > 4294967294L ? 4294967294L : timeout, Timeout.Infinite);
+#endif
             }
             else
             {
@@ -351,7 +381,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         {
             var timersWithDate = new List<Tuple<TimerDefinition, DateTime?>>();
 
-            timersToRegister.ForEach(t => timersWithDate.Add(new Tuple<TimerDefinition, DateTime?>(t, GetNextExecutionDateTime(processInstance, t))));
+            timersToRegister.ForEach(t => timersWithDate.Add(new Tuple<TimerDefinition, DateTime?>(t, GetNextExecutionDateTime(t, processInstance))));
 
 
             timersWithDate.ForEach(
@@ -363,18 +393,21 @@ namespace OptimaJet.Workflow.Core.Runtime
                 });
         }
 
-        private DateTime? GetNextExecutionDateTime(ProcessInstance processInstance, TimerDefinition timerDefinition)
+        private DateTime? GetNextExecutionDateTime(TimerDefinition timerDefinition, ProcessInstance processInstance = null)
         {
             var timerValueParameterName = GetTimerValueParameterName(timerDefinition);
             if (timerDefinition.Value.Equals(ImmediateTimerValue) || timerDefinition.Value.Equals(InfinityTimerValue))
             {
+                if (processInstance == null)
+                    return null;
 
                 if (!processInstance.IsParameterExisting(timerValueParameterName))
                     return null;
+
                 return processInstance.GetParameter<DateTime?>(timerValueParameterName);
             }
 
-            if (processInstance.IsParameterExisting(timerValueParameterName))
+            if (processInstance != null && processInstance.IsParameterExisting(timerValueParameterName))
             {
                 var value = processInstance.GetParameter<DateTime?>(timerValueParameterName);
                 if (value != null)
@@ -469,7 +502,11 @@ namespace OptimaJet.Workflow.Core.Runtime
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
+#if NETCOREAPP
+            _timer = new Timer(OnTimer,null,Timeout.Infinite,Timeout.Infinite);
+#else
             _timer = new Timer(OnTimer);
+#endif
         }
 
 
@@ -589,6 +626,27 @@ namespace OptimaJet.Workflow.Core.Runtime
             {
                 _runtime.PersistenceProvider.ClearTimer(timer.TimerId);
             }
+        }
+
+        public List<TimerToRegister> GetTimersToRegister(ProcessDefinition processDefinition, string activityName)
+        {
+            return GetTimerToRegisters(processDefinition, activityName);
+        }
+
+        public List<TimerToRegister> GetTimersToRegister(ProcessInstance processInstance, string activityName)
+        {
+            return GetTimerToRegisters(processInstance.ProcessScheme, activityName, processInstance);
+        }
+
+        private List<TimerToRegister> GetTimerToRegisters(ProcessDefinition processDefinition, string activityName, ProcessInstance processInstance = null)
+        {
+            var timerTransitions = processDefinition.GetTimerTransitionForActivity(processDefinition.FindActivity(activityName), ForkTransitionSearchType.Both);
+            var timerDefinitions = timerTransitions.Select(t => t.Trigger.Timer).GroupBy(t => t.Name).Select(g => g.First()).ToList();
+            return
+                timerDefinitions.Select(td => new { Date = GetNextExecutionDateTime(td, processInstance), td.Name })
+                    .Where(t => t.Date.HasValue)
+                    .Select(t => new TimerToRegister { ExecutionDateTime = t.Date.Value, Name = t.Name, ProcessId = processInstance != null ? processInstance.ProcessId : Guid.Empty})
+                    .ToList();
         }
     }
 }

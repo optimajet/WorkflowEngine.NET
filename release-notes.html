@@ -1,4 +1,10 @@
 <h1 id="release-notes">Release Notes</h1>
+<h2 id="2-1">2.1</h2>
+<ul>
+<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="https://workflowengine.io/downloads/">here</a>.</li>
+<li>Workflow Engine scheme import/export to/from BPMN2 has been added.</li>
+<li>Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the <code>CreateInstance</code> method. Use the <code>_runtime.BulkCreateInstance(..)</code> method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.</li>
+</ul>
 <hr>
 <h2 id="2-0">2.0</h2>
 <ul>

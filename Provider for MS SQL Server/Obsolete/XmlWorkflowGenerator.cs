@@ -1,4 +1,5 @@
-﻿using System;
+﻿#if !NETCOREAPP
+using System;
 using System.Collections.Generic;
 using System.Xml.Linq;
 using System.Data.Linq;
@@ -15,3 +16,4 @@ namespace OptimaJet.Workflow.DbPersistence
         }
     }
 }
+#endif

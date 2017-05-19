@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Reflection;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -142,14 +143,31 @@ namespace OptimaJet.Workflow.PostgreSQL
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-
+                var res = new List<T>();
+#if NETCOREAPP
+                using (var reader = command.ExecuteReader())
+                {
+                    while (reader.Read())
+                    {
+                        T item = new T();
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            var name = reader.GetName(i);
+                            var column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                            if (column != null)
+                            {
+                                item.SetValue(column.Name, reader.IsDBNull(i) ? null : reader.GetValue(i));
+                            }
+                        }
+                        res.Add(item);
+                    }
+                }
+#else
                 DataTable dt = new DataTable();
                 using (var oda = new NpgsqlDataAdapter(command))
                 {
                     oda.Fill(dt);
                 }
-
-                var res = new List<T>();
 
                 foreach (DataRow row in dt.Rows)
                 {
@@ -158,6 +176,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                         item.SetValue(c.Name, row[c.Name]);
                     res.Add(item);
                 }
+#endif
 
                 return res.ToArray();
             }
@@ -166,8 +185,26 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual NpgsqlParameter CreateParameter(ColumnInfo c)
         {
-            var p = new NpgsqlParameter(c.Name, c.Type) {Value = GetValue(c.Name)};
+            var value = GetValue(c.Name);
+
+            var isNullable = IsNullable(value);
+
+            if (isNullable && value == null)
+            {
+                value = DBNull.Value;
+            }
+
+            var p = new NpgsqlParameter(c.Name, c.Type) {Value = value, IsNullable = isNullable};
             return p;
+        }
+
+        private static bool IsNullable<T1>(T1 obj)
+        {
+            if (obj == null) return true;
+            Type type = typeof(T1);
+            if (!type.GetTypeInfo().IsValueType) return true;
+            if (Nullable.GetUnderlyingType(type) != null) return true;
+            return false;
         }
     }
 }

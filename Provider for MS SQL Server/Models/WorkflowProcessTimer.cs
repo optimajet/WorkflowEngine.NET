@@ -152,21 +152,45 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             if (timers.Length == 0)
                 return 0;
+            var result = 0;
+            var skip = 0;
+            var take = 2000;
 
-            var parameters = new List<string>();
-            var sqlParameters = new List<SqlParameter>();
-            var cnt = 0;
-            foreach (var timer in timers)
+            while (skip < timers.Length)
             {
-                var parameterName = string.Format("timer{0}", cnt);
-                parameters.Add(string.Format("@{0}", parameterName));
-                sqlParameters.Add(new SqlParameter(parameterName, SqlDbType.UniqueIdentifier) {Value = timer.Id});
-                cnt++;
+
+                var parameters = new List<string>();
+                var sqlParameters = new List<SqlParameter>();
+                var cnt = 0;
+
+                foreach (var timer in timers.Skip(skip).Take(take))
+                {
+                    var parameterName = string.Format("timer{0}", cnt);
+                    parameters.Add(string.Format("@{0}", parameterName));
+                    sqlParameters.Add(new SqlParameter(parameterName, SqlDbType.UniqueIdentifier) {Value = timer.Id});
+                    cnt++;
+                }
+
+                result = result + ExecuteCommand(connection,
+                             string.Format("UPDATE {0} SET [Ignore] = 1 WHERE [Id] IN ({1})", ObjectName, string.Join(",", parameters)),
+                             sqlParameters.ToArray());
+
+                skip = skip + take;
             }
 
-            return ExecuteCommand(connection,
-                string.Format("UPDATE {0} SET [Ignore] = 1 WHERE [Id] IN ({1})", ObjectName, string.Join(",", parameters)),
-                sqlParameters.ToArray());
+            return result;
         }
+#if !NETCOREAPP
+        public static DataTable ToDataTable()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(Guid));
+            dt.Columns.Add("ProcessId", typeof(Guid));
+            dt.Columns.Add("Name", typeof(string));
+            dt.Columns.Add("NextExecutionDateTime", typeof(DateTime));
+            dt.Columns.Add("Ignore", typeof(bool));
+            return dt;
+        }
+#endif
     }
 }

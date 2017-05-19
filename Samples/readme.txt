@@ -66,7 +66,7 @@ Additional Information: http://www.codeproject.com/Articles/865250/Workflow-Engi
 
 Specify connection to your Redis server in Console\WorkflowInit.cs and in Designer\Controllers\DesignerController.cs To setup connection to your Redis server 
 you need to configure ConnectionMultiplexer object and pass it to the Redis provider consctructor. You can read about ConnectionMultiplexer configuration here
-https://github.com/StackExchange/StackExchange.Redis/blob/master/Docs/Configuration.md
+https://stackexchange.github.io/StackExchange.Redis/Configuration.md
 
 8. Ignite - Sample for Apache Ignite
 

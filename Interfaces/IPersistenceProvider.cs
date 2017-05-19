@@ -1,5 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading;
+using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
@@ -221,5 +223,11 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <param name="processId">Id of the process</param>
         /// <returns></returns>
         List<ProcessHistoryItem> GetProcessHistory(Guid processId);
+
+        bool IsBulkOperationsSupported { get; }
+
+        Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token);
+
+        Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token);
     }
 }

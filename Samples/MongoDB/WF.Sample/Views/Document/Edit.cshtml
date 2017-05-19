@@ -8,7 +8,7 @@
 @model WF.Sample.Business.Models.Document
 
 @{
-    var designerUrl = "/Designer?schemeName=SimpleWF";
+    var designerUrl = "/Designer";
     DocumentCommandModel[] commands = new DocumentCommandModel[0];
     Dictionary<string, string> states = new Dictionary<string, string>();
     if (Model.Id != Guid.Empty)

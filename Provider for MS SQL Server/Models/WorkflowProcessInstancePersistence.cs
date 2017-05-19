@@ -81,5 +81,17 @@ namespace OptimaJet.Workflow.DbPersistence
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, p);
         }
+
+#if !NETCOREAPP
+        public static DataTable ToDataTable()
+        {
+            var dt = new DataTable();
+            dt.Columns.Add("Id", typeof(Guid));
+            dt.Columns.Add("ProcessId", typeof(Guid));
+            dt.Columns.Add("ParameterName", typeof(string));
+            dt.Columns.Add("Value", typeof(string));
+            return dt;
+        }
+#endif
     }
 }

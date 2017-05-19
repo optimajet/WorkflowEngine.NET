@@ -4,6 +4,30 @@
         <name>OptimaJet.Workflow.Core</name>
     </assembly>
     <members>
+        <member name="M:OptimaJet.Workflow.Core.BPMN.Definition.#ctor(System.String)">
+            <summary>
+            The constructor creates Definition object and loads BPMN2 scheme
+            </summary>
+            <param name="bpmn">BPMN2 scheme in XML-format</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.BPMN.Definition.#ctor(OptimaJet.Workflow.Core.Model.ProcessDefinition)">
+            <summary>
+            The constructor creates Definition object and loads information from ProcessDefinition object
+            </summary>
+            <param name="pd">ProcessDefinition object for loading</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.BPMN.Definition.ConvertToProcessDefinitions">
+            <summary>
+            Gets a list of ProcessDefinition from BPMN format 
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.BPMN.Definition.Serialize">
+            <summary>
+            Serialize the object
+            </summary>
+            <returns>XML</returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder">
             <summary>
             Interface of a workflow builder, which convert not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> to the object model of a scheme of a process <see cref="T:OptimaJet.Workflow.Core.Model.ProcessDefinition"/>
@@ -2219,6 +2243,63 @@
             <param name="processInstance">Instance of the process</param>
             <param name="transitionalProcessWasCompleted">Indicates that a transitional process was completed and a process will stop in current activity</param>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams">
+            <summary>
+            Object that represents information which is required for mass creation of processes
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.SchemeCode">
+            <summary>
+            Code of the scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.SchemeCreationParameters">
+            <summary>
+            The parameters for creating scheme of process (defining parameters)
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.ProcessIds">
+            <summary>
+            List of process IDs to create
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.InitialProcessParameters">
+            <summary>
+            Parameters to be passed to the process as the initial. Common for all creted processes.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.ProcessSpecificProcessPrarameters">
+            <summary>
+            Process specific process parameters
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.#ctor(System.String,System.Collections.Generic.List{System.Guid})">
+            <summary>
+            Constructor
+            </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="processIds">List of process IDs to create</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.IdentityId">
+            <summary>
+            The user id which execute initial command if command is available.  Common for all creted processes.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.ImpersonatedIdentityId">
+            <summary>
+            The user id for whom executes initial command if command is available.  Common for all creted processes.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.ProcessSpecificIdentityIds">
+            <summary>
+            The user id which execute initial command if command is available.  Process specific values
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams.ProcessSpecificImpersonatedIdentityIds">
+            <summary>
+            The user id for whom executes initial command if command is available. Process specific values
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams">
             <summary>
              Represents parameters for creaition of an instance of a process
@@ -2515,6 +2596,64 @@
             Old staring transition name
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi">
+            <summary>
+            Runtime API for bulk operations
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams)">
+            <summary>
+            Creates and initializes multiple process instances
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams})">
+            <summary>
+            Creates and initializes multiple process instances
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
+            <returns></returns>
+            <exception cref="T:System.NotSupportedException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams)">
+            <summary>
+            Creates and initializes multiple process instances (Async version)
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams})">
+            <summary>
+            Creates and initializes multiple process instances (Async version)
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
+            <returns></returns>
+            <exception cref="T:System.NotSupportedException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams,System.Threading.CancellationToken)">
+            <summary>
+            Creates and initializes multiple process instances (Async version)
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <param name="cancellation">Cancellation token</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},System.Threading.CancellationToken)">
+            <summary>
+            Creates and initializes multiple process instances (Async version)
+            </summary>
+            <param name="runtime">Instance of workflow runtime</param>
+            <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
+            <param name="cancellation">Cancellation token</param>
+            <returns></returns>
+            <exception cref="T:System.NotSupportedException"></exception>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs">
             <summary>
             Represent information about an error occurred due to execution of a workflow process
@@ -2562,6 +2701,16 @@
         <member name="T:OptimaJet.Workflow.Core.Runtime.ITimerManager">
             <summary>
             Interface of a timer manager, which control timers functioning inside a workflow runtime
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ITimerManager.ImmediateTimerValue">
+            <summary>
+            Value of Unspecified Timer which indicates that the timer transition will be executed immediately
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ITimerManager.InfinityTimerValue">
+            <summary>
+            Value of Unspecified Timer which indicates that the timer transition will be never executed
             </summary>
         </member>
         <member name="E:OptimaJet.Workflow.Core.Runtime.ITimerManager.NeedTimerValue">
@@ -2802,6 +2951,26 @@
             True if the scheme of the procee was changed due to process creating parameters was changed
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.TimerToRegister">
+            <summary>
+            Represent a timer to register in persistence store
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerToRegister.Name">
+            <summary>
+            Timer name <see cref="!:TimerDefinition.Name"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerToRegister.ProcessId">
+            <summary>
+            Id of the process which owned the timer
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerToRegister.ExecutionDateTime">
+            <summary>
+            Execution DateTime of timer
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.TimerToExecute">
             <summary>
             Represent a timer information
@@ -2827,12 +2996,12 @@
             Default timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/>
             </summary>
         </member>
-        <member name="F:OptimaJet.Workflow.Core.Runtime.TimerManager.ImmediateTimerValue">
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerManager.ImmediateTimerValue">
             <summary>
             Value of Unspecified Timer which indicates that the timer transition will be executed immediately
             </summary>
         </member>
-        <member name="F:OptimaJet.Workflow.Core.Runtime.TimerManager.InfinityTimerValue">
+        <member name="P:OptimaJet.Workflow.Core.Runtime.TimerManager.InfinityTimerValue">
             <summary>
             Value of Unspecified Timer which indicates that the timer transition will be never executed
             </summary>
@@ -4906,6 +5075,8 @@
             - object compile(data) Method for test compile of code actions
             - JSON getemptytype(typename) returns serialized empty type
             - array getautocompletesuggestions (category, value) returns a list of autocomplete suggestions
+            - JSON uploadschemebpmn(filestream) Converts BPMN scheme uploaded as XML file to JSON.
+            - XML downloadschemebpmn(data) Converts BPMN scheme from JSON object to XML.
             Type of the operation determined by "operation" parameter from request parameters 
             </summary>
             <param name="runtime">The instance of the runtime</param>

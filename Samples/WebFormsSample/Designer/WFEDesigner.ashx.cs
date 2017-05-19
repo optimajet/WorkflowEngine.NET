@@ -45,6 +45,13 @@ namespace Designer
                 context.Response.BinaryWrite(UTF8Encoding.UTF8.GetBytes(res));
                 context.Response.End();
             }
+            else if (pars["operation"].ToLower() == "downloadschemebpmn")
+            {
+                context.Response.ContentType = "file/xml";
+                context.Response.AddHeader("Content-Disposition", "attachment; filename=schema.bpmn");
+                context.Response.BinaryWrite(UTF8Encoding.UTF8.GetBytes(res));
+                context.Response.End();
+            }
             else
             {
                 context.Response.Write(res);
