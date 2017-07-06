@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 
@@ -54,7 +55,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processId">Process id</param>
         /// <param name="timerName">Timer name in Scheme</param>
         /// <param name="newValue">New value of the timer</param>
-        void SetTimerValue(Guid processId, string timerName, DateTime newValue);
+        Task SetTimerValue(Guid processId, string timerName, DateTime newValue);
 
         /// <summary>
         /// Resets value of named timer
@@ -68,7 +69,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// </summary>
         /// <param name="processId">Process id</param>
         /// <param name="timerName">Timer name in Scheme</param>
-        void ResetTimerValue(Guid processId, string timerName);
+        Task ResetTimerValue(Guid processId, string timerName);
 
         /// <summary>
         /// Register all timers for all outgouing timer transitions for current actvity of the specified process.

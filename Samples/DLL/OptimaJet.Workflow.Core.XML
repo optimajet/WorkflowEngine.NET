@@ -268,7 +268,7 @@
             <param name="isPreExecution">If true then Result Pre Execution will be considered in time of the check of conditions</param>
                /// <param name="beforeExecutionAction">Action will be called before execution</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.Execute(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters})">
+        <member name="M:OptimaJet.Workflow.Core.Bus.ActivityExecutor.Execute(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Threading.CancellationToken)">
             <summary>
             Provides choice of activity for execution <see cref="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.Conditions"/> and execution of actions <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.Implementation"/> and <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.PreExecutionImplementation"/> in chosen activity
             </summary>
@@ -381,11 +381,17 @@
             Execution result
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.ExecutionResponseEventArgs.#ctor(OptimaJet.Workflow.Core.Bus.ExecutionResponseParameters)">
+        <member name="P:OptimaJet.Workflow.Core.Bus.ExecutionResponseEventArgs.Token">
+            <summary>
+            Cancellation token that was passed from public api
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Bus.ExecutionResponseEventArgs.#ctor(OptimaJet.Workflow.Core.Bus.ExecutionResponseParameters,System.Threading.CancellationToken)">
             <summary>
             Create ExecutionResponseEventArgs object
             </summary>
             <param name="parameters">Execution result</param>
+            <param name="token">Cancellation token that was passed from public api</param>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Bus.ExecutionResponseParameters">
             <summary>
@@ -499,19 +505,23 @@
             Starts the bus
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Threading.CancellationToken,System.Boolean)">
             <summary>
             Queue execution with the list of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">List of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="token">Cancellation token</param>
             <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
+            <returns>True if some activity and actions were executed</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.IWorkflowBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Threading.CancellationToken,System.Boolean)">
             <summary>
             Queue execution with the <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">Instance of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            /// <param name="token">Cancellation token</param>
             <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
+            <returns>True if some activity and actions were executed</returns>
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.IWorkflowBus.ExecutionComplete">
             <summary>
@@ -521,11 +531,6 @@
         <member name="E:OptimaJet.Workflow.Core.Bus.IWorkflowBus.BeforeExecution">
             <summary>
             Raises before execution of choosen activity
-            </summary>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Bus.IWorkflowBus.IsAsync">
-            <summary>
-            Returns true if the bus supports asynchronous model of execution
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Bus.NullBus">
@@ -544,18 +549,20 @@
             Starts the bus
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(System.Collections.Generic.IEnumerable{OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters},System.Threading.CancellationToken,System.Boolean)">
             <summary>
             Queue execution with the list of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">List of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="token">Cancellation token</param>
             <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Bus.NullBus.QueueExecution(OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters,System.Threading.CancellationToken,System.Boolean)">
             <summary>
             Queue execution with the <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/>
             </summary>
             <param name="requestParameters">Instance of <see cref="T:OptimaJet.Workflow.Core.Bus.ExecutionRequestParameters"/></param>
+            <param name="token">Cancellation token</param>
             <param name="notFireExecutionComplete">If true - the Bus must execute the Request without firing ExecutionComplete</param>
         </member>
         <member name="E:OptimaJet.Workflow.Core.Bus.NullBus.ExecutionComplete">
@@ -566,11 +573,6 @@
         <member name="E:OptimaJet.Workflow.Core.Bus.NullBus.BeforeExecution">
             <summary>
             Raises before execution of choosen activity
-            </summary>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Bus.NullBus.IsAsync">
-            <summary>
-            Returns true if the bus supports asynchronous model of execution
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Cache.DefaultParcedProcessCache">
@@ -844,7 +846,7 @@
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.BaseDefinition.DesignerSettings">
             <summary>
-            Designer settings which used be Workflow Designer
+            Designer settings which used by Workflow Designer
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.CodeActionType">
@@ -892,12 +894,17 @@
             If true specifies that the code action stored in global parameters but not in scheme. In this case code action is shared between schemes
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.IsAsync">
+            <summary>
+            If true the code action should be called asynchronously
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.Usings">
             <summary>
             List of usings separated by ;
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionDefinition.Create(System.String,System.String,System.String,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionDefinition.Create(System.String,System.String,System.String,System.String,System.String,System.String)">
             <summary>
             Create CodeActionDefinition object
             </summary>
@@ -906,6 +913,7 @@
             <param name="actionCode">Source code of the code action</param>
             <param name="isglobal">If true specifies that the code action stored in global parameters but not in scheme. In this case code action is shared between schemes</param>
             <param name="type">ype of the code action <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionType"/></param>
+            <param name="isAsync">if true the code action should be called asynchronously</param>
             <returns>CodeActionDefinition object</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.CommandDefinition">
@@ -2300,6 +2308,21 @@
             The user id for whom executes initial command if command is available. Process specific values
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.CommandExeutionResult">
+            <summary>
+            The result of command execution
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CommandExeutionResult.WasExecuted">
+            <summary>
+            If true, the command was executed.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.CommandExeutionResult.ProcessInstance">
+            <summary>
+            The process, after executing the command
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.CreateInstanceParams">
             <summary>
              Represents parameters for creaition of an instance of a process
@@ -2641,7 +2664,7 @@
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
-            <param name="cancellation">Cancellation token</param>
+            <param name="token">Cancellation token</param>
             <returns></returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},System.Threading.CancellationToken)">
@@ -2650,7 +2673,7 @@
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
-            <param name="cancellation">Cancellation token</param>
+            <param name="token">Cancellation token</param>
             <returns></returns>
             <exception cref="T:System.NotSupportedException"></exception>
         </member>
@@ -2814,6 +2837,16 @@
             <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
             <param name="actionParameter">Additional action parameter <see cref="P:OptimaJet.Workflow.Core.Model.ActionDefinitionReference.ActionParameter"/></param>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.ExecuteActionAsync(System.String,OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Execute action asynchronously
+            </summary>
+            <param name="name">Name of the action to execute</param>
+            <param name="processInstance">Reference to ProcessInstance from which action is executed <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/></param>
+            <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
+            <param name="actionParameter">Additional action parameter <see cref="P:OptimaJet.Workflow.Core.Model.ActionDefinitionReference.ActionParameter"/></param>
+            <param name="token">Cancellation token</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.ExecuteCondition(System.String,OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String)">
             <summary>
             Check condition
@@ -2823,6 +2856,29 @@
             <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
             <param name="actionParameter">Additional action parameter <see cref="P:OptimaJet.Workflow.Core.Model.ActionDefinitionReference.ActionParameter"/></param>
             <returns>Condition result</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.ExecuteConditionAsync(System.String,OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Check condition asynchronously
+            </summary>
+            <param name="name">Name of the condition to check</param>
+            <param name="processInstance">Reference to ProcessInstance from which condition is checked <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/></param>
+            <param name="runtime">Reference to WorkflowRuntime object which managed specified process instance <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime"/></param>
+            <param name="actionParameter">Additional action parameter <see cref="P:OptimaJet.Workflow.Core.Model.ActionDefinitionReference.ActionParameter"/></param>
+            <param name="token">Cancellation token</param>
+            <returns>Condition result</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.IsActionAsync(System.String)">
+            <summary>
+            Checks whether the action should be called asynchronously
+            </summary>
+            <param name="name">Name of the action</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.IsConditionAsync(System.String)">
+            <summary>
+            Checks whether the condition should be called asynchronously
+            </summary>
+            <param name="name">Name of the condition</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider.GetActions">
             <summary>
@@ -3379,6 +3435,11 @@
             Register assembly in <see cref="T:OptimaJet.Workflow.Core.CodeActions.CodeActionsCompiller"/> as referenced assembly
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GlobalActionsInvoker">
+            <summary>
+            Invoker which calls the global Code Actions 
+            </summary>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.RegisterLicense(System.String)">
             <summary>
             Register the license to remove license restrictions
@@ -3575,6 +3636,7 @@
             <param name="command">Command to execute</param>
             <param name="identityId">The user id which execute command</param>
             <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
+            <returns>Result of the execution</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommand(System.Guid,System.String,System.String,OptimaJet.Workflow.Core.Runtime.WorkflowCommand)">
             <summary>
@@ -3584,6 +3646,7 @@
             <param name="identityId">The user id which execute command</param>
             <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
             <param name="command">Command to execute</param>
+            <returns>Result of the execution</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetInitialState(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>
@@ -3665,6 +3728,14 @@
             <param name="processInstance">Process instance for set activity as current</param>
             <param name="doNotSetRunningStatus">The status of the process - <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/> will not be set if true</param>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetActivityWithoutExecutionAsync(OptimaJet.Workflow.Core.Model.ActivityDefinition,OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean)">
+            <summary>
+            Set specified activity as current without execution of the implementation of the activity (Async version)
+            </summary>
+            <param name="activityToSet">Activity to set</param>
+            <param name="processInstance">Process instance for set activity as current</param>
+            <param name="doNotSetRunningStatus">The status of the process - <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/> will not be set if true</param>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetActivityWithExecution(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object},OptimaJet.Workflow.Core.Model.ActivityDefinition,OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean)">
             <summary>
             Set specified activity as current and executing the implementation of the activity
@@ -3675,6 +3746,18 @@
             <param name="activityToSet">Activity to set</param>
             <param name="processInstance">Process instance for set activity as current</param>
             <param name="doNotSetRunningStatus">The status of the process - <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/> will not be set if true</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetActivityWithExecutionAsync(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object},OptimaJet.Workflow.Core.Model.ActivityDefinition,OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean,System.Threading.CancellationToken)">
+            <summary>
+            Set specified activity as current and executing the implementation of the activity (Async version)
+            </summary>
+            <param name="identityId">The user id which set the activity</param>
+            <param name="impersonatedIdentityId">The user id for whom sets the activity (impersonation)</param>
+            <param name="parameters">Dictionary of ProcessInstance parameters which transferred to executed actions</param>
+            <param name="activityToSet">Activity to set</param>
+            <param name="processInstance">Process instance for set activity as current</param>
+            <param name="doNotSetRunningStatus">The status of the process - <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/> will not be set if true</param>
+            <param name="token">Cancellation token</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAllActorsForAllCommandTransitions(System.Guid,System.Boolean,System.String)">
             <summary>
@@ -3816,31 +3899,15 @@
             <param name="processId">Process id</param>
             <returns>True if process with specified identifier is exists</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.Threading.CancellationToken)">
             <summary>
             Create instance of process (async version)
             </summary>
             <param name="schemeCode">Code of the scheme</param>
             <param name="processId">Process id</param>
+            <param name="token">Cancellation token</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.String,System.String)">
-            <summary>
-            Create instance of process (async version)
-            </summary>
-            <param name="schemeCode">Code of the scheme</param>
-            <param name="processId">Process id</param>
-            <param name="identityId">The user id which execute initial command if command is available</param>
-            <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Create instance of process (async version)
-            </summary>
-            <param name="schemeCode">Code of the scheme</param>
-            <param name="processId">Process id</param>
-            <param name="parameters">The parameters for creating scheme of process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.String,System.String,System.Threading.CancellationToken)">
             <summary>
             Create instance of process (async version)
             </summary>
@@ -3848,13 +3915,34 @@
             <param name="processId">Process id</param>
             <param name="identityId">The user id which execute initial command if command is available</param>
             <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
-            <param name="parameters">The parameters for creating scheme of process</param>
+            <param name="token">Cancellation token</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.CreateInstanceParams)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Create instance of process (async version)
+            </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="processId">Process id</param>
+            <param name="schemeCreationParameters">The parameters for creating scheme of process</param>
+            <param name="token">Cancellation token</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(System.String,System.Guid,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object},System.Threading.CancellationToken)">
+            <summary>
+            Create instance of process (async version)
+            </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="processId">Process id</param>
+            <param name="identityId">The user id which execute initial command if command is available</param>
+            <param name="impersonatedIdentityId">The user id for whom executes initial command if command is available</param>
+            <param name="schemeCreationParameters">The parameters for creating scheme of process</param>
+            <param name="token">Cancellation token</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.CreateInstanceParams,System.Threading.CancellationToken)">
             <summary>
             Create instance of the process (async version)
             </summary>
             <param name="createInstanceParams">Parameters for creaition of an instance of a process</param>
+            <param name="token">Cancellation token</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DeleteInstanceAsync(System.Guid)">
             <summary>
@@ -3903,27 +3991,30 @@
             <param name="processId">Process id</param>
             <param name="parameters">Parameters for creating scheme of process</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteFromInitialActivityAsync(System.Guid,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteFromInitialActivityAsync(System.Guid,System.Boolean,System.Threading.CancellationToken)">
             <summary>
             Pre-execution from initial activity of the process (async version)
             </summary>
             <param name="processId">Process id</param>
             <param name="ignoreCurrentStateCheck">If false and Current State Name and State Name of Current Activity is different (in case of scheme upgrade) do not run pre-execution</param>
+            <param name="token">Cancellation token</param>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteFromCurrentActivityAsync(System.Guid,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteFromCurrentActivityAsync(System.Guid,System.Boolean,System.Threading.CancellationToken)">
             <summary>
             Pre-execution from current activity of the process (async version)
             </summary>
             <param name="processId">Process id</param>
             <param name="ignoreCurrentStateCheck">If false and Current State Name and State Name of Current Activity is different (in case of scheme upgrade) do not run pre-execution</param>
+            <param name="token">Cancellation token</param> 
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteAsync(System.Guid,System.String,System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteAsync(System.Guid,System.String,System.Boolean,System.Threading.CancellationToken)">
             <summary>
             Pre-execution from specified activity of the process (async version)
             </summary>
             <param name="processId">Process id</param>
             <param name="fromActivityName">Activity name which begins pre-execution</param>
             <param name="ignoreCurrentStateCheck">If false and Current State Name and State Name of Current Activity is different (in case of scheme upgrade) do not run pre-execution</param>
+            <param name="token">Cancellation token</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetInitialCommandsAsync(System.String,System.String)">
             <summary>
@@ -3961,13 +4052,15 @@
             <param name="mainIdentityId">User id for priority check of rules</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String,System.Threading.CancellationToken)">
             <summary>
             Execute specified command for specified users (async version)
             </summary>
             <param name="command">Command to execute</param>
             <param name="identityId">The user id which execute command</param>
             <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
+            <param name="token">Cancellation token</param>
+            <returns>Result of the execution</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(System.Guid,System.String,System.String,OptimaJet.Workflow.Core.Runtime.WorkflowCommand)">
             <summary>
@@ -3977,6 +4070,7 @@
             <param name="identityId">The user id which execute command</param>
             <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
             <param name="command">Command to execute</param>
+            <returns>Result of the execution</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetInitialStateAsync(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
             <summary>

@@ -5,6 +5,8 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
+using System.Threading.Tasks;
 using System.Transactions;
 using System.Web;
 using WF.Sample.Business.Helpers;
@@ -145,6 +147,11 @@ namespace WF.Sample.Business.Workflow
             throw new NotImplementedException(string.Format("Action with name {0} not implemented", name));
         }
 
+        public async Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
         public bool ExecuteCondition(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter)
         {
             if (_conditions.ContainsKey(name))
@@ -153,6 +160,21 @@ namespace WF.Sample.Business.Workflow
             }
 
             throw new NotImplementedException(string.Format("Action condition with name {0} not implemented", name));
+        }
+
+        public async Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+        {
+            throw new NotImplementedException();
+        }
+
+        public bool IsActionAsync(string name)
+        {
+            return false;
+        }
+
+        public bool IsConditionAsync(string name)
+        {
+            return false;
         }
 
         public List<string> GetActions()

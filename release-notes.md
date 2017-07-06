@@ -1,8 +1,42 @@
 <!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.-->
 # Release Notes
+
+## 2.2 
+
+- Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the `await` keyword. Such methods will be the most effective if you use asynchronous methods of the `WorkflowRuntime` object, for instance, `ExecuteCommandAsync` instead of `ExecuteCommand`, or `SetStateAsync` instead of `SetState`, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use `IWorkflowActionProvider`, then you will need to implement 4 additional methods. `bool IsActionAsync(string name)` and `bool IsConditionAsync(string name)` should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the `Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)` and `Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)` methods. 
+- Parameters conveyed to the process with the command no longer need to be described as command parameters. Iа such a parameter is described in the scheme, it will be a Temporary or a Persistence one, depending on which Purpose is specified in the scheme. If the parameter is not described in the scheme, it will be a Temporary one.
+- The `ExecuteCommand` and `ExecuteCommandAsync` methods return information on whether the command has been executed (it may not be executed under certain conditions) and the `ProcessInstance` state after the execution of a command.
+
+**The following additional actions must be taken to uprgade to Workflow Engine 2.2:**
+
+- If you use `IWorkflowActionProvider`, you will need to add 4 new methods to it: `IsActionAsync`, `IsConditionAsync`, `ExecuteActionAsync`, `ExecuteConditionAsync`. If you do not yet intend to use asynchronous Actions, then the `IsActionAsync` and `IsConditionAsync` methods should always return false, whereas `ExecuteActionAsync` and `ExecuteConditionAsync` can throw a NotImplementedException. 
+ 
+```csharp
+public bool IsActionAsync(string name)
+{
+	return false;
+}
+
+public bool IsConditionAsync(string name)
+{
+	return false;
+}
+
+public async Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+{
+	throw new NotImplementedException();
+}
+
+ public async Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+{
+	throw new NotImplementedException();
+}
+```
+---
+
 ## 2.1
 
-- Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found [here](https://workflowengine.io/downloads/).
+- Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found [here](/downloads).
 - Workflow Engine scheme import/export to/from BPMN2 has been added.
 - Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the `CreateInstance` method. Use the `_runtime.BulkCreateInstance(..)` method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.
 
@@ -20,7 +54,7 @@
 - Ability to modify execution time for timers in running processes has been added. Use methods `_runtime.SetTimerValue(processId,timerName,newValue)` and `_runtime.ResetTimerValue(processId, timerName)` to change and reset timer values outside the process.  Use methods `_runtime.SetTimerValue(processInstance,timerName,newValue)` and `_runtime.ResetTimerValue(processInstance, timerName) ` to change and reset timer values from within your Actions. 
 - Newtonsoft.Json version has been changed from 7.0.1 to 9.0.0.
 
-**The following additional actions must be taken to update to Workflow Engine 2.0:**
+**The following additional actions must be taken to uprgade to Workflow Engine 2.0:**
 
 - Replace the link to KineticJS with the link to konva.min.js. Konva.js library is included in the ZIP archive and in `nuget package WorkflowEngine.NET-Designer`.
 - Update Newtonsoft.Json.dll to 9.0.0. The library is included in the ZIP archive and in `nuget package WorkflowEngine.NET-Core`.

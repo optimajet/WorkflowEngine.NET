@@ -168,9 +168,9 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processId">Process id</param>
         /// <param name="timerName">Timer name in Scheme</param>
         /// <param name="newValue">New value of the timer</param>
-        public void SetTimerValue(Guid processId, string timerName, DateTime newValue)
+        public Task SetTimerValue(Guid processId, string timerName, DateTime newValue)
         {
-            SetOrResetTimerValue(processId, timerName, newValue);
+            return SetOrResetTimerValue(processId, timerName, newValue);
         }
 
         /// <summary>
@@ -194,19 +194,19 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// </summary>
         /// <param name="processId">Process id</param>
         /// <param name="timerName">Timer name in Scheme</param>
-        public void ResetTimerValue(Guid processId, string timerName)
+        public Task ResetTimerValue(Guid processId, string timerName)
         {
-            SetOrResetTimerValue(processId, timerName, null);
+            return SetOrResetTimerValue(processId, timerName, null);
         }
 
-        private void SetOrResetTimerValue(Guid processId, string timerName, DateTime? newValue)
+        private async Task SetOrResetTimerValue(Guid processId, string timerName, DateTime? newValue)
         {
 
             var parameterName = GetTimerValueParameterName(timerName);
 
             var processInstance = _runtime.Builder.GetProcessInstance(processId);
             var oldStatus = _runtime.PersistenceProvider.GetInstanceStatus(processId);
-            _runtime.SetProcessNewStatus(processInstance, ProcessStatus.Running, true);
+            await _runtime.SetProcessNewStatus(processInstance, ProcessStatus.Running, true).ConfigureAwait(false);
 
             try
             {
@@ -241,7 +241,7 @@ namespace OptimaJet.Workflow.Core.Runtime
                             }
                             RefreshOrRegisterTimer(processInstance, new List<TimerDefinition> {timer});
                             _runtime.PersistenceProvider.SavePersistenceParameters(processInstance);
-                            _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                            await _runtime.SetProcessNewStatus(processInstance, oldStatus, true).ConfigureAwait(false);
                             if (wasRunning)
                             {
                                 _stopped = false;
@@ -263,12 +263,12 @@ namespace OptimaJet.Workflow.Core.Runtime
                 else
                 {
                     _runtime.PersistenceProvider.SavePersistenceParameters(processInstance);
-                    _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                   await _runtime.SetProcessNewStatus(processInstance, oldStatus, true).ConfigureAwait(false);
                 }
             }
             catch
             {
-                _runtime.SetProcessNewStatus(processInstance, oldStatus, true);
+                await _runtime.SetProcessNewStatus(processInstance, oldStatus, true).ConfigureAwait(false);
                 throw;
             }
         }
@@ -617,7 +617,7 @@ namespace OptimaJet.Workflow.Core.Runtime
             try
             {
                 var timerToExecute = timer;
-                await Task.Run(() => _runtime.ExecuteTimer(timerToExecute.ProcessId, timerToExecute.Name));
+                await _runtime.ExecuteTimer(timerToExecute.ProcessId, timerToExecute.Name);
             }
             // After implementing logger insert log here
             catch(ImpossibleToSetStatusException){}

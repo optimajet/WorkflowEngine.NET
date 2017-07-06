@@ -4,19 +4,15 @@
     ActivityInitialColor: '#CBF4B2',
     ActivityFinalColor: '#DDEAFA',
     ActivityCurrentColor: '#FFCC99',
-
     DeleteConfirm: 'Are you sure you want to delete selected item(s)?',
     FieldIsRequired: 'Field is required!',
     FieldMustBeUnique: 'Field must be unique!',
     ButtonTextDelete: 'Delete',
     ButtonTextCreate: 'Create',
-
     ButtonTextSave: 'Save',
     ButtonTextCancel: 'Cancel',
     ButtonTextClose: 'Close',
-
     SaveConfirm: 'Save changes?',
-    DeleteConfirm: 'Are you sure you want to delete selected item(s)?',
     DialogConfirmText: "Question",
 
     InfoBlockLabel:{
@@ -131,6 +127,7 @@
         Name: 'Name',
         ActionCode: 'Action code',
         IsGlobal: 'Is global',
+        IsAsync: 'Async',
         Type: 'Type'
     },
 
