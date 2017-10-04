@@ -103,7 +103,7 @@ namespace OptimaJet.Workflow.DbPersistence
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name.ToUpper()), transaction, pId);
+                string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name), transaction, pId);
         }
 
         public static int ExecuteCommand(SqlConnection connection, string commandText, 
@@ -177,7 +177,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     T item = new T();
                     foreach (var c in item.DbColumns)
-                        item.SetValue(c.Name, row[c.Name.ToUpper()]);
+                        item.SetValue(c.Name, row[c.Name]);
                     res.Add(item);
                 }
 #endif
