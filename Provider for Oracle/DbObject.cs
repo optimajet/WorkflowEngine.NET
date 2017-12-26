@@ -53,7 +53,7 @@ namespace OptimaJet.Workflow.Oracle
             {
                 command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
                     ObjectName, 
-                    String.Join(",", DBColumns.Select(c=>c.Name.ToUpper())),
+                    String.Join(",", DBColumns.Select(c=>c.Name.ToUpperInvariant())),
                     String.Join(",", DBColumns.Select(c=> ":" + c.Name)));
 
                 command.Parameters.AddRange(
@@ -69,8 +69,8 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
                     ObjectName,
-                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => c.Name.ToUpper() + " = :" + c.Name)),
-                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpper() + " = :" + c.Name )));
+                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name)),
+                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name )));
 
             var parameters = DBColumns.Select(c =>
                 new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray();
@@ -89,7 +89,7 @@ namespace OptimaJet.Workflow.Oracle
                 throw new Exception(string.Format("Key for table {0} isn't defined.", ObjectName));
             }
 
-            string selectText = string.Format("SELECT * FROM {0} WHERE {1} = :p_id", ObjectName, key.Name.ToUpper());
+            string selectText = string.Format("SELECT * FROM {0} WHERE {1} = :p_id", ObjectName, key.Name.ToUpperInvariant());
             var parameters = new[] {new OracleParameter("p_id", key.Type, ConvertToDBCompatibilityType(id), ParameterDirection.Input)};
 
             return Select(connection, selectText, parameters).FirstOrDefault();
@@ -103,7 +103,7 @@ namespace OptimaJet.Workflow.Oracle
                 throw new Exception(string.Format("Key for table {0} isn't defined.", ObjectName));
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE {1} = :p_id", ObjectName, key.Name.ToUpper()),
+                string.Format("DELETE FROM {0} WHERE {1} = :p_id", ObjectName, key.Name.ToUpperInvariant()),
                 new OracleParameter[]{
                     new OracleParameter("p_id", key.Type, ConvertToDBCompatibilityType(id), ParameterDirection.Input)});
         }
@@ -152,7 +152,7 @@ namespace OptimaJet.Workflow.Oracle
                 {
                     T item = new T();
                     foreach (var c in item.DBColumns)
-                        item.SetValue(c.Name, row[c.Name.ToUpper()]);
+                        item.SetValue(c.Name, row[c.Name.ToUpperInvariant()]);
                     res.Add(item);
                 }
 

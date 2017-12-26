@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 2.2
+Version: 2.3
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -9,11 +9,11 @@ CREATE TABLE "WorkflowInbox"
 (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
-  "IdentityId" character varying(256) NOT NULL,
+  "IdentityId" uuid NOT NULL,
   CONSTRAINT "WorkflowInbox_pkey" PRIMARY KEY ("Id")
 );
 
-CREATE INDEX "WorkflowInbox_IdentityId_idx" ON "WorkflowInbox" USING btree ("IdentityId" COLLATE pg_catalog."default");
+CREATE INDEX "WorkflowInbox_IdentityId_idx" ON "WorkflowInbox" USING btree ("IdentityId");
 CREATE INDEX "WorkflowInbox_ProcessId_idx"  ON "WorkflowInbox" USING btree ("ProcessId");
 
 --WorkflowProcessInstance

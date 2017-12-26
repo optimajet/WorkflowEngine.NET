@@ -2619,61 +2619,77 @@
             Old staring transition name
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.BulkOperationOptions">
+            <summary>
+            Auxiliary parameters that configure bulk operations.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.BulkOperationOptions.MaxDegreeOfParallelism">
+            <summary>
+            Maximum parallelization of subprocess execution.
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi">
             <summary>
             Runtime API for bulk operations
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams,OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <returns></returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams})">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstance(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <returns></returns>
             <exception cref="T:System.NotSupportedException"></exception>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams,OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances (Async version)
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <returns></returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams})">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances (Async version)
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <returns></returns>
             <exception cref="T:System.NotSupportedException"></exception>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams,System.Threading.CancellationToken)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams,System.Threading.CancellationToken,OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances (Async version)
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">BulkCreateInstancePrams objects</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <param name="token">Cancellation token</param>
             <returns></returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},System.Threading.CancellationToken)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeBulkApi.BulkCreateInstanceAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Collections.Generic.List{OptimaJet.Workflow.Core.Runtime.BulkCreateInstancePrams},System.Threading.CancellationToken,OptimaJet.Workflow.Core.Runtime.BulkOperationOptions)">
             <summary>
             Creates and initializes multiple process instances (Async version)
             </summary>
             <param name="runtime">Instance of workflow runtime</param>
             <param name="createInstanceParameters">List of BulkCreateInstancePrams objects</param>
             <param name="token">Cancellation token</param>
+            <param name="options">Auxiliary parameters that configure bulk operations</param>
             <returns></returns>
             <exception cref="T:System.NotSupportedException"></exception>
         </member>

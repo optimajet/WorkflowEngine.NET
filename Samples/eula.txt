@@ -1,5 +1,21 @@
 ﻿END-USER LICENSE AGREEMENT
 
+SUMMARY
+
+1. Workflow Engine Enterprise and SaaS editions come with source code, letting you customize its UI and introduce necessary changes to its functionality. However, this does not let you resell Workflow Engine as a component for further development.
+
+2. We do not limit redistribution of the final product built with Workflow Engine's SaaS license and we do not impose any loyalty fees. However, we strongly recommend you to purchase one of our support plans. Otherwise, we will not be able to respond to your questions in a timely manner and solve arising issues. Subscribe to a custom support plan for mission-critical and SaaS applications.
+
+3. One Workflow Engine license allows you to build one product with Workflow Engine. Our Enterprise license allows you to use such a product only internally, i.e. within your company.
+
+4. We do not limit the use of the final product. However, we do not grant any intellectual property rights to Workflow Engine to our customers.
+
+5. Trial license can be used only for development purposes.
+
+6. Support plans include support only for officially published versions of Workflow Engine. To get support for modified versions of Workflow Engine, please, get a quote.
+
+EULA
+
 IMPORTANT — READ CAREFULLY: This OPTIMAJET INC (“OPTIMAJET”) End-User License Agreement (“EULA”) is a legal agreement between you, a developer of software applications, (“Developer End User”) and OPTIMAJET for all OPTIMAJET products, frameworks, components, source code, demos, intermediate files, media, printed materials, and online or electronic documentation (“SOFTWARE DEVELOPMENT PRODUCT(S)”) contained in this distribution.
 
 By installing, copying, or otherwise using the SOFTWARE DEVELOPMENT PRODUCT(S), you agree to be bound by the terms of this EULA. If you do not agree to any part of the terms of this EULA, DO NOT INSTALL, COPY, USE, EVALUATE, OR REPLICATE IN ANY MANNER, ANY PART, FILE OR PORTION OF THE SOFTWARE DEVELOPMENT PRODUCT(S).

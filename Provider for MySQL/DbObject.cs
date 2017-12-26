@@ -72,7 +72,7 @@ namespace OptimaJet.Workflow.MySQL
                 throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
             }
 
-            string selectText = string.Format("SELECT * FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name.ToUpper());
+            string selectText = string.Format("SELECT * FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name);
             var pId = new MySqlParameter("p_id", key.Type) {Value = ConvertToDBCompatibilityType(id)};
 
             return Select(connection, selectText, pId).FirstOrDefault();
@@ -88,7 +88,7 @@ namespace OptimaJet.Workflow.MySQL
             var pId = new MySqlParameter("p_id", key.Type) {Value = ConvertToDBCompatibilityType(id)};
 
             return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name.ToUpper()), transaction, pId);
+                string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name), transaction, pId);
         }
         public static int ExecuteCommand(MySqlConnection connection, string commandText,
             params MySqlParameter[] parameters)
@@ -144,7 +144,7 @@ namespace OptimaJet.Workflow.MySQL
                 {
                     T item = new T();
                     foreach (var c in item.DBColumns)
-                        item.SetValue(c.Name, row[c.Name.ToUpper()]);
+                        item.SetValue(c.Name, row[c.Name]);
                     res.Add(item);
                 }
 

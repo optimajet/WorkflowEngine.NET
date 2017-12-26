@@ -53,29 +53,29 @@ EXEC(N'INSERT dbo.WorkflowScheme(Code, Scheme) VALUES (N''SimpleWF'', N''
   <Commands>
     <Command Name="StartProcessing">
       <InputParameters>
-        <ParameterRef Name="Comment" NameRef="Comment" />
+        <ParameterRef Name="Comment" IsRequired="false" NameRef="Comment" />
       </InputParameters>
     </Command>
     <Command Name="Sighting">
       <InputParameters>
-        <ParameterRef Name="Comment" NameRef="Comment" />
+        <ParameterRef Name="Comment" IsRequired="false" NameRef="Comment" />
       </InputParameters>
     </Command>
     <Command Name="Denial">
       <InputParameters>
-        <ParameterRef Name="Comment" NameRef="Comment" />
+        <ParameterRef Name="Comment" IsRequired="false" NameRef="Comment" />
       </InputParameters>
     </Command>
     <Command Name="Paid">
       <InputParameters>
-        <ParameterRef Name="Comment" NameRef="Comment" />
+        <ParameterRef Name="Comment" IsRequired="false" NameRef="Comment" />
       </InputParameters>
     </Command>
   </Commands>
   <Timers>
-    <Timer Name="ControllerTimer" Type="Interval" Value="120000" NotOverrideIfExists="false" />
+    <Timer Name="ControllerTimer" Type="Interval" Value="2minutes" NotOverrideIfExists="false" />
   </Timers>
-   <Activities>
+  <Activities>
     <Activity Name="DraftInitial" State="Draft" IsInitial="True" IsFinal="False" IsForSetState="False" IsAutoSchemeUpdate="False">
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
@@ -451,7 +451,7 @@ using (var context = new DataModelDataContext())
   </CodeActions>
   <Localization>
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="ControllerSighting" Value="Controller sighting" />
-    <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AuthorBossSighting" Value="Author''''s boss sighting" />
+    <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AuthorBossSighting" Value="Author`s boss sighting" />
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AuthorConfirmation" Value="Author confirmation" />
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="BigBossSighting" Value="BigBoss sighting" />
     <Localize Type="State" IsDefault="True" Culture="en-US" ObjectName="AccountantProcessing" Value="Accountant processing" />
