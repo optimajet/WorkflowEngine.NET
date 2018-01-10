@@ -595,8 +595,9 @@ namespace OptimaJet.Workflow.Core.Runtime
 
                 try
                 {
-
-                    await Task.WhenAll(timers.Select(t => ExecuteTimer(t, _cancellationTokenSource.Token)));
+                    var actions = timers.Select(t =>(Action)(()=> ExecuteTimer(t, _cancellationTokenSource.Token).Wait())).ToArray();
+                    Parallel.Invoke(new ParallelOptions {MaxDegreeOfParallelism = Environment.ProcessorCount, CancellationToken = _cancellationTokenSource.Token}, actions);
+                    //await Task.WhenAll(timers.Select(t => ExecuteTimer(t, _cancellationTokenSource.Token)));
                 }
                 finally
                 {

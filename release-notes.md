@@ -1,6 +1,15 @@
 <!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.-->
 # Release Notes
 
+## 2.3
+
+- A 'Refresh' button and its functionality have been added to Designer
+- A 'Full Screen' button and its functionality have been added to Designer
+- Scroll-based scaling has been added to Designer
+- `BulkCreateInstance` and `TimerManager` performance has been enhanced
+
+---
+
 ## 2.2 
 
 - Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the `await` keyword. Such methods will be the most effective if you use asynchronous methods of the `WorkflowRuntime` object, for instance, `ExecuteCommandAsync` instead of `ExecuteCommand`, or `SetStateAsync` instead of `SetState`, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use `IWorkflowActionProvider`, then you will need to implement 4 additional methods. `bool IsActionAsync(string name)` and `bool IsConditionAsync(string name)` should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the `Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)` and `Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)` methods. 

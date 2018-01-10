@@ -140,6 +140,8 @@
         ZoomIn: 'Zoom In',
         ZoomOut: 'Zoom Out',
         ZoomPositionDefault: 'Zoom and position default set',
+        FullScreen: 'Full Screen',
+        Refresh: 'Refresh',
         AutoArrangement: 'Auto arrangement',
         Actors: 'Actors',
         Commands: 'Commands',
@@ -181,5 +183,10 @@
         CreateEmptyType: "Create",
         Format: "Format"       
      },
-    isjava: false
+    isjava: false,
+    OverviewMap: {
+        show: true,
+        width: 300,
+        height: 150
+    }
 };
