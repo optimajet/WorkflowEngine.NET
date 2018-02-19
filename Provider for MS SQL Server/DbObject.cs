@@ -53,7 +53,7 @@ namespace OptimaJet.Workflow.DbPersistence
             using (var command = connection.CreateCommand())
             {
                 command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    DbTableName, 
+                    ObjectName, 
                     String.Join(",", DbColumns.Select(c=> string.Format("[{0}]", c.Name) )),
                     String.Join(",", DbColumns.Select(c=> "@" + c.Name)));
 
@@ -67,7 +67,7 @@ namespace OptimaJet.Workflow.DbPersistence
         public int Update(SqlConnection connection)
         {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
-                    DbTableName,
+                    ObjectName,
                     String.Join(",", DbColumns.Where(c => !c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))),
                     String.Join(" AND ", DbColumns.Where(c => c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))));
 
