@@ -41,8 +41,10 @@ namespace WF.Sample.Business.Workflow
                     {
                         if (_runtime == null)
                         {
+                            var mongoClient = new MongoClient(new MongoUrl(ConfigurationManager.AppSettings["Url"]));
+                            var mongoSever = new MongoServer(MongoServerSettings.FromClientSettings(mongoClient.Settings));
                             var provider =
-                                new MongoDBProvider(new MongoClient(ConfigurationManager.AppSettings["Url"]).GetServer().GetDatabase(ConfigurationManager.AppSettings["Database"]));
+                                new MongoDBProvider(mongoSever.GetDatabase(ConfigurationManager.AppSettings["Database"]));
                             var builder = GetDefaultBuilder(provider).WithDefaultCache();
 
                             _runtime = new WorkflowRuntime()

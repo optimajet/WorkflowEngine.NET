@@ -29,6 +29,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -127,7 +128,6 @@
   <ItemGroup>
     <Compile Include="Controllers\DesignerController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
-    <Compile Include="Controllers\LoadTestingController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -144,8 +144,11 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\dwkit-style.css" />
+    <Content Include="Content\header.css" />
+    <Content Include="Content\pace-theme-minimal.css" />
+    <Content Include="Content\semantic.min.css" />
     <Content Include="Content\Site.css" />
-    <Content Include="Content\style.css" />
     <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
@@ -174,10 +177,12 @@
     <Content Include="Images\designer.tb.copyprops.png" />
     <Content Include="Images\designer.tb.copypropsactive.png" />
     <Content Include="Images\designer.tb.delete.png" />
+    <Content Include="Images\designer.tb.fullscreen.png" />
     <Content Include="Images\designer.tb.locale.png" />
     <Content Include="Images\designer.tb.move.png" />
     <Content Include="Images\designer.tb.parameter.png" />
     <Content Include="Images\designer.tb.redo.png" />
+    <Content Include="Images\designer.tb.refresh.png" />
     <Content Include="Images\designer.tb.saveasimage.png" />
     <Content Include="Images\designer.tb.timer.png" />
     <Content Include="Images\designer.tb.undo.png" />
@@ -188,6 +193,7 @@
     <Content Include="Images\error.png" />
     <Content Include="Images\grid.gif" />
     <Content Include="Images\loading.gif" />
+    <Content Include="Images\logo.png" />
     <Content Include="Images\upload.png" />
     <Content Include="Images\x.png" />
     <Content Include="Scripts\ace.js" />
@@ -251,9 +257,7 @@
     <Content Include="Views\Document\DocumentHistory.cshtml" />
     <Content Include="Views\Designer\Index.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_LayoutWithoutUserSelect.cshtml" />
     <Content Include="Views\Shared\Partial\Folders.cshtml" />
-    <Content Include="Views\LoadTesting\Index.cshtml" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

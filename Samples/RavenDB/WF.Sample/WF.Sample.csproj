@@ -29,6 +29,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -120,7 +121,6 @@
   <ItemGroup>
     <Compile Include="Controllers\DesignerController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
-    <Compile Include="Controllers\LoadTestingController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
     <Compile Include="Global.asax.cs">
       <DependentUpon>Global.asax</DependentUpon>
@@ -139,8 +139,11 @@
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Configuration\Logging.config" />
+    <Content Include="Content\dwkit-style.css" />
+    <Content Include="Content\header.css" />
+    <Content Include="Content\pace-theme-minimal.css" />
+    <Content Include="Content\semantic.min.css" />
     <Content Include="Content\Site.css" />
-    <Content Include="Content\style.css" />
     <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
@@ -199,6 +202,8 @@
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\mode-javascript.js" />
     <Content Include="Scripts\mode-json.js" />
+    <Content Include="Scripts\pace.min.js" />
+    <Content Include="Scripts\semantic.min.js" />
     <Content Include="Scripts\theme-monokai.js" />
     <Content Include="Scripts\theme-twilight.js" />
     <Content Include="Scripts\worker-javascript.js" />
@@ -209,7 +214,6 @@
     <Content Include="Views\Document\DocumentHistory.cshtml" />
     <Content Include="Views\Document\Edit.cshtml" />
     <Content Include="Views\Document\Index.cshtml" />
-    <Content Include="Views\LoadTesting\Index.cshtml" />
     <Content Include="Views\Settings\Edit.cshtml" />
     <Content Include="Views\Settings\Roles.cshtml" />
     <Content Include="Views\Settings\StructDivision.cshtml" />
@@ -219,7 +223,6 @@
     <Content Include="Views\Shared\Partial\Header.cshtml" />
     <Content Include="Views\Shared\Partial\MainMenu.cshtml" />
     <Content Include="Views\Shared\_Layout.cshtml" />
-    <Content Include="Views\Shared\_LayoutWithoutUserSelect.cshtml" />
     <Content Include="Views\Web.config">
       <SubType>Designer</SubType>
     </Content>

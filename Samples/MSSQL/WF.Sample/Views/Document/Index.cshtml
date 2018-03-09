@@ -1,28 +1,29 @@
 ﻿@{
-    ViewBag.Title = "Documents";
+    ViewBag.Title = "Vacation requests";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model WF.Sample.Models.DocumentListModel
 
-<a href="@Url.Action("Edit", "Document")">Create</a>
-<a onclick="DeleteSelected()" href="#">Delete</a>
-
-<table class="table">
+<div class="wfe-application-toolbar">
+    <a href="@Url.Action("Edit", "Document")" class="ui primary button">Create</a>
+    <a onclick="DeleteSelected()" href="#" class="ui secondary button">Delete</a>
+</div>
+<table class="grid">
     <tbody>
-        <tr>
+        <tr class="grid-header">
             <th style="width:20px">#</th>
             <th style="width:20px">Number</th>
             <th>State</th>
             <th>Name</th>
             <th>Comment </th>
             <th>Author</th>
-            <th>Controler</th>
+            <th>Manager</th>
             <th>Sum</th>
         </tr>
         @foreach (var item in Model.Docs)
         {
-            <tr>
-                <td><input type="checkbox" name="checkedbox" class="selectedValues" value="@item.Id" /> </td>
+            <tr ondblclick="javascript: document.location.href = '@Url.Action("Edit", "Document", new { Id = item.Id })'">
+                <td><div class="ui checkbox"><input type="checkbox" name="checkedbox" class="selectedValues" value="@item.Id" /><label></label></div> </td>
                 <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Number</a></td>
                 <td>@item.StateName </td>
                 <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Name</a></td>
@@ -38,22 +39,22 @@ Items count: @Model.Count <br />
 
 @if (Model.Page != 0)
 {
-    @Html.Raw(Html.ActionLink("fist page", "Index", new { page = 0 }));
+    <a href="/?page=0">fist page</a>
 }
 
 @if (Model.Page > 0)
 {
-    @Html.Raw(Html.ActionLink("prev page", "Index", new { page = Model.Page - 1 }));
+    <a href="/?page=@(Model.Page - 1)">prev page</a>
 }
 
 @if ((Model.Page + 1) * Model.PageSize < Model.Count)
 {
-    @Html.Raw(Html.ActionLink("next page", "Index", new { page = Model.Page + 1 }));
+    <a href="/?page=@(Model.Page + 1)">next page</a>
 }
 
 @if ((Model.Page + 2) * Model.PageSize < Model.Count)
 {
-    @Html.Raw(Html.ActionLink("last page", "Index", new { page = (int)(Model.Count / Model.PageSize) }));
+    <a href="/?page=@((int)(Model.Count / Model.PageSize))">last page</a>
 }
 
 <script>
@@ -62,7 +63,7 @@ Items count: @Model.Count <br />
         var selectedValues = $('.selectedValues:checked');
 
         if (selectedValues.length < 1) {
-            alert('Items not selected');
+            alert('Please, select rows for deleting!');
             return;
         }
 
