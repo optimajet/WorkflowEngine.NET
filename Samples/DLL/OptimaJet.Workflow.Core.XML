@@ -633,6 +633,41 @@
             Provides invoke of code actions by name
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation">
+            <summary>
+            Code for compile by <see cref="T:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler"/>.  System purpose only.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.#ctor(System.String,System.Int32)">
+            <summary>
+            Constructor
+            </summary>
+            <param name="code">Code</param>
+            <param name="codeShift">The code line with which the class definition begins</param>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.Code">
+            <summary>
+            Code
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.CodeShift">
+            <summary>
+            The code line with which the class definition begins
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler">
+            <summary>
+            External compiller interface. System purpose only.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler.Compile(System.Collections.Generic.List{OptimaJet.Workflow.Core.CodeActions.CodeForCompillation},System.Collections.Generic.List{System.String},System.Boolean)">
+            <summary>
+            Compile all code
+            </summary>
+            <param name="codeItems"></param>
+            <param name="referenceLocations"></param>
+            <returns></returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1">
             <summary>
             Interface of a workflow generator, which generate not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> 
@@ -3436,6 +3471,11 @@
             Start all workflow runtime services except timers аnd compile global code actions
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecutionSearchOrder">
+            <summary>
+            The order of the Action, Condition, or Rule search by name
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CodeActionsCompillationEnable">
             <summary>
             Default value is true. Enable compillation for Code Actions <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionDefinition"/> 
@@ -4487,6 +4527,11 @@
             <param name="value">Parameter value</param>
             <param name="parameterType">Parameter type</param>
             <returns>Deserialized object</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.SetExecutionSearchOrder(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.ExecutionSearchOrder)">
+            <summary>
+            Sets the order of the Action, Condition, or Rule search by name
+            </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowState">
             <summary>

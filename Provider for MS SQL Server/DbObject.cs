@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Data.SqlClient;
 using System.Reflection;
+using System.Threading.Tasks;
 
 namespace OptimaJet.Workflow.DbPersistence
 {
@@ -13,6 +14,7 @@ namespace OptimaJet.Workflow.DbPersistence
         public SqlDbType Type = SqlDbType.NVarChar;
         public bool IsKey = false;
         public int Size = 256;
+        public bool IsVirtual = false;
     }
 
     public abstract class DbObject
@@ -48,36 +50,46 @@ namespace OptimaJet.Workflow.DbPersistence
         }
       
         #region Command Insert/Update/Delete/Commit
-        public virtual int Insert(SqlConnection connection)
+        
+        public int Insert(SqlConnection connection)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    ObjectName, 
-                    String.Join(",", DbColumns.Select(c=> string.Format("[{0}]", c.Name) )),
-                    String.Join(",", DbColumns.Select(c=> "@" + c.Name)));
-
-                command.Parameters.AddRange(DbColumns.Select(CreateParameter).ToArray());
-                command.CommandType = CommandType.Text;
-                int cnt = command.ExecuteNonQuery();
-                return cnt;
-            }
+            return InsertAsync(connection).Result;
+        }
+        
+        public Task<int> InsertAsync(SqlConnection connection)
+        {
+            var commandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                ObjectName,
+                String.Join(",", DbColumns.Where(c=> !c.IsVirtual).Select(c => string.Format("[{0}]", c.Name))),
+                String.Join(",", DbColumns.Where(c => !c.IsVirtual).Select(c => "@" + c.Name)));
+            var parameters = DbColumns.Select(CreateParameter).ToArray();
+            return ExecuteCommandAsync(connection, commandText, parameters);
         }
 
         public int Update(SqlConnection connection)
         {
+            return UpdateAsync(connection).Result;
+        }
+        
+        public Task<int> UpdateAsync(SqlConnection connection)
+        {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
-                    ObjectName,
-                    String.Join(",", DbColumns.Where(c => !c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))),
-                    String.Join(" AND ", DbColumns.Where(c => c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))));
+                ObjectName,
+                String.Join(",", DbColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))),
+                String.Join(" AND ", DbColumns.Where(c => c.IsKey).Select(c => string.Format("[{0}] = @{0}", c.Name))));
 
             var parameters = DbColumns.Select(CreateParameter).ToArray();
 
-            return ExecuteCommand(connection, command, parameters);
+            return ExecuteCommandAsync(connection, command, parameters);
             
         }
 
         public static T SelectByKey(SqlConnection connection, object id)
+        {
+            return SelectByKeyAsync(connection, id).Result;
+        }
+        
+        public static async Task<T> SelectByKeyAsync(SqlConnection connection, object id)
         {
             var t = new T();
 
@@ -90,10 +102,15 @@ namespace OptimaJet.Workflow.DbPersistence
             string selectText = string.Format("SELECT * FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name);
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
-            return Select(connection, selectText, pId).FirstOrDefault();
+            return (await SelectAsync(connection, selectText, pId).ConfigureAwait(false)).FirstOrDefault();
         }
 
         public static int Delete(SqlConnection connection, object id, SqlTransaction transaction = null)
+        {
+            return DeleteAsync(connection, id, transaction).Result;
+        }
+        
+        public static Task<int> DeleteAsync(SqlConnection connection, object id, SqlTransaction transaction = null)
         {
             var t = new T();
             var key = t.DbColumns.FirstOrDefault(c => c.IsKey);
@@ -102,21 +119,33 @@ namespace OptimaJet.Workflow.DbPersistence
 
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
-            return ExecuteCommand(connection,
+            return ExecuteCommandAsync(connection,
                 string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name), transaction, pId);
         }
+
 
         public static int ExecuteCommand(SqlConnection connection, string commandText, 
             params SqlParameter[] parameters)
         {
             return ExecuteCommand(connection, commandText, null, parameters);
         }
+        
+        public static Task<int> ExecuteCommandAsync(SqlConnection connection, string commandText, 
+            params SqlParameter[] parameters)
+        {
+            return ExecuteCommandAsync(connection, commandText, null, parameters);
+        }
 
         public static int ExecuteCommand(SqlConnection connection, string commandText, SqlTransaction transaction = null, params SqlParameter[] parameters)
         {
+            return ExecuteCommandAsync(connection, commandText, transaction, parameters).Result;
+        }
+        
+        public static async Task<int> ExecuteCommandAsync(SqlConnection connection, string commandText, SqlTransaction transaction = null, params SqlParameter[] parameters)
+        {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
             using (var command = connection.CreateCommand())
@@ -129,16 +158,22 @@ namespace OptimaJet.Workflow.DbPersistence
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-                var cnt = command.ExecuteNonQuery();
+                var cnt = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 return cnt;
             }
         }
 
+
         public static T[] Select(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+        {
+            return SelectAsync(connection, commandText, parameters).Result;
+        }
+        
+        public static async Task<T[]> SelectAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
             using (var command = connection.CreateCommand())
@@ -148,10 +183,10 @@ namespace OptimaJet.Workflow.DbPersistence
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
                 var res = new List<T>();
-#if NETCOREAPP
-                using (var reader = command.ExecuteReader())
+
+                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         T item = new T();
                         for (int i = 0; i < reader.FieldCount; i++)
@@ -163,28 +198,16 @@ namespace OptimaJet.Workflow.DbPersistence
                                 item.SetValue(column.Name, reader.IsDBNull(i) ? null : reader.GetValue(i));
                             }
                         }
+
                         res.Add(item);
                     }
                 }
-#else
-                DataTable dt = new DataTable();
-                using (var oda = new SqlDataAdapter(command))
-                {
-                    oda.Fill(dt);
-                }
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    T item = new T();
-                    foreach (var c in item.DbColumns)
-                        item.SetValue(c.Name, row[c.Name]);
-                    res.Add(item);
-                }
-#endif
                 return res.ToArray();
             }
         }
-#endregion
+
+
+        #endregion
 
         public static object ConvertToDbCompatibilityType(object obj)
         {

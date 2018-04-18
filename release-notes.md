@@ -1,13 +1,54 @@
 <!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.-->
 # Release Notes
 
+## 3.0
+
+- The interface of Workflow Designer has been revamped to improve usability
+    - The look and feel of the scheme has been changed
+    - The library that renders popup windows and controls has been changed from jQuery UI to [Semantic-UI](https://github.com/Semantic-Org/Semantic-UI). jQuery UI has been removed from the project completely. Autocomplete for lists has been implemented with [jQuery-autoComplete](https://github.com/Pixabay/jQuery-autoComplete)
+    - The [Konva.js](https://konvajs.github.io/) version has been updated to 2.0.2
+    - The 'Extended Info' mode has been added to provide additional information needed when creating a workflow scheme
+    - Undo and redo have been added
+    - Current activity of a subprocesses is now highlighted
+    - Global CodeActions have been simplified
+    - Scheme legend has been added
+- Builds for .NET Core 2.0 and .NET Standard 2.0 have been included to .NET Core packages
+- The order of search for Action, Condition and Rule in Code Actions and `IWorkflowActionProvider`(`IWorkflowRuleProvider`) has been changed. Earlier on, the order was as follows (highest to lowest priority): Global CodeAction, CodeAction in the scheme, `IWorkflowActionProvider`(`IWorkflowRuleProvider`). Now this order is the following by default: CodeAction in the scheme, Global CodeAction, `IWorkflowActionProvider`(`IWorkflowRuleProvider`). Thus, CodeAction in the scheme has the highest priority. Search priority can be set with the `runtime.SetExecutionSearchOrder(ExecutionSearchOrder order)` setting.
+- Parameter type names used to be stored as an assembly qualified name (by specifying the version of the build and the public key token), which resulted in troubles when migrating schemes from the .NET Framework environment to the .NET Core environment. Now a simplified type name - the one that is displayed in Designer - is stored in the scheme. Old schemes are loaded without changes; type names will be replaced after the first save of the scheme in the Designer.
+- Errors that occur when there's a '-' in CodeAction names have been fixed.
+
+**The following additional actions must be taken to uprgade to Workflow Engine 3.0:**
+
+- It is not necessary to update to the new version of the Designer; however, we strongly advise it. The old version of the Designer shall work with the new versions of the Workflow Engine at least within the next half a year. If you are updating to the new version of the Designer, introduce the following changes to the pages where Designer is displayed.
+    - Delete links to **jquery-ui.min.css** and **jquery-ui.js**
+    ```html
+	<link href="/Content/themes/base/jquery-ui.min.css" rel="stylesheet" type="text/css"/>
+	<script src="/Scripts/jquery-ui.js" type="text/javascript"/>
+	```
+    - Add links to **semantic.min.css**, **semantic.min.js**, **jquery.auto-complete.min.js**
+	```html
+	<link href="/Content/semantic.min.css" rel="stylesheet" type="text/css"/>
+	<script src="/Scripts/semantic.min.js" type="text/javascript"/>
+	<script src="/Scripts/jquery.auto-complete.min.js" type="text/javascript"/>
+    ```
+- If the new order of search for Action, Condition and Rule does not suit you, change it with the following setting:
+```csharp
+runtime = runtime.SetExecutionSearchOrder(ExecutionSearchOrder.GlobalLocalProvider);
+```
+Then, everything shall work the same way it did in the previous versions.
+
+- Workflow Engine's reaction to the scenario where it could not find an Action, Condition or Rule in CodeActions or `IWorkflowActionProvider`(`IWorkflowRuleProvider`) has been changed. Earlier on, Workflow Engine ignored this scenario which made it difficult to debug schemes. Now, the `NotImplementedException` exception is thrown, specifying the name of the object which was not found. If this behavior does not suit you, use the following setting:
+```csharp
+runtime = runtime.SetIgnoreMissingExecutionItems(true);
+```
+---
+
 ## 2.3
 
 - A 'Refresh' button and its functionality have been added to Designer
 - A 'Full Screen' button and its functionality have been added to Designer
 - Scroll-based scaling has been added to Designer
 - `BulkCreateInstance` and `TimerManager` performance has been enhanced
-
 ---
 
 ## 2.2 
@@ -45,7 +86,7 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 
 ## 2.1
 
-- Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found [here](/downloads).
+- Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found [here](/downloads/).
 - Workflow Engine scheme import/export to/from BPMN2 has been added.
 - Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the `CreateInstance` method. Use the `_runtime.BulkCreateInstance(..)` method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.
 

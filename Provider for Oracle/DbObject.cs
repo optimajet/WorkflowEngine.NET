@@ -49,20 +49,14 @@ namespace OptimaJet.Workflow.Oracle
         #region Command Insert/Update/Delete/Commit
         public virtual int Insert(OracleConnection connection)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    ObjectName, 
-                    String.Join(",", DBColumns.Select(c=>c.Name.ToUpperInvariant())),
-                    String.Join(",", DBColumns.Select(c=> ":" + c.Name)));
+            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                    ObjectName,
+                    String.Join(",", DBColumns.Select(c => c.Name.ToUpperInvariant())),
+                    String.Join(",", DBColumns.Select(c => ":" + c.Name)));
 
-                command.Parameters.AddRange(
-                    DBColumns.Select(c => new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray());
-                command.BindByName = true;
-                command.CommandType = CommandType.Text;
-                int cnt = command.ExecuteNonQuery();
-                return cnt;
-            }
+            var parameters = DBColumns.Select(c => new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray();
+
+            return ExecuteCommand(connection, command, parameters);
         }
 
         public int Update(OracleConnection connection)

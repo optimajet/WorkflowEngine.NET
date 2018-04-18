@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Reflection;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -14,6 +15,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         public NpgsqlDbType Type = NpgsqlDbType.Varchar;
         public bool IsKey = false;
         public int Size = 256;
+        public bool IsVirtual = false;
     }
 
     public abstract class DbObject
@@ -26,10 +28,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         // ReSharper disable once StaticMemberInGenericType
         public static string DbTableName;
 
-        public static string ObjectName
-        {
-            get { return string.Format("\"{0}\".\"{1}\"", SchemaName, DbTableName); }
-        }
+        public static string ObjectName => $"\"{SchemaName}\".\"{DbTableName}\"";
 
         public List<ColumnInfo> DBColumns = new List<ColumnInfo>();
 
@@ -44,62 +43,76 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
       
         #region Command Insert/Update/Delete/Commit
-        public virtual int Insert(NpgsqlConnection connection)
+        
+        public int Insert(NpgsqlConnection connection)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    ObjectName, 
-                    String.Join(",", DBColumns.Select(c=> string.Format("\"{0}\"", c.Name) )),
-                    String.Join(",", DBColumns.Select(c=> "@" + c.Name)));
-
-                command.Parameters.AddRange(DBColumns.Select(CreateParameter).ToArray());
-                command.CommandType = CommandType.Text;
-                int cnt = command.ExecuteNonQuery();
-                return cnt;
-            }
+            return InsertAsync(connection).Result;
+        }
+        
+        public Task<int> InsertAsync(NpgsqlConnection connection)
+        {
+            var commandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                ObjectName,
+                String.Join(",", DBColumns.Where(c=> !c.IsVirtual).Select(c => string.Format("\"{0}\"", c.Name))),
+                String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => "@" + c.Name)));
+            var parameters = DBColumns.Select(CreateParameter).ToArray();
+            return ExecuteCommandAsync(connection, commandText, parameters);
         }
 
         public int Update(NpgsqlConnection connection)
         {
+            return UpdateAsync(connection).Result;
+        }
+        
+        public Task<int> UpdateAsync(NpgsqlConnection connection)
+        {
             string command = string.Format("UPDATE {0} SET {1} WHERE {2}",
-                    ObjectName,
-                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))),
-                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))));
+                ObjectName,
+                String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))),
+                String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => string.Format("\"{0}\" = @{0}", c.Name))));
 
             var parameters = DBColumns.Select(CreateParameter).ToArray();
 
-            return ExecuteCommand(connection, command, parameters);
-            
+            return ExecuteCommandAsync(connection, command, parameters);
+          
         }
 
         public static T SelectByKey(NpgsqlConnection connection, object id)
+        {
+            return SelectByKeyAsync(connection, id).Result;
+        }
+        
+        public static async Task<T> SelectByKeyAsync(NpgsqlConnection connection, object id)
         {
             var t = new T();
 
             var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if(key == null)
             {
-                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
+                throw new Exception($"Key for table {DbTableName} isn't defined.");
             }
 
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"{1}\" = @p_id", ObjectName, key.Name);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"{key.Name}\" = @p_id";
             var pId = new NpgsqlParameter("p_id", key.Type) {Value = id};
 
-            return Select(connection, selectText, pId).FirstOrDefault();
+            return (await SelectAsync(connection, selectText, pId).ConfigureAwait(false)).FirstOrDefault();
         }
 
         public static int Delete(NpgsqlConnection connection, object id, NpgsqlTransaction transaction = null)
         {
+            return DeleteAsync(connection, id, transaction).Result;
+        }
+        
+        public static Task<int> DeleteAsync(NpgsqlConnection connection, object id, NpgsqlTransaction transaction = null)
+        {
             var t = new T();
             var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if (key == null)
-                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
+                throw new Exception($"Key for table {DbTableName} isn't defined.");
 
             var pId = new NpgsqlParameter("p_id", key.Type) {Value = id};
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE \"{1}\" = @p_id", ObjectName, key.Name), transaction, pId);
+            return ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE \"{key.Name}\" = @p_id", transaction, pId);
         }
 
         public static int ExecuteCommand(NpgsqlConnection connection, string commandText,
@@ -108,11 +121,23 @@ namespace OptimaJet.Workflow.PostgreSQL
             return ExecuteCommand(connection, commandText, null, parameters);
         }
 
+        public static Task<int> ExecuteCommandAsync(NpgsqlConnection connection, string commandText,
+            params NpgsqlParameter[] parameters)
+        {
+            return ExecuteCommandAsync(connection, commandText, null, parameters);
+        }
+        
         public static int ExecuteCommand(NpgsqlConnection connection, string commandText,NpgsqlTransaction transaction = null, params NpgsqlParameter[] parameters)
+        {
+            return ExecuteCommandAsync(connection, commandText, transaction, parameters).Result;
+        }
+
+        public static async Task<int> ExecuteCommandAsync(NpgsqlConnection connection, string commandText, NpgsqlTransaction transaction = null,
+            params NpgsqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
             using (var command = connection.CreateCommand())
@@ -122,19 +147,25 @@ namespace OptimaJet.Workflow.PostgreSQL
                 {
                     command.Transaction = transaction;
                 }
+
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-                var cnt = command.ExecuteNonQuery();
+                var cnt = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 return cnt;
             }
         }
-
+        
         public static T[] Select(NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters)
+        {
+            return SelectAsync(connection, commandText, parameters).Result;
+        }
+
+        public static async Task<T[]> SelectAsync(NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
             using (var command = connection.CreateCommand())
@@ -144,10 +175,9 @@ namespace OptimaJet.Workflow.PostgreSQL
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
                 var res = new List<T>();
-#if NETCOREAPP
-                using (var reader = command.ExecuteReader())
+                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
-                    while (reader.Read())
+                    while (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         T item = new T();
                         for (int i = 0; i < reader.FieldCount; i++)
@@ -162,21 +192,6 @@ namespace OptimaJet.Workflow.PostgreSQL
                         res.Add(item);
                     }
                 }
-#else
-                DataTable dt = new DataTable();
-                using (var oda = new NpgsqlDataAdapter(command))
-                {
-                    oda.Fill(dt);
-                }
-
-                foreach (DataRow row in dt.Rows)
-                {
-                    T item = new T();
-                    foreach (var c in item.DBColumns)
-                        item.SetValue(c.Name, row[c.Name]);
-                    res.Add(item);
-                }
-#endif
 
                 return res.ToArray();
             }

@@ -20,6 +20,7 @@
     <IISExpressWindowsAuthentication />
     <IISExpressUseClassicPipelineMode />
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -67,10 +68,38 @@
     <Reference Include="System.EnterpriseServices" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Images\designer.form.delete.png" />
-    <Content Include="Images\designer.form.settings.png" />
+    <Content Include="Content\semantic.min.css" />
     <Content Include="Images\download.png" />
     <Content Include="Images\upload.png" />
+    <Content Include="Images\wfe.activity.png" />
+    <Content Include="Images\wfe.actors.png" />
+    <Content Include="Images\wfe.add.png" />
+    <Content Include="Images\wfe.autoarrangment.png" />
+    <Content Include="Images\wfe.clone.png" />
+    <Content Include="Images\wfe.codeactions.png" />
+    <Content Include="Images\wfe.commands.png" />
+    <Content Include="Images\wfe.context.png" />
+    <Content Include="Images\wfe.context.white.png" />
+    <Content Include="Images\wfe.defaultzoom.png" />
+    <Content Include="Images\wfe.delete.png" />
+    <Content Include="Images\wfe.fullscreen.png" />
+    <Content Include="Images\wfe.grid.png" />
+    <Content Include="Images\wfe.help.png" />
+    <Content Include="Images\wfe.implementation.png" />
+    <Content Include="Images\wfe.implementation.white.png" />
+    <Content Include="Images\wfe.information.png" />
+    <Content Include="Images\wfe.legend.png" />
+    <Content Include="Images\wfe.localization.png" />
+    <Content Include="Images\wfe.move.png" />
+    <Content Include="Images\wfe.parameters.png" />
+    <Content Include="Images\wfe.redo.png" />
+    <Content Include="Images\wfe.refresh.png" />
+    <Content Include="Images\wfe.settings.png" />
+    <Content Include="Images\wfe.timers.png" />
+    <Content Include="Images\wfe.transition.png" />
+    <Content Include="Images\wfe.undo.png" />
+    <Content Include="Images\wfe.zoomin.png" />
+    <Content Include="Images\wfe.zoomout.png" />
     <Content Include="packages.config" />
     <None Include="Web.Debug.config">
       <DependentUpon>Web.config</DependentUpon>
@@ -79,85 +108,22 @@
       <DependentUpon>Web.config</DependentUpon>
     </None>
     <Content Include="Scripts\ext-searchbox.js" />
+    <Content Include="Scripts\jquery.auto-complete.min.js" />
     <Content Include="Scripts\json5.js" />
     <Content Include="Scripts\konva.min.js" />
+    <Content Include="Scripts\mode-javascript.js" />
     <Content Include="Scripts\mode-json.js" />
-    <Content Include="Scripts\WFED\Designer.js" />
-    <Content Include="Scripts\WFED\DesignerActivity.js" />
-    <Content Include="Scripts\WFED\DesignerActivityControl.js" />
-    <Content Include="Scripts\WFED\DesignerBackground.js" />
-    <Content Include="Scripts\WFED\DesignerConstants.js" />
-    <Content Include="Scripts\WFED\DesignerForm.js" />
-    <Content Include="Scripts\WFED\DesignerKeyboard.js" />
-    <Content Include="Scripts\WFED\DesignerToolbar.js" />
-    <Content Include="Scripts\WFED\DesignerTooltip.js" />
-    <Content Include="Scripts\WFED\DesignerTransition.js" />
-    <Content Include="Scripts\WFED\DesignerTransitionControl.js" />
-    <Content Include="Scripts\WFED\Graph.js" />
-    <Content Include="Scripts\WFED\include-wfed.js" />
+    <Content Include="Scripts\semantic.min.js" />
+    <Content Include="Scripts\worker-javascript.js" />
     <Content Include="Scripts\worker-json.js" />
+    <Content Include="Scripts\workflowdesigner.localization.js" />
     <Content Include="WFEDesigner.ashx" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Content\images\toggle-collapse-dark.png" />
-    <Content Include="Content\images\toggle-collapse-light.png" />
-    <Content Include="Content\images\toggle-expand-dark.png" />
-    <Content Include="Content\images\toggle-expand-light.png" />
-    <Content Include="Content\images\ui-bg_diagonals-thick_18_b81900_40x40.png" />
-    <Content Include="Content\images\ui-bg_diagonals-thick_20_666666_40x40.png" />
-    <Content Include="Content\images\ui-bg_flat_10_000000_40x100.png" />
-    <Content Include="Content\images\ui-bg_glass_100_f6f6f6_1x400.png" />
-    <Content Include="Content\images\ui-bg_glass_100_fdf5ce_1x400.png" />
-    <Content Include="Content\images\ui-bg_glass_65_ffffff_1x400.png" />
-    <Content Include="Content\images\ui-bg_gloss-wave_35_f6a828_500x100.png" />
-    <Content Include="Content\images\ui-bg_highlight-soft_100_eeeeee_1x100.png" />
-    <Content Include="Content\images\ui-bg_highlight-soft_75_ffe45c_1x100.png" />
-    <Content Include="Content\images\ui-icons_222222_256x240.png" />
-    <Content Include="Content\images\ui-icons_228ef1_256x240.png" />
-    <Content Include="Content\images\ui-icons_ef8c08_256x240.png" />
-    <Content Include="Content\images\ui-icons_ffd27a_256x240.png" />
-    <Content Include="Content\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\jquery-ui.min.css" />
-    <Content Include="Content\jquery.treeTable.css" />
     <Content Include="Content\workflowdesigner.css" />
     <Content Include="Global.asax" />
-    <Content Include="Images\designer.command.png" />
-    <Content Include="Images\designer.createat.png" />
-    <Content Include="Images\designer.createt.png" />
-    <Content Include="Images\designer.delete.png" />
-    <Content Include="Images\designer.tb.actor.png" />
-    <Content Include="Images\designer.tb.add.png" />
-    <Content Include="Images\designer.tb.additionalparameters.png" />
-    <Content Include="Images\designer.tb.arrangment.png" />
-    <Content Include="Images\designer.tb.codeactions.png" />
-    <Content Include="Images\designer.tb.command.png" />
-    <Content Include="Images\designer.tb.copy.png" />
-    <Content Include="Images\designer.tb.copyprops.png" />
-    <Content Include="Images\designer.tb.copypropsactive.png" />
-    <Content Include="Images\designer.tb.delete.png" />
-    <Content Include="Images\designer.tb.locale.png" />
-    <Content Include="Images\designer.tb.move.png" />
-    <Content Include="Images\designer.tb.parameter.png" />
-    <Content Include="Images\designer.tb.redo.png" />
-    <Content Include="Images\designer.tb.saveasimage.png" />
-    <Content Include="Images\designer.tb.timer.png" />
-    <Content Include="Images\designer.tb.undo.png" />
-    <Content Include="Images\designer.tb.zoomIn.png" />
-    <Content Include="Images\designer.tb.zoomnorm.png" />
-    <Content Include="Images\designer.tb.zoomOut.png" />
-    <Content Include="Images\designer.tran.aa.png" />
-    <Content Include="Images\designer.tran.ac.png" />
-    <Content Include="Images\designer.tran.ao.png" />
-    <Content Include="Images\designer.tran.ca.png" />
-    <Content Include="Images\designer.tran.cc.png" />
-    <Content Include="Images\designer.tran.co.png" />
-    <Content Include="Images\error.png" />
-    <Content Include="Images\grid.gif" />
-    <Content Include="Images\loading.gif" />
-    <Content Include="Images\x.png" />
     <Content Include="Index.html" />
     <Content Include="Scripts\ace.js" />
-    <Content Include="Scripts\jquery-ui.js" />
     <Content Include="Scripts\jquery.js" />
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\theme-monokai.js" />

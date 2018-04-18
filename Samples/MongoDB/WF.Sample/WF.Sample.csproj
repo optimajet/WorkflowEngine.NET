@@ -155,9 +155,6 @@
     <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
     <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\themes\base\jquery-ui.min.css" />
-    <Content Include="Content\themes\base\jquery-ui.structure.min.css" />
-    <Content Include="Content\themes\base\jquery-ui.theme.min.css" />
     <Content Include="Content\themes\base\jquery.treeTable.css" />
     <Content Include="Content\workflowdesigner.css" />
     <Content Include="Global.asax" />
@@ -198,7 +195,7 @@
     <Content Include="Images\x.png" />
     <Content Include="Scripts\ace.js" />
     <Content Include="Scripts\ext-searchbox.js" />
-    <Content Include="Scripts\jquery-ui.js" />
+    <Content Include="Scripts\jquery.auto-complete.min.js" />
     <Content Include="Scripts\jquery.flot.js" />
     <Content Include="Scripts\jquery.flot.selection.js" />
     <Content Include="Scripts\jquery.js" />
@@ -206,9 +203,15 @@
     <Content Include="Scripts\json5.js" />
     <Content Include="Scripts\konva.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
+    <Content Include="Scripts\mode-javascript.js" />
     <Content Include="Scripts\mode-json.js" />
+    <Content Include="Scripts\pace.min.js" />
+    <Content Include="Scripts\semantic.min.js" />
     <Content Include="Scripts\theme-monokai.js" />
+    <Content Include="Scripts\theme-twilight.js" />
+    <Content Include="Scripts\worker-javascript.js" />
     <Content Include="Scripts\worker-json.js" />
+    <Content Include="Scripts\workflowdesigner.localization.js" />
     <Content Include="Scripts\workflowdesigner.min.js" />
     <Content Include="Web.config" />
     <Content Include="Web.Debug.config">

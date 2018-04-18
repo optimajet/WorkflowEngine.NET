@@ -1,61 +1,108 @@
-<!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.-->
-<h1 id="release-notes">Release Notes</h1>
-<h2 id="2-3">2.3</h2>
+<p>&lt;!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.--&gt;</p>
+<h1>Release Notes</h1>
+<h2>3.0</h2>
 <ul>
-<li>A &#39;Refresh&#39; button and its functionality have been added to Designer</li>
-<li>A &#39;Full Screen&#39; button and its functionality have been added to Designer</li>
+<li>The interface of Workflow Designer has been revamped to improve usability
+<ul>
+<li>The look and feel of the scheme has been changed</li>
+<li>The library that renders popup windows and controls has been changed from jQuery UI to <a href="https://github.com/Semantic-Org/Semantic-UI">Semantic-UI</a>. jQuery UI has been removed from the project completely. Autocomplete for lists has been implemented with <a href="https://github.com/Pixabay/jQuery-autoComplete">jQuery-autoComplete</a></li>
+<li>The <a href="https://konvajs.github.io/">Konva.js</a> version has been updated to 2.0.2</li>
+<li>The 'Extended Info' mode has been added to provide additional information needed when creating a workflow scheme</li>
+<li>Undo and redo have been added</li>
+<li>Current activity of a subprocesses is now highlighted</li>
+<li>Global CodeActions have been simplified</li>
+<li>Scheme legend has been added</li>
+</ul>
+</li>
+<li>Builds for .NET Core 2.0 and .NET Standard 2.0 have been included to .NET Core packages</li>
+<li>The order of search for Action, Condition and Rule in Code Actions and <code>IWorkflowActionProvider</code>(<code>IWorkflowRuleProvider</code>) has been changed. Earlier on, the order was as follows (highest to lowest priority): Global CodeAction, CodeAction in the scheme, <code>IWorkflowActionProvider</code>(<code>IWorkflowRuleProvider</code>). Now this order is the following by default: CodeAction in the scheme, Global CodeAction, <code>IWorkflowActionProvider</code>(<code>IWorkflowRuleProvider</code>). Thus, CodeAction in the scheme has the highest priority. Search priority can be set with the <code>runtime.SetExecutionSearchOrder(ExecutionSearchOrder order)</code> setting.</li>
+<li>Parameter type names used to be stored as an assembly qualified name (by specifying the version of the build and the public key token), which resulted in troubles when migrating schemes from the .NET Framework environment to the .NET Core environment. Now a simplified type name - the one that is displayed in Designer - is stored in the scheme. Old schemes are loaded without changes; type names will be replaced after the first save of the scheme in the Designer.</li>
+<li>Errors that occur when there's a '-' in CodeAction names have been fixed.</li>
+</ul>
+<p><strong>The following additional actions must be taken to uprgade to Workflow Engine 3.0:</strong></p>
+<ul>
+<li>It is not necessary to update to the new version of the Designer; however, we strongly advise it. The old version of the Designer shall work with the new versions of the Workflow Engine at least within the next half a year. If you are updating to the new version of the Designer, introduce the following changes to the pages where Designer is displayed.
+<ul>
+<li>Delete links to <strong>jquery-ui.min.css</strong> and <strong>jquery-ui.js</strong></li>
+</ul>
+<pre><code class="language-html">&lt;link href=&quot;/Content/themes/base/jquery-ui.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
+&lt;script src=&quot;/Scripts/jquery-ui.js&quot; type=&quot;text/javascript&quot;/&gt;
+</code></pre>
+<ul>
+<li>Add links to <strong>semantic.min.css</strong>, <strong>semantic.min.js</strong>, <strong>jquery.auto-complete.min.js</strong></li>
+</ul>
+<pre><code class="language-html">&lt;link href=&quot;/Content/semantic.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
+&lt;script src=&quot;/Scripts/semantic.min.js&quot; type=&quot;text/javascript&quot;/&gt;
+&lt;script src=&quot;/Scripts/jquery.auto-complete.min.js&quot; type=&quot;text/javascript&quot;/&gt;
+</code></pre>
+</li>
+<li>If the new order of search for Action, Condition and Rule does not suit you, change it with the following setting:</li>
+</ul>
+<pre><code class="language-csharp">runtime = runtime.SetExecutionSearchOrder(ExecutionSearchOrder.GlobalLocalProvider);
+</code></pre>
+<p>Then, everything shall work the same way it did in the previous versions.</p>
+<ul>
+<li>Workflow Engine's reaction to the scenario where it could not find an Action, Condition or Rule in CodeActions or <code>IWorkflowActionProvider</code>(<code>IWorkflowRuleProvider</code>) has been changed. Earlier on, Workflow Engine ignored this scenario which made it difficult to debug schemes. Now, the <code>NotImplementedException</code> exception is thrown, specifying the name of the object which was not found. If this behavior does not suit you, use the following setting:</li>
+</ul>
+<pre><code class="language-csharp">runtime = runtime.SetIgnoreMissingExecutionItems(true);
+</code></pre>
+<hr>
+<h2>2.3</h2>
+<ul>
+<li>A 'Refresh' button and its functionality have been added to Designer</li>
+<li>A 'Full Screen' button and its functionality have been added to Designer</li>
 <li>Scroll-based scaling has been added to Designer</li>
 <li><code>BulkCreateInstance</code> and <code>TimerManager</code> performance has been enhanced</li>
 </ul>
 <hr>
-<h2 id="2-2">2.2</h2>
+<h2>2.2</h2>
 <ul>
-<li>Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the <code>await</code> keyword. Such methods will be the most effective if you use asynchronous methods of the <code>WorkflowRuntime</code> object, for instance, <code>ExecuteCommandAsync</code> instead of <code>ExecuteCommand</code>, or <code>SetStateAsync</code> instead of <code>SetState</code>, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you&#39;re going to call asynchronous methods from. If you use <code>IWorkflowActionProvider</code>, then you will need to implement 4 additional methods. <code>bool IsActionAsync(string name)</code> and <code>bool IsConditionAsync(string name)</code> should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the <code>Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> and <code>Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> methods. </li>
+<li>Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the <code>await</code> keyword. Such methods will be the most effective if you use asynchronous methods of the <code>WorkflowRuntime</code> object, for instance, <code>ExecuteCommandAsync</code> instead of <code>ExecuteCommand</code>, or <code>SetStateAsync</code> instead of <code>SetState</code>, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use <code>IWorkflowActionProvider</code>, then you will need to implement 4 additional methods. <code>bool IsActionAsync(string name)</code> and <code>bool IsConditionAsync(string name)</code> should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the <code>Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> and <code>Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> methods.</li>
 <li>Parameters conveyed to the process with the command no longer need to be described as command parameters. Iа such a parameter is described in the scheme, it will be a Temporary or a Persistence one, depending on which Purpose is specified in the scheme. If the parameter is not described in the scheme, it will be a Temporary one.</li>
 <li>The <code>ExecuteCommand</code> and <code>ExecuteCommandAsync</code> methods return information on whether the command has been executed (it may not be executed under certain conditions) and the <code>ProcessInstance</code> state after the execution of a command.</li>
 </ul>
 <p><strong>The following additional actions must be taken to uprgade to Workflow Engine 2.2:</strong></p>
 <ul>
-<li>If you use <code>IWorkflowActionProvider</code>, you will need to add 4 new methods to it: <code>IsActionAsync</code>, <code>IsConditionAsync</code>, <code>ExecuteActionAsync</code>, <code>ExecuteConditionAsync</code>. If you do not yet intend to use asynchronous Actions, then the <code>IsActionAsync</code> and <code>IsConditionAsync</code> methods should always return false, whereas <code>ExecuteActionAsync</code> and <code>ExecuteConditionAsync</code> can throw a NotImplementedException. </li>
+<li>If you use <code>IWorkflowActionProvider</code>, you will need to add 4 new methods to it: <code>IsActionAsync</code>, <code>IsConditionAsync</code>, <code>ExecuteActionAsync</code>, <code>ExecuteConditionAsync</code>. If you do not yet intend to use asynchronous Actions, then the <code>IsActionAsync</code> and <code>IsConditionAsync</code> methods should always return false, whereas <code>ExecuteActionAsync</code> and <code>ExecuteConditionAsync</code> can throw a NotImplementedException.</li>
 </ul>
-<pre><code class="lang-csharp">public bool IsActionAsync(string name)
+<pre><code class="language-csharp">public bool IsActionAsync(string name)
 {
-    return false;
+	return false;
 }
 
 public bool IsConditionAsync(string name)
 {
-    return false;
+	return false;
 }
 
 public async Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
 {
-    throw new NotImplementedException();
+	throw new NotImplementedException();
 }
 
  public async Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
 {
-    throw new NotImplementedException();
+	throw new NotImplementedException();
 }
 </code></pre>
 <hr>
-<h2 id="2-1">2.1</h2>
+<h2>2.1</h2>
 <ul>
-<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads">here</a>.</li>
+<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads/">here</a>.</li>
 <li>Workflow Engine scheme import/export to/from BPMN2 has been added.</li>
 <li>Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the <code>CreateInstance</code> method. Use the <code>_runtime.BulkCreateInstance(..)</code> method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.</li>
 </ul>
 <hr>
-<h2 id="2-0">2.0</h2>
+<h2>2.0</h2>
 <ul>
 <li>Designer UI has been improved, transitions are now linear for better usability</li>
 <li>Scheme rendering library <a href="https://github.com/ericdrowell/KineticJS">KineticJS</a> has been replaced with <a href="https://konvajs.github.io/">Konva.js</a></li>
-<li><code>WorkflowDesigner.readonlymode()</code>, <code>WorkflowDesigner.printablemode()</code> and <code>WorkflowDesigner.ediatblemode()</code> methods have been added to <code>WorkflowDesigner</code> object in the client. <code>readonlymode</code> makes Designer uneditable. <code>printablemode</code> removes the toolbar, the grid and all controls, zooming designer so that the scheme occupies the entire canvas. This mode can be used to print Designer&#39;s viewport to a PDF within a browser. <code>editablemode</code> makes Designer editable.</li>
+<li><code>WorkflowDesigner.readonlymode()</code>, <code>WorkflowDesigner.printablemode()</code> and <code>WorkflowDesigner.ediatblemode()</code> methods have been added to <code>WorkflowDesigner</code> object in the client. <code>readonlymode</code> makes Designer uneditable. <code>printablemode</code> removes the toolbar, the grid and all controls, zooming designer so that the scheme occupies the entire canvas. This mode can be used to print Designer's viewport to a PDF within a browser. <code>editablemode</code> makes Designer editable.</li>
 <li>Designer now allows users to make an autocomplete list for the following fields: <code>Actor.Value</code>, <code>Activity.Implementation.Action parameter</code>, <code>Transition.Condition.ActionParameter</code>. The autocomplete list is being populated server-side via the <code>IDesignerAutocompleteProvider</code> interface and by transferring implementation to the <code>WorkflowRuntime</code> object via <code>_runtime.WithDesignerAutocompleteProvider(provider)</code>.</li>
 <li>The <code>GetConditions</code> method has been added to the <code>IWorkflowActionProvider</code> interface. Now, the choice of conditions and actions in Designer can be split.</li>
-<li>Parameters of any type not mentioned in the scheme can now be used in Actions&#39; code. The type should be serialized in JSON. Three methods are available: <code>_processInstance.SetParameter(&quot;parameterName&quot;,parameterValue,ParameterPurpose.Persistence)</code>, <code>_processInstance.GetParameter&lt;ParameterType&gt;(&quot;parameterName&quot;)</code> and <code>_processInstance.RemoveParameter(&quot;parameterName&quot;)</code>.</li>
+<li>Parameters of any type not mentioned in the scheme can now be used in Actions' code. The type should be serialized in JSON. Three methods are available: <code>_processInstance.SetParameter(&quot;parameterName&quot;,parameterValue,ParameterPurpose.Persistence)</code>, <code>_processInstance.GetParameter&lt;ParameterType&gt;(&quot;parameterName&quot;)</code> and <code>_processInstance.RemoveParameter(&quot;parameterName&quot;)</code>.</li>
 <li>Ability to create Timers with a value which is undefined at the time of creation of a process has been added. <code>Timer.Value == -1</code> means that the current transition will not be executed until the respective timer has a defined value.  <code>Timer.Value == 0</code> means that in case the timer connected to a transition does not have a value, this transition shall be processed automatically. Initial value of a timer can be set with the <code>_runtime.NeedTimerValue</code> event.</li>
-<li>Ability to modify execution time for timers in running processes has been added. Use methods <code>_runtime.SetTimerValue(processId,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processId, timerName)</code> to change and reset timer values outside the process.  Use methods <code>_runtime.SetTimerValue(processInstance,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processInstance, timerName)</code> to change and reset timer values from within your Actions. </li>
+<li>Ability to modify execution time for timers in running processes has been added. Use methods <code>_runtime.SetTimerValue(processId,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processId, timerName)</code> to change and reset timer values outside the process.  Use methods <code>_runtime.SetTimerValue(processInstance,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processInstance, timerName)</code> to change and reset timer values from within your Actions.</li>
 <li>Newtonsoft.Json version has been changed from 7.0.1 to 9.0.0.</li>
 </ul>
 <p><strong>The following additional actions must be taken to uprgade to Workflow Engine 2.0:</strong></p>
@@ -66,7 +113,7 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>IF you use Oracle, you should run an <code>update_1_5_to_2_0.sql</code> script from the Oracle provider ZIP archive or a NuGet package.</li>
 </ul>
 <hr>
-<h2 id="1-5-6">1.5.6</h2>
+<h2>1.5.6</h2>
 <ul>
 <li>Two new persistence providers were added to WorkflowEngine.NET Redis Provider for <a href="http://redis.io/">Redis</a> and Ignite Provider for <a href="https://ignite.apache.org/">Apache Ignite</a></li>
 <li>notrendertoolbar property was added to the Designer object configuration (client side javascript). You can hide toobar in the workflow designer for end users.</li>
@@ -75,8 +122,8 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>Conditions are checked for transitions that creating subprocesses.</li>
 </ul>
 <hr>
-<h2 id="1-5-5">1.5.5</h2>
-<p>In this release several features have been added to simplify the generation of forms based ot commands. </p>
+<h2>1.5.5</h2>
+<p>In this release several features have been added to simplify the generation of forms based ot commands.</p>
 <ul>
 <li>The sign <code>IsRequired</code> for command parameter. You can take it into account when generating forms, also it is used in the command valudation before the execution of command.</li>
 <li>The <code>Default value</code> for command parameter. You can access it using <code>CommandParameter.DefaultValue</code> property, after you have received the list of available commands. You can set all command parameters to default value using <code>WorkflowCommand.SetAllParametersToDefault</code> or <code>WorkflowCommand.SetParameterToDefault</code> functions. The Default value must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string.</li>
@@ -89,23 +136,23 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>You can change the JSON Serializer settings for Parameters derialization using SetParameterSerializerSettings configuration method.</li>
 </ul>
 <hr>
-<h2 id="1-5-4">1.5.4</h2>
+<h2>1.5.4</h2>
 <ul>
 <li>Schema was added in constructors of all SQL providers. For MsSQL the default schema is &quot;dbo&quot;. For PostgreSql the default schema is &quot;public&quot;. For Oracle the default schema is null.</li>
 <li>You are able to specify an interval timer value with milliseconds, seconds, minutes and days. For example &quot;1d 2h 4m 30s&quot; - one day two hours four minutes thirty seconds or &quot;5m 30s&quot;, &quot;14d&quot;, &quot;12h&quot;, &quot;10m&quot;, &quot;10s&quot; etc. You are able to use following names. d, day or days to specify interval in days. h, hour or hours to specify interval in hours. m, minute or minutes to specify interval in minutes.  s, second or seconds to specify interval in seconds. ms, millisecond or milliseconds to specify interval in milliseconds. If the interval is specified as just a numeric value, it  is interpreted as the interval in milliseconds.</li>
 <li>You are able to pass initial parameters of a process by using <code>_runtime.CreateInstance(CreateInstanceParams createInstanceParams)</code> method. Parameters passed in the createInstanceParams.InitialProcessParameters property will be used as initial for parameters of a process.</li>
 </ul>
 <hr>
-<h2 id="1-5-3">1.5.3</h2>
+<h2>1.5.3</h2>
 <ul>
 <li>The JSON serializer used by the engine was changed from <code>ServiceStack.Text to Newtonsoft.JSON</code>. 1.5.3 version of WFE was built with the <code>verion 7.0 of Newtonsoft.JSON</code>.</li>
 <li><em>MSSQL provider</em> was rewritten from LINQtoSQL to ordinary SQL queries.</li>
 <li>The <em>Parameter</em> window in the designer was implroved. Now you can hide System parameters. They are hidden by default.</li>
-<li>Working with types in the <em>Parameter</em> window  in the designer was improved. Now you are able to use short type&#39;s names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use &lt;&gt; for generic types and [] for arrays.</li>
+<li>Working with types in the <em>Parameter</em> window  in the designer was improved. Now you are able to use short type's names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use &lt;&gt; for generic types and [] for arrays.</li>
 <li>Fixed a bug in the timers for their correct restart after restart of the workflow runtime.</li>
 </ul>
 <hr>
-<h2 id="1-5-2">1.5.2</h2>
+<h2>1.5.2</h2>
 <ul>
 <li><code>ExecutedActivity</code> and <code>ExecutedTransition</code> properties added in <code>ProcessInstance</code> class. Via them, you can access executed transition and activity during a transitional process.</li>
 <li>A scheme of a process downloaded from the designer with not ecoded <em>Code Actions</em>. You can upload a scheme with encoded or not encoded code actions.</li>

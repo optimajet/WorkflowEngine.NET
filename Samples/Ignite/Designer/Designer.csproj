@@ -23,6 +23,7 @@
     <SolutionDir Condition="$(SolutionDir) == '' Or $(SolutionDir) == '*Undefined*'">..\</SolutionDir>
     <RestorePackages>true</RestorePackages>
     <UseGlobalApplicationHostFile />
+    <Use64BitIISExpress />
   </PropertyGroup>
   <PropertyGroup Condition=" '$(Configuration)|$(Platform)' == 'Debug|AnyCPU' ">
     <DebugSymbols>true</DebugSymbols>
@@ -136,21 +137,9 @@
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Content\jquery.treeTable.css" />
+    <Content Include="Content\semantic.min.css" />
     <Content Include="Content\Site.css" />
-    <Content Include="Content\themes\base\images\toggle-collapse-dark.png" />
-    <Content Include="Content\themes\base\images\toggle-collapse-light.png" />
-    <Content Include="Content\themes\base\images\toggle-expand-dark.png" />
-    <Content Include="Content\themes\base\images\toggle-expand-light.png" />
-    <Content Include="Content\themes\base\images\ui-icons_444444_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_555555_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777620_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_777777_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_cc0000_256x240.png" />
-    <Content Include="Content\themes\base\images\ui-icons_ffffff_256x240.png" />
-    <Content Include="Content\themes\base\jquery-ui.min.css" />
-    <Content Include="Content\themes\base\jquery-ui.structure.min.css" />
-    <Content Include="Content\themes\base\jquery-ui.theme.min.css" />
-    <Content Include="Content\themes\base\jquery.treeTable.css" />
     <Content Include="Content\workflowdesigner.css" />
     <Content Include="favicon.ico" />
     <Content Include="fonts\glyphicons-halflings-regular.svg" />
@@ -188,14 +177,16 @@
     <Content Include="Images\upload.png" />
     <Content Include="Images\x.png" />
     <Content Include="Scripts\ace.js" />
-    <Content Include="Scripts\DesignerConstants-ru.js" />
+    <Content Include="Scripts\ext-searchbox.js" />
     <Content Include="Scripts\jquery-ui.js" />
+    <Content Include="Scripts\jquery.auto-complete.min.js" />
     <Content Include="Scripts\jquery.js" />
     <Content Include="Scripts\json5.js" />
     <Content Include="Scripts\konva.min.js" />
     <Content Include="Scripts\mode-csharp.js" />
     <Content Include="Scripts\mode-javascript.js" />
     <Content Include="Scripts\mode-json.js" />
+    <Content Include="Scripts\semantic.min.js" />
     <Content Include="Scripts\theme-monokai.js" />
     <Content Include="Scripts\theme-twilight.js" />
     <Content Include="Scripts\worker-javascript.js" />

@@ -34,18 +34,13 @@ namespace OptimaJet.Workflow.MySQL
         #region Command Insert/Update/Delete/Commit
         public virtual int Insert(MySqlConnection connection)
         {
-            using (var command = connection.CreateCommand())
-            {
-                command.CommandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    DbTableName, 
-                    String.Join(",", DBColumns.Select(c=> string.Format("`{0}`", c.Name) )),
-                    String.Join(",", DBColumns.Select(c=> "@" + c.Name)));
+            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                    DbTableName,
+                    String.Join(",", DBColumns.Select(c => string.Format("`{0}`", c.Name))),
+                    String.Join(",", DBColumns.Select(c => "@" + c.Name)));
 
-                command.Parameters.AddRange(DBColumns.Select(c=> CreateParameter(c)).ToArray());
-                command.CommandType = CommandType.Text;
-                int cnt = command.ExecuteNonQuery();
-                return cnt;
-            }
+            var parameters = DBColumns.Select(c => CreateParameter(c)).ToArray();
+            return ExecuteCommand(connection, command, parameters);
         }
 
         public int Update(MySqlConnection connection)

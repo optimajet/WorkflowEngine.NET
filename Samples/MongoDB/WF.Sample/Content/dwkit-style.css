@@ -11,6 +11,15 @@
     border-radius: 0;
 }
 
+.ui.form input[type=text]:focus,
+.ui.form input[type=number]:focus,
+.ui.form input[type=password]:focus,
+.ui.form input[type=date]:focus,
+.ui.form textarea:focus,
+.ui.input input:focus {
+    border-radius: 0;
+}
+
 div.field > label {
     font-size: 12px!important;
     color: #97A3B4!important;
@@ -46,9 +55,13 @@ div.field > label {
 }
 
 
-.ui.selection.dropdown{
-    border:none;
+.ui.selection.dropdown {
+    border: none;
     padding-left: 2px;
+    border-bottom-left-radius: 0px;
+    border-bottom-right-radius: 0px;
+    margin-bottom: 1px;
+    white-space: pre;
 }
 .ui.selection.dropdown div.text{
     padding-top: 4px;
@@ -149,10 +162,10 @@ div.field > label {
 }
 
 .ui.dropdown {
-    width: 100%!important;
-    padding-top: 8px!important;
+    width: 100% !important;
+    padding-top: 8px !important;
     border-bottom: 1px solid rgba(34,36,38,.15)!important;
-    padding-bottom: 9px!important;
+    padding-bottom: 9px !important;
 }
 
 .ui.dropdown[data-buildertype=dropdowntrigger] {
