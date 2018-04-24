@@ -85,7 +85,7 @@ Developer End User understands that the SOFTWARE DEVELOPMENT PRODUCT(S) may prod
 
 12. INDEMNIFICATION
 
-You hereby agree to indemnify OPTIMAJET and its officers, directors, employees, agents, and representatives from each and every demand, claim, loss, liability, or damage of any kind, including actual attorney’s fees, whether in tort or contract, that it or any of them may incur by reason of, or arising out of, any claim which is made by any third party with respect to any breach or violation of this Agreement by you or any claims based on the Applications and the SOFTWARE DEVELOPMENT PRODUCT(S) included herein.
+You hereby agree to indemnify OPTIMAJET and its officers, directors, employees, agents, and representatives from each and every demand, claim, loss, liability, or damage of any kind, including actual attorney’s fees, whether in tort or contract, that may incur by reason of, or arising out of, any claim which is made by any third party with respect to any breach or violation of this Agreement by you or any claims based on your use of SOFTWARE DEVELOPMENT PRODUCT(S).
 
 13. TERMINATION
 
