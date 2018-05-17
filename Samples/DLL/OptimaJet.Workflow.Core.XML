@@ -638,12 +638,13 @@
             Code for compile by <see cref="T:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler"/>.  System purpose only.
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.#ctor(System.String,System.Int32)">
+        <member name="M:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.#ctor(System.String,System.Int32,OptimaJet.Workflow.Core.Model.CodeActionDefinition)">
             <summary>
             Constructor
             </summary>
             <param name="code">Code</param>
             <param name="codeShift">The code line with which the class definition begins</param>
+            <param name="codeActionDefinition">Source definition</param>
         </member>
         <member name="P:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.Code">
             <summary>
@@ -655,17 +656,25 @@
             The code line with which the class definition begins
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.CodeActions.CodeForCompillation.CodeActionDefinition">
+            <summary>
+            Source definition
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler">
             <summary>
             External compiller interface. System purpose only.
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler.Compile(System.Collections.Generic.List{OptimaJet.Workflow.Core.CodeActions.CodeForCompillation},System.Collections.Generic.List{System.String},System.Boolean)">
+        <member name="M:OptimaJet.Workflow.Core.CodeActions.IExternalCompiler.Compile(System.Collections.Generic.List{OptimaJet.Workflow.Core.CodeActions.CodeForCompillation},System.Collections.Generic.List{System.String},System.Boolean,System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
-            Compile all code
+             System purpose only.
             </summary>
             <param name="codeItems"></param>
             <param name="referenceLocations"></param>
+            <param name="isDebug"></param>
+            <param name="ignoreNotCompilled"></param>
+            <param name="compileErrors"></param>
             <returns></returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1">
@@ -3461,14 +3470,14 @@
             Runtime in cold start state if true
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Start">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Start(System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
             Start all workflow runtime services аnd compile global code actions
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ColdStart">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ColdStart(System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
-            Start all workflow runtime services except timers аnd compile global code actions
+            Start all workflow runtime services except timers
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecutionSearchOrder">
@@ -4417,11 +4426,22 @@
             <param name="runtime">The instance of the runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.ColdStart(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.Start(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
-            Start all workflow runtime services except timers аnd compile global code actions
+            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services аnd compile global code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
+            <param name="ignoreNotCompilledGlobalActions">if true all compillation errors in the global codeactions will be ignored</param>
+            <param name="compillerErrors">compiller errors</param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.ColdStart(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
+            <summary>
+            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services except timers.
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="ignoreNotCompilledGlobalActions">if true all compillation errors in the global codeactions will be ignored</param>
+            <param name="compillerErrors">compiller errors</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithCache(OptimaJet.Workflow.Core.Builder.IWorkflowBuilder,OptimaJet.Workflow.Core.Cache.IParsedProcessCache)">
