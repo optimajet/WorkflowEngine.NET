@@ -231,7 +231,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         private static bool IsNullable<T1>(T1 obj)
         {
-            if (obj == null) return true; 
+            if (obj == null) return true;  //-V3111
             Type type = typeof (T1);
             if (!type.GetTypeInfo().IsValueType) return true;
             if (Nullable.GetUnderlyingType(type) != null) return true; 

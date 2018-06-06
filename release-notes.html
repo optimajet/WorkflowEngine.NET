@@ -1,5 +1,13 @@
 <p>&lt;!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.--&gt;</p>
 <h1>Release Notes</h1>
+<h2>3.1</h2>
+<ul>
+<li>Workflow Engine's relational database storage system has been optimized. Additional indices have been built; obsolete indices have been removed; the size of some columns has been changed. Generally, these changes should result in the improvement of Workflow Engine's performance, especially for Microsoft SQL Server. All these changes have already been included into installation scripts; use the <em>update_3_1.sql</em> script to update the existing databases.</li>
+<li>BulkCreateInstance now works for Microsoft SQL Server and .NET Core (version &gt;= 2).</li>
+</ul>
+<p><strong>Warning</strong></p>
+<p>The <em>update_3_1.sql</em> script contains a change of index and size of certain columns. Be particularly careful when applying it to the production database.</p>
+<hr>
 <h2>3.0</h2>
 <ul>
 <li>The interface of Workflow Designer has been revamped to improve usability
@@ -9,7 +17,7 @@
 <li>The <a href="https://konvajs.github.io/">Konva.js</a> version has been updated to 2.0.2</li>
 <li>The 'Extended Info' mode has been added to provide additional information needed when creating a workflow scheme</li>
 <li>Undo and redo have been added</li>
-<li>Current activity of a subprocesses is now highlighted</li>
+<li>Current activity of subprocesses is now highlighted</li>
 <li>Global CodeActions have been simplified</li>
 <li>Scheme legend has been added</li>
 </ul>
@@ -51,13 +59,13 @@
 <ul>
 <li>A 'Refresh' button and its functionality have been added to Designer</li>
 <li>A 'Full Screen' button and its functionality have been added to Designer</li>
+<li>BulkCreateInstance and TimerManager performance has been enhanced</li>
 <li>Scroll-based scaling has been added to Designer</li>
-<li><code>BulkCreateInstance</code> and <code>TimerManager</code> performance has been enhanced</li>
 </ul>
 <hr>
 <h2>2.2</h2>
 <ul>
-<li>Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the <code>await</code> keyword. Such methods will be the most effective if you use asynchronous methods of the <code>WorkflowRuntime</code> object, for instance, <code>ExecuteCommandAsync</code> instead of <code>ExecuteCommand</code>, or <code>SetStateAsync</code> instead of <code>SetState</code>, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use <code>IWorkflowActionProvider</code>, then you will need to implement 4 additional methods. <code>bool IsActionAsync(string name)</code> and <code>bool IsConditionAsync(string name)</code> should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the <code>Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> and <code>Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> methods.</li>
+<li>Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the <code>await</code> keyword. Such methods will be the most effective if you use asynchronous methods of the <code>WorkflowRuntime</code> object, for example, <code>ExecuteCommandAsync</code> instead of <code>ExecuteCommand</code>, or <code>SetStateAsync</code> instead of <code>SetState</code>, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use <code>IWorkflowActionProvider</code>, then you will need to implement 4 additional methods. <code>bool IsActionAsync(string name)</code> and <code>bool IsConditionAsync(string name)</code> should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the <code>Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> and <code>Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> methods.</li>
 <li>Parameters conveyed to the process with the command no longer need to be described as command parameters. Iа such a parameter is described in the scheme, it will be a Temporary or a Persistence one, depending on which Purpose is specified in the scheme. If the parameter is not described in the scheme, it will be a Temporary one.</li>
 <li>The <code>ExecuteCommand</code> and <code>ExecuteCommandAsync</code> methods return information on whether the command has been executed (it may not be executed under certain conditions) and the <code>ProcessInstance</code> state after the execution of a command.</li>
 </ul>
@@ -88,7 +96,7 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <hr>
 <h2>2.1</h2>
 <ul>
-<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine features are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads/">here</a>.</li>
+<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine functions are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads/">here</a>.</li>
 <li>Workflow Engine scheme import/export to/from BPMN2 has been added.</li>
 <li>Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the <code>CreateInstance</code> method. Use the <code>_runtime.BulkCreateInstance(..)</code> method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.</li>
 </ul>
@@ -123,9 +131,9 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 </ul>
 <hr>
 <h2>1.5.5</h2>
-<p>In this release several features have been added to simplify the generation of forms based ot commands.</p>
+<p>In this release several features have been added to simplify the generation of forms based on commands.</p>
 <ul>
-<li>The sign <code>IsRequired</code> for command parameter. You can take it into account when generating forms, also it is used in the command valudation before the execution of command.</li>
+<li>The sign <code>IsRequired</code> for command parameter. You can take it into account when generating forms, also it is used in the command validation before the execution of command.</li>
 <li>The <code>Default value</code> for command parameter. You can access it using <code>CommandParameter.DefaultValue</code> property, after you have received the list of available commands. You can set all command parameters to default value using <code>WorkflowCommand.SetAllParametersToDefault</code> or <code>WorkflowCommand.SetParameterToDefault</code> functions. The Default value must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string.</li>
 <li>An <code>autocompete</code> was added in the field <code>Type of Parameter</code> (editing window Parameters). It makes a suugestions about types which can be used such as primitive types (Int32, String etc) or your custom types. Types from assemblies which was registerd using <code>_runtime.RegisterAssemblyForCodeActions</code> function are added in the autocomplete list. To prevent registration or filter the list you can use the last two optional parameters of _runtime.RegisterAssemblyForCodeActions function - ignoreForDesigner and designerTypeFilter.</li>
 <li>The <code>Initial values</code> were added for Parameters. You can yse Initial value only for Parameters which have Purpose = Persistence. This values must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string. These values will be set to the process when it is created.</li>

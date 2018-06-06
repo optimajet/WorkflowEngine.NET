@@ -287,7 +287,7 @@ namespace OptimaJet.Workflow.Redis
         {
             var scheme = _connector.GetDatabase().StringGet(GetKeyForScheme(code));
 
-            if (!scheme.HasValue || string.IsNullOrEmpty(scheme))
+            if (!scheme.HasValue || string.IsNullOrEmpty(scheme)) //-V3027
                 throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
             return XElement.Parse(scheme);

@@ -1,7 +1,9 @@
+-- noinspection SqlNoDataSourceInspectionForFile
+
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 3.0
+Version: 3.1
 File: CreatePersistenceObjects.sql
 */
 
@@ -53,7 +55,7 @@ CREATE TABLE IF NOT EXISTS `workflowprocessscheme` (
   `Id` binary(16) NOT NULL,
   `Scheme` longtext NOT NULL,
   `DefiningParameters` longtext NOT NULL,
-  `DefiningParametersHash` varchar(1024) NOT NULL,
+  `DefiningParametersHash` varchar(24) NOT NULL,
   `SchemeCode` varchar(256) NOT NULL,
   `IsObsolete` bit(1) NOT NULL,
   `RootSchemeCode` varchar(256) NULL,
@@ -62,6 +64,8 @@ CREATE TABLE IF NOT EXISTS `workflowprocessscheme` (
   `StartingTransition` longtext NULL,
   PRIMARY KEY  (`Id`)
 );
+
+CREATE INDEX `ix_workflowprocessscheme_schemecode_hash_isobsolete` ON `workflowprocessscheme` (`SchemeCode`,`DefiningParametersHash`,`IsObsolete`);
 
 CREATE TABLE IF NOT EXISTS `workflowprocesstimer` (
   `Id` binary(16) NOT NULL,
@@ -102,9 +106,11 @@ CREATE TABLE IF NOT EXISTS `workflowscheme` (
 
 CREATE TABLE IF NOT EXISTS `workflowglobalparameter` (
   `Id` binary(16) NOT NULL,
-  `Type` varchar(256)  NOT NULL,
+  `Type` varchar(512)  NOT NULL,
   `Name` varchar(256) NOT NULL,
   `Value` longtext NOT NULL,
   PRIMARY KEY  (`Id`)
 );
+
+CREATE INDEX `ix_workflowglobalparameter_type_name` ON `workflowglobalparameter` (`Type`,`Name`);
 

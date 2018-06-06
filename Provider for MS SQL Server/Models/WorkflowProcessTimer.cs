@@ -180,7 +180,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return result;
         }
-#if !NETCOREAPP
+#if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()
         {
             var dt = new DataTable();

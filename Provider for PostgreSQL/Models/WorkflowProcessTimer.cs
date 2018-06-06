@@ -81,7 +81,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
                 // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
-                var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Varchar)
+                var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Varchar) //-V3059
                 {
                     Value =timersIgnoreList.ToArray()
                 };
@@ -135,7 +135,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 return 0;
 
             // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
-            var p = new NpgsqlParameter("timerListParam", NpgsqlDbType.Array | NpgsqlDbType.Uuid) {Value = timers.Select(c => c.Id).ToArray()};
+            var p = new NpgsqlParameter("timerListParam", NpgsqlDbType.Array | NpgsqlDbType.Uuid) {Value = timers.Select(c => c.Id).ToArray()}; //-V3059
             return ExecuteCommand(connection, string.Format("UPDATE {0} SET \"Ignore\" = TRUE WHERE \"Id\" = ANY(@timerListParam)", ObjectName), p);
         }
     }

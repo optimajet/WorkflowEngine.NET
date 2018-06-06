@@ -1,11 +1,11 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 3.0
+Version: 3.1
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
-CREATE TABLE "WorkflowInbox"
+CREATE TABLE IF NOT EXISTS "WorkflowInbox"
 (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
@@ -13,11 +13,11 @@ CREATE TABLE "WorkflowInbox"
   CONSTRAINT "WorkflowInbox_pkey" PRIMARY KEY ("Id")
 );
 
-CREATE INDEX "WorkflowInbox_IdentityId_idx" ON "WorkflowInbox" USING btree ("IdentityId");
-CREATE INDEX "WorkflowInbox_ProcessId_idx"  ON "WorkflowInbox" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowInbox_IdentityId_idx" ON "WorkflowInbox" USING btree ("IdentityId");
+CREATE INDEX IF NOT EXISTS "WorkflowInbox_ProcessId_idx"  ON "WorkflowInbox" USING btree ("ProcessId");
 
 --WorkflowProcessInstance
-CREATE TABLE "WorkflowProcessInstance" (
+CREATE TABLE IF NOT EXISTS "WorkflowProcessInstance" (
   "Id" uuid NOT NULL,
   "StateName" character varying(256) NULL,
   "ActivityName" character varying(256) NOT NULL,
@@ -34,8 +34,6 @@ CREATE TABLE "WorkflowProcessInstance" (
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
 
-CREATE INDEX "WorkflowProcessInstance_SchemeId_idx"  ON "WorkflowProcessInstance" USING btree ("SchemeId");
-
 --WorkflowProcessInstancePersistence
 CREATE TABLE IF NOT EXISTS "WorkflowProcessInstancePersistence" (
   "Id" uuid NOT NULL,
@@ -44,23 +42,23 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstancePersistence" (
   "Value" text NOT NULL,
   CONSTRAINT "WorkflowProcessInstancePersistence_pkey" PRIMARY KEY ("Id")
 );
-CREATE INDEX "WorkflowProcessInstancePersistence_ProcessId_idx"  ON "WorkflowProcessInstancePersistence" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessInstancePersistence_ProcessId_idx"  ON "WorkflowProcessInstancePersistence" USING btree ("ProcessId");
 
 --WorkflowProcessInstanceStatus
-CREATE TABLE "WorkflowProcessInstanceStatus" (
+CREATE TABLE IF NOT EXISTS "WorkflowProcessInstanceStatus" (
   "Id" uuid NOT NULL,
   "Status" smallint NOT NULL,
   "Lock" uuid NOT NULL,
   CONSTRAINT "WorkflowProcessInstanceStatus_pkey" PRIMARY KEY ("Id")
 );
-CREATE INDEX "WorkflowProcessInstanceStatus_Status_idx"  ON "WorkflowProcessInstanceStatus" USING btree ("Status");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessInstanceStatus_Status_idx"  ON "WorkflowProcessInstanceStatus" USING btree ("Status");
 
 --WorkflowProcessScheme
 CREATE TABLE IF NOT EXISTS "WorkflowProcessScheme" (
   "Id" uuid NOT NULL,
   "Scheme" text NOT NULL,
   "DefiningParameters" text NOT NULL,
-  "DefiningParametersHash" character varying(1024) NOT NULL,
+  "DefiningParametersHash" character varying(24) NOT NULL,
   "SchemeCode" character varying(256) NOT NULL,
   "IsObsolete" boolean NOT NULL,
   "RootSchemeCode" character varying(256) NULL,
@@ -69,9 +67,9 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessScheme" (
   "StartingTransition" text NULL,
   CONSTRAINT "WorkflowProcessScheme_pkey" PRIMARY KEY ("Id")
 );
-CREATE INDEX "WorkflowProcessScheme_DefiningParametersHash_idx"  ON "WorkflowProcessScheme" USING btree ("DefiningParametersHash");
-CREATE INDEX "WorkflowProcessScheme_SchemeCode_idx"  ON "WorkflowProcessScheme" USING btree ("SchemeCode");
-CREATE INDEX "WorkflowProcessScheme_IsObsolete_idx"  ON "WorkflowProcessScheme" USING btree ("IsObsolete");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessScheme_DefiningParametersHash_idx"  ON "WorkflowProcessScheme" USING btree ("DefiningParametersHash");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessScheme_SchemeCode_idx"  ON "WorkflowProcessScheme" USING btree ("SchemeCode");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessScheme_IsObsolete_idx"  ON "WorkflowProcessScheme" USING btree ("IsObsolete");
 
 --WorkflowProcessTimer
 CREATE TABLE IF NOT EXISTS "WorkflowProcessTimer" (
@@ -82,13 +80,13 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessTimer" (
   "Ignore" boolean NOT NULL,
   CONSTRAINT "WorkflowProcessTimer_pkey" PRIMARY KEY ("Id")
 );
-CREATE INDEX "WorkflowProcessTimer_ProcessId_idx"  ON "WorkflowProcessTimer" USING btree ("ProcessId");
-CREATE INDEX "WorkflowProcessTimer_Name_idx"  ON "WorkflowProcessTimer" USING btree ("Name");
-CREATE INDEX "WorkflowProcessTimer_NextExecutionDateTime_idx"  ON "WorkflowProcessTimer" USING btree ("NextExecutionDateTime");
-CREATE INDEX "WorkflowProcessTimer_Ignore_idx"  ON "WorkflowProcessTimer" USING btree ("Ignore");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_ProcessId_idx"  ON "WorkflowProcessTimer" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Name_idx"  ON "WorkflowProcessTimer" USING btree ("Name");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_NextExecutionDateTime_idx"  ON "WorkflowProcessTimer" USING btree ("NextExecutionDateTime");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Ignore_idx"  ON "WorkflowProcessTimer" USING btree ("Ignore");
 
 --WorkflowProcessTransitionHistory
-CREATE TABLE "WorkflowProcessTransitionHistory" (
+CREATE TABLE IF NOT EXISTS "WorkflowProcessTransitionHistory" (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
   "ExecutorIdentityId" character varying(256) NULL,
@@ -103,13 +101,13 @@ CREATE TABLE "WorkflowProcessTransitionHistory" (
   "IsFinalised" boolean NOT NULL,
   CONSTRAINT "WorkflowProcessTransitionHistory_pkey" PRIMARY KEY ("Id")
 );
-CREATE INDEX "WorkflowProcessTransitionHistory_ProcessId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ProcessId");
-CREATE INDEX "WorkflowProcessTransitionHistory_ExecutorIdentityId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ExecutorIdentityId");
-CREATE INDEX "WorkflowProcessTransitionHistory_ActorIdentityId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ActorIdentityId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTransitionHistory_ProcessId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTransitionHistory_ExecutorIdentityId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ExecutorIdentityId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTransitionHistory_ActorIdentityId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ActorIdentityId");
 
 
 --WorkflowScheme
-CREATE TABLE "WorkflowScheme" (
+CREATE TABLE IF NOT EXISTS "WorkflowScheme" (
   "Code" character varying(256) NOT NULL,
   "Scheme" text NOT NULL,
   CONSTRAINT "WorkflowScheme_pkey" PRIMARY KEY ("Code")
@@ -118,8 +116,11 @@ CREATE TABLE "WorkflowScheme" (
 --WorkflowGlobalParameter
 CREATE TABLE IF NOT EXISTS "WorkflowGlobalParameter" (
   "Id" uuid NOT NULL,
-  "Type" character varying(256) NOT NULL,
+  "Type" character varying(512) NOT NULL,
   "Name" character varying(256) NOT NULL,
   "Value" text NOT NULL,
    CONSTRAINT "WorkflowGlobalParameter_pkey" PRIMARY KEY ("Id")
 );
+
+CREATE INDEX IF NOT EXISTS "WorkflowGlobalParameter_Type_idx"  ON "WorkflowGlobalParameter" USING btree ("Type");
+CREATE INDEX IF NOT EXISTS "WorkflowGlobalParameter_Name_idx"  ON "WorkflowGlobalParameter" USING btree ("Name");

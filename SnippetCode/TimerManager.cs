@@ -103,7 +103,8 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processInstance">Process instance</param>
         public void RequestTimerValue(ProcessInstance processInstance, ActivityDefinition activity = null)
         {
-            if (NeedTimerValue == null)
+            var needTimerValueHandler = NeedTimerValue;
+            if (needTimerValueHandler == null)
                 return;
 
             var notDefinedTimerTransitions =
@@ -118,7 +119,7 @@ namespace OptimaJet.Workflow.Core.Runtime
 
             var eventArgs = new NeedTimerValueEventArgs(processInstance, notDefinedTimerTransitions);
 
-            NeedTimerValue(this, eventArgs);
+            needTimerValueHandler(this, eventArgs);
 
             foreach (var request in eventArgs.TimerValueRequests)
             {

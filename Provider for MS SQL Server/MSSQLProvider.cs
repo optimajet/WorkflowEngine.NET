@@ -796,10 +796,10 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public bool IsBulkOperationsSupported
         {
-#if NETCOREAPP
-            get { return false; }
-#else
+#if !NETCOREAPP || NETCORE2
             get { return true; }
+#else
+            get { return false; }
 #endif
         }
 
@@ -810,7 +810,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public async Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
         {
-#if NETCOREAPP
+#if NETCOREAPP && !NETCORE2
             throw new NotImplementedException();
 #else
             if (token.IsCancellationRequested)
