@@ -3,7 +3,14 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 @model WF.Sample.Models.DocumentListModel
+@functions {
 
+    string GetActionName()
+    {
+        return ViewContext.RouteData.Values["action"].ToString() == "Index" ? string.Empty : "/Document/" + ViewContext.RouteData.Values["action"].ToString();
+    }
+
+}
 <div class="wfe-application-toolbar">
     <a href="@Url.Action("Edit", "Document")" class="ui primary button">Create</a>
     <a onclick="DeleteSelected()" href="#" class="ui secondary button">Delete</a>
@@ -39,22 +46,22 @@ Items count: @Model.Count <br />
 
 @if (Model.Page != 0)
 {
-    <a href="/?page=0">fist page</a>
+    <a href="@GetActionName()?page=0">fist page</a>
 }
 
 @if (Model.Page > 0)
 {
-    <a href="/?page=@(Model.Page - 1)">prev page</a>
+    <a href="@GetActionName()?page=@(Model.Page - 1)">prev page</a>
 }
 
 @if ((Model.Page + 1) * Model.PageSize < Model.Count)
 {
-    <a href="/?page=@(Model.Page + 1)">next page</a>
+    <a href="@GetActionName()?page=@(Model.Page + 1)">next page</a>
 }
 
 @if ((Model.Page + 2) * Model.PageSize < Model.Count)
 {
-    <a href="/?page=@((int)(Model.Count / Model.PageSize))">last page</a>
+    <a href="@GetActionName()?page=@((int)(Model.Count / Model.PageSize))">last page</a>
 }
 
 <script>

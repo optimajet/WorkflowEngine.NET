@@ -9,7 +9,7 @@ CREATE TABLE IF NOT EXISTS "WorkflowInbox"
 (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
-  "IdentityId" uuid NOT NULL,
+  "IdentityId" character varying(256) NOT NULL,
   CONSTRAINT "WorkflowInbox_pkey" PRIMARY KEY ("Id")
 );
 

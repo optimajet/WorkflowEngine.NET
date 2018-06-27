@@ -37,10 +37,10 @@ namespace WF.Sample.Business.Helpers
             {
                 context.LoadOptions = GetDefaultDataLoadOptions();
                 int actual = page * pageSize;
-                var subQuery = context.WorkflowInboxes.Where(c => c.IdentityId == identityId).Skip(actual).Take(pageSize);
-                count = subQuery.Count();
-
-                return context.Documents.Where(c => subQuery.Where(i => i.ProcessId == c.Id).Count() > 0).OrderByDescending(c=>c.Number).ToList();
+                var subQuery = context.WorkflowInboxes.Where(c => c.IdentityId == identityId);
+                var query = context.Documents.Where(c => subQuery.Any(i => i.ProcessId == c.Id));
+                count = query.Count();
+                return query.OrderByDescending(c => c.Number).Skip(actual).Take(pageSize).ToList();
             }
         }
 
@@ -50,10 +50,10 @@ namespace WF.Sample.Business.Helpers
             {
                 context.LoadOptions = GetDefaultDataLoadOptions();
                 int actual = page * pageSize;
-                var subQuery = context.DocumentTransitionHistories.Where(c => c.EmployeeId == identityId).Skip(actual).Take(pageSize);
-                count = subQuery.Count();
-
-                return context.Documents.Where(c => subQuery.Where(i => i.DocumentId == c.Id).Count() > 0).ToList();
+                var subQuery = context.DocumentTransitionHistories.Where(c => c.EmployeeId == identityId);
+                var query = context.Documents.Where(c => subQuery.Any(i => i.DocumentId == c.Id));
+                count = query.Count();
+                return query.OrderByDescending(c => c.Number).Skip(actual).Take(pageSize).ToList();
             }
         }
 
