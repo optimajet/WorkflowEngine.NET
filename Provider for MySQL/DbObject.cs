@@ -3,6 +3,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 
 namespace OptimaJet.Workflow.MySQL
 {
@@ -115,9 +116,14 @@ namespace OptimaJet.Workflow.MySQL
 
         public static T[] Select(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
         {
+            return SelectAsync(connection, commandText, parameters).Result;
+        }
+
+        public static async Task<T[]> SelectAsync(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
+        {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
             using (var command = connection.CreateCommand())
@@ -126,21 +132,23 @@ namespace OptimaJet.Workflow.MySQL
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-
-                var dt = new DataTable();
-                using (var oda = new MySqlDataAdapter(command))
-                {
-                    oda.Fill(dt);
-                }
-
                 var res = new List<T>();
-
-                foreach (DataRow row in dt.Rows)
+                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
-                    T item = new T();
-                    foreach (var c in item.DBColumns)
-                        item.SetValue(c.Name, row[c.Name]);
-                    res.Add(item);
+                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    {
+                        T item = new T();
+                        for (int i = 0; i < reader.FieldCount; i++)
+                        {
+                            var name = reader.GetName(i);
+                            var column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                            if (column != null)
+                            {
+                                item.SetValue(column.Name, reader.IsDBNull(i) ? null : reader.GetValue(i));
+                            }
+                        }
+                        res.Add(item);
+                    }
                 }
 
                 return res.ToArray();

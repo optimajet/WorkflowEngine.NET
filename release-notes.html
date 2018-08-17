@@ -1,5 +1,11 @@
-<p>&lt;!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.--&gt;</p>
 <h1>Release Notes</h1>
+<h2>3.2</h2>
+<ul>
+<li>Added providers for MySql and Oracle, running under .NET Core</li>
+<li>Added class <code>AggregatingRuleProvider</code>, designed to combine several <code>IWorkflowRuleProvider</code> into one <code>IWorkflowRuleProvider</code>.</li>
+<li>Added class <code>AggregatingActionProvider</code>, designed to combine several <code>IWorkflowActionProvider</code> into one <code>IWorkflowActionProvider</code>.</li>
+</ul>
+<hr>
 <h2>3.1</h2>
 <ul>
 <li>Workflow Engine's relational database storage system has been optimized. Additional indices have been built; obsolete indices have been removed; the size of some columns has been changed. Generally, these changes should result in the improvement of Workflow Engine's performance, especially for Microsoft SQL Server. All these changes have already been included into installation scripts; use the <em>update_3_1.sql</em> script to update the existing databases.</li>

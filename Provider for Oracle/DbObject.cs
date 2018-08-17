@@ -12,6 +12,7 @@ namespace OptimaJet.Workflow.Oracle
         public OracleDbType Type = OracleDbType.NVarchar2;
         public bool IsKey = false;
         public int Size = 256;
+        public bool IsVirtual = false;
     }
 
     public abstract class DbObject
@@ -51,8 +52,8 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
                     ObjectName,
-                    String.Join(",", DBColumns.Select(c => c.Name.ToUpperInvariant())),
-                    String.Join(",", DBColumns.Select(c => ":" + c.Name)));
+                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => c.Name.ToUpperInvariant())),
+                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => ":" + c.Name)));
 
             var parameters = DBColumns.Select(c => new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray();
 
@@ -63,7 +64,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
                     ObjectName,
-                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name)),
+                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name)),
                     String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name )));
 
             var parameters = DBColumns.Select(c =>

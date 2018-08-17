@@ -3,7 +3,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 3.1
+Version: 3.2
 File: CreatePersistenceObjects.sql
 */
 
