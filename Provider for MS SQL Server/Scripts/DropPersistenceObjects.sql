@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL
-Version: 3.2
+Version: 3.3
 File: DropPersistenceObjects.sql
 */
 

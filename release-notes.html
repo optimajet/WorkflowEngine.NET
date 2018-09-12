@@ -1,4 +1,28 @@
 <h1>Release Notes</h1>
+<h2>3.3</h2>
+<ul>
+<li>The provider for MongoDb running under .NET Core was added.</li>
+<li>The driver for MongoDb was updated (to version 2.7). The connection to CosmosDb through the MongoDb connection was tested.</li>
+<li>The following hotkeys were added to the Workflow Designer
+<ul>
+<li>Ctrl + A - Select All</li>
+<li>Ctrl + C - Copy selected items</li>
+<li>Ctrl + E - New Activity</li>
+<li>Ctrl + I - Extended info</li>
+<li>Ctrl + Y - Redo</li>
+<li>Ctrl + Z - Undo</li>
+<li>Arrows - Moving selected items</li>
+<li>Delete - Delete</li>
+<li>Alt + Enter - Full Screen Mode</li>
+<li>Ctrl + M - Move mode</li>
+</ul>
+</li>
+</ul>
+<p><strong>The following additional actions must be taken to uprgade to Workflow Engine 3.3 if you are using MongoDb:</strong></p>
+<ul>
+<li>(only for MongoDb users) It is necessery to apply <em>update_3_2_to_3_3.js</em> script to your database.</li>
+</ul>
+<hr>
 <h2>3.2</h2>
 <ul>
 <li>Added providers for MySql and Oracle, running under .NET Core</li>

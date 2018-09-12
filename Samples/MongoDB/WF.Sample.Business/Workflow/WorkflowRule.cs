@@ -5,6 +5,7 @@ using OptimaJet.Workflow.Core.Runtime;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Helpers;
 using OptimaJet.Workflow.Core.Model;
+using MongoDB.Driver;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -67,8 +68,8 @@ namespace WF.Sample.Business.Workflow
         {
             var res = new List<string>();
 
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
             if (document == null)
                 return res;
 
@@ -96,8 +97,8 @@ namespace WF.Sample.Business.Workflow
 
         private IEnumerable<string> GetDocumentController(ProcessInstance processInstance, string parameter)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
             if (document == null || !document.EmloyeeControlerId.HasValue)
                 return new List<string> { };
 
@@ -106,8 +107,8 @@ namespace WF.Sample.Business.Workflow
 
         private IEnumerable<string> GetDocumentAuthor(ProcessInstance processInstance, string parameter)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
 
             if (document == null)
                 return new List<string> { };
@@ -116,8 +117,8 @@ namespace WF.Sample.Business.Workflow
 
         private bool IsDocumentController(ProcessInstance processInstance, string identityId, string parameter)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
             if (document == null)
                 return false;
             return document.EmloyeeControlerId.HasValue && document.EmloyeeControlerId.Value == new Guid(identityId);
@@ -125,8 +126,8 @@ namespace WF.Sample.Business.Workflow
 
         private bool IsDocumentAuthor(ProcessInstance processInstance, string identityId, string parameter)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
             if (document == null)
                 return false;
             return document.AuthorId == new Guid(identityId);

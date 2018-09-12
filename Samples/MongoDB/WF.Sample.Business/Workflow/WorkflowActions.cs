@@ -8,6 +8,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using WF.Sample.Business.Helpers;
 using WF.Sample.Business.Models;
+using MongoDB.Driver;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -24,8 +25,8 @@ namespace WF.Sample.Business.Workflow
 
             var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
 
-            var dbcoll = WorkflowInit.Provider.Store.GetCollection("Document");
-            var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var doc = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
             if (doc != null)
             {
                 doc.TransitionHistories.Add(new DocumentTransitionHistory()
@@ -36,7 +37,8 @@ namespace WF.Sample.Business.Workflow
                     InitialState = currentstate,
                     Command = command
                 });
-                dbcoll.Save<Document>(doc);
+
+                dbcoll.ReplaceOne(x => x.Id == doc.Id, doc, new UpdateOptions { IsUpsert = true });
             }
         }
 
@@ -65,8 +67,8 @@ namespace WF.Sample.Business.Workflow
             var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
             var isTimer = !string.IsNullOrEmpty(processInstance.ExecutedTimer);
 
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var document = dbcoll.FindOneById(processInstance.ProcessId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var document = dbcoll.Find(x=> x.Id == processInstance.ProcessId).FirstOrDefault();
             if (document == null)
                 return;
 
@@ -101,17 +103,17 @@ namespace WF.Sample.Business.Workflow
                 historyItem.EmployeeName = EmployeeHelper.EmployeeCache.First(c => c.Id == historyItem.EmployeeId).Name;
             }
 
-            dbcoll.Save(document);
+            dbcoll.ReplaceOne(x => x.Id == document.Id, document, new UpdateOptions { IsUpsert = true });
         }
 
         internal static void DeleteEmptyPreHistory(Guid processId)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var doc = dbcoll.FindOneById(processId);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var doc = dbcoll.Find(x => x.Id == processId).FirstOrDefault();
             if (doc != null)
             {
                 doc.TransitionHistories.RemoveAll(dth => !dth.TransitionTime.HasValue);
-                dbcoll.Save(doc);
+                dbcoll.ReplaceOne(x => x.Id == doc.Id, doc, new UpdateOptions { IsUpsert = true });
             }
         }
 
@@ -139,7 +141,7 @@ namespace WF.Sample.Business.Workflow
             throw new NotImplementedException(string.Format("Action with name {0} not implemented", name));
         }
 
-        public async Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+        public Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
         {
             throw new NotImplementedException();
         }
@@ -154,7 +156,7 @@ namespace WF.Sample.Business.Workflow
             throw new NotImplementedException(string.Format("Action condition with name {0} not implemented", name));
         }
 
-        public async Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
+        public Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)
         {
             throw new NotImplementedException();
         }

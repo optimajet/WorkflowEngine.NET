@@ -12,7 +12,6 @@ using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.MongoDB;
 using WF.Sample.Business.Models;
-using MongoDB.Driver.Builders;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -42,9 +41,8 @@ namespace WF.Sample.Business.Workflow
                         if (_runtime == null)
                         {
                             var mongoClient = new MongoClient(new MongoUrl(ConfigurationManager.AppSettings["Url"]));
-                            var mongoSever = new MongoServer(MongoServerSettings.FromClientSettings(mongoClient.Settings));
                             var provider =
-                                new MongoDBProvider(mongoSever.GetDatabase(ConfigurationManager.AppSettings["Database"]));
+                                new MongoDBProvider(mongoClient.GetDatabase(ConfigurationManager.AppSettings["Database"]));
                             var builder = GetDefaultBuilder(provider).WithDefaultCache();
 
                             _runtime = new WorkflowRuntime()
@@ -88,7 +86,8 @@ namespace WF.Sample.Business.Workflow
 
             //Inbox
             var dbcoll = Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
-            dbcoll.Remove(Query<WorkflowInbox>.Where(c => c.ProcessId == e.ProcessId));
+
+            dbcoll.DeleteMany(c => c.ProcessId == e.ProcessId);
 
             if (e.NewStatus != ProcessStatus.Finalized)
             {
@@ -98,12 +97,12 @@ namespace WF.Sample.Business.Workflow
 
             //Change state name
             var docdbcoll = Provider.Store.GetCollection<Document>("Document");
-            var document = docdbcoll.FindOneById(e.ProcessId);
+            var document = docdbcoll.Find( x => x.Id == e.ProcessId).FirstOrDefault();
             if (document != null)
             {
                 var nextState = Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
                 document.StateName = nextState;
-                docdbcoll.Save(document);
+                docdbcoll.ReplaceOne(x => x.Id == document.Id, document, new UpdateOptions { IsUpsert = true });
             }
         }
 
@@ -131,7 +130,7 @@ namespace WF.Sample.Business.Workflow
             if (items.Any())
             {
                 var dbcoll = Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
-                dbcoll.InsertBatch<WorkflowInbox>(items);
+                dbcoll.InsertMany(items);
             }
         }
 

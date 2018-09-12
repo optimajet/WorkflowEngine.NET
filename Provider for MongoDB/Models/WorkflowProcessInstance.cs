@@ -21,5 +21,7 @@ namespace OptimaJet.Workflow.MongoDB
         public List<WorkflowProcessInstancePersistence> Persistence { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+
+        public WorkflowProcessInstanceStatus Status { get; set; }
     }
 }

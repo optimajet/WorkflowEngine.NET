@@ -6,6 +6,8 @@ using System.Text;
 using System.Web;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Workflow;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace WF.Sample.Business.Helpers
 {
@@ -35,8 +37,8 @@ namespace WF.Sample.Business.Helpers
 
         public static List<StructDivision> GetAll()
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<StructDivision>("StructDivision");
-            return dbcoll.FindAll().ToList();
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<StructDivision>("StructDivision");
+            return dbcoll.Find(new BsonDocument()).ToList();
         }
     }
 }

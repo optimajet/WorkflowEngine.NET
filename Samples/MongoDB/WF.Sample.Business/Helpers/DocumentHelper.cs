@@ -6,8 +6,8 @@ using System.Text;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Properties;
 using OptimaJet.Workflow.MongoDB;
-using MongoDB.Driver.Builders;
 using WF.Sample.Business.Workflow;
+using MongoDB.Driver;
 
 namespace WF.Sample.Business.Helpers
 {
@@ -16,11 +16,11 @@ namespace WF.Sample.Business.Helpers
     {
         public static List<Document> Get(out int count, int page = 0, int pageSize = 128)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
 
-            var query = dbcoll.FindAll();
+            var query = dbcoll.AsQueryable();
             int actual = page * pageSize;
-            count = (int)query.Count();
+            count = query.Count();
 
             return query.Skip(actual).Take(pageSize).ToList();
         }
@@ -29,15 +29,16 @@ namespace WF.Sample.Business.Helpers
         {
             var res = new List<Document>();
 
-            var dbcollInbox = Workflow.WorkflowInit.Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
+            var dbcollInbox = WorkflowInit.Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
 
-            count = (int)dbcollInbox.Find(Query<WorkflowInbox>.Where(c => c.IdentityId == identityId.ToString("N"))).Count();
+            count = (int)dbcollInbox.CountDocuments(c => c.IdentityId == identityId.ToString("N"));
             int actual = page * pageSize;
 
-            var inbox = dbcollInbox.Find(Query<WorkflowInbox>.Where(c => c.IdentityId == identityId.ToString("N"))).Skip(actual).Take(pageSize).ToArray();
+            var inbox = dbcollInbox.Find(c => c.IdentityId == identityId.ToString("N")).Skip(actual).Limit(pageSize).ToList();
 
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            var docs = dbcoll.Find(Query<Document>.In(c=>c.Id, inbox.Select(i=>i.ProcessId)));
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+
+            var docs = dbcoll.Find(Builders<Document>.Filter.In(c => c.Id, inbox.Select(i => i.ProcessId))).ToList();
             res.AddRange(docs);
             return res;
         }
@@ -47,10 +48,10 @@ namespace WF.Sample.Business.Helpers
             var res = new List<Document>();
           
             int actual = page * pageSize;
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
 
-            var query = dbcoll.Find(Query<Document>.Where(c => c.TransitionHistories.Any(t=>t.EmployeeId == identityId)));
-            count = (int)query.Count();
+            var query = dbcoll.AsQueryable().Where(c => c.TransitionHistories.Any(t=>t.EmployeeId == identityId));
+            count = query.Count();
 
             var docs = query.Skip(actual).Take(pageSize).ToArray();
                 res.AddRange(docs);
@@ -60,17 +61,18 @@ namespace WF.Sample.Business.Helpers
 
         public static Document Get(Guid id)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            return dbcoll.FindOneById(id);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
+            return dbcoll.Find(x => x.Id == id).FirstOrDefault();
         }
 
         public static void Delete(Guid[] ids)
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Document>("Document");
-            dbcoll.Remove(Query<Document>.In(c => c.Id, ids));
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>("Document");
 
-            var dbcollInbox = Workflow.WorkflowInit.Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
-            dbcollInbox.Remove(Query<WorkflowInbox>.In(c => c.ProcessId, ids));
+            dbcoll.DeleteMany(Builders<Document>.Filter.In(c => c.Id, ids));
+
+            var dbcollInbox = WorkflowInit.Provider.Store.GetCollection<WorkflowInbox>("WorkflowInbox");
+            dbcollInbox.DeleteMany(Builders<WorkflowInbox>.Filter.In(c => c.ProcessId, ids));
         }
 
         public static DocumentCommandModel[] GetCommands(Guid id, string userId)

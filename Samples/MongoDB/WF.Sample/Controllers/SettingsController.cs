@@ -11,6 +11,8 @@ using WF.Sample.Business.Helpers;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Workflow;
 using OptimaJet.Workflow.MongoDB;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace WF.Sample.Controllers
 {
@@ -105,33 +107,33 @@ namespace WF.Sample.Controllers
             var dbcollRole = WorkflowInit.Provider.Store.GetCollection<Role>("Role");
             foreach (var r in roles)
             {
-                if (dbcollRole.FindOneById(r.Id) == null)
-                    dbcollRole.Insert(r);
+                if (dbcollRole.Find(x => x.Id == r.Id).FirstOrDefault() == null)
+                    dbcollRole.InsertOne(r);
             }
 
             var dbcollStructDivision = WorkflowInit.Provider.Store.GetCollection<StructDivision>("StructDivision");
             foreach (var e in sd)
             {
-                if (dbcollStructDivision.FindOneById(e.Id) == null)
-                    dbcollStructDivision.Insert(e);
+                if (dbcollStructDivision.Find(x => x.Id == e.Id).FirstOrDefault() == null)
+                    dbcollStructDivision.InsertOne(e);
             }
 
             var dbcollEmployee = WorkflowInit.Provider.Store.GetCollection<Employee>("Employee");
             foreach (var e in employees)
             {
-                if (dbcollEmployee.FindOneById(e.Id) == null)
+                if (dbcollEmployee.Find(x => x.Id == e.Id).FirstOrDefault() == null)
                 {
                     e.StructDivisionName = sd.Where(c => c.Id == e.StructDivisionId).First().Name;
-                    dbcollEmployee.Insert(e);
+                    dbcollEmployee.InsertOne(e);
                 }
             }
 
             var dbcollWorkflowScheme = WorkflowInit.Provider.Store.GetCollection<WorkflowScheme>("WorkflowScheme");
 
-            if (dbcollWorkflowScheme.FindOneById(SchemeName) == null)
+            if (dbcollWorkflowScheme.Find(x => x.Id == SchemeName).FirstOrDefault() == null)
             {
                 #region Insert scheme
-                dbcollWorkflowScheme.Insert(new WorkflowScheme()
+                dbcollWorkflowScheme.InsertOne(new WorkflowScheme()
                 {
                     Id = SchemeName,
                     Code = SchemeName,
@@ -455,38 +457,38 @@ namespace WF.Sample.Controllers
   <CodeActions>
   <CodeAction Name=""CheckDocumentHasController"" Type=""Condition"" IsGlobal=""False"">
       <ActionCode><![CDATA[var conditionResult = false;
-var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
-var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>(""Document"");
+var doc = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
 if (doc != null)
     conditionResult = doc.EmloyeeControlerId.HasValue;
 return conditionResult;
 ]]></ActionCode>
-      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;MongoDB.Driver;]]></Usings>
     </CodeAction>
     <CodeAction Name=""CheckDocumentsAuthorIsBoss"" Type=""Condition"" IsGlobal=""False"">
       <ActionCode><![CDATA[var conditionResult = false;
-var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
-var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>(""Document"");
+var doc = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
 if (doc != null)
     {
-        var dbcollEmployee = WorkflowInit.Provider.Store.GetCollection(""Employee"");
-        var emp = dbcollEmployee.FindOneByIdAs<Employee>(doc.AuthorId);
+        var dbcollEmployee = WorkflowInit.Provider.Store.GetCollection<Employee>(""Employee"");
+        var emp = dbcollEmployee.Find(x => x.Id == doc.AuthorId).FirstOrDefault();
         if (emp != null)
             conditionResult = emp.IsHead;
     }
 return conditionResult;
 ]]></ActionCode>
-      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;MongoDB.Driver;]]></Usings>
     </CodeAction>
     <CodeAction Name=""CheckBigBossMustSight"" Type=""Condition"" IsGlobal=""False"">
       <ActionCode><![CDATA[var conditionResult = false;
-var dbcoll = WorkflowInit.Provider.Store.GetCollection(""Document"");
-var doc = dbcoll.FindOneByIdAs<Document>(processInstance.ProcessId);
+var dbcoll = WorkflowInit.Provider.Store.GetCollection<Document>(""Document"");
+var doc = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
 if (doc != null)
     conditionResult = doc.Sum > 100;  
     return conditionResult;
 ]]></ActionCode>
-      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;]]></Usings>
+      <Usings><![CDATA[System;System.Collections;System.Collections.Generic;System.Linq;OptimaJet.Workflow;OptimaJet.Workflow.Core.Model;WF.Sample.Business;WF.Sample.Business.Helpers;WF.Sample.Business.Properties;WF.Sample.Business.Workflow;WF.Sample.Business.Models;MongoDB.Driver;]]></Usings>
     </CodeAction>
    </CodeActions>
   <Localization>
@@ -512,8 +514,8 @@ if (doc != null)
             model.SchemeName = "SimpleWF";
 
             model.Employees = EmployeeHelper.GetAll();
-            model.Roles = WorkflowInit.Provider.Store.GetCollection<Role>("Role").FindAll().ToList();
-            model.StructDivision = WorkflowInit.Provider.Store.GetCollection<StructDivision>("StructDivision").FindAll().ToList();
+            model.Roles = WorkflowInit.Provider.Store.GetCollection<Role>("Role").Find(new BsonDocument()).ToList();
+            model.StructDivision = WorkflowInit.Provider.Store.GetCollection<StructDivision>("StructDivision").Find(new BsonDocument()).ToList();
             return model;
         }
 

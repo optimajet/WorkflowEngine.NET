@@ -6,6 +6,8 @@ using System.Text;
 using System.Web;
 using WF.Sample.Business.Models;
 using WF.Sample.Business.Workflow;
+using MongoDB.Driver;
+using MongoDB.Bson;
 
 namespace WF.Sample.Business.Helpers
 {
@@ -35,15 +37,15 @@ namespace WF.Sample.Business.Helpers
 
         public static List<Employee> GetAll()
         {
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Employee>("Employee");
-            return dbcoll.FindAll().ToList();
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Employee>("Employee");
+            return dbcoll.Find(new BsonDocument()).ToList();
         }
 
         public static string GetNameById(Guid id)
         {
             string res = "Unknown";
-            var dbcoll = Workflow.WorkflowInit.Provider.Store.GetCollection<Employee>("Employee");
-            var item = dbcoll.FindOneById(id);
+            var dbcoll = WorkflowInit.Provider.Store.GetCollection<Employee>("Employee");
+            var item = dbcoll.Find(x => x.Id == id).FirstOrDefault();
             if (item != null)
             {
                 res = item.Name;

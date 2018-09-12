@@ -13,6 +13,7 @@ using WF.Sample.Models;
 using ProcessStatus = OptimaJet.Workflow.Core.Persistence.ProcessStatus;
 using System.Threading;
 using WF.Sample.Business.Models;
+using MongoDB.Driver;
 
 namespace WF.Sample.Controllers
 {
@@ -97,7 +98,7 @@ namespace WF.Sample.Controllers
             {
                 if (model.Id != Guid.Empty)
                 {
-                    target = dbcoll.FindOneById(model.Id);
+                    target = dbcoll.Find(x => x.Id == model.Id).FirstOrDefault();
                     if (target == null)
                     {
                         ModelState.AddModelError("", "Row not found!");
@@ -109,7 +110,7 @@ namespace WF.Sample.Controllers
                     target.EmloyeeControlerName = model.EmloyeeControlerName;
                     target.Comment = model.Comment;
                     target.Sum = model.Sum;
-                    dbcoll.Save(target);
+                    dbcoll.ReplaceOne(x => x.Id == target.Id, target, new UpdateOptions { IsUpsert = true });
                 }
                 else
                 {
@@ -124,7 +125,7 @@ namespace WF.Sample.Controllers
                     target.EmloyeeControlerName = model.EmloyeeControlerName;
                     target.Comment = model.Comment;
                     target.Sum = model.Sum;
-                    dbcoll.Insert(target);
+                    dbcoll.InsertOne(target);
                 }
             }
             catch (Exception ex)
@@ -149,16 +150,16 @@ namespace WF.Sample.Controllers
         {
             int res = 1;
             var dbcoll = WorkflowInit.Provider.Store.GetCollection<SettingParam<int>>("SettingParam");
-            var number = dbcoll.FindOneById("documentnumber");
+            var number = dbcoll.Find(x => x.Id == "documentnumber").FirstOrDefault();
             if (number == null)
             {
-                dbcoll.Insert(new SettingParam<int> { Id = "documentnumber", Value = res + 1 });
+                dbcoll.InsertOne(new SettingParam<int> { Id = "documentnumber", Value = res + 1 });
             }
             else
             {
                 res = number.Value;
                 number.Value += 1;
-                dbcoll.Save(number);
+                dbcoll.ReplaceOne(x => x.Id == number.Id, number, new UpdateOptions { IsUpsert = true });
             }
             return res;
         }
