@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MongoDB
 {
-    public class WorkflowProcessTransitionHistory
+    public class WorkflowProcessTransitionHistory : DynamicEntity
     {
         public string ActorIdentityId { get; set; }
         public string ExecutorIdentityId { get; set; }

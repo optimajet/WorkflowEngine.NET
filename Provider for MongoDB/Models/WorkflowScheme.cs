@@ -1,7 +1,8 @@
-﻿ // ReSharper disable once CheckNamespace
+﻿// ReSharper disable once CheckNamespace
+
 namespace OptimaJet.Workflow.MongoDB
 {
-    public class WorkflowScheme
+    public class WorkflowScheme : DynamicEntity
     {
         public string Id { get; set; }
         public string Code { get; set; }

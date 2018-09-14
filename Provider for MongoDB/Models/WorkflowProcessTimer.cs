@@ -3,7 +3,7 @@
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MongoDB
 {
-    public class WorkflowProcessTimer
+    public class WorkflowProcessTimer : DynamicEntity
     {
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }

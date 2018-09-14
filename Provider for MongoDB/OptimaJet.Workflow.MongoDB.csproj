@@ -71,6 +71,7 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Models\DynamicEntity.cs" />
     <Compile Include="Models\WorkflowGlobalParameter.cs" />
     <Compile Include="Models\WorkflowProcessInstance.cs" />
     <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />

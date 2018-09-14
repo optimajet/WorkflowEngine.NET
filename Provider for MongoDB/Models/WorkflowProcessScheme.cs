@@ -4,7 +4,7 @@ using System.Collections.Generic;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MongoDB
 {
-    public class WorkflowProcessScheme
+    public class WorkflowProcessScheme : DynamicEntity
     {
         public string DefiningParameters { get; set; }
         public string DefiningParametersHash { get; set; }
