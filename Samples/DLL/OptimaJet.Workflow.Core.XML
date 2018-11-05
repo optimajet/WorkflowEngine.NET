@@ -3435,6 +3435,11 @@
             Instance of the Timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/>
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Logger">
+            <summary>
+            Instance of the logger <see cref="T:OptimaJet.Workflow.Core.Logging.ILogger"/>
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PersistenceProvider">
             <summary>
             Instance of the Persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/>
@@ -3956,6 +3961,27 @@
             </summary>
             <param name="processId">Id of the process</param>
             <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.LogInfo(System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Writes a message to the log with Info level
+            </summary>
+            <param name="message">message to write</param>
+            <param name="parameters">dictionary of properties to serialize within the log entry</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.LogDebug(System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Writes a message to the log with Debug level
+            </summary>
+            <param name="message">message to write</param>
+            <param name="parameters">dictionary of properties to serialize within the log entry</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.LogError(System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
+            <summary>
+            Writes a message to the log with Error level
+            </summary>
+            <param name="message">message to write</param>
+            <param name="parameters">dictionary of properties to serialize within the log entry</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.IsProcessExistsAsync(System.Guid)">
             <summary>

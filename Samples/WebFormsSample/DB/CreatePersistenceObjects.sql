@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL and Azure SQL
-Version: 3.3
+Version: 3.4
 File: CreatePersistenceObjects.sql
 
 */

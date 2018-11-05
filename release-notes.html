@@ -1,35 +1,39 @@
-<h1>Release Notes</h1>
+<h2>3.4</h2>
+<ul>
+<li>Added automatic size increase for background in designer.</li>
+<li>Added designer localization files for German, French, Spanish, Italian, Portuguese, Turkish, and Russian languages.</li>
+<li>.NET Core NuGet packages come with .NET Standard 1.6 and .NET Standard 2.0 libraries. This allows you to use these packages with any .NET Core version, including 2.1.</li>
+<li>The <code>OptimaJet.Workflow.Core.Logging.ILogger</code> interface was added; it can be initializes with your own logger in the <code>WorkflowRuntime</code> object. It is used to integrate with the Workflow Server logging system, but you can use it to integrate with your own system. Bear in mind that the logger in the <code>WorkflowRuntime</code> object is not initialized by anything by default.</li>
+</ul>
 <h2>3.3</h2>
 <ul>
-<li>The provider for MongoDb running under .NET Core was added.</li>
-<li>The driver for MongoDb was updated (to version 2.7). The connection to CosmosDb through the MongoDb connection was tested.</li>
-<li>The following hotkeys were added to the Workflow Designer
+<li>MongoDB provider for Workflow Engine .NET Core was added.</li>
+<li>MongoDB driver was updated to version 2.7. You can now connect to CosmosDB through a MongoDB connection.</li>
+<li>The following hotkeys were added to the Workflow Designer:
 <ul>
-<li>Ctrl + A - Select All</li>
+<li>Ctrl + A - Select all</li>
 <li>Ctrl + C - Copy selected items</li>
 <li>Ctrl + E - New Activity</li>
 <li>Ctrl + I - Extended info</li>
 <li>Ctrl + Y - Redo</li>
 <li>Ctrl + Z - Undo</li>
-<li>Arrows - Moving selected items</li>
+<li>Arrows - Move selected items</li>
 <li>Delete - Delete</li>
-<li>Alt + Enter - Full Screen Mode</li>
+<li>Alt + Enter - Full-screen mode</li>
 <li>Ctrl + M - Move mode</li>
 </ul>
 </li>
 </ul>
-<p><strong>The following additional actions must be taken to uprgade to Workflow Engine 3.3 if you are using MongoDb:</strong></p>
+<p><strong>The following additional actions must be taken to upgrade to Workflow Engine 3.3 if you are using MongoDB:</strong></p>
 <ul>
-<li>(only for MongoDb users) It is necessery to apply <em>update_3_2_to_3_3.js</em> script to your database.</li>
+<li>Only for MongoDB users: it is necessary to apply the <em>update_3_2_to_3_3.js</em> script to your database.</li>
 </ul>
-<hr>
 <h2>3.2</h2>
 <ul>
-<li>Added providers for MySql and Oracle, running under .NET Core</li>
+<li>Added providers for MySQL and Oracle, running under .NET Core</li>
 <li>Added class <code>AggregatingRuleProvider</code>, designed to combine several <code>IWorkflowRuleProvider</code> into one <code>IWorkflowRuleProvider</code>.</li>
 <li>Added class <code>AggregatingActionProvider</code>, designed to combine several <code>IWorkflowActionProvider</code> into one <code>IWorkflowActionProvider</code>.</li>
 </ul>
-<hr>
 <h2>3.1</h2>
 <ul>
 <li>Workflow Engine's relational database storage system has been optimized. Additional indices have been built; obsolete indices have been removed; the size of some columns has been changed. Generally, these changes should result in the improvement of Workflow Engine's performance, especially for Microsoft SQL Server. All these changes have already been included into installation scripts; use the <em>update_3_1.sql</em> script to update the existing databases.</li>
@@ -37,7 +41,6 @@
 </ul>
 <p><strong>Warning</strong></p>
 <p>The <em>update_3_1.sql</em> script contains a change of index and size of certain columns. Be particularly careful when applying it to the production database.</p>
-<hr>
 <h2>3.0</h2>
 <ul>
 <li>The interface of Workflow Designer has been revamped to improve usability
@@ -63,15 +66,14 @@
 <ul>
 <li>Delete links to <strong>jquery-ui.min.css</strong> and <strong>jquery-ui.js</strong></li>
 </ul>
-<pre><code class="language-html">&lt;link href=&quot;/Content/themes/base/jquery-ui.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
-&lt;script src=&quot;/Scripts/jquery-ui.js&quot; type=&quot;text/javascript&quot;/&gt;
-</code></pre>
-<ul>
-<li>Add links to <strong>semantic.min.css</strong>, <strong>semantic.min.js</strong>, <strong>jquery.auto-complete.min.js</strong></li>
-</ul>
-<pre><code class="language-html">&lt;link href=&quot;/Content/semantic.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
-&lt;script src=&quot;/Scripts/semantic.min.js&quot; type=&quot;text/javascript&quot;/&gt;
-&lt;script src=&quot;/Scripts/jquery.auto-complete.min.js&quot; type=&quot;text/javascript&quot;/&gt;
+<pre><code class="language-html">		&lt;link href=&quot;/Content/themes/base/jquery-ui.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
+		&lt;script src=&quot;/Scripts/jquery-ui.js&quot; type=&quot;text/javascript&quot;/&gt;
+		```
+- Add links to **semantic.min.css**, **semantic.min.js**, **jquery.auto-complete.min.js**
+		```html
+		&lt;link href=&quot;/Content/semantic.min.css&quot; rel=&quot;stylesheet&quot; type=&quot;text/css&quot;/&gt;
+		&lt;script src=&quot;/Scripts/semantic.min.js&quot; type=&quot;text/javascript&quot;/&gt;
+		&lt;script src=&quot;/Scripts/jquery.auto-complete.min.js&quot; type=&quot;text/javascript&quot;/&gt;
 </code></pre>
 </li>
 <li>If the new order of search for Action, Condition and Rule does not suit you, change it with the following setting:</li>
@@ -84,7 +86,6 @@
 </ul>
 <pre><code class="language-csharp">runtime = runtime.SetIgnoreMissingExecutionItems(true);
 </code></pre>
-<hr>
 <h2>2.3</h2>
 <ul>
 <li>A 'Refresh' button and its functionality have been added to Designer</li>
@@ -92,7 +93,6 @@
 <li>BulkCreateInstance and TimerManager performance has been enhanced</li>
 <li>Scroll-based scaling has been added to Designer</li>
 </ul>
-<hr>
 <h2>2.2</h2>
 <ul>
 <li>Now it is possible to create asynchronous Actions and Conditions. You can call asynchronous methods from Actions and Conditions using the <code>await</code> keyword. Such methods will be the most effective if you use asynchronous methods of the <code>WorkflowRuntime</code> object, for example, <code>ExecuteCommandAsync</code> instead of <code>ExecuteCommand</code>, or <code>SetStateAsync</code> instead of <code>SetState</code>, etc. You can create asynchronous Actions in Designer. To do that you simply need to check the Async checkbox in the Action or Condition where you're going to call asynchronous methods from. If you use <code>IWorkflowActionProvider</code>, then you will need to implement 4 additional methods. <code>bool IsActionAsync(string name)</code> and <code>bool IsConditionAsync(string name)</code> should return true so that the Action or Condition are called asynchronously. The execution of an asynchronous Action or Condition is done in the <code>Task ExecuteActionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> and <code>Task&lt;bool&gt; ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token)</code> methods.</li>
@@ -123,14 +123,12 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 	throw new NotImplementedException();
 }
 </code></pre>
-<hr>
 <h2>2.1</h2>
 <ul>
-<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine functions are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads/">here</a>.</li>
+<li>Workflow Engine for .NET Core App 1.1 is released. All Workflow Engine functions are supported. This version will be updated simultaneously along the .NET Framework version. 2 persistence providers are currently supported: MS SQL Server and PostgreSQL. Links to NuGet packages and samples can be found <a href="/downloads/net/">here</a>.</li>
 <li>Workflow Engine scheme import/export to/from BPMN2 has been added.</li>
 <li>Bulk process creation has been added. Now you can create a large amount of processes (100 - 100,000) in significantly less time than when using the <code>CreateInstance</code> method. Use the <code>_runtime.BulkCreateInstance(..)</code> method to do that. Currently, the feature is available in the .NET Framework version of Workflow Engine and supports only MS SQL Server. The list of supported databases will be expanded.</li>
 </ul>
-<hr>
 <h2>2.0</h2>
 <ul>
 <li>Designer UI has been improved, transitions are now linear for better usability</li>
@@ -139,8 +137,8 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>Designer now allows users to make an autocomplete list for the following fields: <code>Actor.Value</code>, <code>Activity.Implementation.Action parameter</code>, <code>Transition.Condition.ActionParameter</code>. The autocomplete list is being populated server-side via the <code>IDesignerAutocompleteProvider</code> interface and by transferring implementation to the <code>WorkflowRuntime</code> object via <code>_runtime.WithDesignerAutocompleteProvider(provider)</code>.</li>
 <li>The <code>GetConditions</code> method has been added to the <code>IWorkflowActionProvider</code> interface. Now, the choice of conditions and actions in Designer can be split.</li>
 <li>Parameters of any type not mentioned in the scheme can now be used in Actions' code. The type should be serialized in JSON. Three methods are available: <code>_processInstance.SetParameter(&quot;parameterName&quot;,parameterValue,ParameterPurpose.Persistence)</code>, <code>_processInstance.GetParameter&lt;ParameterType&gt;(&quot;parameterName&quot;)</code> and <code>_processInstance.RemoveParameter(&quot;parameterName&quot;)</code>.</li>
-<li>Ability to create Timers with a value which is undefined at the time of creation of a process has been added. <code>Timer.Value == -1</code> means that the current transition will not be executed until the respective timer has a defined value.  <code>Timer.Value == 0</code> means that in case the timer connected to a transition does not have a value, this transition shall be processed automatically. Initial value of a timer can be set with the <code>_runtime.NeedTimerValue</code> event.</li>
-<li>Ability to modify execution time for timers in running processes has been added. Use methods <code>_runtime.SetTimerValue(processId,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processId, timerName)</code> to change and reset timer values outside the process.  Use methods <code>_runtime.SetTimerValue(processInstance,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processInstance, timerName)</code> to change and reset timer values from within your Actions.</li>
+<li>Ability to create Timers with a value which is undefined at the time of creation of a process has been added. <code>Timer.Value == -1</code> means that the current transition will not be executed until the respective timer has a defined value. <code>Timer.Value == 0</code> means that in case the timer connected to a transition does not have a value, this transition shall be processed automatically. Initial value of a timer can be set with the <code>_runtime.NeedTimerValue</code> event.</li>
+<li>Ability to modify execution time for timers in running processes has been added. Use methods <code>_runtime.SetTimerValue(processId,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processId, timerName)</code> to change and reset timer values outside the process. Use methods <code>_runtime.SetTimerValue(processInstance,timerName,newValue)</code> and <code>_runtime.ResetTimerValue(processInstance, timerName)</code> to change and reset timer values from within your Actions.</li>
 <li>Newtonsoft.Json version has been changed from 7.0.1 to 9.0.0.</li>
 </ul>
 <p><strong>The following additional actions must be taken to uprgade to Workflow Engine 2.0:</strong></p>
@@ -150,7 +148,6 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>If you use <code>implementation</code> of <code>IWorkflowActionProvider</code> you should add a <code>public List&lt;string&gt; GetConditions()</code> method to it. It is advisable that the <code>GetActions</code> returns only the list of available Actions, whereas the <code>GetConditions</code> method should return the list of available Conditions. In this case they should be filtered properly in the Designer. However, if you do not want to modify your code, make sure that the <code>GetConditions</code> method throws a <code>NotImplementedException</code>. In this case, everything should work as it used to.</li>
 <li>IF you use Oracle, you should run an <code>update_1_5_to_2_0.sql</code> script from the Oracle provider ZIP archive or a NuGet package.</li>
 </ul>
-<hr>
 <h2>1.5.6</h2>
 <ul>
 <li>Two new persistence providers were added to WorkflowEngine.NET Redis Provider for <a href="http://redis.io/">Redis</a> and Ignite Provider for <a href="https://ignite.apache.org/">Apache Ignite</a></li>
@@ -159,7 +156,6 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li>Several redundat operations related to subprocess features were removed to increase performance.</li>
 <li>Conditions are checked for transitions that creating subprocesses.</li>
 </ul>
-<hr>
 <h2>1.5.5</h2>
 <p>In this release several features have been added to simplify the generation of forms based on commands.</p>
 <ul>
@@ -173,23 +169,20 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 <li><code>GetAllActorsForCommandTransitions(ProcessInstance)</code> method was added to <code>WorkflowRuntime</code>. You can use this method to get next potential approvers for current state.</li>
 <li>You can change the JSON Serializer settings for Parameters derialization using SetParameterSerializerSettings configuration method.</li>
 </ul>
-<hr>
 <h2>1.5.4</h2>
 <ul>
 <li>Schema was added in constructors of all SQL providers. For MsSQL the default schema is &quot;dbo&quot;. For PostgreSql the default schema is &quot;public&quot;. For Oracle the default schema is null.</li>
-<li>You are able to specify an interval timer value with milliseconds, seconds, minutes and days. For example &quot;1d 2h 4m 30s&quot; - one day two hours four minutes thirty seconds or &quot;5m 30s&quot;, &quot;14d&quot;, &quot;12h&quot;, &quot;10m&quot;, &quot;10s&quot; etc. You are able to use following names. d, day or days to specify interval in days. h, hour or hours to specify interval in hours. m, minute or minutes to specify interval in minutes.  s, second or seconds to specify interval in seconds. ms, millisecond or milliseconds to specify interval in milliseconds. If the interval is specified as just a numeric value, it  is interpreted as the interval in milliseconds.</li>
+<li>You are able to specify an interval timer value with milliseconds, seconds, minutes and days. For example &quot;1d 2h 4m 30s&quot; - one day two hours four minutes thirty seconds or &quot;5m 30s&quot;, &quot;14d&quot;, &quot;12h&quot;, &quot;10m&quot;, &quot;10s&quot; etc. You are able to use following names. d, day or days to specify interval in days. h, hour or hours to specify interval in hours. m, minute or minutes to specify interval in minutes. s, second or seconds to specify interval in seconds. ms, millisecond or milliseconds to specify interval in milliseconds. If the interval is specified as just a numeric value, it is interpreted as the interval in milliseconds.</li>
 <li>You are able to pass initial parameters of a process by using <code>_runtime.CreateInstance(CreateInstanceParams createInstanceParams)</code> method. Parameters passed in the createInstanceParams.InitialProcessParameters property will be used as initial for parameters of a process.</li>
 </ul>
-<hr>
 <h2>1.5.3</h2>
 <ul>
 <li>The JSON serializer used by the engine was changed from <code>ServiceStack.Text to Newtonsoft.JSON</code>. 1.5.3 version of WFE was built with the <code>verion 7.0 of Newtonsoft.JSON</code>.</li>
 <li><em>MSSQL provider</em> was rewritten from LINQtoSQL to ordinary SQL queries.</li>
 <li>The <em>Parameter</em> window in the designer was implroved. Now you can hide System parameters. They are hidden by default.</li>
-<li>Working with types in the <em>Parameter</em> window  in the designer was improved. Now you are able to use short type's names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use &lt;&gt; for generic types and [] for arrays.</li>
+<li>Working with types in the <em>Parameter</em> window in the designer was improved. Now you are able to use short type's names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use &lt;&gt; for generic types and [] for arrays.</li>
 <li>Fixed a bug in the timers for their correct restart after restart of the workflow runtime.</li>
 </ul>
-<hr>
 <h2>1.5.2</h2>
 <ul>
 <li><code>ExecutedActivity</code> and <code>ExecutedTransition</code> properties added in <code>ProcessInstance</code> class. Via them, you can access executed transition and activity during a transitional process.</li>

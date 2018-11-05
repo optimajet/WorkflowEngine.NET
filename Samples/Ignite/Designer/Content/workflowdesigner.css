@@ -115,7 +115,7 @@ div.field > label {
     }
 
 
-.ui.selection.dropdown {
+.WorkflowDesignerDialog > .ui.selection.dropdown {
     border: none;
     padding-left: 2px;
     border-bottom-left-radius: 0px;
@@ -124,7 +124,7 @@ div.field > label {
     white-space: pre;
 }
 
-    .ui.selection.dropdown div.text {
+.WorkflowDesignerDialog > .ui.selection.dropdown div.text {
         padding-top: 4px;
     }
 

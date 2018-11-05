@@ -38,6 +38,9 @@ namespace Designer
             }
 
             var res = WorkflowInit.Runtime.DesignerAPI(pars, filestream, true);
+            
+            context.Response.Cache.SetNoStore();
+            
             if (pars["operation"].ToLower() == "downloadscheme")
             {
                 context.Response.ContentType = "file/xml";
