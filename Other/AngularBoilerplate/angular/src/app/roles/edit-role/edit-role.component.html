@@ -1,0 +1,77 @@
+<div bsModal #editRoleModal="bs-modal" class="modal fade" (onShown)="onShown()" tabindex="-1" role="dialog" aria-labelledby="edidtRoleModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+
+            <form *ngIf="active" #editRoleForm="ngForm" id="frm_edit_role" novalidate (ngSubmit)="save()">
+
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "EditRole" | localize }} <span *ngIf="model.role.isStatic"> (<span style="color:red">static</span>)</span></span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input id="rolename" [disabled]="model.role.isStatic" type="text" name="RoleName" [(ngModel)]="model.role.name" required maxlength="32" minlength="2" class="validate form-control">
+                                    <label for="rolename" class="form-label">{{ "RoleName" | localize }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input id="displayname" type="text" name="DisplayName" [(ngModel)]="model.role.displayName" required maxlength="32" minlength="2" class="validate form-control">
+                                    <label for="displayname" class="form-label">{{ "DisplayName" | localize }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <textarea id="role-description" name="Description" [(ngModel)]="model.role.description" class="validate form-control"></textarea>
+                                    <label for="role-description" class="form-label">Role Description</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <h4>Permissions</h4>
+
+                            <ng-template ngFor let-permission [ngForOf]="model.permissions" let-permissionIndex="index">
+                                <div class="col-sm-6">
+                                    <input [disabled]="model.role.isStatic" type="checkbox" name="permission" value="{{permission.name}}" class="filled-in" id="permission-{{permissionIndex}}" checked="{{checkPermission(permission.name)}}" />
+                                    <label for="permission-{{permissionIndex}}">{{permission.displayName}}</label>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default waves-effect" (click)="close()">
+                        {{ "Cancel" | localize }}
+                    </button>
+                    <button [disabled]="!editRoleForm.form.valid || saving" type="submit" class="btn btn-primary waves-effect">
+                        {{ "Save" | localize }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
