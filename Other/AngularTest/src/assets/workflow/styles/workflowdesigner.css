@@ -2,7 +2,7 @@
     box-shadow: 0 1px 3px rgba(0,0,0,0.12), 0 1px 2px rgba(0,0,0,0.24);
 }
 
-.ui.dimmer {
+.ui.dimmer.WorkflowDesignerDialog {
     z-index: 10001;
 }
 
@@ -27,15 +27,15 @@ table.WorkflowDesignerTable .ui.checkbox {
     padding-top: 5px;
 }
 
-.field-validation-error {
-        border-color: #FF0033 !important;
-    }
-
-.ui.dropdown.field-validation-error {
+.WorkflowDesignerDialog .field-validation-error {
     border-color: #FF0033 !important;
 }
-   
-a.btnDelete {
+
+.WorkflowDesignerDialog .ui.dropdown.field-validation-error {
+    border-color: #FF0033 !important;
+}
+
+.WorkflowDesignerDialog a.btnDelete {
     background: url('../images/wfe.delete.png') round;
     text-indent: -9999px;
     display: block;
@@ -44,7 +44,7 @@ a.btnDelete {
     cursor: pointer;
 }
 
-a.btnCodeActions {
+.WorkflowDesignerDialog a.btnCodeActions {
     background: url('../images/wfe.codeactions.png') round;
     text-indent: -9999px;
     display: block;
@@ -53,17 +53,17 @@ a.btnCodeActions {
     cursor: pointer;
 }
 
-a.btnConcatParameters {
+.WorkflowDesignerDialog a.btnConcatParameters {
     cursor: pointer;
     float: right;
 }
 
-.ui.form input[type=text],
-.ui.form input[type=number],
-.ui.form input[type=password],
-.ui.form input[type=date],
-.ui.form textarea,
-.ui.input input {
+.WorkflowDesignerDialog .ui.form input[type=text],
+.WorkflowDesignerDialog .ui.form input[type=number],
+.WorkflowDesignerDialog .ui.form input[type=password],
+.WorkflowDesignerDialog .ui.form input[type=date],
+.WorkflowDesignerDialog .ui.form textarea,
+.WorkflowDesignerDialog .ui.input input{
     border-top: none;
     border-left: none;
     border-right: none;
@@ -71,51 +71,51 @@ a.btnConcatParameters {
     border-radius: 0;
 }
 
-    .ui.form input[type=text]:focus,
-    .ui.form input[type=number]:focus,
-    .ui.form input[type=password]:focus,
-    .ui.form input[type=date]:focus,
-    .ui.form textarea:focus,
-    .ui.input input:focus {
-        border-radius: 0;
-    }
+.WorkflowDesignerDialog .ui.form input[type=text]:focus,
+.WorkflowDesignerDialog .ui.form input[type=number]:focus,
+.WorkflowDesignerDialog .ui.form input[type=password]:focus,
+.WorkflowDesignerDialog .ui.form input[type=date]:focus,
+.WorkflowDesignerDialog .ui.form textarea:focus,
+.WorkflowDesignerDialog .ui.input input:focus {
+    border-radius: 0;
+}
 
-div.field > label {
+.WorkflowDesignerDialog div.field > label {
     font-size: 12px !important;
     color: #97A3B4 !important;
     line-height: 16px !important;
     font-weight: inherit !important;
 }
 
-.ui.dropdown .menu {
+.WorkflowDesignerDialog .ui.dropdown .menu {
     width: 100% !important;
 }
 
-.ui.dropdown > .text {
+.WorkflowDesignerDialog .ui.dropdown > .text {
     width: calc(100% - 20px) !important;
 }
 
-.ui.dropdown {
+.WorkflowDesignerDialog .ui.dropdown {
     width: 100% !important;
     padding-top: 8px !important;
     border-bottom: 1px solid rgba(34,36,38,.15) !important;
     padding-bottom: 9px !important;
 }
 
-.ui.multiple.dropdown > .text {
+.WorkflowDesignerDialog .ui.multiple.dropdown > .text {
     margin: 0;
 }
 
-.ui.secondary.pointing.menu .active.item, .ui.secondary.pointing.menu .active.item:hover {
+.WorkflowDesignerDialog .ui.secondary.pointing.menu .active.item, .ui.secondary.pointing.menu .active.item:hover {
     border-color: #1362e2;
 }
 
-    .ui.secondary.pointing.menu .active.item > span {
-        color: #1362e2;
-    }
+.WorkflowDesignerDialog .ui.secondary.pointing.menu .active.item > span {
+    color: #1362e2;
+}
 
 
-.WorkflowDesignerDialog > .ui.selection.dropdown {
+.WorkflowDesignerDialog .ui.selection.dropdown {
     border: none;
     padding-left: 2px;
     border-bottom-left-radius: 0px;
@@ -124,14 +124,16 @@ div.field > label {
     white-space: pre;
 }
 
-.WorkflowDesignerDialog > .ui.selection.dropdown div.text {
+.WorkflowDesignerDialog .ui.selection.dropdown div.text {
         padding-top: 4px;
     }
 
 /*
  Others
 */
-.ui.form input[type=text], .ui.form input[type=number], .ui.form textarea {
+.WorkflowDesignerDialog .ui.form input[type=text],
+.WorkflowDesignerDialog .ui.form input[type=number],
+.WorkflowDesignerDialog .ui.form textarea {
     border-top: none;
     border-left: none;
     border-right: none;
@@ -140,7 +142,9 @@ div.field > label {
     border-radius: 0;
 }
 
-input[type=text], input[type=number], textarea {
+.WorkflowDesignerDialog input[type=text],
+.WorkflowDesignerDialog input[type=number],
+.WorkflowDesignerDialog textarea {
     border-top: none;
     border-left: none;
     border-right: none;
@@ -148,128 +152,49 @@ input[type=text], input[type=number], textarea {
     border-radius: 0;
 }
 
-.ui.input input[type=number],
-.ui.form .ui.input input[type=number] {
+.WorkflowDesignerDialog .ui.input input[type=number],
+.WorkflowDesignerDialog .ui.form .ui.input input[type=number] {
     text-align: right;
 }
 
-div.field > label {
+.WorkflowDesignerDialog div.field > label {
     font-size: 12px !important;
     color: #97A3B4 !important;
     line-height: 16px !important;
     font-weight: inherit !important;
 }
 
-.ui.dropdown .menu {
+.WorkflowDesignerDialog .ui.dropdown .menu {
     width: 100% !important;
 }
 
-.ui.dropdown > .text {
+.WorkflowDesignerDialog .ui.dropdown > .text {
     width: calc(100% - 20px) !important;
 }
 
-.ui.dropdown {
+.WorkflowDesignerDialog .ui.dropdown {
     width: 100% !important;
     padding-top: 8px !important;
     border-bottom: 1px solid rgba(34,36,38,.15) !important;
     padding-bottom: 9px !important;
 }
 
-    .ui.dropdown[data-buildertype=dropdowntrigger] {
-        border-bottom: none !important;
-        width: auto !important;
-    }
+.WorkflowDesignerDialog .ui.dropdown[data-buildertype=dropdowntrigger] {
+    border-bottom: none !important;
+    width: auto !important;
+}
 
-.ui.secondary.pointing.menu .active.item, .ui.secondary.pointing.menu .active.item:hover {
+.WorkflowDesignerDialog .ui.secondary.pointing.menu .active.item,
+.WorkflowDesignerDialog .ui.secondary.pointing.menu .active.item:hover {
     border-color: #1362e2;
 }
 
-    .ui.secondary.pointing.menu .active.item > span {
-        color: #1362e2;
-    }
-
-
-.react-grid-Grid {
-    border: none;
+.WorkflowDesignerDialog .ui.secondary.pointing.menu .active.item > span {
+    color: #1362e2;
 }
 
-.react-grid-Main {
-    outline: none;
-}
-
-.react-grid-Header {
-    background: transparent;
-    border-top-style: solid;
-    border-top-width: 1px;
-    border-top-color: rgba(148,149,154,0.20);
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(148,149,154,0.20);
-}
-
-.react-grid-HeaderRow {
-    background: #F4F4F4;
-    border-radius: 0 0 2px 2px;
-}
-
-.react-grid-HeaderCell {
-    border: none;
-    background: transparent;
-}
-
-.react-grid-Row {
-    cursor: pointer;
-    border: none;
-    border-bottom-style: solid;
-    border-bottom-width: 1px;
-    border-bottom-color: rgba(148,149,154,0.20);
-}
-
-.react-grid-Cell--locked:last-of-type {
-    border: none;
-}
-
-.react-grid-Cell {
-    border: none;
-    background: transparent;
-}
-
-.dwkit-gridview-autoHeight .react-grid-Main {
-    height: 100%;
-}
-
-.dwkit-gridview-autoHeight .react-grid-Container {
-    height: 100%;
-}
-
-.dwkit-gridview-autoHeight .react-grid-Grid {
-    min-height: 100% !important;
-}
-
-.dwkit-gridview-autoHeight .react-grid-Canvas {
-    height: 100% !important;
-}
-
-.ui.form .fields .field {
-    margin: 0 0 1em;
-}
-
-.dwkit-gridview-rowloading {
-    background: #F9F9F9;
-}
-
-
-.ui.form .fields {
-    margin-bottom: 0px;
-}
-
-    .ui.form .field:last-child, .ui.form .fields:last-child .field {
-        margin-bottom: 14px;
-    }
-
-
-.ui.primary.button,
-.ui.primary.button:focus {
+.WorkflowDesignerDialog .ui.primary.button,
+.WorkflowDesignerDialog .ui.primary.button:focus {
     background: #f24d00;
     border: 1px solid #f24d00;
     border-radius: 2px;
@@ -277,16 +202,16 @@ div.field > label {
     color: #FFFFFF;
 }
 
-    .ui.primary.button:hover {
+    .WorkflowDesignerDialog .ui.primary.button:hover {
         background: #CA4000;
     }
 
-    .ui.primary.button:active {
+    .WorkflowDesignerDialog .ui.primary.button:active {
         background: #B63A00;
     }
 
-.ui.secondary.button,
-.ui.secondary.button:focus {
+.WorkflowDesignerDialog .ui.secondary.button,
+.WorkflowDesignerDialog .ui.secondary.button:focus {
     background: #FFFFFF;
     border: 1px solid #f24d00;
     border-radius: 2px;
@@ -294,18 +219,18 @@ div.field > label {
     color: #f24d00;
 }
 
-    .ui.secondary.button:hover {
+    .WorkflowDesignerDialog .ui.secondary.button:hover {
         background: #FF4A06;
         color: #FFFFFF;
     }
 
-    .ui.secondary.button:active {
+    .WorkflowDesignerDialog .ui.secondary.button:active {
         background: #DB3E04;
         color: #FFFFFF;
     }
 
 /* Autocomlete */
-.autocomplete-suggestions {
+.WorkflowDesignerDialog .autocomplete-suggestions {
     text-align: left;
     cursor: default;
     border: 1px solid #ccc;
@@ -322,7 +247,7 @@ div.field > label {
     box-sizing: border-box;
 }
 
-.autocomplete-suggestion {
+.WorkflowDesignerDialog .autocomplete-suggestion {
     position: relative;
     padding: 0 .6em;
     line-height: 23px;
@@ -333,26 +258,26 @@ div.field > label {
     color: #333;
 }
 
-.autocomplete-suggestion b {
-    font-weight: normal;
-    color: #1f8dd6;
-}
+    .WorkflowDesignerDialog .autocomplete-suggestion b {
+        font-weight: normal;
+        color: #1f8dd6;
+    }
 
-.autocomplete-suggestion.selected {
-    background: #f0f0f0;
-}
+    .WorkflowDesignerDialog .autocomplete-suggestion.selected {
+        background: #f0f0f0;
+    }
 
 /* Anti-bootstrap */
-.ui.modal {
+.WorkflowDesignerDialog .ui.modal {
     overflow: unset;
     overflow-y: unset;
     bottom: unset;
 }
 
-.ui.checkbox > input[type="checkbox"]{
+.WorkflowDesignerDialog .ui.checkbox > input[type="checkbox"] {
     margin-left: 0px;
 }
-.ui.checkbox {
+.WorkflowDesignerDialog .ui.checkbox {
     padding-left: 0px;
 }
 

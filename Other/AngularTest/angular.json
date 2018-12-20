@@ -20,27 +20,13 @@
             "tsConfig": "src/tsconfig.app.json",
             "assets": [
               "src/favicon.ico",
-              "src/assets",
-              "src/images",
-              "src/css/themes"
+              "src/assets"
             ],
             "styles": [
-              "src/css/workflowdesigner.css",
-              "src/css/semantic.min.css",
-              "src/styles.css"
+              
             ],
             "scripts": [              
-              "src/js/jquery.js",              
-              "src/js/jquery.auto-complete.min.js",              
-              "src/js/konva.min.js",                           
-              "src/js/json5.js",              
-              "src/js/semantic.min.js",                            
-              "src/js/ace.js",                
-              "src/js/mode-csharp.js",                 
-              "src/js/mode-json.js",           
-              "src/js/worker-json.js",        
-              "src/js/theme-monokai.js",                     
-              "src/js/workflowdesigner.min.js"
+            
             ]
           },
           "configurations": {

@@ -1,7 +1,5 @@
 import { Component } from '@angular/core';
 
-declare let WorkflowDesigner: any;
-
 @Component({
   selector: 'app-root',
   templateUrl: './app.component.html',
@@ -9,27 +7,56 @@ declare let WorkflowDesigner: any;
 })
 export class AppComponent {
   title = 'AngularTest';
-  
+  schemecode = 'SimpleWF';
+  processid = undefined;
+  //TODO REPLACE THIS URL TO YOURS BACKEND (!!!)
+  apiurl = 'https://workflowengine.io/demo/Designer/API'; //'/Designer/API'
+  offsetX = 0;
+  offsetY = 120;
   wfdesigner: any; 
 
   constructor() {
-    var wfdesigner = new WorkflowDesigner({
-      name: 'simpledesigner',
-      apiurl: '/Designer/API',
-      renderTo: 'wfdesigner',
-      imagefolder: '/Images/',
-      graphwidth: 1200,
-      graphheight: 600
-  });
-
-  var schemecode = 'SimpleWF';
-  var processid = '';
-  var p = { schemecode: schemecode, processid: processid};
-  if (wfdesigner.exists(p))
-    wfdesigner.load(p);
-  else
-    wfdesigner.create();
+    var me = this;
+    me.wfdesignerRedraw();
+    window.onresize = function(event) {
+      if(me != undefined && me.wfdesigner != undefined){
+        me.wfdesignerRedraw();
+      }
+    };
+  }
+    
+  wfdesignerRedraw() {
+    let data;
+    if (this.wfdesigner != undefined) {
+        data = this.wfdesigner.data;
+        this.wfdesigner.destroy();
     }
 
+    this.wfdesigner = new window["WorkflowDesigner"]({
+      name: 'simpledesigner',
+      apiurl: this.apiurl,
+      renderTo: 'wfdesigner',
+      imagefolder: '/assets/workflow/images/',
+      graphwidth: window.innerWidth - this.offsetX,
+      graphheight: window.innerHeight - this.offsetY
+    });
+
+    if (data == undefined) {
+      let isreadonly = false;
+      if (this.processid != undefined && this.processid != '')
+          isreadonly = true;
+
+      let p = { schemecode: this.schemecode, processid: this.processid, readonly: isreadonly };
+
+      if (this.wfdesigner.exists(p))
+        this.wfdesigner.load(p);
+      else
+        this.wfdesigner.create();
+    }
+    else {
+      this.wfdesigner.data = data;
+      this.wfdesigner.render();
+    }
+  }
 }
 

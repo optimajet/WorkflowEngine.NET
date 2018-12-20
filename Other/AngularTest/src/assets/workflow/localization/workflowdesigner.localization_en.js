@@ -1,4 +1,4 @@
-﻿var WorkflowDesignerConstants = {
+﻿var AngularBPWorkflowDesignerConstants = {
     ActivityColor: '#ECF0F1',
     ActivityTextColor: '#2D3436',
     ActivityInitialColor: '#27AE60',
@@ -223,3 +223,4 @@
     UndoDepth: 200,
     DefaultCulture: 'en-US'
 };
+
