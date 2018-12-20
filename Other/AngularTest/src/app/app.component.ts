@@ -26,7 +26,7 @@ export class AppComponent {
   }
     
   wfdesignerRedraw() {
-    let data;
+    let data = undefined;
     if (this.wfdesigner != undefined) {
         data = this.wfdesigner.data;
         this.wfdesigner.destroy();
