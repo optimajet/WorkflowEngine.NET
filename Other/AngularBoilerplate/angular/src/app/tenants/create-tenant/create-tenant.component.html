@@ -1,0 +1,60 @@
+﻿<div bsModal #createTenantModal="bs-modal" class="modal fade" (onShown)="onShown()" tabindex="-1" role="dialog" aria-labelledby="createUserModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+
+            <form *ngIf="active" #createTenantForm="ngForm" id="frm_create_tenant" novalidate (ngSubmit)="save()">
+
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "CreateNewTenant" | localize }}</span>
+                    </h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input class="form-control" type="text" name="TenancyName" [(ngModel)]="tenant.tenancyName" required maxlength="64" minlength="2">
+                            <label class="form-label">{{ "TenancyName" | localize }}</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input type="text" name="Name" class="form-control" [(ngModel)]="tenant.name" required maxlength="128">
+                            <label class="form-label">{{ "Name" | localize }}</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input type="text" name="ConnectionString" class="form-control" [(ngModel)]="tenant.connectionString" maxlength="1024">
+                            <label class="form-label">{{ "DatabaseConnectionString" | localize }} ({{ "Optional" | localize }})</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input type="email" name="AdminEmailAddress" class="form-control" [(ngModel)]="tenant.adminEmailAddress" required maxlength="256" pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$">
+                            <label class="form-label">{{ "AdminEmailAddress" | localize }}</label>
+                        </div>
+                    </div>
+                    <div class="form-group form-float">
+                        <div class="">
+                            <input id="isactive" type="checkbox" name="IsActive" [(ngModel)]="tenant.isActive" checked class="form-control" />
+                            <label for="isactive" class="form-label">{{ "IsActive" | localize }}</label>
+                        </div>
+                    </div>
+                    <p>{{ "DefaultPasswordIs" | localize }} 123qwe</p>
+                </div>
+
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default" (click)="close()">{{ "Cancel" | localize }}</button>
+                    <button [disabled]="!createTenantForm.form.valid || saving" type="submit" class="btn btn-primary blue">{{ "Save" | localize }}</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

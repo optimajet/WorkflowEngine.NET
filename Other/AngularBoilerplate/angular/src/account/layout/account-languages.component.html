@@ -1,0 +1,5 @@
+﻿<ul class="account-language-switch-list text-center">
+    <li *ngFor="let language of languages">
+        <a *ngIf="language.name != currentLanguage.name" href="javascript:void();" title="{{language.displayName}}" (click)="changeLanguage(language.name)"><i class="{{language.icon}}"></i></a>
+    </li>
+</ul>

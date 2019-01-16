@@ -1,0 +1,66 @@
+﻿<div class="row clearfix" [@routerTransition]>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card main-content">
+            <div class="header">
+                <h2>
+                    {{ "Tenants" | localize }}
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <i class="fa fa-spin fa-spinner" *ngIf="isTableLoading"></i>
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" class=" waves-effect waves-block()" (click)="refresh();"><i class="material-icons">refresh</i>Refresh</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="body table-responsive">
+
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ "TenancyName" | localize }}</th>
+                            <th>{{ "Name" | localize }}</th>
+                            <th>
+                                <div style="text-align:center">{{ "IsActive" | localize }}</div>
+                            </th>
+                            <th>{{ "Actions" | localize }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let tenant of tenants | paginate: { id: 'server', itemsPerPage: pageSize, currentPage: pageNumber, totalItems: totalItems }">
+                            <td>{{tenant.tenancyName}}</td>
+                            <td>{{tenant.name}}</td>
+                            <td align="center">
+                                <i class="material-icons" *ngIf="tenant.isActive" style="color:green;">check_box</i>
+                                <i class="material-icons" *ngIf="!tenant.isActive" style="color:red;">indeterminate_check_box</i>
+                            </td>
+                            <td class="dropdown">
+                                <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">menu</i>
+                                </a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li><a href="javascript:void(0);" class="waves-effect waves-block" (click)="editTenant(tenant)"><i class="material-icons">create</i>Edit</a></li>
+                                    <li><a href="javascript:void(0);" class="waves-effect waves-block" (click)="delete(tenant)"><i class="material-icons">delete_sweep</i>Delete</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="text-align: center;" *ngIf="totalItems > pageSize">
+                    <abp-pagination-controls (pageChange)="getDataPage($event)" id="server"></abp-pagination-controls>
+                </div>
+                <button type="button" data-toggle="modal" class="btn btn-primary btn-circle waves-effect waves-circle waves-float pull-right" (click)="createTenant()">
+                    <i class="material-icons">add</i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<create-tenant-modal #createTenantModal (modalSave)="refresh()"></create-tenant-modal>
+<edit-tenant-modal #editTenantModal (modalSave)="refresh()"></edit-tenant-modal>

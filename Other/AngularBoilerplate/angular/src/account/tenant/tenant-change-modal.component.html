@@ -1,0 +1,36 @@
+﻿<div bsModal #tenantChangeModal="bs-modal" (onShown)="onShown()" class="modal fade" tabindex="-1" role="dialog" aria-labelledby="tenantChangeModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+
+            <form *ngIf="active" #changeTenantForm="ngForm" novalidate (ngSubmit)="save()">
+
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "ChangeTenant" | localize }}</span>
+                    </h4>
+                </div>
+
+                <div class="modal-body">
+                    <div class="form-group form-float">
+                        <div class="form-line">
+                            <input #tenancyNameInput materialInput  type="text" name="TenancyName" class="form-control" [ngClass]="{'edited':tenancyName}" [(ngModel)]="tenancyName" maxlength="64">
+                            <label class="form-label">{{ "TenancyName" | localize }}</label>
+                        </div>
+                    </div>
+                    <span class="help-block">{{ "LeaveEmptyToSwitchToHost" | localize }}</span>
+                </div>
+
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default waves-effect" (click)="close()">{{ "Cancel" | localize }}</button>
+                    <button type="submit" class="btn btn-primary waves-effect" [disabled]="!changeTenantForm.form.valid">{{ "Save" | localize }}</button>
+                </div>
+
+            </form>
+
+        </div>
+    </div>
+</div>

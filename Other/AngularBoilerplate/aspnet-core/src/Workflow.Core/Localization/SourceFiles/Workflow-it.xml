@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="it">
+  <texts>
+    <text name="HomePage" value="Home page" />
+    <text name="About" value="Chi siamo" />
+    <text name="WelcomeMessage" value="Benvenuti su My New House!" />
+
+    <text name="FormIsNotValidMessage" value="I dati non sono corretti. Verifica gli errori." />
+    <text name="TenantNameCanNotBeEmpty" value="Il Dominio non può essere vuoto" />
+
+    <text name="InvalidUserNameOrPassword" value="Username o password errati" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="Il dominio {0} non esiste" />
+    <text name="TenantIsNotActive" value="Il dominio {0} non è attivo." />
+    <text name="UserIsNotActiveAndCanNotLogin" value="L'utente {0} non è attivo e non può fare login." />
+    <text name="UserEmailIsNotConfirmedAndCanNotLogin">Indirizzo email non registrato. Login non ammesso.</text>
+    <text name="UserLockedOutMessage">L'account è momentaneamente bloccato. Riprovare più tardi.</text>
+    <text name="PleaseEnterLoginInformation" value="Inserisci le informazioni di login" />
+    <text name="TenancyName" value="Dominio" />
+    <text name="UserNameOrEmail" value="Use name o email" />
+    <text name="Password" value="Password" />
+    <text name="RememberMe" value="Ricordati di me" />
+    <text name="LogIn" value="Log in" />
+
+    <text name="LoginFailed" value="Login errato!" />
+
+    <text name="NameSurname" value="Nome e Cognome" />
+    <text name="UserName" value="Username" />
+    <text name="Name" value="Nome" />
+    <text name="Surname" value="Cognome" />
+    <text name="EmailAddress" value="Email" />
+
+    <text name="Tenants" value="Dominio" />
+    <text name="SavedSuccessfully" value="Salvato" />
+    <text name="CreateNewTenant" value="Crea un nuovo dominio" />
+    <text name="AdminEmailAddress" value="Indirizzo email Amministratore" />
+    <text name="Save" value="Salva" />
+    <text name="Cancel" value="Annulla" />
+    <text name="TenantName_Regex_Description" value="Il dominio deve essere di almeno 2 caratteri, iniziare con una lettera e continuare con lettere, numeri o trattini." />
+    <text name="DefaultPasswordIs" value="La password di default è {0}" />
+    <text name="CanBeEmptyToLoginAsHost" value="Può essere vuoto per entrare come ospite." />
+    <text name="Register" value="Registrati" />
+    <text name="OrLoginWith" value="O entra con" />
+    <text name="WaitingForActivationMessage" value="Il tuo account è in attesa di approvazione." />
+    <text name="TenantSelection" value="Selezione dominio" />
+    <text name="TenantSelection_Detail" value="Seleziona uno dei seguenti domini." />
+    <text name="Logout" value="Logout" />
+
+    <text name="DatabaseConnectionString" value="String connession Database" />
+    <text name="Users" value="Utenti" />
+    <text name="IsActive" value="Attivo" />
+    <text name="FullName" value="Nome completo" />
+    <text name="CreateNewUser" value="Nuovo utente" />
+    <text name="Yes" value="Sì" />
+    <text name="No" value="No" />
+    <text name="Optional" value="Opzionale" />
+  </texts>
+</localizationDictionary>

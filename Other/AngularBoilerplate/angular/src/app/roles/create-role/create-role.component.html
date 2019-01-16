@@ -1,0 +1,75 @@
+﻿<div bsModal #createRoleModal="bs-modal" class="modal fade" (onShown)="onShown()" tabindex="-1" role="dialog" aria-labelledby="createRoleModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+
+            <form *ngIf="active" #createRoleForm="ngForm" id="frm_create_role" novalidate (ngSubmit)="save()">
+
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "CreateNewRole" | localize }}</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input id="rolename" type="text" name="RoleName" [(ngModel)]="role.name" required maxlength="32" minlength="2" class="validate form-control">
+                                    <label for="rolename" class="form-label">{{ "RoleName" | localize }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <input id="displayname" type="text" name="DisplayName" [(ngModel)]="role.displayName" required maxlength="32" minlength="2" class="validate form-control">
+                                    <label for="displayname" class="form-label">{{ "DisplayName" | localize }}</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row">
+                        <div class="col-sm-12">
+                            <div class="form-group form-float">
+                                <div class="form-line">
+                                    <textarea id="role-description" name="Description" [(ngModel)]="role.description" class="validate form-control"></textarea>
+                                    <label for="role-description" class="form-label">Role Description</label>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+
+                    <div class="row clearfix">
+                        <div class="col-sm-12">
+                            <h4>Permissions</h4>
+                            <ng-template ngFor let-permission [ngForOf]="permissions.items" let-permissionIndex="index">
+                                <div class="col-sm-6">
+                                    <input type="checkbox" name="permission" value="{{permission.name}}" class="filled-in" id="permission-{{permissionIndex}}" checked="checked" />
+                                    <label for="permission-{{permissionIndex}}">{{permission.displayName}}</label>
+                                </div>
+                            </ng-template>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default waves-effect" (click)="close()">
+                        {{ "Cancel" | localize }}
+                    </button>
+                    <button [disabled]="!createRoleForm.form.valid || saving" type="submit" class="btn btn-primary waves-effect">
+                        {{ "Save" | localize }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>
