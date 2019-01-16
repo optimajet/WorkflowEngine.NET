@@ -1,8 +1,0 @@
-﻿2014-10-10 19:46:45,721 [15] ERROR OptimaJet.Common.Logger [(null)] - Create instace of process Id=9a34f35b-4d9e-4f7e-b7fc-bb27dc65e40a
-System.Threading.ThreadAbortException: Поток находился в процессе прерывания.
-   в OptimaJet.Workflow.Core.Bus.ActivityExecutor.Execute(IEnumerable`1 requestParameters)
-   в OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecute(Guid processId, String fromActivityName, Boolean ignoreCurrentStateCheck, ProcessInstance processInstance)
-   в OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.PreExecuteFromCurrentActivity(Guid processId, Boolean ignoreCurrentStateCheck)
-   в WF.Sample.Business.Workflow.WorkflowInit._runtime_ProcessStatusChanged(Object sender, ProcessStatusChangedEventArgs e)
-   в OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetProcessNewStatus(ProcessInstance processInstance, ProcessStatus newStatus)
-   в OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CreateInstance(String processName, Guid processId, Nullable`1 identityId, Nullable`1 impersonatedIdentityId, IDictionary`2 parameters)

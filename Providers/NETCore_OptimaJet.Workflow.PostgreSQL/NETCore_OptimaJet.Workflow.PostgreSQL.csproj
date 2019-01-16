@@ -1,0 +1,45 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <TargetFrameworks>netstandard1.6;netstandard2.0;</TargetFrameworks>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Version>3.5.0</Version>
+    <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
+    <Authors>OptimaJet, LLC</Authors>
+    <Company>OptimaJet, LLC</Company>
+    <Product>WorkflowEngine .NET</Product>
+    <Copyright>OptimaJet, LLC</Copyright>
+    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <RepositoryUrl>
+    </RepositoryUrl>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
+    <Description>Contains dlls for PostgreSQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+DbSchemePersistenceProvider  which implements interface ISchemePersistenceProvider,
+DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
+
+Steps for workflow runtime configuration with PostgreSQLProvider: http://workflowenginenet.com/Documentation/Detail/howtoconnect in 
+Create WorkflowRuntime section.</Description>
+    <PackageTags>workflow engine, PostgreSQL, postgres, provider for postgreSQL</PackageTags>
+    <AssemblyName>OptimaJet.Workflow.PostgreSQL</AssemblyName>
+    <RootNamespace>OptimaJet.Workflow.PostgreSQL</RootNamespace>
+    <PackageIconUrl>https://images.workflowengine.io/logos/favicon.png</PackageIconUrl>
+    <AssemblyVersion>3.5.0.0</AssemblyVersion>
+    <FileVersion>3.5.0.0</FileVersion>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <ItemGroup>
+    <PackageReference Include="Npgsql" Version="3.2.2" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\NETCore_OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
+</Project>

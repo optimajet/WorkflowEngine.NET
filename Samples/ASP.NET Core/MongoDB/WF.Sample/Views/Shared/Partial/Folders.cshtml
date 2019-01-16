@@ -1,0 +1,40 @@
+﻿@using System.Linq
+@using Microsoft.AspNetCore.Http.Extensions
+
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor ContextAccessor
+
+@{
+    int folder = 0;
+    if (ContextAccessor.HttpContext != null)
+    {
+        if (ContextAccessor.HttpContext.Request.GetEncodedUrl().ToLower().Contains("inbox"))
+        {
+            folder = 1;
+        }
+        else if (ContextAccessor.HttpContext.Request.GetEncodedUrl().ToLower().Contains("outbox"))
+        {
+            folder = 2;
+        }
+    }
+}
+
+<div style="width: 300px; float: left;">
+    <div class="ui menu">
+        <a href="/" class="item">@Html.Raw(folder == 0 ? "<b>All vacation requests</b>" : "All vacation requests")</a>
+        <a href="/Document/Inbox" class="item">@Html.Raw(folder == 1 ? "<b>Inbox</b>" : "Inbox")</a>
+        <a href="/Document/Outbox" class="item">@Html.Raw(folder == 2 ? "<b>Outbox</b>" : "Outbox")</a>
+    </div>
+</div>
+
+<script>
+    function ReCalcInbox() {
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("RecalcInbox", "Document")",
+            success: function (msg) {
+                alert(msg);
+            }
+        });
+    }
+
+</script>

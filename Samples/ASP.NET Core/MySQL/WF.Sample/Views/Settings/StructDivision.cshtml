@@ -1,0 +1,35 @@
+﻿@using WF.Sample.Controllers
+@model WF.Sample.Models.SettingsModel
+
+<script src="@Url.Content("~/js/jquery.treeTable.min.js")" type="text/javascript"> </script>
+<link rel="stylesheet" href="@Url.Content("~/css/themes/base/jquery.treeTable.css")" id="themestyle">
+
+<style>
+    table.table td.columnTree
+    {
+        padding-left: 20px;   
+    }    
+</style>
+
+<table id='SDTable' class="table">
+    <tbody>
+    <tr>
+        <th>Name</th>
+        <th>Roles</th>
+    </tr>
+    @{int index = 0;}
+    @foreach (var m in Model.StructDivision.Where(c => !c.ParentId.HasValue))
+    {
+        @Html.Raw(SettingsController.GenerateColumnHtml("Columns", m, Model.StructDivision, Model.Employees, ref index, null))
+        index++;
+    }
+</table>
+<script>
+    $(document).ready(function () {
+        $('#SDTable').treeTable(
+            {
+                initialState: "expanded"
+            }
+        );
+    });
+</script>

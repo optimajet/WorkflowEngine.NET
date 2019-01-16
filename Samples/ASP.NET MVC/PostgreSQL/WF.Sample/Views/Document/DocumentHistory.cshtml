@@ -1,0 +1,34 @@
+﻿@model WF.Sample.Models.DocumentHistoryModel
+@if (Model != null && Model.Items != null && Model.Items.Count > 0)
+{
+    <h1>Document's Transition History</h1>
+    <table class="table">
+        <tbody>
+            <tr class="table-header">
+                <th>From</th>
+                <th>To</th>
+                <th>Command</th>
+                <th>Executor</th>
+                <th>TransitionTime</th>
+                <th>Availiable for</th>
+            </tr>
+            @foreach (var item in Model.Items)
+            {
+                <tr>
+                    <td>@Html.Label(item.InitialState)</td>
+                    <td>@Html.Label(item.DestinationState)</td>
+                    <td>@Html.Label(item.Command)</td>
+                    <td>@Html.Label(item.Employee != null ? item.Employee.Name : "")</td>
+                    <td>
+                        @if (item.TransitionTime.HasValue)
+                        {
+                            @Html.Raw(string.Format("{0}",
+                            item.TransitionTime.Value.ToString("yyyy-MM-dd HH:mm:ss")))
+                        }
+                    </td>
+                    <td>@Html.Label(item.AllowedToEmployeeNames)</td>
+                </tr>
+            }
+        </tbody>
+    </table>
+}
