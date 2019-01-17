@@ -1,0 +1,37 @@
+﻿@{
+    ViewBag.Title = "Settings";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+    Html.EnableClientValidation(true);
+}
+@model WF.Sample.Models.SettingsModel
+<h2>Settings</h2>
+
+<table class="table">
+    <tbody>
+        <tr>
+            <th>Param</th>
+            <th>Value</th>
+        </tr>
+        <tr>
+            <td><code>Workflow Scheme</code></td>
+            <td>
+                <div>
+                    <a class="ui primary button" target="_blank" href="/designer">Open in Designer</a>
+                </div>
+            </td>
+        </tr>
+        <tr>
+            <td><code>Roles</code></td>
+            <td>
+                @Html.Partial("Roles", Model.Roles)
+            </td>
+        </tr>
+        <tr>
+            <td><code>StructDivisions</code></td>
+            <td>
+                @Html.Partial("StructDivision", Model)
+            </td>
+        </tr>
+    </tbody>
+</table>
+

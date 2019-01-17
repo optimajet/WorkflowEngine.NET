@@ -1,0 +1,48 @@
+{
+  "defaultAssembly": "WF.Sample.Oracle",
+  "components": [
+    {
+      "type": "WF.Sample.Oracle.SampleContext"
+    },
+    {
+      "type": "WF.Sample.Oracle.Implementation.DocumentRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IDocumentRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.Oracle.Implementation.EmployeeRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IEmployeeRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.Oracle.Implementation.SettingsProvider",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.ISettingsProvider, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.Oracle.Implementation.PersistenceProviderContainer",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IPersistenceProviderContainer, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.Oracle.Implementation.InboxRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IInboxRepository, WF.Sample.Business"
+        }
+      ]
+    }
+  ]
+}

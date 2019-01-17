@@ -1,0 +1,48 @@
+{
+  "defaultAssembly": "WF.Sample.MySql",
+  "components": [
+    {
+      "type": "WF.Sample.MySql.SampleContext"
+    },
+    {
+      "type": "WF.Sample.MySql.Implementation.DocumentRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IDocumentRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MySql.Implementation.EmployeeRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IEmployeeRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MySql.Implementation.SettingsProvider",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.ISettingsProvider, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MySql.Implementation.PersistenceProviderContainer",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IPersistenceProviderContainer, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MySql.Implementation.InboxRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IInboxRepository, WF.Sample.Business"
+        }
+      ]
+    }
+  ]
+}

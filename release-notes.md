@@ -2,6 +2,13 @@
 
 # Workflow Engine: Release Notes
 
+## 3.5 {#3.5}
+
+- Moving the canvas (in the Move mode) with arrows was added to the designer.
+- Explicit passing of CultureInfo was added to methods `GetInitialCommands`, `GetInitialState`, `GetCurrentState` and `GetAvailableCommands` of the `WorkflowRuntime` class
+- Full samples (Vacation request approval) for all supported databases for ASP.NET Core and ASP.NET MVC. Full samples for MSSQL, Postgres and Oracle database for Web Forms.
+
+
 ## 3.4 {#3.4}
 
 - Added automatic size increase for background in designer.

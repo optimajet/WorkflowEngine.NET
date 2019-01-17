@@ -1,0 +1,46 @@
+﻿@using System.Linq
+@using WF.Sample.Business.Model
+@using WF.Sample.Helpers
+@using WF.Sample.Business.DataAccess
+
+@inject IEmployeeRepository EmployeeRepository
+@inject Microsoft.AspNetCore.Http.IHttpContextAccessor ContextAccessor
+
+@{
+    Guid currentEmployeeId = CurrentUserSettings.GetCurrentUser(ContextAccessor.HttpContext);
+
+    if (currentEmployeeId == Guid.Empty)
+    {
+        IList<Employee> list = EmployeeRepository.GetAll();
+        if (list != null && list.Count > 0)
+        {
+            currentEmployeeId = list[0].Id;
+            CurrentUserSettings.SetUserInCookies(ContextAccessor.HttpContext, currentEmployeeId);
+        }
+    }
+
+    var htmlAtt = new Dictionary<string, object>();
+    htmlAtt.Add("class", "ui dropdown");
+    htmlAtt.Add("onchange", "CurrentEmployee_OnChange(this);");
+
+
+}
+<script>
+    function CurrentEmployee_OnChange(sender) {
+        window.location.search = "CurrentEmployee=" + sender.value;
+    }
+</script>
+
+<div class="ui form" style="min-width: 300px; float: right;">
+    <div class="field">
+        <label>Current employee</label>
+        @Html.DropDownList("CurrentEmployee",
+                         EmployeeRepository.GetAll().Select(item => new SelectListItem()
+                         {
+                             Text = string.Format("Name: {0}; StructDivision: {1}; Roles: {2}", item.Name, item.StructDivision.Name, item.GetListRoles()),
+                             Value = item.Id.ToString(),
+                             Selected = item.Id == currentEmployeeId
+                         }).ToList(),
+                        htmlAtt)
+    </div>
+</div>
