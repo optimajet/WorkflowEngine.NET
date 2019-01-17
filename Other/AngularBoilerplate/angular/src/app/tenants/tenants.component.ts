@@ -26,7 +26,7 @@ export class TenantsComponent extends PagedListingComponentBase<TenantDto> {
     }
 
     list(request:PagedRequestDto, pageNumber:number, finishedCallback: Function): void {
-        this._tenantService.getAll(request.skipCount, request.maxResultCount)
+        this._tenantService.getAll(undefined, undefined, undefined, request.skipCount, request.maxResultCount)
             .pipe(finalize(() => { finishedCallback() }))
             .subscribe((result:PagedResultDtoOfTenantDto)=>{
 				this.tenants = result.items;

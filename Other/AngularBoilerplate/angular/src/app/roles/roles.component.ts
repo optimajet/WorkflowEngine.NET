@@ -25,7 +25,7 @@ export class RolesComponent extends PagedListingComponentBase<RoleDto> {
 	}
     
 	list(request: PagedRequestDto, pageNumber: number, finishedCallback: Function): void {
-        this.rolesService.getAll(request.skipCount, request.maxResultCount)
+        this.rolesService.getAll(undefined, undefined, undefined, request.skipCount, request.maxResultCount)
             .pipe(finalize(() => { finishedCallback() }))
             .subscribe((result: PagedResultDtoOfRoleDto)=>{
 				this.roles = result.items;

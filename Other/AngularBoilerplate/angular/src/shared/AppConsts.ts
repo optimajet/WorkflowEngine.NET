@@ -11,7 +11,7 @@ export class AppConsts {
     };
 
     static readonly localization = {
-        defaultLocalizationSourceName: 'Workflow'
+        defaultLocalizationSourceName: 'AngularBPWorkflow'
     };
 
     static readonly authorization = {

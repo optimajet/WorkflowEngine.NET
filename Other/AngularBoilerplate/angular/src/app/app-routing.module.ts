@@ -7,6 +7,10 @@ import { AboutComponent } from './about/about.component';
 import { UsersComponent } from './users/users.component';
 import { TenantsComponent } from './tenants/tenants.component';
 import { RolesComponent } from 'app/roles/roles.component';
+//WorkflowEngineSampleCode
+import { WorkflowComponent } from 'app/workflow/workflow.component';
+import { EditWorkflowComponent } from 'app/workflow/edit-workflow/edit-workflow.component';
+import { DocumentsComponent } from 'app/documents/documents.component';
 
 @NgModule({
     imports: [
@@ -19,7 +23,11 @@ import { RolesComponent } from 'app/roles/roles.component';
                     { path: 'users', component: UsersComponent, data: { permission: 'Pages.Users' }, canActivate: [AppRouteGuard] },
                     { path: 'roles', component: RolesComponent, data: { permission: 'Pages.Roles' }, canActivate: [AppRouteGuard] },
                     { path: 'tenants', component: TenantsComponent, data: { permission: 'Pages.Tenants' }, canActivate: [AppRouteGuard] },
-                    { path: 'about', component: AboutComponent }
+                    { path: 'about', component: AboutComponent },
+                    //WorkflowEngineSampleCode
+                    { path: 'workflow', component: WorkflowComponent },
+                    { path: 'workflowedit/:code', component: EditWorkflowComponent },
+                    { path: 'documents', component: DocumentsComponent }
                 ]
             }
         ])

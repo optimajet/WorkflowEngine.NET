@@ -1,6 +1,6 @@
 import { browser, element, by } from 'protractor';
 
-export class WorkflowTemplatePage {
+export class AngularBPWorkflowTemplatePage {
   navigateTo() {
     return browser.get('/');
   }

@@ -1,10 +1,10 @@
-import { WorkflowTemplatePage } from './app.po';
+import { AngularBPWorkflowTemplatePage } from './app.po';
 
-describe('Workflow App', function() {
-  let page: WorkflowTemplatePage;
+describe('AngularBPWorkflow App', function() {
+  let page: AngularBPWorkflowTemplatePage;
 
   beforeEach(() => {
-    page = new WorkflowTemplatePage();
+    page = new AngularBPWorkflowTemplatePage();
   });
 
   it('should display message saying app works', () => {

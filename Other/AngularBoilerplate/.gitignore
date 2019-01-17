@@ -4,6 +4,6 @@
 .vs/
 obj/
 bin/
-aspnet-core/src/Workflow.Web.Host/App_Data/Logs/
-aspnet-core/src/Workflow.Web.Mvc/App_Data/Logs/
-aspnet-core/src/Workflow.Migrator/Logs/Logs.txt
+aspnet-core/src/AngularBPWorkflow.Web.Host/App_Data/Logs/
+aspnet-core/src/AngularBPWorkflow.Web.Mvc/App_Data/Logs/
+aspnet-core/src/AngularBPWorkflow.Migrator/Logs/Logs.txt

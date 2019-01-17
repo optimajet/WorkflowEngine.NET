@@ -7,7 +7,7 @@ $oldCompanyName="AbpCompanyName"
 $newCompanyName="YourCompanyName"
 
 # project name placeholder
-$oldProjectName="Workflow"
+$oldProjectName="AngularBPWorkflow"
 # your project name
 $newProjectName="YourProjectName"
 

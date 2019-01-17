@@ -33,6 +33,16 @@ import { SideBarNavComponent } from '@app/layout/sidebar-nav.component';
 import { SideBarFooterComponent } from '@app/layout/sidebar-footer.component';
 import { RightSideBarComponent } from '@app/layout/right-sidebar.component';
 
+//WorkflowEngineSampleCode
+import { WorkflowComponent } from '@app/workflow/workflow.component';
+import { CreateWorkflowComponent } from '@app/workflow/create-workflow/create-workflow.component';
+import { EditWorkflowComponent } from '@app/workflow/edit-workflow/edit-workflow.component';
+
+import { DocumentsComponent } from '@app/documents/documents.component';
+import { CreateDocumentComponent } from '@app/documents/create-document/create-document.component';
+import { EditDocumentComponent } from '@app/documents/edit-document/edit-document.component';
+
+
 @NgModule({
     declarations: [
         AppComponent,
@@ -52,8 +62,14 @@ import { RightSideBarComponent } from '@app/layout/right-sidebar.component';
         SideBarUserAreaComponent,
         SideBarNavComponent,
         SideBarFooterComponent,
-        RightSideBarComponent
-    
+        RightSideBarComponent,
+        //WorkflowEngineSampleCode
+        WorkflowComponent,
+        CreateWorkflowComponent,
+        EditWorkflowComponent,
+        DocumentsComponent,
+        CreateDocumentComponent,
+        EditDocumentComponent
     ],
     imports: [
         CommonModule,

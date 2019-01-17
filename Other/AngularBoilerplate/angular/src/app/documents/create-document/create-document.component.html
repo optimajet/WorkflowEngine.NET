@@ -1,0 +1,68 @@
+﻿<!-- WorkflowEngineSampleCode -->
+<div bsModal #createDocumentModal="bs-modal" class="modal fade" (onShown)="onShown()" tabindex="-1" role="dialog" aria-labelledby="createDocumentModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+
+            <form *ngIf="active" #createDocumentForm="ngForm" id="frm_create_document" novalidate (ngSubmit)="save()">
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "Create a Document" | localize }}</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <div role="tabpanel" class="tab-pane animated fadeIn active" id="document-details">
+                        <div class="row clearfix" style="margin-top:10px;">
+                            <div class="col-sm-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <select id="scheme" type="text" name="Scheme" [(ngModel)]="document.scheme" required class="validate form-control">
+                                            <ng-template ngFor let-scheme [ngForOf]="schemes" let-roleIndex="index">
+                                                <option value="{{scheme.scheme}}">{{scheme.scheme}}</option>                                                    
+                                            </ng-template>
+                                        </select>
+                                        <label for="scheme" class="form-label">{{ "Workflow" | localize }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row clearfix" style="margin-top:10px;">
+                            <div class="col-sm-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <input id="title" type="text" name="Title" [(ngModel)]="document.title" required maxlength="32" minlength="2" class="validate form-control">
+                                        <label for="title" class="form-label">{{ "Title" | localize }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div class="row clearfix" style="margin-top:10px;">
+                            <div class="col-sm-12">
+                                <div class="form-group form-float">
+                                    <div class="form-line">
+                                        <textarea id="description" type="text" name="Description" [(ngModel)]="document.description" rows="6"  class="validate form-control"></textarea>
+                                        <label for="description" class="form-label">{{ "Description" | localize }}</label>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default waves-effect" (click)="close()">
+                        {{ "Cancel" | localize }}
+                    </button>
+                    <button [disabled]="!createDocumentForm.form.valid || saving" type="submit" class="btn btn-primary waves-effect">
+                        {{ "Save" | localize }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

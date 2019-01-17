@@ -1,33 +1,30 @@
 # Introduction
 
-This is a template to create **ASP.NET Core MVC / Angular** based startup projects for [ASP.NET Boilerplate](https://aspnetboilerplate.com/Pages/Documents). It has 2 different versions:
+This is a sample of integration of [WorkflowEngine](https://workflowengine.io) into an Angular project based on [ASP.NET Core & Angular](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular).
 
-1. [ASP.NET Core MVC & jQuery](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Core) (server rendered multi-page application).
-2. [ASP.NET Core & Angular](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular) (single page application).
- 
-User Interface is based on [BSB Admin theme](https://github.com/gurayyarar/AdminBSBMaterialDesign).
- 
-# Download
+#How to run
 
-Create & download your project from https://aspnetboilerplate.com/Templates
+1. Follow the instruction: https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular
+2. Execute **db\SQL\CreatePersistenceObjects.sql** script on your Database for creating workflow tables.
+
+Now you can create workflow schemes and using them for Document objects.
+All changes, which we added in the original Boilerplate template, have been marked the comment: **WorkflowEngineSampleCode**. You find them easily.
 
 # Screenshots
 
-#### Sample Dashboard Page
-![](_screenshots/module-zero-core-template-ui-home.png)
+#### Workflow Designer Page
+![](_screenshots/ui-workflow-designer.png)
 
-#### User Creation Modal
-![](_screenshots/module-zero-core-template-ui-user-create-modal.png)
+#### Document creation and choosing workflow
+![](_screenshots/ui-document-create.png)
 
-#### Login Page
+#### Document with workflow buttons
+![](_screenshots/ui-document-workflowbuttons.png)
 
-![](_screenshots/module-zero-core-template-ui-login.png)
+#### Document workflow history
+![](_screenshots/ui-document-workflowhistory.png)
 
 # Documentation
 
-* [ASP.NET Core MVC & jQuery version.](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Core)
 * [ASP.NET Core & Angular  version.](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular)
-
-# License
-
-[MIT](LICENSE).
+* [WorkflowEngine](https://workflowengine.io/documentation/)

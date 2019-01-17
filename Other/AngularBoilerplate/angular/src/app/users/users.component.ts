@@ -26,7 +26,7 @@ export class UsersComponent extends PagedListingComponentBase<UserDto> {
     }
 
     protected list(request: PagedRequestDto, pageNumber: number, finishedCallback: Function): void {
-        this._userService.getAll(request.skipCount, request.maxResultCount)
+        this._userService.getAll(undefined, undefined, undefined, undefined, undefined, request.skipCount, request.maxResultCount)
             .pipe(finalize(() => {
                  finishedCallback()
             }))

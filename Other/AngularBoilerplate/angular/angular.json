@@ -3,7 +3,7 @@
   "version": 1,
   "newProjectRoot": "projects",
   "projects": {
-    "Workflow": {
+    "AngularBPWorkflow": {
       "root": "",
       "sourceRoot": "src",
       "projectType": "application",
@@ -112,21 +112,21 @@
         "serve": {
           "builder": "@angular-devkit/build-angular:dev-server",
           "options": {
-            "browserTarget": "Workflow:build"
+            "browserTarget": "AngularBPWorkflow:build"
           },
           "configurations": {
             "production": {
-              "browserTarget": "Workflow:build:production"
+              "browserTarget": "AngularBPWorkflow:build:production"
             },
             "hmr": {
-              "browserTarget": "Workflow:build:hmr"
+              "browserTarget": "AngularBPWorkflow:build:hmr"
             }
           }
         },
         "extract-i18n": {
           "builder": "@angular-devkit/build-angular:extract-i18n",
           "options": {
-            "browserTarget": "Workflow:build"
+            "browserTarget": "AngularBPWorkflow:build"
           }
         },
         "test": {
@@ -212,7 +212,7 @@
         }
       }
     },
-    "Workflow-e2e": {
+    "AngularBPWorkflow-e2e": {
       "root": "",
       "sourceRoot": "",
       "projectType": "application",
@@ -221,7 +221,7 @@
           "builder": "@angular-devkit/build-angular:protractor",
           "options": {
             "protractorConfig": "./protractor.conf.js",
-            "devServerTarget": "Workflow:serve"
+            "devServerTarget": "AngularBPWorkflow:serve"
           }
         },
         "lint": {
@@ -236,7 +236,7 @@
       }
     }
   },
-  "defaultProject": "Workflow",
+  "defaultProject": "AngularBPWorkflow",
   "schematics": {
     "@schematics/angular:component": {
       "prefix": "app",

@@ -12,6 +12,10 @@ export class SideBarNavComponent extends AppComponentBase {
     menuItems: MenuItem[] = [
         new MenuItem(this.l("HomePage"), "", "home", "/app/home"),
 
+        //WorkflowEngineSampleCode
+        new MenuItem(this.l("Documents"), "", "description", "/app/documents"),
+        new MenuItem(this.l("Workfow"), "", "work", "/app/workflow"),
+       
         new MenuItem(this.l("Tenants"), "Pages.Tenants", "business", "/app/tenants"),
         new MenuItem(this.l("Users"), "Pages.Users", "people", "/app/users"),
         new MenuItem(this.l("Roles"), "Pages.Roles", "local_offer", "/app/roles"),
