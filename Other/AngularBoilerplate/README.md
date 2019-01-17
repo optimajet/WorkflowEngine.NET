@@ -2,7 +2,7 @@
 
 This is a sample of integration of [WorkflowEngine](https://workflowengine.io) into an Angular project based on [ASP.NET Core & Angular](https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular).
 
-#How to run
+# How to run
 
 1. Follow the instruction: https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular
 2. Execute **db\SQL\CreatePersistenceObjects.sql** script on your Database for creating workflow tables.
