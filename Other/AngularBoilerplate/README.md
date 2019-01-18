@@ -4,10 +4,9 @@ This is a sample of integration of [WorkflowEngine](https://workflowengine.io) i
 
 # How to run
 
-1. Follow the instruction: https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular
-2. Execute **db\SQL\CreatePersistenceObjects.sql** script on your Database for creating workflow tables.
+Follow the instruction: https://aspnetboilerplate.com/Pages/Documents/Zero/Startup-Template-Angular
 
-Now you can create workflow schemes and using them for Document objects.
+Here you can create workflow schemes and using them in Document objects.
 All changes, which we added in the original Boilerplate template, have been marked the comment: **WorkflowEngineSampleCode**. You find them easily.
 
 # Screenshots

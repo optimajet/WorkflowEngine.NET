@@ -916,25 +916,6 @@ namespace AngularBPWorkflow.Migrations
                 name: "IX_AbpTenants_TenancyName",
                 table: "AbpTenants",
                 column: "TenancyName");
-
-            //WorkflowEngineSampleCode
-            migrationBuilder.CreateTable(
-            name: "AppDocuments",
-            columns: table => new
-            {
-                Id = table.Column<int>(nullable: false)
-                    .Annotation("SqlServer:ValueGenerationStrategy", SqlServerValueGenerationStrategy.IdentityColumn),
-                CreationTime = table.Column<DateTime>(nullable: false),
-                Description = table.Column<string>(maxLength: 65536, nullable: true),
-                State = table.Column<string>(maxLength: 256, nullable: false),
-                Title = table.Column<string>(maxLength: 256, nullable: false),
-                Scheme = table.Column<string>(maxLength: 256, nullable: false),
-                ProcessId = table.Column<Guid>(nullable: true),
-            },
-            constraints: table =>
-            {
-                table.PrimaryKey("PK_AppDocuments", x => x.Id);
-            });
         }
 
         protected override void Down(MigrationBuilder migrationBuilder)
@@ -1010,9 +991,6 @@ namespace AngularBPWorkflow.Migrations
 
             migrationBuilder.DropTable(
                 name: "AbpUsers");
-
-            //WorkflowEngineSampleCode
-            migrationBuilder.DropTable(name: "AppDocuments");
         }
     }
 }

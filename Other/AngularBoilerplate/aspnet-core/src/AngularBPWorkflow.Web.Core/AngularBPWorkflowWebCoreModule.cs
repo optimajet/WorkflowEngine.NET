@@ -49,7 +49,7 @@ namespace AngularBPWorkflow
             ConfigureTokenAuth();
 
             //WorkflowEngineSampleCode set a connection string
-            WorkflowInit.ConnectionString = Configuration.DefaultNameOrConnectionString;
+            WorkflowManager.ConnectionString = Configuration.DefaultNameOrConnectionString;
         }
 
         private void ConfigureTokenAuth()

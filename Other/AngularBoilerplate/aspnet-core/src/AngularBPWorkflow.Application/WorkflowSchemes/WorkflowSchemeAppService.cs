@@ -4,6 +4,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
 using Abp.Application.Services;
+using Abp.Authorization;
 using Abp.Domain.Repositories;
 using Abp.Runtime.Session;
 using AngularBPWorkflow.WorkflowSchemes.Dto;
@@ -13,6 +14,7 @@ using OptimaJet.Workflow.DbPersistence;
 namespace AngularBPWorkflow.WorkflowSchemes
 {
     //WorkflowEngineSampleCode
+    [AbpAuthorize]
     public class WorkflowSchemeAppService : AngularBPWorkflowAppServiceBase, IWorkflowSchemeAppService
     {
         public WorkflowSchemeAppService()
@@ -22,7 +24,7 @@ namespace AngularBPWorkflow.WorkflowSchemes
 
         public async Task Delete(string code)
         {
-            var provider = (MSSQLProvider)WorkflowInit.Runtime.PersistenceProvider;
+            var provider = (MSSQLProvider)WorkflowManager.Runtime.PersistenceProvider;
             using (SqlConnection connection = new SqlConnection(provider.ConnectionString))
             {
                 var tmp = new WorkflowScheme();
@@ -33,12 +35,12 @@ namespace AngularBPWorkflow.WorkflowSchemes
         public async Task<bool> ExecuteCommand(Guid processId, string commandName)
         {
             var identityId = AbpSession.UserId?.ToString();
-            var commands = await WorkflowInit.Runtime.GetAvailableCommandsAsync(processId, new List<string> { identityId }, commandName);
+            var commands = await WorkflowManager.Runtime.GetAvailableCommandsAsync(processId, new List<string> { identityId }, commandName);
             var command = commands.FirstOrDefault();
 
             if(command != null)
             {
-                var res = await WorkflowInit.Runtime.ExecuteCommandAsync(command, identityId, null);
+                var res = await WorkflowManager.Runtime.ExecuteCommandAsync(command, identityId, null);
                 return res.WasExecuted;
             }
 
@@ -48,7 +50,7 @@ namespace AngularBPWorkflow.WorkflowSchemes
         public async Task<WorkflowCommandDto[]> GetAvaliableCommands(Guid processId)
         {
             var identityId = AbpSession.UserId?.ToString();
-            var commands = await WorkflowInit.Runtime.GetAvailableCommandsAsync(processId, new List<string> { identityId });
+            var commands = await WorkflowManager.Runtime.GetAvailableCommandsAsync(processId, new List<string> { identityId });
             return commands.OrderBy(c=>c.Classifier).Select(c => new WorkflowCommandDto()
             {
                 Name = c.CommandName,
@@ -60,14 +62,14 @@ namespace AngularBPWorkflow.WorkflowSchemes
         public async Task<string[]> GetStates(Guid processId)
         {
             var identityId = AbpSession.UserId?.ToString();
-            var states = await WorkflowInit.Runtime.GetAvailableStateToSetAsync(processId);
+            var states = await WorkflowManager.Runtime.GetAvailableStateToSetAsync(processId);
             return states.Select(c => c.Name).ToArray();
         }
 
         public async Task<bool> SetState(Guid processId, string state)
         {
             var identityId = AbpSession.UserId?.ToString();
-            await WorkflowInit.Runtime.SetStateAsync(processId, identityId, null, state);
+            await WorkflowManager.Runtime.SetStateAsync(processId, identityId, null, state);
             return true;
         }
 
@@ -75,7 +77,7 @@ namespace AngularBPWorkflow.WorkflowSchemes
         {
             List<WorkflowSchemeDto> schemes = new List<WorkflowSchemeDto>();
 
-            var provider = (MSSQLProvider)WorkflowInit.Runtime.PersistenceProvider;
+            var provider = (MSSQLProvider)WorkflowManager.Runtime.PersistenceProvider;
             using (SqlConnection connection = new SqlConnection(provider.ConnectionString))
             {
                 var tmp = new WorkflowScheme();
@@ -99,7 +101,7 @@ namespace AngularBPWorkflow.WorkflowSchemes
 
         public async Task<WorkflowHistoryDto[]> GetHistories(Guid processId)
         {
-            var h = await WorkflowInit.Runtime.GetProcessHistoryAsync(processId);
+            var h = await WorkflowManager.Runtime.GetProcessHistoryAsync(processId);
             var res = h.Select(c => new WorkflowHistoryDto()
             {
                 TransitionTime = c.TransitionTime,

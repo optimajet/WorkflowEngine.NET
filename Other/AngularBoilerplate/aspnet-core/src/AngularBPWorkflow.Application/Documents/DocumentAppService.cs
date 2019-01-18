@@ -20,6 +20,7 @@ using OptimaJet.Workflow.Core.Runtime;
 namespace AngularBPWorkflow.Documents
 {
     //WorkflowEngineSampleCode
+    [AbpAuthorize]
     public class DocumentAppService : AsyncCrudAppService<Document, DocumentDto, int, PagedDocumentResultRequestDto, CreateDocumentDto, DocumentDto>, IDocumentAppService
     {
         private readonly IRepository<Document> _documentRepository;
@@ -31,7 +32,7 @@ namespace AngularBPWorkflow.Documents
             _documentRepository = repository;
             _workflowService = workflowService;
 
-            WorkflowInit.ChangeStateFuncs.TryAdd("Document", this.ChangeState);
+            WorkflowManager.ChangeStateFuncs.TryAdd("Document", this.ChangeState);
         }
 
         public override async Task<DocumentDto> Create(CreateDocumentDto input)
@@ -39,7 +40,7 @@ namespace AngularBPWorkflow.Documents
             var document = ObjectMapper.Map<Document>(input);
             if (!string.IsNullOrEmpty(document.Scheme))
             {
-                var state = await WorkflowInit.Runtime.GetInitialStateAsync(document.Scheme);
+                var state = await WorkflowManager.Runtime.GetInitialStateAsync(document.Scheme);
                 document.State = state?.Name;
             }
 
@@ -71,14 +72,14 @@ namespace AngularBPWorkflow.Documents
                       },
                 };
 
-                await WorkflowInit.Runtime.CreateInstanceAsync(createInstanceParams);
+                await WorkflowManager.Runtime.CreateInstanceAsync(createInstanceParams);
 
-                var pi = await WorkflowInit.Runtime.GetProcessInstanceAndFillProcessParametersAsync(processId);
+                var pi = await WorkflowManager.Runtime.GetProcessInstanceAndFillProcessParametersAsync(processId);
                 foreach(var param in createInstanceParams.InitialProcessParameters)
                 {
                     pi.SetParameter(param.Key, param.Value, ParameterPurpose.Persistence);
                 }
-                WorkflowInit.Runtime.PersistenceProvider.SavePersistenceParameters(pi);
+                WorkflowManager.Runtime.PersistenceProvider.SavePersistenceParameters(pi);
                 return processId;
             }
             return null;
@@ -108,7 +109,7 @@ namespace AngularBPWorkflow.Documents
 
                 if (document.ProcessId.HasValue)
                 {
-                    await WorkflowInit.Runtime.DeleteInstanceAsync(document.ProcessId.Value);
+                    await WorkflowManager.Runtime.DeleteInstanceAsync(document.ProcessId.Value);
                 }
             }
         }
@@ -136,7 +137,7 @@ namespace AngularBPWorkflow.Documents
             foreach (var scheme in schemes.Schemes)
             {
                 var identityId = AbpSession.UserId?.ToString();
-                var commands = await WorkflowInit.Runtime.GetInitialCommandsAsync(scheme.Code, identityId);
+                var commands = await WorkflowManager.Runtime.GetInitialCommandsAsync(scheme.Code, identityId);
                 res.Add(new SchemeForDocumentOutput()
                 {
                     Scheme = scheme.Code,

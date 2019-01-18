@@ -13,7 +13,7 @@ using OptimaJet.Workflow.DbPersistence;
 namespace AngularBPWorkflow
 {
     //WorkflowEngineSampleCode
-    public static class WorkflowInit
+    public static class WorkflowManager
     {
         private static readonly Lazy<WorkflowRuntime> LazyRuntime = new Lazy<WorkflowRuntime>(InitWorkflowRuntime);
 

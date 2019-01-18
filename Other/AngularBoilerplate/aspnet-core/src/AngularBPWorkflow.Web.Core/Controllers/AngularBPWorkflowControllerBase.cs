@@ -22,7 +22,7 @@ namespace AngularBPWorkflow.Controllers
         {
             get
             {
-                return WorkflowInit.Runtime;
+                return WorkflowManager.Runtime;
             }
         }
     }
