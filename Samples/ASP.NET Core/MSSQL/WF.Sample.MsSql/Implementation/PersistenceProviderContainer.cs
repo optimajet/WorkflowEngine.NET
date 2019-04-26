@@ -17,15 +17,9 @@ namespace WF.Sample.MsSql.Implementation
     {
         public PersistenceProviderContainer(IConfiguration config)
         {
-            _provider = new MSSQLProvider(config.GetConnectionString("DefaultConnection"));
+            Provider = new MSSQLProvider(config.GetConnectionString("DefaultConnection"));
         }
 
-        private readonly MSSQLProvider _provider;
-
-        public IPersistenceProvider AsPersistenceProvider => _provider;
-
-        public ISchemePersistenceProvider<XElement> AsSchemePersistenceProvider => _provider;
-
-        public IWorkflowGenerator<XElement> AsWorkflowGenerator => _provider;
+        public IWorkflowProvider Provider { get; private set; }
     }
 }

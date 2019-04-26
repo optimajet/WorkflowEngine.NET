@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 3.5
+Version: 4.0
 File: DropPersistenceObjects.sql
 */
 

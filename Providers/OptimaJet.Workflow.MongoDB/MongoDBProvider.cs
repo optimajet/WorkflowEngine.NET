@@ -26,7 +26,7 @@ namespace OptimaJet.Workflow.MongoDB
         public const string WorkflowGlobalParameterCollectionName = "WorkflowGlobalParameter";
     }
 
-    public class MongoDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
+    public class MongoDBProvider : IWorkflowProvider
     {
         private WorkflowRuntime _runtime;
 
@@ -163,6 +163,18 @@ namespace OptimaJet.Workflow.MongoDB
                 Save(dbcoll, process, doc => doc.Id == process.Id);
             }
         }
+        
+        public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
+        {
+            if (newStatus == ProcessStatus.Running)
+            {
+                SetRunningStatus(processId);
+            }
+            else
+            {
+                SetCustomStatus(processId,newStatus);
+            }
+        }
 
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
@@ -198,28 +210,8 @@ namespace OptimaJet.Workflow.MongoDB
 
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
-            var instance = dbcoll.Find(x => x.Id == processInstance.ProcessId).FirstOrDefault();
-
-            if (instance.Status == null)
-                throw new StatusNotDefinedException();
-
-            if (instance.Status.Status == ProcessStatus.Running.Id)
-                throw new ImpossibleToSetStatusException();
-
-            var status = new WorkflowProcessInstanceStatus
-            {
-                Lock = Guid.NewGuid(),
-                Status = ProcessStatus.Running.Id
-            };
-
-            var oldLock = instance.Status.Lock;
-
-            var result = dbcoll.UpdateOne(x => x.Id == instance.Id && x.Status.Lock == oldLock,
-                Builders<WorkflowProcessInstance>.Update.Set(x => x.Status, status));
-
-            if (result.ModifiedCount != 1)
-                throw new ImpossibleToSetStatusException();
+            var processId = processInstance.ProcessId;
+            SetRunningStatus(processId);
         }
 
         public void SetWorkflowFinalized(ProcessInstance processInstance)
@@ -319,8 +311,7 @@ namespace OptimaJet.Workflow.MongoDB
                 return ProcessStatus.Unknown;
             return status;
         }
-
-
+        
         private void SetCustomStatus(Guid processId, ProcessStatus status)
         {
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
@@ -348,6 +339,32 @@ namespace OptimaJet.Workflow.MongoDB
                 if (result.ModifiedCount != 1)
                     throw new ImpossibleToSetStatusException();
             }
+        }
+        
+        private void SetRunningStatus(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+            var instance = dbcoll.Find(x => x.Id == processId).FirstOrDefault();
+
+            if (instance.Status == null)
+                throw new StatusNotDefinedException();
+
+            if (instance.Status.Status == ProcessStatus.Running.Id)
+                throw new ImpossibleToSetStatusException();
+
+            var status = new WorkflowProcessInstanceStatus
+            {
+                Lock = Guid.NewGuid(),
+                Status = ProcessStatus.Running.Id
+            };
+
+            var oldLock = instance.Status.Lock;
+
+            var result = dbcoll.UpdateOne(x => x.Id == instance.Id && x.Status.Lock == oldLock,
+                Builders<WorkflowProcessInstance>.Update.Set(x => x.Status, status));
+
+            if (result.ModifiedCount != 1)
+                throw new ImpossibleToSetStatusException();
         }
 
         private IEnumerable<ParameterDefinitionWithValue> GetProcessParameters(Guid processId, ProcessDefinition processDefinition)
@@ -635,6 +652,17 @@ namespace OptimaJet.Workflow.MongoDB
                 .ToList();
         }
 
+        public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            var history = dbcoll.Find(hi => hi.ProcessId == processId).ToList();
+            return history.Select(hi => new ProcessTimer
+            {
+                Name = hi.Name,
+                NextExecutionDateTime = hi.NextExecutionDateTime
+            });
+        }
+
         #endregion
 
         #region ISchemePersistenceProvider
@@ -742,7 +770,7 @@ namespace OptimaJet.Workflow.MongoDB
             {
                 if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                 {
-                    throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                    throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                 }
             }
 
@@ -763,23 +791,24 @@ namespace OptimaJet.Workflow.MongoDB
             dbcoll.InsertOne(newProcessScheme);
         }
 
-        public void SaveScheme(string schemaCode, string scheme)
+        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
         {
             var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
             var wfScheme = dbcoll.Find(c => c.Code == schemaCode).FirstOrDefault();
 
             if (wfScheme == null)
             {
-                wfScheme = new WorkflowScheme {Id = schemaCode, Code = schemaCode, Scheme = scheme};
+                wfScheme = new WorkflowScheme {Id = schemaCode, Code = schemaCode, Scheme = scheme, InlinedSchemes = inlinedSchemes, CanBeInlined = canBeInlined};
                 dbcoll.InsertOne(wfScheme);
             }
             else
             {
                 wfScheme.Scheme = scheme;
+                wfScheme.InlinedSchemes = inlinedSchemes;
+                wfScheme.CanBeInlined = canBeInlined;
                 Save(dbcoll, wfScheme, doc => doc.Id == wfScheme.Id);
             }
         }
-
 
         public XElement GetScheme(string code)
         {
@@ -790,6 +819,21 @@ namespace OptimaJet.Workflow.MongoDB
                 throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
             return XElement.Parse(scheme.Scheme);
+        }
+        
+        public List<string> GetInlinedSchemeCodes()
+        {
+            var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+            var codes = dbcoll.Find(c => c.CanBeInlined).Project(sch => sch.Code).ToList();
+            return codes;
+        }
+
+        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        {
+            var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+            var filter = Builders<WorkflowScheme>.Filter.AnyEq(sch => sch.InlinedSchemes, schemeCode);
+            var codes = dbcoll.Find(filter).Project(sch => sch.Code).ToList();
+            return codes;
         }
 
         #endregion

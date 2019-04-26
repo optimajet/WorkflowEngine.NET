@@ -11,8 +11,6 @@ namespace WF.Sample.Business.DataAccess
 {
     public interface IPersistenceProviderContainer
     {
-        IPersistenceProvider AsPersistenceProvider { get; } 
-        ISchemePersistenceProvider<XElement> AsSchemePersistenceProvider { get; }
-        IWorkflowGenerator<XElement> AsWorkflowGenerator { get; }
+        IWorkflowProvider Provider { get; }
     }
 }

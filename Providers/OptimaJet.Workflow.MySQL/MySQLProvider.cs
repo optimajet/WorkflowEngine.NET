@@ -15,7 +15,7 @@ using OptimaJet.Workflow.Core.Runtime;
 
 namespace OptimaJet.Workflow.MySQL
 {
-    public class MySQLProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
+    public class MySQLProvider : IWorkflowProvider
     {
         public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
@@ -137,6 +137,18 @@ namespace OptimaJet.Workflow.MySQL
                 }
             }
         }
+        
+        public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
+        {
+            if (newStatus == ProcessStatus.Running)
+            {
+                SetRunningStatus(processId);
+            }
+            else
+            {
+                SetCustomStatus(processId,newStatus);
+            }
+        }
 
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
@@ -150,25 +162,8 @@ namespace OptimaJet.Workflow.MySQL
 
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
-            {
-                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processInstance.ProcessId);
-                if (instanceStatus == null)
-                    throw new StatusNotDefinedException();
-
-                if (instanceStatus.Status == ProcessStatus.Running.Id)
-                    throw new ImpossibleToSetStatusException();
-
-                var oldLock = instanceStatus.Lock;
-
-                instanceStatus.Lock = Guid.NewGuid();
-                instanceStatus.Status = ProcessStatus.Running.Id;
-
-                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
-
-                if (cnt != 1)
-                    throw new ImpossibleToSetStatusException();
-            }
+            var processId = processInstance.ProcessId;
+            SetRunningStatus(processId);
         }
 
         public void SetWorkflowFinalized(ProcessInstance processInstance)
@@ -275,7 +270,29 @@ namespace OptimaJet.Workflow.MySQL
                 return status;
             }
         }
+        
+        private void SetRunningStatus(Guid processId)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
+                if (instanceStatus == null)
+                    throw new StatusNotDefinedException();
 
+                if (instanceStatus.Status == ProcessStatus.Running.Id)
+                    throw new ImpossibleToSetStatusException();
+
+                var oldLock = instanceStatus.Lock;
+
+                instanceStatus.Lock = Guid.NewGuid();
+                instanceStatus.Status = ProcessStatus.Running.Id;
+
+                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
+
+                if (cnt != 1)
+                    throw new ImpossibleToSetStatusException();
+            }
+        }
 
         private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
         {
@@ -606,6 +623,15 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
+        public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
+        {
+            using (var connection = new MySqlConnection(ConnectionString))
+            {
+                var timers = WorkflowProcessTimer.SelectByProcessId(connection, processId);
+                return timers.Select(t => new ProcessTimer { Name = t.Name, NextExecutionDateTime = t.NextExecutionDateTime });
+            }
+        }
+
         #endregion
 
         #region ISchemePersistenceProvider
@@ -703,7 +729,7 @@ namespace OptimaJet.Workflow.MySQL
                 {
                     if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                     {
-                        throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                        throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                     }
                 }
 
@@ -725,7 +751,7 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public void SaveScheme(string schemaCode, string scheme)
+        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
         {
             using (MySqlConnection connection = new MySqlConnection(ConnectionString))
             {
@@ -735,20 +761,22 @@ namespace OptimaJet.Workflow.MySQL
                     wfScheme = new WorkflowScheme
                     {
                         Code = schemaCode,
-                        Scheme = scheme
+                        Scheme = scheme,
+                        CanBeInlined = canBeInlined,
+                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null
                     };
                     wfScheme.Insert(connection);
                 }
                 else
                 {
                     wfScheme.Scheme = scheme;
+                    wfScheme.CanBeInlined = canBeInlined;
+                    wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
                     wfScheme.Update(connection);
                 }
 
             }
         }
-
-       
 
         public XElement GetScheme(string code)
         {
@@ -759,6 +787,22 @@ namespace OptimaJet.Workflow.MySQL
                     throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
 
                 return XElement.Parse(scheme.Scheme);
+            }
+        }
+        
+        public List<string> GetInlinedSchemeCodes()
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                return WorkflowScheme.GetInlinedSchemeCodes(connection);
+            }
+        }
+        
+        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        {
+            using (MySqlConnection connection = new MySqlConnection(ConnectionString))
+            {
+                return WorkflowScheme.GetRelatedSchemeCodes(connection,schemeCode);
             }
         }
 

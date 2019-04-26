@@ -3,7 +3,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 3.5
+Version: 4.0
 File: CreatePersistenceObjects.sql
 */
 
@@ -101,6 +101,8 @@ CREATE TABLE IF NOT EXISTS `workflowprocesstransitionhistory` (
 CREATE TABLE IF NOT EXISTS `workflowscheme` (
   `Code` varchar(128) NOT NULL,
   `Scheme` longtext NOT NULL,
+  `CanBeInlined` bit(1) NOT NULL default 0,
+  `InlinedSchemes` varchar(1024) NULL,
   PRIMARY KEY  (`Code`)
 );
 

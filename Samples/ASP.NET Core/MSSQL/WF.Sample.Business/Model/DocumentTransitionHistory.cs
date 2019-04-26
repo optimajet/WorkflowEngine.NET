@@ -18,5 +18,6 @@ namespace WF.Sample.Business.Model
         public string InitialState { get; set; }
         public string DestinationState { get; set; }
         public string Command { get; set; }
+      
     }
 }

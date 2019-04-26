@@ -34,18 +34,15 @@ namespace WF.Sample.Business.Workflow
                 {
                     if (_runtime == null)
                     {
-                        var provider = DataServiceProvider.Get<IPersistenceProviderContainer>();
+                        var provider = DataServiceProvider.Get<IPersistenceProviderContainer>().Provider;
 
-                        var builder = new WorkflowBuilder<XElement>(provider.AsWorkflowGenerator,
-                            new XmlWorkflowParser(),
-                            provider.AsSchemePersistenceProvider
-                            ).WithDefaultCache();
+                        var builder = new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache();
 
                         _runtime = new WorkflowRuntime()
                             .WithBuilder(builder)
                             .WithActionProvider(new ActionProvider(DataServiceProvider))
                             .WithRuleProvider(new RuleProvider(DataServiceProvider))
-                            .WithPersistenceProvider(provider.AsPersistenceProvider)
+                            .WithPersistenceProvider(provider)
                             .WithTimerManager(new TimerManager())
                             .WithBus(new NullBus())
                             .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()

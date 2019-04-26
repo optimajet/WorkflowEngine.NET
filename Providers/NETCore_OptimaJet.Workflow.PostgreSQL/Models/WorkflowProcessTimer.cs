@@ -102,6 +102,15 @@ namespace OptimaJet.Workflow.PostgreSQL
             return Select(connection, selectText, p1, p2).FirstOrDefault();
         }
 
+        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
+
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+
+            return Select(connection, selectText, p1);
+        }
+
         public static int ClearTimersIgnore(NpgsqlConnection connection)
         {
             string command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Ignore\" = TRUE", ObjectName);

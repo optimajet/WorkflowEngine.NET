@@ -91,20 +91,27 @@
     }
 
     $(window).resize(function () {
-        var w = $(window).width();
-        var h = $(window).height();
+        if (window.wfResizeTimer) {
+            clearTimeout(window.wfResizeTimer);
+            window.wfResizeTimer = undefined;
+        }
+        window.wfResizeTimer = setTimeout(function () {
+            var w = $(window).width();
+            var h = $(window).height();
 
-        if (w > 300)
-            graphwidth = w - 40;
+            if (w > 300)
+                graphwidth = w - 40;
 
-        if (h > 300)
-            graphheight = h - 250;
+            if (h > 300)
+                graphheight = h - 250;
 
-        if (graphheight < graphminheight)
-            graphheight = graphminheight;
+            if (graphheight < graphminheight)
+                graphheight = graphminheight;
 
-        wfdesignerRedraw();
-    })
+            wfdesignerRedraw();
+        }, 150);
+
+    });
 
     $(window).resize();
 

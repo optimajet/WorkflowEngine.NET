@@ -17,7 +17,7 @@ using Raven.Imports.Newtonsoft.Json;
 
 namespace OptimaJet.Workflow.RavenDB
 {
-    public class RavenDBProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
+    public class RavenDBProvider : IWorkflowProvider
     {
         private WorkflowRuntime _runtime;
 
@@ -155,6 +155,18 @@ namespace OptimaJet.Workflow.RavenDB
                 session.SaveChanges();
             }
         }
+        
+        public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
+        {
+            if (newStatus == ProcessStatus.Running)
+            {
+                SetRunningStatus(processId);
+            }
+            else
+            {
+                SetCustomStatus(processId,newStatus);
+            }
+        }
 
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
@@ -188,20 +200,8 @@ namespace OptimaJet.Workflow.RavenDB
 
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            using (var session = Store.OpenSession())
-            {
-                var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processInstance.ProcessId);
-                if (instanceStatus == null)
-                    throw new StatusNotDefinedException();
-
-                if (instanceStatus.Status == ProcessStatus.Running.Id)
-                    throw new ImpossibleToSetStatusException();
-
-                instanceStatus.Lock = Guid.NewGuid();
-                instanceStatus.Status = ProcessStatus.Running.Id;
-
-                session.SaveChanges();
-            }
+            var processId = processInstance.ProcessId;
+            SetRunningStatus(processId);
         }
 
         public void SetWorkflowFinalized(ProcessInstance processInstance)
@@ -325,8 +325,25 @@ namespace OptimaJet.Workflow.RavenDB
                 return status;
             }
         }
+        
+        private void SetRunningStatus(Guid processId)
+        {
+            using (var session = Store.OpenSession())
+            {
+                var instanceStatus = session.Load<WorkflowProcessInstanceStatus>(processId);
+                if (instanceStatus == null)
+                    throw new StatusNotDefinedException();
 
+                if (instanceStatus.Status == ProcessStatus.Running.Id)
+                    throw new ImpossibleToSetStatusException();
 
+                instanceStatus.Lock = Guid.NewGuid();
+                instanceStatus.Status = ProcessStatus.Running.Id;
+
+                session.SaveChanges();
+            }
+        }
+        
         private void SetCustomStatus(Guid processId, ProcessStatus status)
         {
             using (var session = Store.OpenSession())
@@ -781,6 +798,45 @@ namespace OptimaJet.Workflow.RavenDB
             return result;
         }
 
+        public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
+        {
+            var result = new List<ProcessTimer>();
+            var skip = 0;
+            var session = Store.OpenSession();
+            try
+            {
+                do
+                {
+                    var history =
+                        session.Query<WorkflowProcessTimer>()
+                            .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                            .Where(p => p.ProcessId == processId)
+                            .Skip(skip)
+                            .Take(session.Advanced.MaxNumberOfRequestsPerSession)
+                            .ToList()
+                            .Select(hi => new ProcessTimer
+                            {
+                                Name = hi.Name,
+                                NextExecutionDateTime = hi.NextExecutionDateTime
+                            })
+                            .ToList();
+
+                    if (!history.Any())
+                        break;
+
+                    result.AddRange(history);
+
+                    skip += session.Advanced.MaxNumberOfRequestsPerSession;
+                } while (true);
+            }
+            finally
+            {
+                session.Dispose();
+            }
+
+            return result;
+        }
+
         #endregion
 
         #region ISchemePersistenceProvider
@@ -935,7 +991,7 @@ namespace OptimaJet.Workflow.RavenDB
                 {
                     if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
                     {
-                        throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                        throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
                     }
                 }
 
@@ -959,7 +1015,7 @@ namespace OptimaJet.Workflow.RavenDB
             }
         }
 
-        public void SaveScheme(string schemeCode, string scheme)
+        public void SaveScheme(string schemeCode,  bool canBeInlined, List<string> inlinedSchemes, string scheme)
         {
             using (var session = Store.OpenSession())
             {
@@ -971,16 +1027,41 @@ namespace OptimaJet.Workflow.RavenDB
                     wfscheme = new WorkflowScheme
                     {
                         Code = schemeCode,
-                        Scheme = scheme
+                        Scheme = scheme,
+                        CanBeInlined = canBeInlined,
+                        InlinedSchemes = inlinedSchemes
                     };
                     session.Store(wfscheme);
                 }
                 else
                 {
+                    wfscheme.CanBeInlined = canBeInlined;
+                    wfscheme.InlinedSchemes = inlinedSchemes;
                     wfscheme.Scheme = scheme;
                 }
 
                 session.SaveChanges();
+            }
+        }
+
+        public List<string> GetInlinedSchemeCodes()
+        {
+            using (var session = Store.OpenSession())
+            {
+                var codes =
+                    session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(sch => sch.CanBeInlined).Select(sch => sch.Code).ToList();
+                return codes;
+            }
+        }
+
+        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        {
+            using (var session = Store.OpenSession())
+            {
+                var codes =
+                    session.Query<WorkflowScheme>().Customize(c => c.WaitForNonStaleResultsAsOfNow()).Where(sch => sch.InlinedSchemes.ContainsAny(new[] {schemeCode}))
+                        .Select(sch => sch.Code).ToList();
+                return codes;
             }
         }
 

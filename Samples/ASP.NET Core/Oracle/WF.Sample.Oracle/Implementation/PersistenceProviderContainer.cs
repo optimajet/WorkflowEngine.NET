@@ -17,15 +17,9 @@ namespace WF.Sample.Oracle.Implementation
     {
         public PersistenceProviderContainer(IConfiguration config)
         {
-            _provider = new OracleProvider(config.GetConnectionString("DefaultConnection"));
+            Provider = new OracleProvider(config.GetConnectionString("DefaultConnection"));
         }
 
-        private readonly OracleProvider _provider;
-
-        public IPersistenceProvider AsPersistenceProvider => _provider;
-
-        public ISchemePersistenceProvider<XElement> AsSchemePersistenceProvider => _provider;
-
-        public IWorkflowGenerator<XElement> AsWorkflowGenerator => _provider;
+        public IWorkflowProvider Provider { get; private set; }
     }
 }

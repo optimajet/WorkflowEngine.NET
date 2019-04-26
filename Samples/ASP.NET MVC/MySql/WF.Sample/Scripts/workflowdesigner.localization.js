@@ -28,7 +28,9 @@
     ButtonTextRedo: 'Redo',
     SaveConfirm: 'Save changes?',
     CloseWithoutSaving: 'Close without saving?',
-    
+
+    TransitionAuto: 'Auto',
+
     DialogConfirmText: "Question",
     None: "None",
     Warning: "Warning",
@@ -42,6 +44,7 @@
     ActivityNamePrefix: 'Activity_',
     ActivityFormLabel: {
         Title: 'Activity',
+        TitleForInline: 'Activity Inline',
         Name: 'Name',
         State: 'State',
         IsInitial: 'Initial',
@@ -54,7 +57,11 @@
         ImpAction: 'Action',
         ImpActionParameter: 'Action parameter',
         AlwaysConditionShouldBeSingle: 'Always condition should be single',
-        OtherwiseConditionShouldBeSingle: 'Otherwise condition should be single'
+        OtherwiseConditionShouldBeSingle: 'Otherwise condition should be single',
+        Annotations: 'Annotations',
+        AnnotationName: 'Name',
+        AnnotationValue: 'Value',
+        Scheme: "Inline scheme"
     },
 
     TransitionFormLabel: {
@@ -84,7 +91,11 @@
         MergeViaSetState: 'Merge subprocess via set state',
         DisableParentStateControl: 'Disable parent process control',
         ShowConcatParameters : "Show concatenation",
-        HideConcatParameters : "Hide concatenation"
+        HideConcatParameters : "Hide concatenation",
+        Annotations: 'Annotations',
+        AnnotationName: 'Name',
+        AnnotationValue: 'Value',
+        InlinedFinalActivityName: "Inlined Final Activity Name"
     },
     LocalizationFormLabel: {
         Title: 'Localization',
@@ -132,15 +143,31 @@
         InputParametersDefaultValue: 'Default'
     },
 
-    AdditionalParamsFormLabel: {
+    ProcessInfoFormLabel: {
         Title: 'Additional Parameters',
         IsObsolete: "IsObsolete",
         DefiningParameters: 'Defining parameters',
         ProcessParameters: 'Process parameters',
-        ProcessParametersName: 'Name',
-        ProcessParametersValue: 'Value'
+        SystemParametersTabName: 'System Parameters',
+        ProcessParametersTabName: 'Process Parameters',
+        HistoryTabName: 'History',
+        TimersTabName: 'Timers',
+        HistoryTabFromLabel: 'From',
+        HistoryTabFromStateLabel: 'From State',
+        HistoryTabToLabel: 'To',
+        HistoryTabToStateLabel: 'To State',
+        HistoryTabExecutorIdLabel: 'Executor Id',
+        HistoryTabActorIdLabel: 'Actor Id',
+        HistoryTabTimeLabel: 'Time',
+        HistoryTabTriggerNameLabel: 'Trigger Name',
+        HistoryTabTransitionClassifierNameLabel: '',
+        ParametersNameLabel: 'Name',
+        ParametersValueLabel: 'Value',
+        TimersTabNameLabel: 'Name',
+        TimersTabValueLabel: 'Value',
+        RootProcess: "Root Process"
     },
-    
+
     CodeActionsFormLabel: {
         Title: 'Code actions',
         Name: 'Name',
@@ -149,11 +176,35 @@
         IsAsync: 'Async',
         Type: 'Type',
         GlobalDeleteMessage: "You've deleted the Global CodeAction.<br/><b>Other schemes won't be able to call this CodeAction!</b>",
-        UnGlobalMessage: "You've changed the state of the global flag.<br/>There will be created a Local CodeAction based on this Global CodeAction after saving this scheme."
+        UnGlobalMessage: "You've changed the state of the global flag.<br/>There will be created a Local CodeAction based on this Global CodeAction after saving this scheme.",
+        EditParameters: "Edit parameters",
+        Parameters: "Parameters" ,
+        Text: "Text",
+        Number: "Number",
+        Checkbox: "Checkbox",
+        Dropdown: "Dropdown",
+        DateTime: "Date/Time",
+        Values: 'Values',
+        DropdownName: 'Name',
+        DropdownValue: 'Value',
+        DropdownShouldContainValues: 'Dropdown should contain values',
+        IsRequired: 'Required',
+        DefaultValue: 'Default value',
+        Json: 'Json'
+    },
+
+    EditParametersFormlabel: {
+        Title: "Edit parameter values",
+        NumberRequired: "Should be a numeric value",
+        DateShouldBeInISOFormat: "Date/Time parameter should be in ISO8601 format",
+        SwitchToJson: "Switch to JSON editor",
+        SwitchToConstructor: "Switch to parameter values editor",
+        InvalidJson: "JSON object is invalid or does not match the model"
     },
 
     ToolbarLabel: {
         CreateActivity: 'Create activity',
+        CreateInline: 'Create inline (template)',
         CopySelected: 'Copy selected',
         Undo: 'Undo',
         Redo: 'Redo',
@@ -177,11 +228,17 @@
         Settings: "Settings",
         CreateTransition: "Create a transition",
         CreateActivityTransition: "Create an activity and a transition",
-        Legend: "Legend"
-
+        Legend: "Legend",
+        ProcessInfo: "Process Info",
+        Inline: "The scheme can be inlined"
     },
     ErrorActivityIsInitialCountText: "One element must be marked flag Initial",
+    ErrorActivityIsFinalCountText: "This scheme is Inlined. One or more elements must be marked flag Final",
     ErrorReadOnlySaveText: "The Designer in ReadOnly mode, you can't save it.",
+    ErrorInvalidObjectsSaveText: function(objects) {
+        return "Can't save the schema. Those objects are in invalid state: " + objects;
+    },
+    BrokenReferencesDialogText: "This schema contains references to code actions that aren't defined by this schema or current action providers. Do you want to keep them?",
     FormMaxHeight: 700,
     EditCodeSettings: {
         Height: 600,
@@ -209,12 +266,11 @@
         Width: 1000,
         CodeHeight: 480
     },
-     EditJSONLabel: {
+    EditJSONLabel: {
         Title: "Edit value in JSON",
         CreateEmptyType: "Create",
-        Format: "Format"       
-     },
-    isjava: false,
+        Format: "Format"
+    },
     OverviewMap: {
         show: true,
         width: 300,

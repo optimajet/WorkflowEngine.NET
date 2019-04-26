@@ -28,6 +28,36 @@
             </summary>
             <returns>XML</returns>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Builder.BuildStepResult">
+            <summary>
+            Represents the result of a build step execution 
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Builder.BuildStep">
+            <summary>
+            Represents a scheme build step
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Builder.BuildStepPosition">
+            <summary>
+             Determines the order of the build steps
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Builder.BuildStepPosition.BeforeSystemSteps">
+            <summary>
+            The step will be executed before system build steps
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Builder.BuildStepPosition.SystemSteps">
+            <summary>
+            The step will be executed as system build step  
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Builder.BuildStepPosition.AfterSystemSteps">
+            <summary>
+            The step will be executed after system build steps
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder">
             <summary>
             Interface of a workflow builder, which convert not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> to the object model of a scheme of a process <see cref="T:OptimaJet.Workflow.Core.Model.ProcessDefinition"/>
@@ -110,12 +140,15 @@
             <param name="code">Name of the scheme</param>
             <returns>ProcessDefinition object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.SaveProcessScheme(System.String,OptimaJet.Workflow.Core.Model.ProcessDefinition)">
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.SaveProcessScheme(System.String,OptimaJet.Workflow.Core.Model.ProcessDefinition,System.Collections.Generic.List{System.String}@,System.String@)">
             <summary>
             Saves process scheme to scheme persistence store
             </summary>
-            <param name="schemecode">Code of the scheme</param>
+            <param name="schemeCode">Code of the scheme</param>
             <param name="pd">Object representation of the scheme</param>
+            <param name="errors">Validation errors</param>
+            <param name="failedStep">The name of failed build step</param>
+            <returns>True if scheme validation was success</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.Parse(System.String)">
             <summary>
@@ -130,6 +163,42 @@
             </summary>
             <param name="processDefinition">SProcessDefinition object</param>
             <returns>String representation of not parsed scheme</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.AddBuildStep(System.Int32,OptimaJet.Workflow.Core.Builder.BuildStepPosition,OptimaJet.Workflow.Core.Builder.BuildStep)">
+            <summary>
+            Adds a build step into workflow builder
+            </summary>
+            <param name="order">Order in position</param>
+            <param name="buildStepPosition">Indicates whether the build step is added after the system steps or before the system steps.</param>
+            <param name="step">Build step</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.GenerateProcessDefinition(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Generates new Process Definition, doesn't save it in a database, doesn't use cache, doesn't execute build steps
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+            <param name="parameters">The parameters for creating the scheme of the process</param>
+            <returns>Generated process definition</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.ContainsBuildStep(System.String)">
+            <summary>
+            Returns true if the builder contains a build step with the name
+            </summary>
+            <param name="name">Name of build step</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.GetInlinedSchemeCodes">
+            <summary>
+            Returns the list of scheme codes that can be inlined into other schemes
+            </summary>
+            <returns>The list of scheme codes</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.GetRelatedByInliningSchemeCodes(System.String)">
+            <summary>
+            Returns the list of scheme codes into which the scheme with the given code has been inlined
+            </summary>
+            <param name="schemeCode">Inlined scheme code</param>
+            <returns>The list of scheme codes into which the scheme with the given code has been inlined</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1">
             <summary>
@@ -222,12 +291,14 @@
             <param name="code">Name of the scheme</param>
             <returns>ProcessDefinition object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.SaveProcessScheme(System.String,OptimaJet.Workflow.Core.Model.ProcessDefinition)">
+        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.SaveProcessScheme(System.String,OptimaJet.Workflow.Core.Model.ProcessDefinition,System.Collections.Generic.List{System.String}@,System.String@)">
             <summary>
             Saves process scheme to scheme persistence store
             </summary>
-            <param name="schemecode">Code of the scheme</param>
+            <param name="schemeCode">Code of the scheme</param>
             <param name="pd">Object representation of the scheme</param>
+            <param name="errors">Validation errors</param>
+            <returns>True if scheme validation was success</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.Parse(System.String)">
             <summary>
@@ -242,6 +313,22 @@
             </summary>
             <param name="processDefinition">SProcessDefinition object</param>
             <returns>String representation of not parsed scheme</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.AddBuildStep(System.Int32,OptimaJet.Workflow.Core.Builder.BuildStepPosition,OptimaJet.Workflow.Core.Builder.BuildStep)">
+            <summary>
+            Adds a build step into workflow builder
+            </summary>
+            <param name="order">Order in position</param>
+            <param name="buildStepPosition">Indicates whether the build step is added after the system steps or before the system steps.</param>
+            <param name="step">Build step</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.GenerateProcessDefinition(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Generates new Process Definition, doesn't save it in a database, doesn't use cache, doesn't execute build steps
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+            <param name="parameters">The parameters for creating the scheme of the process</param>
+            <returns>Generated process definition</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Bus.ActivityExecutor">
             <summary>
@@ -679,7 +766,7 @@
         </member>
         <member name="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1">
             <summary>
-            Interface of a workflow generator, which generate not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> 
+            Interface of a workflow generator, which generates not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> 
             </summary>
             <typeparam name="TSchemeMedium">Type of not parsed scheme</typeparam>
         </member>
@@ -758,9 +845,156 @@
             <param name="parameter">Additional parameter which is passed to the appropriate methods <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider"/></param>
             <returns>ActionDefinitionReference object</returns>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.ActivityType">
+            <summary>
+            Activity type
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ActivityType.Ordinary">
+            <summary>
+            Ordinary activity, belongs a scheme itself
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ActivityType.Inline">
+            <summary>
+            Activity with this type marks a place to inline another scheme
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.ParameterType">
+            <summary>
+            Type of a code action parameter
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.Text">
+            <summary>
+            Text parameter
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.Number">
+            <summary>
+            Numeric parameter
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.Checkbox">
+            <summary>
+            Boolean parameter represented by checkbox
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.Dropdown">
+            <summary>
+            List of name/value pair represented by dropdown control
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.DateTime">
+            <summary>
+            Date/Time parameter
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.ParameterType.Json">
+            <summary>
+            JSON object parameter
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition">
+            <summary>
+            Represents a parameter for code action
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.#ctor">
+            <summary>
+            Default constructor
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.Name">
+            <summary>
+            Name of the parameter
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.Type">
+            <summary>
+            Type of the parameter <see cref="T:OptimaJet.Workflow.Core.Model.ParameterType"/>
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.Clone">
+            <summary>
+            Creates a copy of the parameter definition
+            </summary>
+            <returns>A copy of parameter definition</returns>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.IsRequired">
+            <summary>
+            If false specifies that the parameter is optional
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.DropdownValues">
+            <summary>
+            A list of <see cref="T:OptimaJet.Workflow.Core.Model.DropdownValue"/> for a <see cref="F:OptimaJet.Workflow.Core.Model.ParameterType.Dropdown"/> parameter
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition.DefaultValue">
+            <summary>
+            A default value of the parameter
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.DropdownValue">
+            <summary>
+            A name-value pair for a <see cref="F:OptimaJet.Workflow.Core.Model.ParameterType.Dropdown"/> parameter
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.DropdownValue.Name">
+            <summary>
+            Name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.DropdownValue.Value">
+            <summary>
+            Value
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.DropdownValue.Clone">
+            <summary>
+            Creates a shallow copy of this pair
+            </summary>
+            <returns></returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ActivityDefinition">
             <summary>
             Represent an activity in a process scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.OriginalName">
+            <summary>
+            If object was inlined, you can get its original name from this property
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.OriginalSchemeCode">
+            <summary>
+            The code of the scheme to which the inlined object originally belonged.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.LastTimeInlineName">
+            <summary>
+            The name of the inline activity instead of which the object was inlined last time.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.FirstTimeInlineName">
+            <summary>
+            The name of the inline activity instead of which the object was inlined first time.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.WasInlined">
+            <summary>
+            Return true if the object was inlined.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.ActivityType">
+            <summary>
+            Type of the activity. Ordinary or Inline.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.SchemeCode">
+            <summary>
+            Inlined scheme name for inline activity.
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.State">
@@ -808,6 +1042,11 @@
             List of <see cref="T:OptimaJet.Workflow.Core.Model.ActionDefinitionReference"/> which are executed at pre-execution
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.Annotations">
+            <summary>
+            A List of <see cref="T:OptimaJet.Workflow.Core.Model.Annotation"/> attached to this activity.
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.IsState">
             <summary>
             Specifies that state is assigned
@@ -837,6 +1076,14 @@
             <param name="isAutoSchemeUpdate">If true specifies that  if process scheme obsolete than Workflow Runtime will try upgrade it automatically if this activity is current</param>
             <returns>ActivityDefinition object</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ActivityDefinition.CreateInlineActivity(System.String,System.String)">
+            <summary>
+            Creates inline activity
+            </summary>
+            <param name="name"></param>
+            <param name="schemeCode"></param>
+            <returns></returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ActivityDefinition.AddAction(OptimaJet.Workflow.Core.Model.ActionDefinitionReference)">
             <summary>
             Add <see cref="T:OptimaJet.Workflow.Core.Model.ActionDefinitionReference"/> to implementation list
@@ -854,9 +1101,39 @@
             Nesting level of subprocess, 0 - root process, 1-... -subprocesses, null - not assigned
             </summary>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ActivityDefinition.GetAnnotation``1(System.String)">
+            <summary>
+            Get an annotation attached to this activity
+            </summary>
+            <typeparam name="T">Annotation's type</typeparam>
+            <param name="name">Annotation's name</param>
+            <returns>Annotation value</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ActivityDefinition.GetAnnotation(System.String)">
+            <summary>
+            Get a JSON representation of annotation's value
+            </summary>
+            <param name="name">Annotation's name</param>
+            <returns>JSON representation of annotation's value</returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ActorDefinition">
             <summary>
             Represent an actor in a process scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActorDefinition.OriginalName">
+            <summary>
+            If object was inlined, you can get its original name from this property
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActorDefinition.OriginalSchemeCode">
+            <summary>
+            The code of the scheme to which the inlined object originally belonged.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ActorDefinition.WasInlined">
+            <summary>
+            Return true if the object was inlined.
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ActorDefinition.Rule">
@@ -877,6 +1154,27 @@
             <param name="rule">Rule name which is associated with the actor</param>
             <param name="value">Additional parameter which is passed to the appropriate methods <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/></param>
             <returns>ActorDefinition object</returns>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.Annotation">
+            <summary>
+            Represent an annotation than can be attached to <see cref="T:OptimaJet.Workflow.Core.Model.ActivityDefinition"/> or <see cref="T:OptimaJet.Workflow.Core.Model.TransitionDefinition"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.Annotation.Name">
+            <summary>
+            Annotation name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.Annotation.JsonValue">
+            <summary>
+            Annotation value as a JSON string
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.Annotation.Clone">
+            <summary>
+            Creates a copy of Annotation
+            </summary>
+            <returns>A copy of annotation</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.BaseDefinition">
             <summary>
@@ -923,6 +1221,21 @@
             Represent a code action in a process scheme
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.OriginalName">
+            <summary>
+            If object was inlined, you can get its original name from this property
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.OriginalSchemeCode">
+            <summary>
+            The code of the scheme to which the inlined object originally belonged.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.WasInlined">
+            <summary>
+            Return true if the object was inlined.
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.ActionCode">
             <summary>
             Source code of the code action
@@ -948,7 +1261,12 @@
             List of usings separated by ;
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionDefinition.Create(System.String,System.String,System.String,System.String,System.String,System.String)">
+        <member name="P:OptimaJet.Workflow.Core.Model.CodeActionDefinition.ParameterDefinitions">
+            <summary>
+            List of <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition"/> for this code action
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.CodeActionDefinition.Create(System.String,System.String,System.String,System.String,System.String,System.String,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition})">
             <summary>
             Create CodeActionDefinition object
             </summary>
@@ -956,8 +1274,9 @@
             <param name="usings">List of usings separated by ;</param>
             <param name="actionCode">Source code of the code action</param>
             <param name="isglobal">If true specifies that the code action stored in global parameters but not in scheme. In this case code action is shared between schemes</param>
-            <param name="type">ype of the code action <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionType"/></param>
+            <param name="type">Type of the code action <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionType"/></param>
             <param name="isAsync">if true the code action should be called asynchronously</param>
+            <param name="parameterDefinitions">List of <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition"/> for this code action</param>
             <returns>CodeActionDefinition object</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.CommandDefinition">
@@ -1162,6 +1481,111 @@
             Represent settings used by Workflow Designer
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.IInlineActivity">
+            <summary>
+            Defines the properties available for inline activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IInlineActivity.Name">
+            <summary>
+            Name of the inline
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IInlineActivity.ActivityType">
+            <summary>
+            Type of the activity. Ordinary or Inline.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IInlineActivity.SchemeCode">
+            <summary>
+            Inlined scheme name for inline activity.
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.IOrdinaryActivity">
+            <summary>
+            Defines the properties available for ordinary activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.OriginalName">
+            <summary>
+            If object was inlined, you can get its original name from this property
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.OriginalSchemeCode">
+            <summary>
+            The code of the scheme to which the inlined object originally belonged.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.LastTimeInlineName">
+            <summary>
+            The name of the inline activity instead of which the object was inlined.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.WasInlined">
+            <summary>
+            Return true if the object was inlined.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.Name">
+            <summary>
+            Name of the activity
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.State">
+            <summary>
+            Name of the state
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.IsInitial">
+            <summary>
+            If true specifies that the activity is initial. There can be only one initial activity in scheme. Initial activity is the entry point of the process.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.IsFinal">
+            <summary>
+            If true specifies that the activity is final. The process is marked as finalized after execution of the activity marked as final.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.IsForSetState">
+            <summary>
+            If true specifies that the activity is entry point for a state and possible to set the state with the <see cref="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.State"/> name via <see cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetState(System.Guid,System.String,System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object},System.Boolean)"/> method
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.IsAutoSchemeUpdate">
+            <summary>
+            If true specifies that  if process scheme obsolete than Workflow Runtime will try upgrade it automatically if this activity is current
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.Implementation">
+            <summary>
+            List of <see cref="T:OptimaJet.Workflow.Core.Model.ActionDefinitionReference"/> which are executed at standard workflow execution
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.PreExecutionImplementation">
+            <summary>
+            List of <see cref="T:OptimaJet.Workflow.Core.Model.ActionDefinitionReference"/> which are executed at pre-execution
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.Annotations">
+            <summary>
+            A List of <see cref="T:OptimaJet.Workflow.Core.Model.Annotation"/> attached to this activity.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.IsState">
+            <summary>
+            Specifies that state is assigned
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.HaveImplementation">
+            <summary>
+            Specifies that activity have an implementation
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.IOrdinaryActivity.HavePreExecutionImplementation">
+            <summary>
+            Specifies that activity have a pre-execution implementation
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Model.LocalizeType">
             <summary>
             Type of localized resource
@@ -1292,7 +1716,7 @@
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue">
             <summary>
-             Represent a parameter in a process scheme vith value
+             Represent a parameter in a process scheme with value
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue.Name">
@@ -1428,6 +1852,21 @@
             Additional parameters used by Workflow Designer
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.CanBeInlined">
+            <summary>
+            The flag indicates that this scheme can be inlined into other schemes
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.InlinedSchemes">
+            <summary>
+            The property contains inlined schemes are used in this scheme
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.ContainsSubprocesses">
+            <summary>
+            Returns true if the scheme contains subprocesses
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.InitialActivity">
             <summary>
             Returns initial activity of the scheme
@@ -1527,11 +1966,12 @@
             <param name="forkTransitionSearch">Search filter for fork transitions</param>
             <returns>List of all outgoing timer transitions</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.Create(System.String,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActorDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CommandDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TimerDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActivityDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.LocalizeDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CodeActionDefinition},OptimaJet.Workflow.Core.Model.DesignerSettings)">
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.Create(System.String,System.Boolean,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActorDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CommandDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TimerDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActivityDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.LocalizeDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CodeActionDefinition},OptimaJet.Workflow.Core.Model.DesignerSettings)">
             <summary>
             Create ProcessDefinition object
             </summary>
             <param name="name">Name of the scheme</param>
+            <param name="canBeInlined">Sign that the scheme can be inlined into another schemes</param>
             <param name="actors">List of actors <see cref="T:OptimaJet.Workflow.Core.Model.ActorDefinition"/></param>
             <param name="parameters">List of parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinition"/></param>
             <param name="commands">List of commands <see cref="T:OptimaJet.Workflow.Core.Model.CommandDefinition"/></param>
@@ -1575,6 +2015,40 @@
             <param name="doNotCloneTransitions">If True transition list will be empty after cloning</param>
             <param name="doNotCloneCodeActions">If True code actions list will be empty after cloning</param>
             <returns>Cloned ProcessDefinition object</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetActivityAnnotation``1(System.String,System.String)">
+            <summary>
+            Get an annotation of an activity
+            </summary>
+            <typeparam name="T">Type of the annotation's value</typeparam>
+            <param name="activityName">Activity name</param>
+            <param name="name">Annotation name</param>
+            <returns>Annotation value</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetActivityAnnotation(System.String,System.String)">
+            <summary>
+            Get a JSON representation of annotation's value of an activity
+            </summary>
+            <param name="activityName">Activity name</param>
+            <param name="name">Annotation name</param>
+            <returns>JSON representation of annotation's value</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetTransitionAnnotation``1(System.String,System.String)">
+            <summary>
+            Get an annotation of a transition
+            </summary>
+            <typeparam name="T">Type of the annotation's value</typeparam>
+            <param name="transitionName">Transition name</param>
+            <param name="name">Annotation name</param>
+            <returns>Annotation value</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetTransitionAnnotation(System.String,System.String)">
+            <summary>
+            Get a JSON representation of annotation's value of a transition
+            </summary>
+            <param name="transitionName">Transition name</param>
+            <param name="name">Annotation name</param>
+            <returns>JSON representation of annotation's value</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ProcessInstance">
             <summary>
@@ -2016,6 +2490,36 @@
              Represent a transition in a process scheme
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.InlinedFinalActivityName">
+            <summary>
+            Final activity name in inlined scheme, may not be filled, then any final activity from inlined scheme will be taken
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.OriginalName">
+            <summary>
+            If object was inlined, you can get its original name from this property
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.OriginalSchemeCode">
+            <summary>
+            The code of the scheme to which the inlined object originally belonged.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.LastTimeInlineName">
+            <summary>
+            The name of the inline activity instead of which the object was inlined.last time
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.FirstTimeInlineName">
+            <summary>
+            The name of the inline activity instead of which the object was inlined first time.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.WasInlined">
+            <summary>
+            Return true if the object was inlined.
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.From">
             <summary>
             Source activity
@@ -2059,6 +2563,11 @@
         <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.ConditionsConcatenationType">
             <summary>
             Type of concatenation for conditions
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.Annotations">
+            <summary>
+            A List of <see cref="T:OptimaJet.Workflow.Core.Model.Annotation"/> attached to this transition.
             </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.TransitionDefinition.Create(System.String,System.String,System.String,System.String,System.String,System.String,System.String,System.String,OptimaJet.Workflow.Core.Model.ActivityDefinition,OptimaJet.Workflow.Core.Model.ActivityDefinition,OptimaJet.Workflow.Core.Model.TriggerDefinition,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ConditionDefinition})">
@@ -2140,6 +2649,21 @@
             <param name="timerDefinitions">List of the timers to replace</param>
             <returns>Cloned TransitionDefinition object</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.TransitionDefinition.GetAnnotation``1(System.String)">
+            <summary>
+            Get an annotation attached to this transition
+            </summary>
+            <typeparam name="T">Annotation's type</typeparam>
+            <param name="name">Annotation's name</param>
+            <returns>Annotation value</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.TransitionDefinition.GetAnnotation(System.String)">
+            <summary>
+            Get a JSON representation of annotation's value
+            </summary>
+            <param name="name">Annotation's name</param>
+            <returns>JSON representation of annotation's value</returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Model.RestrictionDefinition">
             <summary>
             Represent a transition's restiction in a process scheme
@@ -2217,6 +2741,374 @@
             <summary>
             Fork transition with unknown status in case of process definition is not marked
             </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Persistence.IWorkflowProvider">
+            <summary>
+            An interface of a workflow provider wich combines <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/>, 
+            <see cref="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1"/>, and <see cref="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1"/>
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Persistence.IRuntimePersistence">
+            <summary>
+            Provides save and load of workflow runtime parameters. as timers etc
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus">
+            <summary>
+            Represent a stage of a life cycle of a process
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.NotFound">
+            <summary>
+            Status of a processes which are not exists in persistence store
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Unknown">
+            <summary>
+            Status of a processes which are exists in persistence store but theirs status is not defined
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Initialized">
+            <summary>
+            Status of a processes which was created just now 
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running">
+            <summary>
+            Status of a processes which are executing at current moment
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled">
+            <summary>
+            Status of a processes which are not executing at current moment and awaiting an external interaction
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Finalized">
+            <summary>
+            Status of a processes which was finalized
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Terminated">
+            <summary>
+            Status of a processes which was terminated with an error
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Error">
+            <summary>
+            Status of a processes which had an error but not terminated
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider">
+            <summary>
+            Interface of a persistence provider, which provide storing of process's instance specific parameters and global parameters
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.Init(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+            <summary>
+            Init the provider
+            </summary>
+            <param name="runtime">Workflow runtime instance which owned the provider</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.InitializeProcess(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Initialize a process instance in persistence store
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessAlreadyExistsException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Fills system <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.System"/>  and persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillPersistedProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Fills persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillSystemProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Fills system <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.System"/> parameters of the process
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SavePersistenceParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Saves persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process to store
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowIniialized(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Initialized"/>
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowIdled(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled"/>
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowRunning(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/>
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowFinalized(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Finalized"/>
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetProcessStatus(System.Guid,OptimaJet.Workflow.Core.Persistence.ProcessStatus)">
+            <summary>
+            Set process instance status to newStatus
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="newStatus">New process status</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowTerminated(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Persistence.ErrorLevel,System.String)">
+            <summary>
+            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Terminated"/>
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ResetWorkflowRunning">
+            <summary>
+            Resets all process to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled"/> status
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.UpdatePersistenceState(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.TransitionDefinition)">
+            <summary>
+            Updates system parameters of the process in the store
+            </summary>
+            <param name="processInstance">Instance of the process</param>
+            <param name="transition">Last executed transition</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.IsProcessExists(System.Guid)">
+            <summary>
+            Checks existence of the process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetInstanceStatus(System.Guid)">
+            <summary>
+            Returns status of the process <see cref="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus"/>
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns>Status of the process</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.BindProcessToNewScheme(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Saves information about changed scheme to the store
+            </summary>
+            <param name="processInstance">Instance of the process whith changed scheme <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessScheme"/></param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.BindProcessToNewScheme(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean)">
+            <summary>
+            Saves information about changed scheme to the store
+            </summary>
+            <param name="processInstance">Instance of the process whith changed scheme <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessScheme"/></param>
+            <param name="resetIsDeterminingParametersChanged">True if required to reset IsDeterminingParametersChanged flag <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.IsDeterminingParametersChanged"/></param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessNotFoundException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.RegisterTimer(System.Guid,System.String,System.DateTime,System.Boolean)">
+            <summary>
+            Register a new timer
+            </summary>
+            <param name="processId">Id of the process</param>
+            <param name="name">Timer name <see cref="!:TimerDefinition.Name"/></param>
+            <param name="nextExecutionDateTime">Next date and time of timer's execution</param>
+            <param name="notOverrideIfExists">If true specifies that the existing timer with same name will not be overriden <see cref="P:OptimaJet.Workflow.Core.Model.TimerDefinition.NotOverrideIfExists"/></param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimers(System.Guid,System.Collections.Generic.List{System.String})">
+            <summary>
+            Removes all timers from the store, exlude listed in ignore list
+            </summary>
+            <param name="processId">Id of the process</param>
+            <param name="timersIgnoreList">Ignore list</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimersIgnore">
+            <summary>
+            Clears sign Ignore for all timers
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimerIgnore(System.Guid)">
+            <summary>
+            Clears sign Ignore for specific timers
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimer(System.Guid)">
+            <summary>
+            Remove specific timer
+            </summary>
+            <param name="timerId">Id of the timer</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetCloseExecutionDateTime">
+            <summary>
+            Get closest execution date and time for all timers
+            </summary>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetTimersToExecute">
+            <summary>
+            Get all timers which must be executed at this moment of time
+            </summary>
+            <returns>List of timers to execute</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetTimersForProcess(System.Guid)">
+            <summary>
+            Get all timers of a process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteProcess(System.Guid)">
+            <summary>
+            Remove all information about the process from the store
+            </summary>
+            <param name="processId">Id of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteProcess(System.Guid[])">
+            <summary>
+            Remove all information about the process from the store
+            </summary>
+            <param name="processIds">List of ids of the process</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SaveGlobalParameter``1(System.String,System.String,``0)">
+            <summary>
+            Saves a global parameter value
+            </summary>
+            <typeparam name="T">System type of the parameter</typeparam>
+            <param name="type">Logical type of the parameter</param>
+            <param name="name">Name of the parameter</param>
+            <param name="value">Value of the parameter</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.LoadGlobalParameter``1(System.String,System.String)">
+            <summary>
+            Returns a global parameter value
+            </summary>
+            <typeparam name="T">System type of the parameter</typeparam>
+            <param name="type">Logical type of the parameter</param>
+            <param name="name">Name of the parameter</param>
+            <returns>Value of the parameter</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.LoadGlobalParameters``1(System.String)">
+            <summary>
+            Returns a global parameter value
+            </summary>
+            <typeparam name="T">System type of the parameter</typeparam>
+            <param name="type">Logical type of the parameter</param>
+            <returns>List of the values of the parameters</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteGlobalParameters(System.String,System.String)">
+            <summary>
+            Deletes a global parameter
+            </summary>
+            <param name="type">Logical type of the parameter</param>
+            <param name="name">Name of the parameter</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetProcessHistory(System.Guid)">
+            <summary>
+            Returns the history of process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1">
+            <summary>
+            Interface of a persistence provider, which provide storing of schemes
+            </summary>
+            <typeparam name="TSchemeMedium">Type of not parsed scheme</typeparam>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeByProcessId(System.Guid)">
+            <summary>
+            Gets not parsed scheme of the process by process id
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns>Not parsed scheme of the process</returns>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessNotFoundException"></exception>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeBySchemeId(System.Guid)">
+            <summary>
+            Gets not parsed scheme by id
+            </summary>
+            <param name="schemeId">Id of the scheme</param>
+            <returns>Not parsed scheme of the process</returns>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeWithParameters(System.String,System.String,System.Nullable{System.Guid},System.Boolean)">
+            <summary>
+            Gets not parsed scheme by scheme name and parameters    
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+            <param name="parameters">Parameters for creating the scheme</param>
+            <param name="rootSchemeId">Id of the root scheme in case of subprocess</param>
+            <param name="ignoreObsolete">True if you need to ignore obsolete schemes</param>
+            <returns>Not parsed scheme of the process</returns>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetScheme(System.String)">
+            <summary>
+            Gets not parsed scheme by scheme name  
+            </summary>
+            <param name="code">Name of the scheme</param>
+            <returns>Not parsed scheme of the process</returns>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SaveScheme(OptimaJet.Workflow.Core.Model.SchemeDefinition{`0})">
+            <summary>
+            Saves scheme to a store
+            </summary>
+            <param name="scheme">Not parsed scheme of the process</param>
+            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeAlreadyExistsException"></exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SetSchemeIsObsolete(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Sets sign IsObsolete to the scheme
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+            <param name="parameters">Parameters for creating the scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SetSchemeIsObsolete(System.String)">
+            <summary>
+            Sets sign IsObsolete to the scheme
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SaveScheme(System.String,System.Boolean,System.Collections.Generic.List{System.String},System.String)">
+            <summary>
+            Saves scheme to a store
+            </summary>
+            <param name="schemeCode">Name of the scheme</param>
+            <param name="inlinedSchemes">Scheme codes to be inlined into this scheme</param>
+            <param name="scheme">Not parsed scheme</param>
+            <param name="canBeInlined">if true - this scheme can be inlined into another schemes</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetInlinedSchemeCodes">
+            <summary>
+            Returns the list of scheme codes that can be inlined into other schemes
+            </summary>
+            <returns>The list of scheme codes</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetRelatedByInliningSchemeCodes(System.String)">
+            <summary>
+            Returns the list of scheme codes into which the scheme with the given code has been inlined
+            </summary>
+            <param name="schemeCode">Inlined scheme code</param>
+            <returns></returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs">
             <summary>
@@ -2352,6 +3244,9 @@
             The user id for whom executes initial command if command is available. Process specific values
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "T:OptimaJet.Workflow.Core.Runtime.CancellationTokenHandling" -->
+        <!-- Badly formed XML comment ignored for member "F:OptimaJet.Workflow.Core.Runtime.CancellationTokenHandling.Ignore" -->
+        <!-- Badly formed XML comment ignored for member "F:OptimaJet.Workflow.Core.Runtime.CancellationTokenHandling.Throw" -->
         <member name="T:OptimaJet.Workflow.Core.Runtime.CommandExeutionResult">
             <summary>
             The result of command execution
@@ -2474,6 +3369,19 @@
             Constructor
             </summary>
             <param name="processInstance">Instance of the process</param>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider">
+            <summary>
+            Interface for parameter format provider (only for the Designer)
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider.GetFormat(OptimaJet.Workflow.Core.Model.CodeActionType,System.String)">
+            <summary>
+            Returns parameter definitions for a specified code action
+            </summary>
+            <param name="type">Code action type <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionType"/></param>
+            <param name="name">Name of the code action</param>
+            <returns>A list of <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionParameterDefinition"/></returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.NeedTimerValueEventArgs">
             <summary>
@@ -2612,6 +3520,21 @@
             Name of a command or timer an execution of which led to an execution of transition
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Runtime.ProcessTimer">
+            <summary>
+            Timer of a process
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessTimer.Name">
+            <summary>
+            Timer name
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.ProcessTimer.NextExecutionDateTime">
+            <summary>
+            Next execution time of this timer
+            </summary>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.StartingTransitionNotFoundEventArgs">
             <summary>
             Represent information about case when we try to update a subprocess's scheme but there are no starting transition in a new sccheme of a root process
@@ -2739,7 +3662,7 @@
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs">
             <summary>
-            Represent information about an error occurred due to execution of a workflow process
+            Represents information about an error occurred due to execution of a workflow process
             </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs.#ctor(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Persistence.ProcessStatus,OptimaJet.Workflow.Core.Model.TransitionDefinition,System.Exception)">
@@ -2769,6 +3692,17 @@
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs.ExecutedTransition">
             <summary>
             Returns the transition the execution of which caused the error
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs.SuppressThrow">
+            <summary>
+            If true the thrown exception won't be propagated.
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowErrorEventArgs.ActivityToSet">
+            <summary>
+            If not <see langword="null" /> then the specified activity will be set as current for the process which execution caused 
+            the error
             </summary>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.EmptyWorkflowActionProvider">
@@ -3421,6 +4355,11 @@
             Instance of the autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/>
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.DesignerParameterFormatProvider">
+            <summary>
+            Instance of the parameter format provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider"/>
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.RuleProvider">
             <summary>
             Instance of the Workflow rule provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/>
@@ -3476,6 +4415,7 @@
             Runtime in cold start state if true
             </summary>
         </member>
+        <!-- Badly formed XML comment ignored for member "P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CancellationTokenHandling" -->
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Start(System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
             Start all workflow runtime services аnd compile global code actions
@@ -3709,9 +4649,38 @@
             <param name="culture">Culture to localize command and command parameter names</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAvailableCommands(System.Guid,System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Globalization.CultureInfo)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAvailableCommands(System.Guid,System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Globalization.CultureInfo,System.Boolean)">
             <summary>
             Return the list of commands which is availiable from current activity for specified user
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="identityIds">List of User ids for which formed initial commands list</param>
+            <param name="commandNameFilter">Selects only the specified command if not null</param>
+            <param name="mainIdentityId">User id for priority check of rules</param>
+            <param name="culture">Culture to localize command and command parameter names</param>
+            <param name="conditionCheck">If true then commands with failed condition checkes will be excluded</param>
+            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAvailableCommandsWithConditionCheck(System.Guid,System.String)">
+            <summary>
+            Return the list of commands which is availiable from current activity for specified user with conditions check
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="identityId">User id for whom formed initial commands list</param>
+            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAvailableCommandsWithConditionCheck(System.Guid,System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Return the list of commands which is availiable from current activity for specified user with conditions check
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="identityId">User id for whom formed initial commands list</param>
+            <param name="culture">Culture to localize command and command parameter names</param>
+            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetAvailableCommandsWithConditionCheck(System.Guid,System.Collections.Generic.IEnumerable{System.String},System.String,System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Return the list of commands which is availiable from current activity for specified user with conditions check
             </summary>
             <param name="processId">Process id</param>
             <param name="identityIds">List of User ids for which formed initial commands list</param>
@@ -3985,6 +4954,13 @@
             <param name="processId">Id of the process</param>
             <returns></returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessTimers(System.Guid)">
+            <summary>
+            Returns list of timers for a process
+            </summary>
+            <param name="processId">Id of the process</param>
+            <returns></returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.LogInfo(System.String,System.Collections.Generic.Dictionary{System.String,System.String})">
             <summary>
             Writes a message to the log with Info level
@@ -4186,9 +5162,29 @@
             <param name="culture">Culture to localize command and command parameter names</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String,System.Threading.CancellationToken)">
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String,System.Threading.CancellationToken,System.Boolean)">
             <summary>
             Execute specified command for specified users (async version)
+            </summary>
+            <param name="command">Command to execute</param>
+            <param name="identityId">The user id which execute command</param>
+            <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
+            <param name="token">Cancellation token</param>
+            <param name="checkRestrictions">If true then actor restriction check will be performed for every transition</param>
+            <returns>Result of the execution</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandWithRestrictionCheck(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String)">
+            <summary>
+            Execute specified command for specified users with actor restrictions check
+            </summary>
+            <param name="command">Command to execute</param>
+            <param name="identityId">The user id which execute command</param>
+            <param name="impersonatedIdentityId">The user id for whom executes command (impersonation)</param>
+            <returns>Result of the execution</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExecuteCommandWithRestrictionCheckAsync(OptimaJet.Workflow.Core.Runtime.WorkflowCommand,System.String,System.String,System.Threading.CancellationToken)">
+            <summary>
+            Execute specified command for specified users (async version) with actor restrictions check 
             </summary>
             <param name="command">Command to execute</param>
             <param name="identityId">The user id which execute command</param>
@@ -4405,9 +5401,24 @@
             <param name="processId">Id of the process</param>
             <returns></returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.SetCancellationTokenHandling(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.CancellationTokenHandling)">
+            <summary>
+            Sets cancellation token handling type
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="value">Cancellation token handling type</param>
+            <returns></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDefaultBuildSteps(OptimaJet.Workflow.Core.Builder.IWorkflowBuilder)">
+            <summary>
+            Configures the builder with default build steps 
+            </summary>
+            <param name="builder">The instance of the builder</param>
+            <returns>Configured instance of builder</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithBuilder(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Builder.IWorkflowBuilder)">
             <summary>
-            Сonfigures the runtime with specified builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/>
+            Configures the runtime with specified builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="builder">The instance of the builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/></param>
@@ -4415,14 +5426,14 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDefaultBuilder``1(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
             <summary>
-            Сonfigures the runtime with default (scheme in xml) builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/>
+            Configures the runtime with default (scheme in xml) builder <see cref="T:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithRuleProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider)">
             <summary>
-            Сonfigures the runtime with specified rule provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/>
+            Configures the runtime with specified rule provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="ruleProvider">The instance of the rule provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowRuleProvider"/></param>
@@ -4430,7 +5441,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithActionProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider)">
             <summary>
-            Сonfigures the runtime with specified action provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider"/>
+            Configures the runtime with specified action provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="workflowActionProvider">The instance of the action provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IWorkflowActionProvider"/></param>
@@ -4438,7 +5449,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithPersistenceProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Persistence.IPersistenceProvider)">
             <summary>
-            Сonfigures the runtime with specified persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/>
+            Configures the runtime with specified persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="persistenceProvider">The instance of the persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider"/></param>
@@ -4446,15 +5457,23 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDesignerAutocompleteProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider)">
             <summary>
-            Сonfigures the runtime with specified autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/>
+            Configures the runtime with specified autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="autocompleteProvider">The instance of the autocomplete provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/></param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDesignerParameterFormatProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider)">
+            <summary>
+            Configures the runtime with specified parameter format provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider"/>
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="designerParameterFormatProvider">The instance of the parameter format provider <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerParameterFormatProvider"/></param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithBus(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Bus.IWorkflowBus)">
             <summary>
-            Сonfigures the runtime with specified workflow bus <see cref="T:OptimaJet.Workflow.Core.Bus.IWorkflowBus"/>
+            Configures the runtime with specified workflow bus <see cref="T:OptimaJet.Workflow.Core.Bus.IWorkflowBus"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="bus">The instance of the workflow bus <see cref="T:OptimaJet.Workflow.Core.Bus.IWorkflowBus"/></param>
@@ -4851,6 +5870,13 @@
             <param name="schemeMedium">Not parsed scheme</param>
             <returns>Code of the scheme</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.GetCanBeInlined(`0)">
+            <summary>
+            Gets the sign that the scheme can be inlined in other schemes
+            </summary>
+            <param name="schemeMedium">Not parsed scheme</param>
+            <returns>Can be inlined sign</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.GetDesignerSettings(`0)">
             <summary>
             Gets designer settings from not parsed scheme 
@@ -4972,338 +5998,6 @@
             </summary>
             <param name="scheme">String representation of not parsed sheme</param>
             <returns>ProcessDefinition object</returns>
-        </member>
-        <member name="T:OptimaJet.Workflow.Core.Persistence.IRuntimePersistence">
-            <summary>
-            Provides save and load of workflow runtime parameters. as timers etc
-            </summary>
-        </member>
-        <member name="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus">
-            <summary>
-            Represent a stage of a life cycle of a process
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.NotFound">
-            <summary>
-            Status of a processes which are not exists in persistence store
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Unknown">
-            <summary>
-            Status of a processes which are exists in persistence store but theirs status is not defined
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Initialized">
-            <summary>
-            Status of a processes which was created just now 
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running">
-            <summary>
-            Status of a processes which are executing at current moment
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled">
-            <summary>
-            Status of a processes which are not executing at current moment and awaiting an external interaction
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Finalized">
-            <summary>
-            Status of a processes which was finalized
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Terminated">
-            <summary>
-            Status of a processes which was terminated with an error
-            </summary>
-        </member>
-        <member name="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Error">
-            <summary>
-            Status of a processes which had an error but not terminated
-            </summary>
-        </member>
-        <member name="T:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider">
-            <summary>
-            Interface of a persistence provider, which provide storing of process's instance specific parameters and global parameters
-            </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.Init(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
-            <summary>
-            Init the provider
-            </summary>
-            <param name="runtime">Workflow runtime instance which owned the provider</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.InitializeProcess(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Initialize a process instance in persistence store
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessAlreadyExistsException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Fills system <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.System"/>  and persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillPersistedProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Fills persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.FillSystemProcessParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Fills system <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.System"/> parameters of the process
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SavePersistenceParameters(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Saves persisted <see cref="F:OptimaJet.Workflow.Core.Model.ParameterPurpose.Persistence"/> parameters of the process to store
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowIniialized(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Initialized"/>
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowIdled(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled"/>
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowRunning(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Running"/>
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowFinalized(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Finalized"/>
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SetWorkflowTerminated(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Persistence.ErrorLevel,System.String)">
-            <summary>
-            Set process instance status to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Terminated"/>
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ImpossibleToSetStatusException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ResetWorkflowRunning">
-            <summary>
-            Resets all process to <see cref="F:OptimaJet.Workflow.Core.Persistence.ProcessStatus.Idled"/> status
-            </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.UpdatePersistenceState(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Model.TransitionDefinition)">
-            <summary>
-            Updates system parameters of the process in the store
-            </summary>
-            <param name="processInstance">Instance of the process</param>
-            <param name="transition">Last executed transition</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.IsProcessExists(System.Guid)">
-            <summary>
-            Checks existence of the process
-            </summary>
-            <param name="processId">Id of the process</param>
-            <returns></returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetInstanceStatus(System.Guid)">
-            <summary>
-            Returns status of the process <see cref="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus"/>
-            </summary>
-            <param name="processId">Id of the process</param>
-            <returns>Status of the process</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.BindProcessToNewScheme(OptimaJet.Workflow.Core.Model.ProcessInstance)">
-            <summary>
-            Saves information about changed scheme to the store
-            </summary>
-            <param name="processInstance">Instance of the process whith changed scheme <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessScheme"/></param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.BindProcessToNewScheme(OptimaJet.Workflow.Core.Model.ProcessInstance,System.Boolean)">
-            <summary>
-            Saves information about changed scheme to the store
-            </summary>
-            <param name="processInstance">Instance of the process whith changed scheme <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessScheme"/></param>
-            <param name="resetIsDeterminingParametersChanged">True if required to reset IsDeterminingParametersChanged flag <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.IsDeterminingParametersChanged"/></param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessNotFoundException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.RegisterTimer(System.Guid,System.String,System.DateTime,System.Boolean)">
-            <summary>
-            Register a new timer
-            </summary>
-            <param name="processId">Id of the process</param>
-            <param name="name">Timer name <see cref="!:TimerDefinition.Name"/></param>
-            <param name="nextExecutionDateTime">Next date and time of timer's execution</param>
-            <param name="notOverrideIfExists">If true specifies that the existing timer with same name will not be overriden <see cref="P:OptimaJet.Workflow.Core.Model.TimerDefinition.NotOverrideIfExists"/></param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimers(System.Guid,System.Collections.Generic.List{System.String})">
-            <summary>
-            Removes all timers from the store, exlude listed in ignore list
-            </summary>
-            <param name="processId">Id of the process</param>
-            <param name="timersIgnoreList">Ignore list</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimersIgnore">
-            <summary>
-            Clears sign Ignore for all timers
-            </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimerIgnore(System.Guid)">
-            <summary>
-            Clears sign Ignore for specific timers
-            </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.ClearTimer(System.Guid)">
-            <summary>
-            Remove specific timer
-            </summary>
-            <param name="timerId">Id of the timer</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetCloseExecutionDateTime">
-            <summary>
-            Get closest execution date and time for all timers
-            </summary>
-            <returns></returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetTimersToExecute">
-            <summary>
-            Get all timers which must be executed at this moment of time
-            </summary>
-            <returns>List of timers to execute</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteProcess(System.Guid)">
-            <summary>
-            Remove all information about the process from the store
-            </summary>
-            <param name="processId">Id of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteProcess(System.Guid[])">
-            <summary>
-            Remove all information about the process from the store
-            </summary>
-            <param name="processIds">List of ids of the process</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.SaveGlobalParameter``1(System.String,System.String,``0)">
-            <summary>
-            Saves a global parameter value
-            </summary>
-            <typeparam name="T">System type of the parameter</typeparam>
-            <param name="type">Logical type of the parameter</param>
-            <param name="name">Name of the parameter</param>
-            <param name="value">Value of the parameter</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.LoadGlobalParameter``1(System.String,System.String)">
-            <summary>
-            Returns a global parameter value
-            </summary>
-            <typeparam name="T">System type of the parameter</typeparam>
-            <param name="type">Logical type of the parameter</param>
-            <param name="name">Name of the parameter</param>
-            <returns>Value of the parameter</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.LoadGlobalParameters``1(System.String)">
-            <summary>
-            Returns a global parameter value
-            </summary>
-            <typeparam name="T">System type of the parameter</typeparam>
-            <param name="type">Logical type of the parameter</param>
-            <returns>List of the values of the parameters</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.DeleteGlobalParameters(System.String,System.String)">
-            <summary>
-            Deletes a global parameter
-            </summary>
-            <param name="type">Logical type of the parameter</param>
-            <param name="name">Name of the parameter</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.IPersistenceProvider.GetProcessHistory(System.Guid)">
-            <summary>
-            Returns the history of process
-            </summary>
-            <param name="processId">Id of the process</param>
-            <returns></returns>
-        </member>
-        <member name="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1">
-            <summary>
-            Interface of a persistence provider, which provide storing of schemes
-            </summary>
-            <typeparam name="TSchemeMedium">Type of not parsed scheme</typeparam>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeByProcessId(System.Guid)">
-            <summary>
-            Gets not parsed scheme of the process by process id
-            </summary>
-            <param name="processId">Id of the process</param>
-            <returns>Not parsed scheme of the process</returns>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.ProcessNotFoundException"></exception>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeBySchemeId(System.Guid)">
-            <summary>
-            Gets not parsed scheme by id
-            </summary>
-            <param name="schemeId">Id of the scheme</param>
-            <returns>Not parsed scheme of the process</returns>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetProcessSchemeWithParameters(System.String,System.String,System.Nullable{System.Guid},System.Boolean)">
-            <summary>
-            Gets not parsed scheme by scheme name and parameters    
-            </summary>
-            <param name="schemeCode">Name of the scheme</param>
-            <param name="parameters">Parameters for creating the scheme</param>
-            <param name="rootSchemeId">Id of the root scheme in case of subprocess</param>
-            <param name="ignoreObsolete">True if you need to ignore obsolete schemes</param>
-            <returns>Not parsed scheme of the process</returns>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.GetScheme(System.String)">
-            <summary>
-            Gets not parsed scheme by scheme name  
-            </summary>
-            <param name="code">Name of the scheme</param>
-            <returns>Not parsed scheme of the process</returns>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeNotFoundException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SaveScheme(OptimaJet.Workflow.Core.Model.SchemeDefinition{`0})">
-            <summary>
-            Saves scheme to a store
-            </summary>
-            <param name="scheme">Not parsed scheme of the process</param>
-            <exception cref="T:OptimaJet.Workflow.Core.Fault.SchemeAlredyExistsException"></exception>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SetSchemeIsObsolete(System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Sets sign IsObsolete to the scheme
-            </summary>
-            <param name="schemeCode">Name of the scheme</param>
-            <param name="parameters">Parameters for creating the scheme</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SetSchemeIsObsolete(System.String)">
-            <summary>
-            Sets sign IsObsolete to the scheme
-            </summary>
-            <param name="schemeCode">Name of the scheme</param>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1.SaveScheme(System.String,System.String)">
-            <summary>
-            Saves scheme to a store
-            </summary>
-            <param name="schemeCode">Name of the scheme</param>
-            <param name="scheme">Not parsed scheme</param>
         </member>
         <member name="T:OptimaJet.Workflow.Designer">
             <summary>

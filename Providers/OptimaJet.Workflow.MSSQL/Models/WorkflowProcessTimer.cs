@@ -117,6 +117,15 @@ namespace OptimaJet.Workflow.DbPersistence
             return Select(connection, selectText, p1, p2).FirstOrDefault();
         }
 
+        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(SqlConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0} WHERE [ProcessId] = @processid", ObjectName);
+
+            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+
+            return Select(connection, selectText, p1);
+        }
+
         public static int ClearTimersIgnore(SqlConnection connection)
         {
             var command = string.Format("UPDATE {0} SET [Ignore] = 0 WHERE [Ignore] = 1", ObjectName);

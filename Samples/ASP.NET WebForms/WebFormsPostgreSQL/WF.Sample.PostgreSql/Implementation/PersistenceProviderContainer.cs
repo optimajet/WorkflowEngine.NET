@@ -17,15 +17,9 @@ namespace WF.Sample.PostgreSql.Implementation
         public PersistenceProviderContainer()
         {
             var connectionString = ConfigurationManager.ConnectionStrings["ConnectionString"].ConnectionString;
-            _provider = new PostgreSQLProvider(connectionString);
+            Provider = new PostgreSQLProvider(connectionString);
         }
 
-        private readonly PostgreSQLProvider _provider;
-
-        public IPersistenceProvider AsPersistenceProvider => _provider;
-
-        public ISchemePersistenceProvider<XElement> AsSchemePersistenceProvider => _provider;
-
-        public IWorkflowGenerator<XElement> AsWorkflowGenerator => _provider;
+        public IWorkflowProvider Provider { get; private set; }
     }
 }

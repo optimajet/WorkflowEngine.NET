@@ -8,7 +8,7 @@
 <head runat="server">
 
     <meta charset="utf-8" />
-    <title>"WorkflowEngine NET 3 :: <%: Page.Title %></title>
+    <title>"WorkflowEngine NET :: <%: Page.Title %></title>
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/Scripts/jquery.js") %>
         <%: Styles.Render("~/Content/semantic.min.css") %>

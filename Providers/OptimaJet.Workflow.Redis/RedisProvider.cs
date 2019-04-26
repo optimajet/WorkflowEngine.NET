@@ -15,7 +15,7 @@ using StackExchange.Redis;
 
 namespace OptimaJet.Workflow.Redis
 {
-    public class RedisProvider : IPersistenceProvider, ISchemePersistenceProvider<XElement>, IWorkflowGenerator<XElement>
+    public class RedisProvider : IWorkflowProvider
     {
         private readonly ConnectionMultiplexer _connector;
         private readonly string _providerNamespace;
@@ -120,6 +120,16 @@ namespace OptimaJet.Workflow.Redis
             return string.Format("{0}:globalparameter:{1}", _providerNamespace, type);
         }
 
+        public string GetKeyCanBeInlined()
+        {
+            return string.Format("{0}:schemecanbeinlined", _providerNamespace); 
+        }
+        
+        public string GetKeyForInlined()
+        {
+            return string.Format("{0}:schemeinlined", _providerNamespace); 
+        }
+        
         #endregion
 
         #region Private
@@ -132,11 +142,30 @@ namespace OptimaJet.Workflow.Redis
                 workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }
-
-        private void SetCustomStatus(ProcessInstance processInstance, ProcessStatus status, bool createIfnotDefined = false)
+        
+        private void SetRunningStatus(Guid processId)
         {
             var db = _connector.GetDatabase();
-            var hash = string.Format("{0:N}", processInstance.ProcessId);
+            var hash = string.Format("{0:N}", processId);
+
+            if (!db.HashExists(GetKeyProcessStatus(), hash))
+                throw new StatusNotDefinedException();
+
+            var tran = db.CreateTransaction();
+            tran.AddCondition(Condition.HashNotExists(GetKeyProcessRunning(), hash));
+            tran.HashSetAsync(GetKeyProcessRunning(), hash, true);
+            tran.HashSetAsync(GetKeyProcessStatus(), hash, ProcessStatus.Running.Id);
+
+            var res = tran.Execute();
+
+            if (!res)
+                throw new ImpossibleToSetStatusException();
+        }
+        
+        private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
+        {
+            var db = _connector.GetDatabase();
+            var hash = string.Format("{0:N}", processId);
             if (!createIfnotDefined && !db.HashExists(GetKeyProcessStatus(), hash))
                 throw new StatusNotDefinedException();
             var batch = db.CreateBatch();
@@ -297,7 +326,7 @@ namespace OptimaJet.Workflow.Redis
         /// Saves scheme to a store
         /// </summary>
         /// <param name="scheme">Not parsed scheme of the process</param>
-        /// <exception cref="SchemeAlredyExistsException"></exception>
+        /// <exception cref="SchemeAlreadyExistsException"></exception>
         public void SaveScheme(SchemeDefinition<XElement> scheme)
         {
             var db = _connector.GetDatabase();
@@ -344,7 +373,7 @@ namespace OptimaJet.Workflow.Redis
             var result = tran.Execute();
 
             if (!result)
-                throw SchemeAlredyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
         }
 
 
@@ -371,14 +400,67 @@ namespace OptimaJet.Workflow.Redis
             db.KeyDelete(GetKeyForCurrentScheme(schemeCode));
         }
 
+
         /// <summary>
         /// Saves scheme to a store
         /// </summary>
         /// <param name="schemeCode">Name of the scheme</param>
+        /// <param name="inlinedSchemes">Scheme codes to be inlined into this scheme</param>
         /// <param name="scheme">Not parsed scheme</param>
-        public void SaveScheme(string schemeCode, string scheme)
+        /// <param name="canBeInlined">if true - this scheme can be inlined into another schemes</param>
+        public void SaveScheme(string schemeCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
         {
-            _connector.GetDatabase().StringSet(GetKeyForScheme(schemeCode), scheme);
+            var db = _connector.GetDatabase();
+            var tran = db.CreateTransaction();
+            tran.StringSetAsync(GetKeyForScheme(schemeCode), scheme);
+
+            var keyForInlined = GetKeyForInlined();
+            var keyCanBeInlined = GetKeyCanBeInlined();
+            
+            if (inlinedSchemes == null || !inlinedSchemes.Any())
+            {
+                tran.HashDeleteAsync(keyForInlined,schemeCode);
+            }
+            else
+            {
+                tran.HashSetAsync(keyForInlined, schemeCode, JsonConvert.SerializeObject(inlinedSchemes));
+            }
+            
+            //can be inlined
+            if (canBeInlined)
+            {
+                tran.HashSetAsync(keyCanBeInlined, schemeCode, true);
+            }
+            else
+            {
+                tran.HashDeleteAsync(keyCanBeInlined, schemeCode);
+            }
+            
+            tran.Execute();
+        }
+
+        public List<string> GetInlinedSchemeCodes()
+        {
+            var keys = _connector.GetDatabase().HashKeys(GetKeyCanBeInlined());
+            return keys.Select(c => c.ToString()).ToList();
+        }
+
+        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        {
+            var db = _connector.GetDatabase();
+
+            var pairs = db.HashGetAll(GetKeyForInlined());
+
+            var res = new List<string>();
+            
+            foreach (var pair in pairs)
+            {
+                var inlined = JsonConvert.DeserializeObject<List<string>>(pair.Value.ToString());
+                if (inlined.Contains(schemeCode))
+                    res.Add(pair.Name.ToString());
+            }
+
+            return res;
         }
 
         #endregion
@@ -589,6 +671,18 @@ namespace OptimaJet.Workflow.Redis
                     db.KeyDelete(key);
             }
         }
+        
+        public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
+        {
+            if (newStatus == ProcessStatus.Running)
+            {
+                SetRunningStatus(processId);
+            }
+            else
+            {
+                SetCustomStatus(processId,newStatus);
+            }
+        }
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Initialized"/>
@@ -597,7 +691,7 @@ namespace OptimaJet.Workflow.Redis
         /// <exception cref="ImpossibleToSetStatusException"></exception>
         public void SetWorkflowIniialized(ProcessInstance processInstance)
         {
-            SetCustomStatus(processInstance, ProcessStatus.Initialized, true);
+            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Initialized, true);
         }
 
 
@@ -609,7 +703,7 @@ namespace OptimaJet.Workflow.Redis
         /// <exception cref="ImpossibleToSetStatusException"></exception>
         public void SetWorkflowIdled(ProcessInstance processInstance)
         {
-            SetCustomStatus(processInstance, ProcessStatus.Idled);
+            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Idled);
         }
 
         /// <summary>
@@ -619,21 +713,8 @@ namespace OptimaJet.Workflow.Redis
         /// <exception cref="ImpossibleToSetStatusException"></exception>
         public void SetWorkflowRunning(ProcessInstance processInstance)
         {
-            var db = _connector.GetDatabase();
-            var hash = string.Format("{0:N}", processInstance.ProcessId);
-            
-            if (!db.HashExists(GetKeyProcessStatus(), hash))
-                throw new StatusNotDefinedException();
-            
-            var tran = db.CreateTransaction();
-            tran.AddCondition(Condition.HashNotExists(GetKeyProcessRunning(), hash));
-            tran.HashSetAsync(GetKeyProcessRunning(), hash, true);
-            tran.HashSetAsync(GetKeyProcessStatus(), hash, ProcessStatus.Running.Id);
-
-            var res = tran.Execute();
-
-            if (!res)
-                throw new ImpossibleToSetStatusException();
+            var processId = processInstance.ProcessId;
+            SetRunningStatus(processId);
         }
 
         /// <summary>
@@ -643,7 +724,7 @@ namespace OptimaJet.Workflow.Redis
         /// <exception cref="ImpossibleToSetStatusException"></exception>
         public void SetWorkflowFinalized(ProcessInstance processInstance)
         {
-            SetCustomStatus(processInstance, ProcessStatus.Finalized);
+            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
         }
 
         /// <summary>
@@ -655,7 +736,7 @@ namespace OptimaJet.Workflow.Redis
         public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
 #pragma warning restore 612
         {
-            SetCustomStatus(processInstance, ProcessStatus.Terminated);
+            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
         }
 
         /// <summary>
@@ -1083,6 +1164,32 @@ namespace OptimaJet.Workflow.Redis
                     TriggerName = hi.TriggerName
                 })
                 .ToList();
+        }
+
+        public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
+        {
+            var db = _connector.GetDatabase();
+
+            var keyProcessTimer = GetKeyProcessTimer(processId);
+
+            var timerIds = db.HashGetAll(keyProcessTimer).Select(he => new { Id = Guid.Parse(he.Value), he.Name });
+
+            List<ProcessTimer> result = new List<ProcessTimer>(timerIds.Count());
+
+            var times = db.SortedSetRangeByRankWithScores(GetKeyTimerTime())
+                          .Where(rv => rv.Element.HasValue)
+                          .Select(t => new
+                          {
+                              Id = Guid.Parse(t.Element),
+                              Time = t.Score
+                          });
+
+            return timerIds.Select(x => new ProcessTimer
+            {
+                Name = x.Name,
+                NextExecutionDateTime = new DateTime(1970, 1, 1).AddMilliseconds(times.First(t => t.Id == x.Id).Time)
+            });
+  
         }
 
         #endregion

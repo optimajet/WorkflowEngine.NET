@@ -17,7 +17,6 @@ namespace WF.Sample.Business.Model
         public decimal Sum { get; set; }
         public string State { get; set; }
         public string StateName { get; set; }
-
         public Employee Author { get; set;}
         public Employee Manager { get; set; }
     }

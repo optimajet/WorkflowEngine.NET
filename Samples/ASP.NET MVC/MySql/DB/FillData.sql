@@ -71,7 +71,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
   <Timers>
     <Timer Name="SendToBigBoss" Type="Interval" Value="10minutes" NotOverrideIfExists="false" />
   </Timers>
-  <Activities>
+ <Activities>
     <Activity Name="VacationRequestCreated" State="VacationRequestCreated" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
         <ActionRef Order="1" NameRef="UpdateTransitionHistory" />
@@ -88,7 +88,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="320" Y="170" />
+      <Designer X="361.53846153846166" Y="172.69347319347324" />
     </Activity>
     <Activity Name="BigBossSigning" State="BigBossSigning" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -97,7 +97,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="620" Y="170" />
+      <Designer X="721.5384615384614" Y="172.6934731934732" />
     </Activity>
     <Activity Name="AccountingReview " State="AccountingReview " IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -106,7 +106,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="620" Y="340" />
+      <Designer X="718.2051282051282" Y="334.3601398601398" />
     </Activity>
     <Activity Name="RequestApproved" State="RequestApproved" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True">
       <Implementation>
@@ -115,7 +115,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <PreExecutionImplementation>
         <ActionRef Order="1" NameRef="WriteTransitionHistory" />
       </PreExecutionImplementation>
-      <Designer X="930" Y="340" />
+      <Designer X="1036.5384615384614" Y="334.3601398601398" />
     </Activity>
   </Activities>
   <Transitions>
@@ -129,7 +129,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="258" Y="177" />
+      <Designer X="280.7692307692307" Y="177.9300699300699" />
     </Transition>
     <Transition Name="BigBossSigning_Activity_1_1" To="AccountingReview " From="BigBossSigning" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -141,7 +141,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="716" Y="283" />
+      <Designer X="810.7051282051282" Y="276.86013986013984" />
     </Transition>
     <Transition Name="ManagerSigning_Approved_1" To="AccountingReview " From="ManagerSigning" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -153,7 +153,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Otherwise" />
       </Conditions>
-      <Designer X="492" Y="346" />
+      <Designer X="456.70512820512835" Y="390.69347319347315" />
     </Transition>
     <Transition Name="ManagerSigning_BigBossSigning_1" To="BigBossSigning" From="ManagerSigning" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -165,7 +165,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Action" NameRef="CheckBigBossMustSign" ConditionInversion="false" />
       </Conditions>
-      <Designer X="565" Y="226" />
+      <Designer X="635.3717948717945" Y="225.69347319347304" />
     </Transition>
     <Transition Name="Draft_ManagerSigning_1" To="ManagerSigning" From="VacationRequestCreated" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -177,7 +177,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="257" Y="220" />
+      <Designer X="278.93589743589735" Y="223.09673659673658" />
     </Transition>
     <Transition Name="BigBossSigning_ManagerSigning_1" To="ManagerSigning" From="BigBossSigning" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -189,7 +189,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="565" Y="179" />
+      <Designer X="638.3717948717945" Y="179.3601398601398" />
     </Transition>
     <Transition Name="ManagerSigning_BigBossSigning_2" To="BigBossSigning" From="ManagerSigning" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Triggers>
@@ -198,7 +198,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="565" Y="131" />
+      <Designer X="638.5384615384614" Y="136.86013986013987" />
     </Transition>
     <Transition Name="Accountant_Activity_1_1" To="RequestApproved" From="AccountingReview " Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -210,7 +210,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="865" Y="370" />
+      <Designer X="974" Y="366" />
     </Transition>
     <Transition Name="Accountant_ManagerSigning_1" To="ManagerSigning" From="AccountingReview " Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" IsFork="false" MergeViaSetState="false" DisableParentStateControl="false">
       <Restrictions>
@@ -222,7 +222,7 @@ INSERT INTO `WorkflowScheme`(`Code`, `Scheme`) VALUES ('SimpleWF', '
       <Conditions>
         <Condition Type="Always" />
       </Conditions>
-      <Designer X="414" Y="391" />
+      <Designer X="521.5384615384617" Y="340.1934731934732" />
     </Transition>
   </Transitions>
   <CodeActions>

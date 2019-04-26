@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 3.5
+Version: 4.0
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -110,6 +110,8 @@ CREATE INDEX IF NOT EXISTS "WorkflowProcessTransitionHistory_ActorIdentityId_idx
 CREATE TABLE IF NOT EXISTS "WorkflowScheme" (
   "Code" character varying(256) NOT NULL,
   "Scheme" text NOT NULL,
+  "CanBeInlined" boolean NOT NULL DEFAULT FALSE,
+  "InlinedSchemes" character varying(1024) NULL,
   CONSTRAINT "WorkflowScheme_pkey" PRIMARY KEY ("Code")
 );
 

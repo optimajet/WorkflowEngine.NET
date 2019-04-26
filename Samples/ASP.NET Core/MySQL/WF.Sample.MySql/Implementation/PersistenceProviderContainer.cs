@@ -17,15 +17,9 @@ namespace WF.Sample.MySql.Implementation
     {
         public PersistenceProviderContainer(IConfiguration config)
         {
-            _provider = new MySQLProvider(config.GetConnectionString("DefaultConnection"));
+            Provider = new MySQLProvider(config.GetConnectionString("DefaultConnection"));
         }
 
-        private readonly MySQLProvider _provider;
-
-        public IPersistenceProvider AsPersistenceProvider => _provider;
-
-        public ISchemePersistenceProvider<XElement> AsSchemePersistenceProvider => _provider;
-
-        public IWorkflowGenerator<XElement> AsWorkflowGenerator => _provider;
+        public IWorkflowProvider Provider { get; private set; }
     }
 }

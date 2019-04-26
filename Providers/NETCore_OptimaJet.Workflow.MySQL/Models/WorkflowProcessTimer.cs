@@ -109,6 +109,15 @@ namespace OptimaJet.Workflow.MySQL
             return Select(connection, selectText, p1, p2).FirstOrDefault();
         }
 
+        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(MySqlConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid", DbTableName);
+
+            var p1 = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
+
+            return Select(connection, selectText, p1);
+        }
+
         public static int ClearTimersIgnore(MySqlConnection connection)
         {
             var command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Ignore` = 1", DbTableName);

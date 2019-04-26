@@ -12,7 +12,7 @@
         <%: Scripts.Render("~/Scripts/jquery.auto-complete.min.js") %>
     </asp:PlaceHolder>
 
-    <form action="" id="uploadform" method="post" enctype="multipart/form-data" onsubmit="tmp()" style="padding-bottom: 8px;">
+    <div style="padding-bottom: 8px;">
         <div>
             <a href="javascript:OnNew()" class="ui secondary button">New scheme</a>
             <a href="javascript:OnSave()" class="ui secondary button">Save scheme</a>
@@ -22,7 +22,7 @@
             <a href="javascript:SelectScheme('bpmn')" class="ui secondary button">Upload BPMN2</a>
         </div>
         <input type="file" name="uploadFile" id="uploadFile" style="display:none" onchange="javascript: UploadScheme();">
-    </form>
+    </div>
     <div id="wfdesigner" style="min-height:600px"></div>
 
     <script>
@@ -91,21 +91,28 @@
             }
         }
 
-        $(window).resize(function () {
-            var w = $(window).width();
-            var h = $(window).height();
+       $(window).resize(function () {
+            if (window.wfResizeTimer) {
+                clearTimeout(window.wfResizeTimer);
+                window.wfResizeTimer = undefined;
+            }
+            window.wfResizeTimer = setTimeout(function () {
+                var w = $(window).width();
+                var h = $(window).height();
 
-            if (w > 300)
-                graphwidth = w - 40;
+                if (w > 300)
+                    graphwidth = w - 40;
 
-            if (h > 300)
-                graphheight = h - 250;
+                if (h > 300)
+                    graphheight = h - 250;
 
-            if (graphheight < graphminheight)
-                graphheight = graphminheight;
+                if (graphheight < graphminheight)
+                    graphheight = graphminheight;
 
-            wfdesignerRedraw();
-        })
+                wfdesignerRedraw();
+            }, 150);
+
+        });
 
         $(window).resize();
 
@@ -129,13 +136,13 @@
     function UploadScheme() {
 
         if (selectSchemeType == "bpmn") {
-            wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
+            wfdesigner.uploadschemeBPMN($('form')[0], function () {
                 wfdesigner.autoarrangement();
                 alert('The file is uploaded!');
             });
         }
         else {
-            wfdesigner.uploadscheme($('#uploadform')[0], function () {
+            wfdesigner.uploadscheme($('form')[0], function () {
                 alert('The file is uploaded!');
             });
         }

@@ -102,12 +102,20 @@ namespace OptimaJet.Workflow.Oracle
 
         public static WorkflowProcessTimer SelectByProcessIdAndName(OracleConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE PROCESSID = :processid AND NAME = :name", ObjectName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid AND NAME = :name", ObjectName);
     
             return Select(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
                 new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input))
                 .FirstOrDefault();
+        }
+
+        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(OracleConnection connection, Guid processId)
+        {
+            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid", ObjectName);
+
+            return Select(connection, selectText,
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
 
         public static int ClearTimersIgnore(OracleConnection connection)
@@ -140,21 +148,33 @@ namespace OptimaJet.Workflow.Oracle
         {
             if (timers.Length == 0)
                 return 0;
+            var result = 0;
+            var skip = 0;
+            var take = 1000;
 
-            var parameters = new List<string>();
-            var sqlParameters = new List<OracleParameter>();
-            var cnt = 0;
-            foreach (var timer in timers)
+            while (skip < timers.Length)
             {
-                var parameterName = string.Format("timer{0}", cnt);
-                parameters.Add(string.Format(":{0}", parameterName));
-                sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.Raw, timer.Id.ToByteArray(), ParameterDirection.Input));
-                cnt++;
+
+                var parameters = new List<string>();
+                var sqlParameters = new List<OracleParameter>();
+                var cnt = 0;
+
+                foreach (var timer in timers.Skip(skip).Take(take))
+                {
+                    var parameterName = string.Format("timer{0}", cnt);
+                    parameters.Add(string.Format(":{0}", parameterName));
+                    sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.Raw, timer.Id.ToByteArray(), ParameterDirection.Input));
+                    cnt++;
+                }
+
+                result = result + ExecuteCommand(connection,
+                             string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
+                             sqlParameters.ToArray());
+
+                skip = skip + take;
             }
 
-            return ExecuteCommand(connection,
-                string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
-                sqlParameters.ToArray());
-         }
+            return result;
+        }
     }
 }

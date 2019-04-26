@@ -1,0 +1,11 @@
+﻿/*
+Company: OptimaJet
+Project: WorkflowEngine.NET Provider for Oracle
+Version: 4.0
+File: update_4_0.sql
+*/
+
+ALTER TABlE WORKFLOWSCHEME ADD CANBEINLINED CHAR(1 BYTE) DEFAULT 0;
+ALTER TABlE WORKFLOWSCHEME ADD INLINEDSCHEMES NVARCHAR2(1024);
+
+COMMIT;

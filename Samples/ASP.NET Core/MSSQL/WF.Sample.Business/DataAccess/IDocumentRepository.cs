@@ -16,7 +16,7 @@ namespace WF.Sample.Business.DataAccess
         List<Model.DocumentTransitionHistory> GetHistory(Guid id);
         Model.Document Get(Guid id, bool loadChildEntities = true);
         void Delete(Guid[] ids);
-        void ChangeState(Guid id, string nextState,  string nextStateName);
+        void ChangeState(Guid id, string nextState, string nextStateName);
         bool IsAuthorsBoss(Guid documentId, Guid identityId);
         IEnumerable<string> GetAuthorsBoss(Guid documentId);
         void WriteTransitionHistory(Guid id, string currentState, string nextState, string command, IEnumerable<string> identities);
