@@ -22,23 +22,6 @@ table.WorkflowDesignerTable td {
     padding-right: 10px;
 } 
 
-.dimmed.dimmable > .ui.animating.dimmer, 
-.dimmed.dimmable > .ui.visible.dimmer, 
-.ui.active.dimmer {
-    display: flex;
-    align-items: center;
-    justify-content: center;
-  }
-
-.ui.modal,
-.active.modal {
-    margin: 0 auto!important;
-    top: auto !important;
-    left: auto !important;
-    transform-origin: center !important;
-    transition: all ease .5s;
-}
-
 .WorkflowDesignerDialog .ui.selection.dropdown{
     padding-bottom: 0.6em;
 }

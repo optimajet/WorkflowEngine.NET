@@ -250,7 +250,9 @@
     <Content Include="Views\Settings\Edit.cshtml" />
   </ItemGroup>
   <ItemGroup>
-    <Content Include="Configuration\AppSettings.config" />
+    <Content Include="Configuration\AppSettings.config">
+      <SubType>Designer</SubType>
+    </Content>
     <Content Include="Configuration\ConnectionString.config">
       <SubType>Designer</SubType>
     </Content>

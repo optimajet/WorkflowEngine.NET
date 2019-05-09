@@ -238,7 +238,7 @@
     ErrorInvalidObjectsSaveText: function(objects) {
         return "Can't save the schema. Those objects are in invalid state: " + objects;
     },
-    BrokenReferencesDialogText: "This schema contains references to code actions that aren't defined by this schema or current action providers. Do you want to keep them?",
+    BrokenReferencesDialogText: "This schema contains references to Actions, Conditions or Rules that aren't defined by this schema or current action providers. Do you want to keep them?",
     FormMaxHeight: 700,
     EditCodeSettings: {
         Height: 600,
