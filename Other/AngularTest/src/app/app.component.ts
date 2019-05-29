@@ -16,6 +16,10 @@ export class AppComponent {
   wfdesigner: any; 
 
   constructor() {
+    
+  }
+
+  ngOnInit(){
     var me = this;
     me.wfdesignerRedraw();
     window.onresize = function(event) {
