@@ -64,7 +64,7 @@ CREATE TABLE IF NOT EXISTS "DocumentTransitionHistory" (
 	  "DocumentId" uuid NOT NULL REFERENCES "Document" ON DELETE CASCADE,
 	  "EmployeeId" uuid NULL REFERENCES "Employee",
 	  "AllowedToEmployeeNames" text NOT NULL,
-	  "TransitionTime" date NULL,
+	  "TransitionTime" timestamp NULL,
 	  "Order" SERIAL,
 	  "InitialState" character varying(1024) NOT NULL,
 	  "DestinationState" character varying(1024) NOT NULL,

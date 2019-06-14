@@ -150,11 +150,12 @@
             <param name="failedStep">The name of failed build step</param>
             <returns>True if scheme validation was success</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.Parse(System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.Parse(System.String,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Parses process scheme from the string
             </summary>
             <param name="scheme">String representation of not parsed scheme</param>
+            <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>ProcessDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Builder.IWorkflowBuilder.Serialize(OptimaJet.Workflow.Core.Model.ProcessDefinition)">
@@ -300,7 +301,7 @@
             <param name="errors">Validation errors</param>
             <returns>True if scheme validation was success</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.Parse(System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Builder.WorkflowBuilder`1.Parse(System.String,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Parses process scheme from the string
             </summary>
@@ -1678,7 +1679,7 @@
             Serialized default value of the parameter
             </summary>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.String,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.String,System.String,System.String,System.Boolean)">
             <summary>
             Create ParameterDefinition object
             </summary>
@@ -1686,6 +1687,7 @@
             <param name="type">Type of the parameter</param>
             <param name="purpose">Specifies the method of storing parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterPurpose"/></param>
             <param name="initialValue">Serialized default value of the parameter</param>
+            <param name="ignoreTypeExistenceCheck">If true the parameter type missing will be ignored</param>
             <returns>ParameterDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.Type,OptimaJet.Workflow.Core.Model.ParameterPurpose,System.String)">
@@ -1698,13 +1700,14 @@
             <param name="initialValue">Serialized default value of the parameter</param>
             <returns>ParameterDefinition object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.String,System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(System.String,System.String,System.String,System.Boolean)">
             <summary>
             Create ParameterDefinition object
             </summary>
             <param name="name">Name of the parameter</param>
             <param name="type">Type of the parameter</param>
             <param name="initialValue">Serialized default value of the parameter</param>
+            <param name="ignoreTypeExistenceCheck">If true the parameter type missing will be ignored</param>
             <returns>ParameterDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ParameterDefinition.Create(OptimaJet.Workflow.Core.Model.ParameterDefinition,System.Object)">
@@ -3108,6 +3111,27 @@
             Returns the list of scheme codes into which the scheme with the given code has been inlined
             </summary>
             <param name="schemeCode">Inlined scheme code</param>
+            <returns></returns>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.PredefinedActions.PredefinedActions">
+            <summary>
+            Contains all predefined actions
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.PredefinedActions.PredefinedActions.CheckAllSubprocessesCompletedAsync(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+            <summary>
+            Check that all subprocesses was completed
+            </summary>
+            <param name="processInstance"></param>
+            <param name="runtime"></param>
+            <returns>true - if there are no active suprocesses</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.PredefinedActions.PredefinedActions.CheckAllSubprocessesCompleted(OptimaJet.Workflow.Core.Model.ProcessInstance,OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+            <summary>
+            Check that all subprocesses was completed
+            </summary>
+            <param name="processInstance"></param>
+            <param name="runtime"></param>
             <returns></returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.ProcessActivityChangedEventArgs">
@@ -4524,6 +4548,20 @@
             <param name="processInstance">ProcessInstance for which tree is builds</param>
             <returns>ProcessInstancesTree object</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CheckAllSubprocessesCompletedAsync(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Checks that all subprocesses was completed
+            </summary>
+            <param name="processInstance">ProcessInstance for check</param>
+            <returns>true - if there are no active suprocesses</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CheckAllSubprocessesCompleted(OptimaJet.Workflow.Core.Model.ProcessInstance)">
+            <summary>
+            Checks that all subprocesses was completed
+            </summary>
+            <param name="processInstance">ProcessInstance for check</param>
+            <returns>true - if there are no active suprocesses</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.SetSchemeIsObsolete(System.String,System.Collections.Generic.Dictionary{System.String,System.Object})">
             <summary>
             Set flag IsObsolete for all schemas of process with specific code and parameters
@@ -5768,18 +5806,20 @@
             </summary>
             <typeparam name="TSchemeMedium">Type of not parsed scheme</typeparam>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1.Parse(`0)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1.Parse(`0,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Returns object model of the scheme of a process
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
+            <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>ProcessDefinition object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1.Parse(System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1.Parse(System.String,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Returns object model of the scheme of a process
             </summary>
             <param name="scheme">String representation of not parsed scheme</param>
+             /// <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>ProcessDefinition object</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1.SerializeToSchemeMedium(OptimaJet.Workflow.Core.Model.ProcessDefinition)">
@@ -5823,11 +5863,12 @@
             <param name="schemeMedium">Not parsed scheme</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/> objects</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.ParseParameters(`0)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.ParseParameters(`0,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Parses parameters from not parsed scheme in theirs object model
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
+            <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinition"/> objects</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.ParseCommands(`0,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition})">
@@ -5884,7 +5925,7 @@
             <param name="schemeMedium">Not parsed scheme</param>
             <returns>Designer settings</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.Parse(System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.Parse(System.String,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Returns object model of the scheme of a process
             </summary>
@@ -5905,11 +5946,12 @@
             <param name="processDefinition">ProcessDefinition object</param>
             <returns>String representation of not parsed scheme</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.Parse(`0)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.Parse(`0,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Returns object model of the scheme of a process
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
+            <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>ProcessDefinition object</returns>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser">
@@ -5938,11 +5980,12 @@
             <param name="schemeMedium">Not parsed scheme</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/> objects</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.ParseParameters(System.Xml.Linq.XElement)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.ParseParameters(System.Xml.Linq.XElement,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Parses parameters from not parsed scheme in theirs object model
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
+            <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinition"/> objects</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.ParseCommands(System.Xml.Linq.XElement,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition})">
@@ -5992,7 +6035,7 @@
             <param name="schemeMedium">Not parsed scheme</param>
             <returns>Designer settings</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.Parse(System.String)">
+        <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.Parse(System.String,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
             Returns object model of the scheme of a process
             </summary>

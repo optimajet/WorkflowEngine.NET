@@ -238,9 +238,15 @@ return doc.Sum > 100;]]></ActionCode>
     return;
 
 var currentstate = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.CurrentState);
-
+if(currentstate == null)
+{
+   currentstate = processInstance.CurrentActivityName;
+}
 var nextState = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.ExecutedActivityState);
-
+if(nextState == null)
+{
+    nextState = processInstance.ExecutedActivity.Name;
+}
 var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
 
 var repository = WorkflowInit.DataServiceProvider.Get<IDocumentRepository>();
@@ -253,9 +259,15 @@ repository.WriteTransitionHistory(processInstance.ProcessId, currentstate, nextS
     return;
     
 var currentstate = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.CurrentState);
-
+if(currentstate == null)
+{
+   currentstate = processInstance.CurrentActivityName;
+}
 var nextState = WorkflowInit.Runtime.GetLocalizedStateName(processInstance.ProcessId, processInstance.ExecutedActivityState);
-
+if(nextState == null)
+{
+    nextState = processInstance.ExecutedActivity.Name;
+}
 var command = WorkflowInit.Runtime.GetLocalizedCommandName(processInstance.ProcessId, processInstance.CurrentCommand);
 
 if(!string.IsNullOrEmpty(processInstance.ExecutedTimer))

@@ -17,7 +17,7 @@ namespace WF.Sample.PostgreSql
         [Required(AllowEmptyStrings = true)]
         public string AllowedToEmployeeNames { get; set; }
 
-        [Column(TypeName = "date")]
+        [Column(TypeName = "timestamp")]
         public DateTime? TransitionTime { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]

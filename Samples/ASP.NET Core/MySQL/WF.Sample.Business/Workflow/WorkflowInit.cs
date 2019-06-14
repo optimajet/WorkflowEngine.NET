@@ -81,7 +81,11 @@ namespace WF.Sample.Business.Workflow
             if (!e.IsSubprocess)
             {
                 var nextState = e.ProcessInstance.CurrentState;
-                var nextStateName = Runtime.GetLocalizedStateName(e.ProcessId, e.ProcessInstance.CurrentState);
+                if(nextState == null)
+                {
+                    nextState = e.ProcessInstance.CurrentActivityName;
+                }
+                var nextStateName = Runtime.GetLocalizedStateName(e.ProcessId, nextState);
 
                 var docRepository = DataServiceProvider.Get<IDocumentRepository>();
 

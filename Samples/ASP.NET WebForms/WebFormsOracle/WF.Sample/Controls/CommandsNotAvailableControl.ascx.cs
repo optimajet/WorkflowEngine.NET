@@ -19,12 +19,8 @@ namespace WF.Sample.Controls
 
         protected bool Show()
         {
-            if (Model.Commands.Count() > 0 || Model.AvailiableStates.Count > 0)
-            {
-                return (Model.Commands.Count() == 0 && Model.HistoryModel.Items.Any(c => !c.TransitionTime.HasValue));
-            }
-
-            return false;
+            return (Model.Commands.Count() == 0 && Model.HistoryModel.Items != null && 
+                    Model.HistoryModel.Items.Any(c => !c.TransitionTime.HasValue));
         }
     }
 }

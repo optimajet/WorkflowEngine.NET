@@ -19,7 +19,7 @@ namespace WF.Sample.MySql
         [Required(AllowEmptyStrings = true)]
         public string AllowedToEmployeeNames { get; set; }
 
-        [Column(TypeName = "date")]
+        [Column(TypeName = "datetime")]
         public DateTime? TransitionTime { get; set; }
 
         [DatabaseGenerated(DatabaseGeneratedOption.Identity)]
