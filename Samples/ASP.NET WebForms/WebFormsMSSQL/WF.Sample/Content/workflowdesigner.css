@@ -175,3 +175,13 @@ table.WorkflowDesignerTable td.movecol{
     cursor: move;
     float: inherit;
 }
+
+.ui.modal.WorkflowDesignerDialog,
+.ui.modal.WorkflowDesignerConfirmDialog,
+.ui.modal.WorkflowDesignerDialogChild {
+    top: auto;
+    bottom: auto;
+    left: auto;
+    right: auto;
+    overflow: visible
+}

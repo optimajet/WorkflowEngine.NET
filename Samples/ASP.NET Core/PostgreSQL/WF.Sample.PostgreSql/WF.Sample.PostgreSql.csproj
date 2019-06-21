@@ -16,7 +16,7 @@
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="2.2.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForPostgreSQL" Version="4.0.8" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForPostgreSQL" Version="4.0.9" />
   </ItemGroup>
 
   <ItemGroup>
