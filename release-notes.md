@@ -1,13 +1,242 @@
-<!--Stay on the edge of our innovations and learn about the changes made to Workflow Engine with each of our releases.-->
-
 # Workflow Engine: Release Notes
+
+## 4.1 {#4.1}
+
+- Support for multi-tenant applications.
+  - *TenantId* has been added to processes. When creating a process, one can specify *TenantId* and use its value when working with the process. *TenantId* is stored in the *WorkflowProcessInstance* table in the *TenantId* column.
+  Passing `TenantId` to a process:
+
+    ```csharp
+    var createInstanceParams = new CreateInstanceParams(schemeCode, processId) { TenantId = "tenantId" };
+    workflowRuntime.CreateInstance(createInstanceParams);
+    ```
+
+    After creating a process with *TenantId* indicated, the access to it inside *Actions*, *Conditions* and *Rules* can be arranged as follows.
+
+    ```csharp
+    string tenantId = processInstance.TenantId;
+    ```
+
+  - For schemes one can specify tags, and then, search for schemes where these tags are indicated. Tags are set in the scheme designer by clicking on the *Process Info* button. Tags are stored in the *WorkflowScheme* table in the *Tags* column. A list of codes for the schemes where the corresponding tags are indicated can be received using the following code:
+
+     ```csharp
+     List<string> schemeCodes =  workflowRuntime.Builder.SearchSchemesByTags(new List<string> {"Tag1","Tag2"});
+     ```
+
+   The search is performed using an OR expression.
+
+- Plugin System and the Basic Plugin. The plugin for WorkflowEngine.NET is a class that is necessary to implement the `IWorkflowPlugin` interface, and optional to implement the `IWorkflowActionProvider`, `IWorkflowRuleProvider`, `IDesignerParameterFormatProvider`, `IDesignerAutocompleteProvider` interfaces (in any combination). In fact, the plugin is a class that adds functionality to be used when creating process schemes. The plugin connects to WorkflowEngine.NET when configuring `WorkflowRuntime`.
+  
+  ```csharp
+  WorkflowRuntime workflowRuntime = workflowRuntime.WithPlugin(new BasicPlugin());
+  ```
+
+  Simultaneously, any number of plugins can be connected to WorkflowEngine.NET. The Basic Plugin `OptimaJet.Workflow.Core.Plugins.BasicPlugin` has been added to the WorkflowEngine.NET package; it implements the following basic functions:
+  - Actions:
+    - *SendEmail* - sending email.
+    - *CreateProcess* - creating a process from a process.
+    - *HTTPRequest* - sending a request to a third-party web service.
+    - *SetParameter* - setting a process parameter.
+  - Conditions:
+    - *IsProcessFinalized* - checking the finalization of the current process or a process with the Id specified.
+    - *CheckAllSubprocessesCompleted* - checking the finalization (completion) of all the subprocesses.
+    - *CheckParameter* - checking if the parameter is consistent to the given value (so far, only strings are supported).
+    - *IsArrovedByUsers* - checking if the specified process was processed by all of the listed users.
+    - *IsArrovedByRoles* - checking if the specified process was processed by all of the listed roles.
+    - *CheckHTTPRequest* - conditional transition based on the result of a request to a third-party web service.
+  - Authorization Rules (Security):
+    - *CheckRole* - checking access to the command for a specific role.
+  **Warning: to perform operations related to the roles checking, `BasicPlugin` must have the delegate handler `basicPlugin.UsersInRoleAsync` installed.**
+
+- Now, implicit (that is, not explicitly specified in the scheme) parameters passed when creating a process, executing a command, or setting a new state to a process can be persistent.
+  - When creating a process, use the following code:
+  
+    ```csharp
+    var createInstanceParams = new CreateInstanceParams(schemeCode, processId)
+      .AddPersistentParameter("Parameter1Name", 100)
+      .AddPersistentParameter("ParameterName2", parameterValue);
+    workflowRuntime.CreateInstance(createInstanceParams);
+    ```
+
+  - When passing parameters with a command, use the following code:
+
+    ```csharp
+    WorkflowCommand command = ...
+    command.SetParameter("ParameterName", parameterValue, persist: true);
+    workflowRuntime.ExecuteCommand(command, ... );
+    ```
+  
+  - When passing a parameter with a command, use the following code:
+  
+    ```csharp
+    var setStateParams = new SetStateParams(processId,"StateName")
+      .AddPersistentParameter("Parameter1Name", 100)
+      .AddPersistentParameter("ParameterName2", parameterValue);
+    workflowRuntime.SetState(setStateParams);
+    ```
+
+- Support for dynamic parameters has been added. To perform the task, the `DynamicParameter` class, which can be cast into dynamic, has been developed. For example:  
+  
+  Creating a parameter:
+  
+  ```csharp
+  var dynamicParameter = new
+  {
+    Name = "Dynamic",
+    ObjectValue = new
+    {
+        Name = "Object",
+        Value = 100
+    },
+    ListValue = new List<object> {
+        new {Id = 1, Name = "ObjectInList1"},
+        new {Id = 2, Name = "ObjectInList2"}
+    }
+  }
+  processInstance.SetParameter("Dynamic", dynamicParameter, ParameterPurpose.Persistence);
+  ```
+
+  Getting a parameter:
+  
+  ```csharp
+  var dynamicParameter = processInstance.GetParameter<DynamicParameter>("Dynamic") as dynamic;
+  string name = dynamicParameter.Name;
+  string objectValueName = dynamicParameter.ObjectValue.Name;
+  string firstItemName = (dynamicParameter.ListValue as List<dynamic>).First().Name;
+  ```
+
+- The following aggregating providers are available: `AggregatingActionProvider`, `AggregatingRuleProvider`, `AggregatingDesignerAutocompleteProvider`, `AggregatingDesignerParameterFormatProvider`. An aggregating provider is a provider to which other providers can be added.
+- `IWorkflowRuleProvider` - supports asynchronous authorization (security) rules.
+- The scheme code is passed to all methods of all providers. Here are these methods
+  - `IWorkflowActionProvider.GetActions`
+  - `IWorkflowActionProvider.GetConditions`
+  - `IWorkflowActionProvider.IsActionAsync`
+  - `IWorkflowActionProvider.IsConditionAsync`
+  - `IWorkflowRuleProvider.GetRules`
+  - `IWorkflowRuleProvider.IsCheckAsync`
+  - `IWorkflowRuleProvider.IsGetIdentitiesAsync`
+  - `IDesignerParameterFormatProvider.GetFormat`
+  - `IDesignerAutocompleteProvider.GetAutocompleteSuggestions`
+
+  `string schemeCode` has been added as the last parameter to all these methods.
+- A unified and correct error output when accessing the Designer API has been added.
+- Intellisense has been added in the Code Actions (code in schemes) editor.
+- A new type *TextArea* has been added to the forms where parameter (for Actions, Conditions or rules) values are edited.
+- In any of the persistence providers, one can optionally turn off the history of transitions and set the history of subprocesses to be written in the history of the main process. For example:
+  
+  ```csharp
+  var provider = new MSSQLProvider(connectionString, writeToHistory:false);
+  var provider = new MSSQLProvider(connectionString, writeSubProcessToRoot:true);
+  ```
+
+**The following additional actions must be taken to upgrade to Workflow Engine 4.1:**
+
+- Run the SQL script update_2_7_to_2_8.sql for all relative databases.
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MSSQL/Scripts/update_4_0_to_4_1.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.PostgreSQL/Scripts/update_4_0_to_4_1.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.Oracle/Scripts/update_4_0_to_4_1.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MySQL/Scripts/update_4_0_to_4_1.sql)
+- Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
+- Update packages or dll to version 4.1.
+- If the `IWorkflowActionProvider` interface is implemented in your project, the last parameter`string schemeCode` shall be added to the following methods:
+  - `IWorkflowActionProvider.GetActions`
+  - `IWorkflowActionProvider.GetConditions`
+  - `IWorkflowActionProvider.IsActionAsync`
+  - `IWorkflowActionProvider.IsConditionAsync`
+- If the `IWorkflowRuleProvider` interface is implemented in your project, the following methods shall be added to your provider:
+  
+  ```csharp
+  public Task<bool> CheckAsync(ProcessInstance processInstance, WorkflowRuntime runtime, string identityId, string ruleName,string parameter, CancellationToken token)
+  {
+      throw new NotImplementedException();
+  }
+
+  public Task<IEnumerable<string>> GetIdentitiesAsync(ProcessInstance processInstance, WorkflowRuntime runtime, string ruleName, string parameter, CancellationToken token)
+  {
+      throw new NotImplementedException();
+  }
+
+  public bool IsCheckAsync(string ruleName, string schemeCode)
+  {
+      return false;
+  }
+
+  public bool IsGetIdentitiesAsync(string ruleName, string schemeCode)
+  {
+      return false;
+  }
+  ```
+
+  The last parameter `string schemeCode` shall be also added to the following method:
+  - `IWorkflowRuleProvider.GetRules`
+
+- If the `IDesignerParameterFormatProvider` interface is implemented in your project, the last parameter `string schemeCode` shall be added to the following method:
+  - `IDesignerParameterFormatProvider.GetFormat`
+- If the `IDesignerAutocompleteProvider` interface is implemented in your project, the last parameter `string schemeCode` shall be added to the following method:
+  - `IDesignerAutocompleteProvider.GetAutocompleteSuggestions`
+- **If in your project the Action Provider has changed (after the first initialization) using the method `workflowRuntime.WithActionProvider(...)` replace this code with the following call `workflowRuntime.ClearActionProvider().WithActionProvider(...)`**
+- **If in your project the Rule Provider has changed (after the first initialization) using the method `workflowRuntime.WithRuleProvider(...)` replace this code with the following call `workflowRuntime.ClearRuleProvider().WithRuleProvider(...)`**
+- **If in your project the Designer Autocomplete Provider has changed (after the first initialization) using the method `workflowRuntime.WithDesignerAutocompleteProvider(...)` replace this code with the following call `workflowRuntime.ClearDesignerAutocompleteProvider().WithDesignerAutocompleteProvider(...)`**
+- **If in your project the Designer Parameter Format Provider has changed (after the first initialization) using the method `workflowRuntime.WithDesignerParameterFormatProvider(...)` replace this code with the following call `workflowRuntime.ClearDesignerParameterFormatProvider().WithDesignerParameterFormatProvider(...)`**
+- It is not necessary but suggested to change the Designer Controller the following way
+
+  ```csharp
+  public ActionResult API()
+  {
+    ...
+    var res = WorkflowInit.Runtime.DesignerAPI(pars, out bool hasError, filestream, true);
+    var operation = pars["operation"].ToLower();
+
+    if (operation == "downloadscheme" && !hasError)
+      return File(Encoding.UTF8.GetBytes(res), "text/xml", "scheme.xml");
+    else if (operation == "downloadschemebpmn" &&  !hasError)
+      return File(UTF8Encoding.UTF8.GetBytes(res), "text/xml", "scheme.bpmn");
+
+    return Content(res);
+  }
+  ```
+
+  See complete controller code
+  - [ASP.NET MVC Core](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20Core/MSSQL/WF.Sample/Controllers/DesignerController.cs)
+  - [ASP.NET MVC](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20MVC/MSSQL/WF.Sample/Controllers/DesignerController.cs)
+  - [Web Forms](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20WebForms/WebFormsMSSQL/WF.Sample/Pages/Designer/WFEDesigner.ashx.cs)
+
+- It is not necessary but suggested to pass the scheme code when calling `wfdesigner.create()` method on the Designer page.
+
+  ```javascript
+  wfdesigner.create(schemecode);
+  ```
+
+  See complete view code
+  - [ASP.NET MVC Core](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20Core/MSSQL/WF.Sample/Views/Designer/Index.cshtml)
+  - [ASP.NET MVC](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20MVC/MSSQL/WF.Sample/Views/Designer/Index.cshtml)
+  - [Web Forms](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Samples/ASP.NET%20WebForms/WebFormsMSSQL/WF.Sample/Pages/Designer/Index.aspx)
+
+## 4.0 {#4.0}
+
+- Designer usability improvement. Transition info will now be displayed in a fuller, more comprehensive form. You can now switch between full screen and normal edit window display modes. Toolbars design has been changed.
+- you can customize Activity и Transition rendering in the Designer. 
+- you can customize Designer windows. 
+- Designer performance has been optimized. 
+- Scheme inlining. Now you can check a scheme as a scheme that can be inlined and embed it into another scheme. Thus you can re-use typical parts of your processes many times, without copying them between schemes. Multi-layered inlining is supported.  
+- Process Info window has been added into the specific process view mode. It allows you to view this process parameters, transition history, launched timers. Here full information on subprocesses is also displayed.
+- You can specify annotations for Activity and Transition. Annotations are a dictionary (key - value) which you can set in the Designer individually for each Activity ot Transition. You can read annotation value in the code, using the following methods: `activityDefinition.GetAnnotation<T>(name)`, `transitionDefinition.GetAnnotation<T>(name)`, `processInstance.ProcessScheme.GetActivityAnnotation<T>(activityName, name)`, `processInstance.ProcessScheme.GetTransitionAnnotation<T>(transitionName, name)`
+- For the string parameter, which is transferred into Actions, Conditions and Rules, you can specify the structure which will define the form in which this parameter will be displayed in edit mode in the Designer. Form field contents can be specified in the Designer in the `CodeActions` section. Or you can create a class implementing `IDesignerParameterFormatProvider` interface on the server and configure your  `WorkflowRuntime` in the following way: `workflowRuntime.WithDesignerParameterFormatProvider(new YourDesignerParameterFormatProvider())`. Thus you can specify the appearance of the string parameter which is transferred into Action, Condition or Rule.
+- In the event handler `workflowRuntime.OnWorkflowError` you can now cancel exception throwing, using event arguments `args.SuppressThrow = true;`. Also you can specify the Activity, which will be set after error processing. For example, it can be initial activity: `args.ActivityToSet = args.ProcessInstance.ProcessScheme.InitialActivity;`
+- For simple execution of complex business cases in `WorkflowRuntime` use two of the following methods: `workflowRuntime.GetAvailableCommandsWithConditionCheck(...)` - get the list of available commands with additional conditions check, and `workflowRuntime.ExecuteCommandWithRestrictionCheck(...)` - execution of the command with additional restrictions check.
+- Correct merging of the subprocess и parent process has been added, when a subprocess is merged with its parent process immediately after launch. In other words, if a subprocess contains only Auto triggered transitions. Now merge will be correct, and the subprocess will wait till the parent process is unlocked. 
+- Process execution can be cancelled using `CancellationToken`. Such cancellation will be activated automatically if you configure your `WorkflowRuntime` in the following way: `workflowRuntime.SetCancellationTokenHandling(CancellationTokenHandling.Throw)`.
+ 
+**The following additional actions must be taken to upgrade to Workflow Engine 4.0:**
+
+- Run the SQL  script `update_4_0.sql` for all relative databases. You will find this script in your provider's archive.  
+- If you have used process status change (for example `args.ProcessStatus = ProcessStatus.Idled;`) to cancel exception release after the event has been processed `workflowRuntime.OnWorkflowError`, you will need to use the following code `args.SuppressThrow = true;`. Status change hack won't work, custom status will be installed, but the exception will still be thrown. 
 
 ## 3.5 {#3.5}
 
 - Moving the canvas (in the Move mode) with arrows was added to the designer.
 - Explicit passing of CultureInfo was added to methods `GetInitialCommands`, `GetInitialState`, `GetCurrentState` and `GetAvailableCommands` of the `WorkflowRuntime` class
 - Full samples (Vacation request approval) for all supported databases for ASP.NET Core and ASP.NET MVC. Full samples for MSSQL, Postgres and Oracle database for Web Forms.
-
 
 ## 3.4 {#3.4}
 
