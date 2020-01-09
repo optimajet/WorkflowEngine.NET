@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Data;
 
 // ReSharper disable once CheckNamespace
@@ -28,7 +28,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name = "SchemeId", Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier}
+                new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = "TenantId", Type = SqlDbType.NVarChar, Size=1024}
             });
         }
 
@@ -45,6 +46,7 @@ namespace OptimaJet.Workflow.DbPersistence
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string TenantId { get; set; }
 
         public override object GetValue(string key)
         {
@@ -76,6 +78,8 @@ namespace OptimaJet.Workflow.DbPersistence
                     return ParentProcessId;
                 case "RootProcessId":
                     return RootProcessId;
+                case "TenantId":
+                    return TenantId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -124,6 +128,9 @@ namespace OptimaJet.Workflow.DbPersistence
                 case "RootProcessId":
                     RootProcessId = (Guid) value;
                     break;
+                case "TenantId":
+                    TenantId = value as string;
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -146,6 +153,7 @@ namespace OptimaJet.Workflow.DbPersistence
             dt.Columns.Add("StateName", typeof(string));
             dt.Columns.Add("ParentProcessId", typeof(Guid));
             dt.Columns.Add("RootProcessId", typeof(Guid));
+            dt.Columns.Add("TenantId", typeof(string));
             return dt;
         }
 #endif

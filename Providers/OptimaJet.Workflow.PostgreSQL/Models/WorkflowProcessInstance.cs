@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using NpgsqlTypes;
 
 // ReSharper disable once CheckNamespace
@@ -19,6 +19,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string TenantId { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -41,6 +42,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo {Name="StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = NpgsqlDbType.Uuid},
                 new ColumnInfo {Name = "RootProcessId", Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = "TenantId", Size=1024}
             });
         }
 
@@ -74,6 +76,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                     return ParentProcessId;
                 case "RootProcessId":
                     return RootProcessId;
+                case "TenantId":
+                    return TenantId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -131,6 +135,9 @@ namespace OptimaJet.Workflow.PostgreSQL
                     break;
                 case "RootProcessId":
                     RootProcessId = (Guid) value;
+                    break;
+                case "TenantId":
+                    TenantId = value as string;
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

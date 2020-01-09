@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -20,16 +20,20 @@ namespace OptimaJet.Workflow.Oracle
         public string ConnectionString { get; set; }
         public string Schema { get; set; }
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public OracleProvider(string connectionString, string schema = null)
+        public OracleProvider(string connectionString, string schema = null, bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             DbObject.SchemaName = schema;
             ConnectionString = connectionString;
             Schema = schema;
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
         #region IPersistenceProvider
@@ -49,7 +53,8 @@ namespace OptimaJet.Workflow.Oracle
                     ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
-                    ParentProcessId = processInstance.ParentProcessId
+                    ParentProcessId = processInstance.ParentProcessId,
+                    TenantId = processInstance.TenantId
                 };
                 newProcess.Insert(connection);
                 WorkflowProcessInstance.Commit(connection);
@@ -235,24 +240,26 @@ namespace OptimaJet.Workflow.Oracle
 
                     inst.Update(connection);
                 }
-
-                var history = new WorkflowProcessTransitionHistory()
+                if (WriteToHistory)
                 {
-                    ActorIdentityId = impIdentityId,
-                    ExecutorIdentityId = identityId,
-                    Id = Guid.NewGuid(),
-                    IsFinalised = transition.To.IsFinal,
-                    ProcessId = processInstance.ProcessId,
-                    FromActivityName = transition.From.Name,
-                    FromStateName = transition.From.State,
-                    ToActivityName = transition.To.Name,
-                    ToStateName = transition.To.State,
-                    TransitionClassifier =
-                        transition.Classifier.ToString(),
-                    TransitionTime = _runtime.RuntimeDateTimeNow,
-                    TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
-                };
-                history.Insert(connection);
+                    var history = new WorkflowProcessTransitionHistory()
+                    {
+                        ActorIdentityId = impIdentityId,
+                        ExecutorIdentityId = identityId,
+                        Id = Guid.NewGuid(),
+                        IsFinalised = transition.To.IsFinal,
+                        ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess)?processInstance.RootProcessId:processInstance.ProcessId,
+                        FromActivityName = transition.From.Name,
+                        FromStateName = transition.From.State,
+                        ToActivityName = transition.To.Name,
+                        ToStateName = transition.To.State,
+                        TransitionClassifier =
+                            transition.Classifier.ToString(),
+                        TransitionTime = _runtime.RuntimeDateTimeNow,
+                        TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                    };
+                    history.Insert(connection);
+                }
                 WorkflowProcessTransitionHistory.Commit(connection);
             }
         }
@@ -399,6 +406,9 @@ namespace OptimaJet.Workflow.Oracle
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
                     processInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    processInstance.TenantId)
             };
             return parameters;
         }
@@ -765,7 +775,7 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
@@ -777,7 +787,8 @@ namespace OptimaJet.Workflow.Oracle
                         Code = schemaCode,
                         Scheme = scheme,
                         CanBeInlined = canBeInlined,
-                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null
+                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null,
+                        Tags = TagHelper.ToTagStringForDatabase(tags)
                     };
                     wfScheme.Insert(connection);
                 }
@@ -786,6 +797,7 @@ namespace OptimaJet.Workflow.Oracle
                     wfScheme.Scheme = scheme;
                     wfScheme.CanBeInlined = canBeInlined;
                     wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
+                    wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
                     wfScheme.Update(connection);
                 }
 
@@ -818,6 +830,58 @@ namespace OptimaJet.Workflow.Oracle
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 return WorkflowScheme.GetRelatedSchemeCodes(connection,schemeCode);
+            }
+        }
+
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return WorkflowScheme.GetSchemeCodesByTags(connection, tags);
+            }
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowScheme.AddSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowScheme.RemoveSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowScheme.SetSchemeTags(connection, schemeCode, tags, _runtime.Builder);
             }
         }
 

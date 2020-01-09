@@ -1,8 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Threading.Tasks;
+using System.Text;
 using MySql.Data.MySqlClient;
+using OptimaJet.Workflow.Core.Builder;
+using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Model;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
@@ -13,6 +16,7 @@ namespace OptimaJet.Workflow.MySQL
         public string Scheme { get; set; }
         public bool CanBeInlined { get; set; }
         public string InlinedSchemes { get; set; }
+        public string Tags { get; set; }
 
         static WorkflowScheme()
         {
@@ -23,10 +27,11 @@ namespace OptimaJet.Workflow.MySQL
         {
             DBColumns.AddRange(new[]
             {
-                new ColumnInfo {Name = "Code", IsKey = true},
-                new ColumnInfo {Name = "Scheme", Type = MySqlDbType.LongText},
+                new ColumnInfo {Name = nameof(Code), IsKey = true},
+                new ColumnInfo {Name = nameof(Scheme), Type = MySqlDbType.LongText},
                 new ColumnInfo {Name = nameof(CanBeInlined), Type = MySqlDbType.Bit},
-                new ColumnInfo {Name = nameof(InlinedSchemes)}
+                new ColumnInfo {Name = nameof(InlinedSchemes)},
+                new ColumnInfo {Name = nameof(Tags), Type = MySqlDbType.LongText, Size = -1}
             });
         }
 
@@ -34,14 +39,16 @@ namespace OptimaJet.Workflow.MySQL
         {
             switch(key)
             {
-                case "Code":
+                case nameof(Code):
                     return Code;
-                case "Scheme":
+                case nameof(Scheme):
                     return Scheme;
                 case nameof(CanBeInlined):
                     return CanBeInlined;
                 case nameof(InlinedSchemes):
                     return InlinedSchemes;
+                case nameof(Tags):
+                    return Tags;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
@@ -51,10 +58,10 @@ namespace OptimaJet.Workflow.MySQL
         {
             switch (key)
             {
-                case "Code":
+                case nameof(Code):
                     Code = value as string;
                     break;
-                case "Scheme":
+                case nameof(Scheme):
                     Scheme = value as string;
                     break;
                 case nameof(CanBeInlined):
@@ -62,6 +69,9 @@ namespace OptimaJet.Workflow.MySQL
                     break;
                 case nameof(InlinedSchemes):
                     InlinedSchemes = value as string;
+                    break;
+                case nameof(Tags):
+                    Tags = value as string;
                     break;
                 default:
                     throw new Exception($"Column {key} is not exists");
@@ -80,6 +90,70 @@ namespace OptimaJet.Workflow.MySQL
             var selectText =  $"SELECT * FROM {DbTableName} WHERE `{nameof(InlinedSchemes)}` LIKE CONCAT('%',@search,'%')";
             var p = new MySqlParameter("search", MySqlDbType.VarString) {Value = $"\"{schemeCode}\""};
             return Select(connection, selectText, p).Select(sch=>sch.Code).Distinct().ToList();
+        }
+
+        public static List<string> GetSchemeCodesByTags(MySqlConnection connection, IEnumerable<string> tags)
+        {
+            IEnumerable<string> tagsList = tags?.ToList();
+            if (tagsList == null || !tagsList.Any())
+            {
+                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
+            }
+
+            var selectBuilder = new StringBuilder($"SELECT `Code` FROM {DbTableName} WHERE ");
+            var parameters = new List<MySqlParameter>();
+            var likes = new List<string>();
+            foreach (string tag in tagsList)
+            {
+                string paramName = $"search_{parameters.Count}";
+                string like = $"`{nameof(Tags)}` LIKE CONCAT('%',@{paramName},'%')";
+                string paramValue = $"\"{tag}\"";
+
+                likes.Add(like);
+                parameters.Add(new MySqlParameter(paramName,  MySqlDbType.VarString) {Value = paramValue});
+            }
+
+            selectBuilder.Append(String.Join(" OR ", likes));
+            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+                .Select(sch => sch.Code)
+                .Distinct()
+                .ToList();
+        }
+
+        public static void AddSchemeTags(MySqlConnection connection, string schemeCode, IEnumerable<string> tags,
+            IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder);
+        }
+
+        public static void RemoveSchemeTags(MySqlConnection connection, string schemeCode, IEnumerable<string> tags,
+            IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
+                builder);
+        }
+
+        public static void SetSchemeTags(MySqlConnection connection, string schemeCode, IEnumerable<string> tags,
+            IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => tags.ToList(), builder);
+        }
+
+        private static void UpdateSchemeTags(MySqlConnection connection, string schemeCode,
+            Func<List<string>,List<string>> getNewTags, IWorkflowBuilder builder)
+        {
+            WorkflowScheme scheme = SelectByKey(connection, schemeCode);
+
+            if (scheme == null)
+            {
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowScheme);
+            }
+
+            List<string> newTags = getNewTags.Invoke(TagHelper.FromTagStringForDatabase(scheme.Tags));
+            scheme.Tags = TagHelper.ToTagStringForDatabase(newTags);
+            scheme.Scheme = builder.ReplaceTagsInScheme(scheme.Scheme, newTags);
+
+            scheme.Update(connection);
         }
     }
 }

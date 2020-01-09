@@ -1,13 +1,14 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
@@ -20,11 +21,15 @@ namespace OptimaJet.Workflow.Redis
         private readonly ConnectionMultiplexer _connector;
         private readonly string _providerNamespace;
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
 
-        public RedisProvider(ConnectionMultiplexer connector, string providerNamespace = "wfe")
+        public RedisProvider(ConnectionMultiplexer connector, string providerNamespace = "wfe", bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             _connector = connector;
             _providerNamespace = providerNamespace;
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
 
@@ -52,82 +57,87 @@ namespace OptimaJet.Workflow.Redis
 
         public string GetKeyForScheme(string schemeCode)
         {
-            return string.Format("{0}:scheme:{1}", _providerNamespace, schemeCode);
+            return $"{_providerNamespace}:scheme:{schemeCode}";
         }
 
         public string GetKeyForProcessInstance(Guid processId)
         {
-            return string.Format("{0}:processinstance:{1:N}", _providerNamespace, processId);
+            return $"{_providerNamespace}:processinstance:{processId:N}";
         }
 
         public string GetKeyForProcessHistory(Guid processId)
         {
-            return string.Format("{0}:processhistory:{1:N}", _providerNamespace, processId);
+            return $"{_providerNamespace}:processhistory:{processId:N}";
         }
 
         public string GetKeyForProcessPersistence(Guid processId)
         {
-            return string.Format("{0}:processpersistence:{1:N}", _providerNamespace, processId);
+            return $"{_providerNamespace}:processpersistence:{processId:N}";
         }
 
         public string GetKeyForProcessScheme(Guid schemeId)
         {
-            return string.Format("{0}:processscheme:{1:N}", _providerNamespace, schemeId);
+            return $"{_providerNamespace}:processscheme:{schemeId:N}";
         }
 
         public string GetKeyForCurrentScheme(string schemeCode)
         {
-            return string.Format("{0}:currentscheme:{1}", _providerNamespace, schemeCode);
+            return $"{_providerNamespace}:currentscheme:{schemeCode}";
         }
 
         public string GetKeySchemeHierarchy(Guid schemeId)
         {
-            return string.Format("{0}:schemehierarchy:{1:N}", _providerNamespace, schemeId);
+            return $"{_providerNamespace}:schemehierarchy:{schemeId:N}";
         }
 
         public string GetKeyProcessRunning()
         {
-            return string.Format("{0}:processrunning", _providerNamespace);
+            return $"{_providerNamespace}:processrunning";
         }
 
         public string GetKeyProcessStatus()
         {
-            return string.Format("{0}:processstatus", _providerNamespace);
+            return $"{_providerNamespace}:processstatus";
         }
 
         public string GetKeyProcessTimer(Guid processId)
         {
-            return string.Format("{0}:processtimer:{1:N}", _providerNamespace, processId);
+            return $"{_providerNamespace}:processtimer:{processId:N}";
         }
 
         public string GetKeyTimerTime()
         {
-            return string.Format("{0}:timertime", _providerNamespace);
+            return $"{_providerNamespace}:timertime";
         }
 
         public string GetKeyTimer()
         {
-            return string.Format("{0}:timer", _providerNamespace);
+            return $"{_providerNamespace}:timer";
         }
 
         public string GetKeyTimerIgnore()
         {
-            return string.Format("{0}:timerignore", _providerNamespace);
+            return $"{_providerNamespace}:timerignore";
         }
 
         public string GetKeyGlobalParameter(string type)
         {
-            return string.Format("{0}:globalparameter:{1}", _providerNamespace, type);
+            return $"{_providerNamespace}:globalparameter:{type}";
         }
 
         public string GetKeyCanBeInlined()
         {
-            return string.Format("{0}:schemecanbeinlined", _providerNamespace); 
+            return $"{_providerNamespace}:schemecanbeinlined"; 
         }
         
         public string GetKeyForInlined()
         {
-            return string.Format("{0}:schemeinlined", _providerNamespace); 
+            return $"{_providerNamespace}:schemeinlined"; 
+        }
+
+        public string GetKeyForTags()
+        {
+            return $"{_providerNamespace}:schemetags";
         }
         
         #endregion
@@ -146,7 +156,7 @@ namespace OptimaJet.Workflow.Redis
         private void SetRunningStatus(Guid processId)
         {
             var db = _connector.GetDatabase();
-            var hash = string.Format("{0:N}", processId);
+            var hash = String.Format("{0:N}", processId);
 
             if (!db.HashExists(GetKeyProcessStatus(), hash))
                 throw new StatusNotDefinedException();
@@ -408,7 +418,7 @@ namespace OptimaJet.Workflow.Redis
         /// <param name="inlinedSchemes">Scheme codes to be inlined into this scheme</param>
         /// <param name="scheme">Not parsed scheme</param>
         /// <param name="canBeInlined">if true - this scheme can be inlined into another schemes</param>
-        public void SaveScheme(string schemeCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemeCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             var db = _connector.GetDatabase();
             var tran = db.CreateTransaction();
@@ -435,7 +445,11 @@ namespace OptimaJet.Workflow.Redis
             {
                 tran.HashDeleteAsync(keyCanBeInlined, schemeCode);
             }
-            
+
+            string keyTags = GetKeyForTags();
+
+            tran.HashSetAsync(keyTags, schemeCode, TagHelper.ToTagStringForDatabase(tags));
+
             tran.Execute();
         }
 
@@ -453,7 +467,7 @@ namespace OptimaJet.Workflow.Redis
 
             var res = new List<string>();
             
-            foreach (var pair in pairs)
+            foreach (HashEntry pair in pairs)
             {
                 var inlined = JsonConvert.DeserializeObject<List<string>>(pair.Value.ToString());
                 if (inlined.Contains(schemeCode))
@@ -461,6 +475,104 @@ namespace OptimaJet.Workflow.Redis
             }
 
             return res;
+        }
+
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            if (tags == null || !tags.Any())
+            {
+                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
+            }
+
+            IDatabase db = _connector.GetDatabase();
+
+            HashEntry[] pairs = db.HashGetAll(GetKeyForTags());
+
+            var res = new List<string>();
+
+            foreach (HashEntry pair in pairs)
+            {
+                if (String.IsNullOrWhiteSpace(pair.Value))
+                {
+                    continue;
+                }
+
+                List<string> storedTags = TagHelper.FromTagStringForDatabase(pair.Value);
+
+                if (storedTags.Any(st=>tags.Contains(st)))
+                {
+                    res.Add(pair.Name.ToString());
+                }
+            }
+
+            return res;
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateTags(schemeCode, (schemeTags) => tags.Concat(schemeTags).ToList());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateTags(schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList());
+        }
+
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateTags(schemeCode, (schemeTags) => tags.ToList());
+        }
+
+        private void UpdateTags(string schemeCode,  Func<List<string>, List<string>> getNewTags)
+        {
+            IDatabase db = _connector.GetDatabase();
+            string key = GetKeyForTags();
+            ITransaction tran = db.CreateTransaction();
+
+            RedisValue dbValue = db.HashGet(key, schemeCode);
+
+            string dbTags = "";
+
+            if (dbValue.HasValue)
+            {
+                dbTags = dbValue.ToString();
+            }
+
+            var newTags = getNewTags(TagHelper.FromTagStringForDatabase(dbTags));
+
+            tran.HashSetAsync(key, schemeCode, TagHelper.ToTagStringForDatabase(newTags));
+
+            string scheme = db.StringGet(GetKeyForScheme(schemeCode));
+            scheme = _runtime.Builder.ReplaceTagsInScheme(scheme, newTags);
+            tran.StringSetAsync(GetKeyForScheme(schemeCode), scheme);
+
+            bool res = tran.Execute();
+
+            if (!res)
+            {
+                throw new ImpossibleToUpdateSchemeTagsException(schemeCode,
+                    "Transaction failed (may be because of concurrency)");
+            }
         }
 
         #endregion
@@ -490,7 +602,8 @@ namespace OptimaJet.Workflow.Redis
                 ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
                 StateName = processInstance.ProcessScheme.InitialActivity.State,
                 RootProcessId = processInstance.RootProcessId,
-                ParentProcessId = processInstance.ParentProcessId
+                ParentProcessId = processInstance.ParentProcessId,
+                TenantId = processInstance.TenantId
             };
 
             var processKey = GetKeyForProcessInstance(processInstance.ProcessId);
@@ -609,7 +722,10 @@ namespace OptimaJet.Workflow.Redis
                     workflowProcessInstance.ParentProcessId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    workflowProcessInstance.RootProcessId)
+                    workflowProcessInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    workflowProcessInstance.TenantId)
             };
 
             processInstance.AddParameters(parameters);
@@ -805,24 +921,29 @@ namespace OptimaJet.Workflow.Redis
             inst.ParentProcessId = processInstance.ParentProcessId;
             inst.RootProcessId = processInstance.RootProcessId;
 
-            var history = new WorkflowProcessTransitionHistory()
-            {
-                ActorIdentityId = impIdentityId,
-                ExecutorIdentityId = identityId,
-                IsFinalised = transition.To.IsFinal,
-                FromActivityName = transition.From.Name,
-                FromStateName = transition.From.State,
-                ToActivityName = transition.To.Name,
-                ToStateName = transition.To.State,
-                TransitionClassifier =
-                    transition.Classifier.ToString(),
-                TransitionTime = _runtime.RuntimeDateTimeNow,
-                TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
-            };
-
             var batch = db.CreateBatch();
+
             batch.StringSetAsync(key, JsonConvert.SerializeObject(inst));
-            batch.ListRightPushAsync(GetKeyForProcessHistory(processInstance.ProcessId), JsonConvert.SerializeObject(history));
+
+            if (WriteToHistory)
+            {
+                var history = new WorkflowProcessTransitionHistory()
+                {
+                    ActorIdentityId = impIdentityId,
+                    ExecutorIdentityId = identityId,
+                    IsFinalised = transition.To.IsFinal,
+                    FromActivityName = transition.From.Name,
+                    FromStateName = transition.From.State,
+                    ToActivityName = transition.To.Name,
+                    ToStateName = transition.To.State,
+                    TransitionClassifier =
+                        transition.Classifier.ToString(),
+                    TransitionTime = _runtime.RuntimeDateTimeNow,
+                    TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                };
+
+                batch.ListRightPushAsync(GetKeyForProcessHistory((WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId), JsonConvert.SerializeObject(history));
+            }
             batch.Execute();
         }
 

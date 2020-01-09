@@ -1,13 +1,15 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using MongoDB.Bson;
 using MongoDB.Driver;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
@@ -29,10 +31,14 @@ namespace OptimaJet.Workflow.MongoDB
     public class MongoDBProvider : IWorkflowProvider
     {
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
 
-        public MongoDBProvider(IMongoDatabase store)
+        public MongoDBProvider(IMongoDatabase store,bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             Store = store;
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
         public IMongoDatabase Store { get; set; }
@@ -70,7 +76,8 @@ namespace OptimaJet.Workflow.MongoDB
                 StateName = processInstance.ProcessScheme.InitialActivity.State,
                 RootProcessId = processInstance.RootProcessId,
                 ParentProcessId = processInstance.ParentProcessId,
-                Persistence = new List<WorkflowProcessInstancePersistence>()
+                Persistence = new List<WorkflowProcessInstancePersistence>(),
+                TenantId = processInstance.TenantId 
             };
             dbcoll.InsertOne(newProcess);
         }
@@ -273,13 +280,16 @@ namespace OptimaJet.Workflow.MongoDB
                 Save(dbcoll, inst, doc => doc.Id == inst.Id);
             }
 
+            if (!WriteToHistory)
+                return;
+
             var history = new WorkflowProcessTransitionHistory
             {
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
                 Id = Guid.NewGuid(),
                 IsFinalised = transition.To.IsFinal,
-                ProcessId = processInstance.ProcessId,
+                ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
                 ToActivityName = transition.To.Name,
@@ -426,7 +436,10 @@ namespace OptimaJet.Workflow.MongoDB
                     processInstance.ParentProcessId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    processInstance.RootProcessId)
+                    processInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    processInstance.TenantId)
             };
             return parameters;
         }
@@ -791,14 +804,22 @@ namespace OptimaJet.Workflow.MongoDB
             dbcoll.InsertOne(newProcessScheme);
         }
 
-        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             var dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
             var wfScheme = dbcoll.Find(c => c.Code == schemaCode).FirstOrDefault();
 
             if (wfScheme == null)
             {
-                wfScheme = new WorkflowScheme {Id = schemaCode, Code = schemaCode, Scheme = scheme, InlinedSchemes = inlinedSchemes, CanBeInlined = canBeInlined};
+                wfScheme = new WorkflowScheme
+                {
+                    Id = schemaCode,
+                    Code = schemaCode,
+                    Scheme = scheme,
+                    InlinedSchemes = inlinedSchemes,
+                    CanBeInlined = canBeInlined,
+                    Tags = tags
+                };
                 dbcoll.InsertOne(wfScheme);
             }
             else
@@ -806,6 +827,7 @@ namespace OptimaJet.Workflow.MongoDB
                 wfScheme.Scheme = scheme;
                 wfScheme.InlinedSchemes = inlinedSchemes;
                 wfScheme.CanBeInlined = canBeInlined;
+                wfScheme.Tags = tags;
                 Save(dbcoll, wfScheme, doc => doc.Id == wfScheme.Id);
             }
         }
@@ -834,6 +856,80 @@ namespace OptimaJet.Workflow.MongoDB
             var filter = Builders<WorkflowScheme>.Filter.AnyEq(sch => sch.InlinedSchemes, schemeCode);
             var codes = dbcoll.Find(filter).Project(sch => sch.Code).ToList();
             return codes;
+        }
+
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            if (tags == null || !tags.Any())
+            {
+                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
+            }
+            IMongoCollection<WorkflowScheme> dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+
+            var filters = new List<FilterDefinition<WorkflowScheme>>();
+
+            foreach (string tag in tags)
+            {
+                filters.Add(Builders<WorkflowScheme>.Filter.AnyEq(s => s.Tags, tag));
+            }
+            
+            List<string> codes = dbcoll.Find(Builders<WorkflowScheme>.Filter.Or(filters)).Project(sch => sch.Code).ToList();
+            return codes;
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateSchemeTags(schemeCode, (schemeTags) => tags.Concat(schemeTags).ToList());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateSchemeTags(schemeCode,schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList());
+        }
+
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            UpdateSchemeTags(schemeCode,
+                (schemeTags) => tags.ToList());
+        }
+
+        private void UpdateSchemeTags(string schemeCode, Func<List<string>, List<string>> getNewTags)
+        {
+            IMongoCollection<WorkflowScheme> dbcoll =
+                Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+            WorkflowScheme scheme = dbcoll.Find(c => c.Code == schemeCode).FirstOrDefault();
+
+            if (scheme == null)
+            {
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowScheme);
+            }
+
+            List<string> newTags = getNewTags.Invoke(scheme.Tags);
+
+            scheme.Scheme = _runtime.Builder.ReplaceTagsInScheme(scheme.Scheme,newTags);
+            scheme.Tags = newTags;
+
+            Save(dbcoll, scheme, doc => doc.Id == scheme.Id);
         }
 
         #endregion

@@ -38,11 +38,11 @@ namespace WF.Sample.Controllers
                 }
             }
 
-            var res = WorkflowInit.Runtime.DesignerAPI(pars, filestream, true);
+            var res = WorkflowInit.Runtime.DesignerAPI(pars, out bool hasError, filestream, true);
             var operation = pars["operation"].ToLower();
-            if (operation == "downloadscheme")
+            if (operation == "downloadscheme" && !hasError)
                 return File(Encoding.UTF8.GetBytes(res), "text/xml", "scheme.xml");
-            else if (operation == "downloadschemebpmn")
+            else if (operation == "downloadschemebpmn" && !hasError)
                 return File(UTF8Encoding.UTF8.GetBytes(res), "text/xml", "scheme.bpmn");
 
             return Content(res);

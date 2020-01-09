@@ -1,6 +1,7 @@
-﻿// ReSharper disable once CheckNamespace
+// ReSharper disable once CheckNamespace
 
 using System.Collections.Generic;
+using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.MongoDB
 {
@@ -11,5 +12,6 @@ namespace OptimaJet.Workflow.MongoDB
         public string Scheme { get; set; }
         public bool CanBeInlined { get; set; }
         public List<string> InlinedSchemes { get; set; }
+        public  List<string> Tags  { get; set; }
     }
 }

@@ -1,4 +1,4 @@
-﻿
+
 using System;
 using Oracle.ManagedDataAccess.Client;
 
@@ -20,6 +20,7 @@ namespace OptimaJet.Workflow.Oracle
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string TenantId { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -42,6 +43,7 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name="StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = OracleDbType.Raw},
                 new ColumnInfo {Name = "RootProcessId", Type = OracleDbType.Raw},
+                new ColumnInfo {Name = "TenantId", Size=1024}
             });
         }
 
@@ -75,6 +77,8 @@ namespace OptimaJet.Workflow.Oracle
                     return ParentProcessId.HasValue ? ParentProcessId.Value.ToByteArray() : null;
                 case "RootProcessId":
                     return RootProcessId.ToByteArray();
+                case "TenantId":
+                    return TenantId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -129,6 +133,9 @@ namespace OptimaJet.Workflow.Oracle
                     break;
                 case "RootProcessId":
                     RootProcessId = new Guid((byte[])value);
+                    break;
+                case "TenantId":
+                    TenantId = value as string;
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

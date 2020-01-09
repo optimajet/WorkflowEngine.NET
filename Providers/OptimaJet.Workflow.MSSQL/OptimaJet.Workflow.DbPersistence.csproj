@@ -93,6 +93,7 @@
   </ItemGroup>
   <ItemGroup>
     <Content Include="Scripts\update_1_4_to_1_4_3.sql" />
+    <Content Include="Scripts\update_4_0_to_4_1.sql" />
     <Content Include="Scripts\update_1_4_5_to_1_5.sql" />
     <Content Include="Scripts\update_1_3_to_1_4.sql" />
     <Content Include="Scripts\CreatePersistenceObjects.sql" />

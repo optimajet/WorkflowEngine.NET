@@ -80,8 +80,8 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=2.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -239,7 +239,7 @@
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj">
-      <Project>{6F156EA6-2B81-4C09-9FCC-3CF0A69C5967}</Project>
+      <Project>{6f156ea6-2b81-4c09-9fcc-3cf0a69c5967}</Project>
       <Name>WF.Sample.Business</Name>
     </ProjectReference>
   </ItemGroup>

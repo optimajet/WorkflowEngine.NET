@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
@@ -8,7 +8,6 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
@@ -19,16 +18,21 @@ namespace OptimaJet.Workflow.DbPersistence
     {
         public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
 
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public MSSQLProvider(string connectionString, string schema = "dbo")
+        public MSSQLProvider(string connectionString, string schema = "dbo", bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             ConnectionString = connectionString;
             DbObject.SchemaName = schema;
+
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
         #region IPersistenceProvider
@@ -49,7 +53,8 @@ namespace OptimaJet.Workflow.DbPersistence
                     ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
-                    ParentProcessId = processInstance.ParentProcessId
+                    ParentProcessId = processInstance.ParentProcessId,
+                    TenantId = processInstance.TenantId
                 };
                 newProcess.Insert(connection);
             }
@@ -194,8 +199,8 @@ namespace OptimaJet.Workflow.DbPersistence
             var paramIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterIdentityId.Name);
             var paramImpIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterImpersonatedIdentityId.Name);
 
-            var identityId = paramIdentityId == null ? string.Empty : (string) paramIdentityId.Value;
-            var impIdentityId = paramImpIdentityId == null ? identityId : (string) paramImpIdentityId.Value;
+            var identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
+            var impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
@@ -233,13 +238,16 @@ namespace OptimaJet.Workflow.DbPersistence
                     inst.Update(connection);
                 }
 
+                if (!WriteToHistory)
+                    return;
+
                 var history = new WorkflowProcessTransitionHistory()
                 {
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
                     IsFinalised = transition.To.IsFinal,
-                    ProcessId = processInstance.ProcessId,
+                    ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
                     ToActivityName = transition.To.Name,
@@ -395,6 +403,9 @@ namespace OptimaJet.Workflow.DbPersistence
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
                     processInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    processInstance.TenantId)
             };
             return parameters;
         }
@@ -759,7 +770,8 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public void SaveScheme(string schemaCode,bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme,
+            List<string> tags)
         {
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
@@ -768,7 +780,13 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     wfScheme = new WorkflowScheme
                     {
-                        Code = schemaCode, Scheme = scheme, CanBeInlined = canBeInlined, InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null
+                        Code = schemaCode,
+                        Scheme = scheme,
+                        CanBeInlined = canBeInlined,
+                        InlinedSchemes = inlinedSchemes.Any()
+                            ? JsonConvert.SerializeObject(inlinedSchemes)
+                            : null,
+                        Tags = TagHelper.ToTagStringForDatabase(tags)
                     };
                     wfScheme.Insert(connection);
                 }
@@ -776,7 +794,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     wfScheme.Scheme = scheme;
                     wfScheme.CanBeInlined = canBeInlined;
-                    wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null; 
+                    wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
+                    wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
                     wfScheme.Update(connection);
                 }
 
@@ -810,6 +829,58 @@ namespace OptimaJet.Workflow.DbPersistence
             using (SqlConnection connection = new SqlConnection(ConnectionString))
             {
                 return WorkflowScheme.GetRelatedSchemeCodes(connection,schemeCode);
+            }
+        }
+
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                return WorkflowScheme.GetSchemeCodesByTags(connection, tags);
+            }
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                WorkflowScheme.AddSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                WorkflowScheme.RemoveSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new SqlConnection(ConnectionString))
+            {
+                WorkflowScheme.SetSchemeTags(connection, schemeCode, tags, _runtime.Builder);
             }
         }
 
@@ -850,7 +921,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public async Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
         {
-            await BulkInitProcesses(instances, null, status, token);
+            await BulkInitProcesses(instances, null, status, token).ConfigureAwait(false);
         }
 
         public async Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
@@ -925,13 +996,13 @@ namespace OptimaJet.Workflow.DbPersistence
                     bulk.ColumnMappings.Add("StateName", "StateName");
                     bulk.ColumnMappings.Add("RootProcessId", "RootProcessId");
                     bulk.ColumnMappings.Add("ParentProcessId", "ParentProcessId");
-                    await bulk.WriteToServerAsync(piDataTable, token);
+                    await bulk.WriteToServerAsync(piDataTable, token).ConfigureAwait(false);
                     bulk.DestinationTableName = WorkflowProcessInstanceStatus.ObjectName;
                     bulk.ColumnMappings.Clear();
                     bulk.ColumnMappings.Add("Id", "Id");
                     bulk.ColumnMappings.Add("Lock", "Lock");
                     bulk.ColumnMappings.Add("Status", "Status");
-                    await bulk.WriteToServerAsync(psDataTable, token);
+                    await bulk.WriteToServerAsync(psDataTable, token).ConfigureAwait(false);
                     if (ppDataTable.Rows.Count > 0)
                     {
                         bulk.DestinationTableName = WorkflowProcessInstancePersistence.ObjectName;
@@ -940,7 +1011,7 @@ namespace OptimaJet.Workflow.DbPersistence
                         bulk.ColumnMappings.Add("ProcessId", "ProcessId");
                         bulk.ColumnMappings.Add("ParameterName", "ParameterName");
                         bulk.ColumnMappings.Add("Value", "Value");
-                        await bulk.WriteToServerAsync(ppDataTable, token);
+                        await bulk.WriteToServerAsync(ppDataTable, token).ConfigureAwait(false);
                     }
                     if (needreqisterTimers)
                     {
@@ -951,7 +1022,7 @@ namespace OptimaJet.Workflow.DbPersistence
                         bulk.ColumnMappings.Add("Name", "Name");
                         bulk.ColumnMappings.Add("NextExecutionDateTime", "NextExecutionDateTime");
                         bulk.ColumnMappings.Add("Ignore", "Ignore");
-                        await bulk.WriteToServerAsync(ptDataTable, token);
+                        await bulk.WriteToServerAsync(ptDataTable, token).ConfigureAwait(false);
                     }
 
                     if (token.IsCancellationRequested)
@@ -967,6 +1038,6 @@ namespace OptimaJet.Workflow.DbPersistence
 #endif
         }
 
-#endregion
+        #endregion
     }
 }

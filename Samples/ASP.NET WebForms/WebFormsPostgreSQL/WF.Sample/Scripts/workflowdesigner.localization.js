@@ -277,5 +277,6 @@
         height: 150
     },
     UndoDepth: 200,
-    DefaultCulture: 'en-US'
+    DefaultCulture: 'en-US',
+    ErrorInBrowserConsole: "See more info in the browser console."
 };

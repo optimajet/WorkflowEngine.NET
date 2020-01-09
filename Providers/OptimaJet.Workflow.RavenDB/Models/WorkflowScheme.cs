@@ -1,4 +1,4 @@
-﻿ // ReSharper disable once CheckNamespace
+ // ReSharper disable once CheckNamespace
 
  using System.Collections.Generic;
 
@@ -11,5 +11,7 @@
         public string Scheme { get; set; }
         public bool CanBeInlined { get; set; }
         public List<string> InlinedSchemes { get; set; }
+
+        public List<string> Tags { get; set; }
     }
 }

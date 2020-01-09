@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -98,22 +98,22 @@ namespace WF.Sample.Business.Workflow
             throw new NotImplementedException($"Async Condition with name {name} isn't implemented");
         }
 
-        public bool IsActionAsync(string name)
+        public bool IsActionAsync(string name, string schemeCode)
         {
             return _asyncActions.ContainsKey(name);
         }
 
-        public bool IsConditionAsync(string name)
+        public bool IsConditionAsync(string name, string schemeCode)
         {
             return _asyncConditions.ContainsKey(name);
         }
 
-        public List<string> GetActions()
+        public List<string> GetActions(string schemeCode)
         {
             return _actions.Keys.Union(_asyncActions.Keys).ToList();
         }
 
-        public List<string> GetConditions()
+        public List<string> GetConditions(string schemeCode)
         {
             return _conditions.Keys.Union(_asyncConditions.Keys).ToList();
         }

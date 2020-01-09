@@ -1,16 +1,19 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data.SqlClient;
 using System.Linq;
+using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using Raven.Client;
 using Raven.Client.Document;
 using Raven.Client.Linq;
 using Raven.Imports.Newtonsoft.Json;
@@ -20,11 +23,15 @@ namespace OptimaJet.Workflow.RavenDB
     public class RavenDBProvider : IWorkflowProvider
     {
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
 
-        public RavenDBProvider(DocumentStore store)
+        public RavenDBProvider(DocumentStore store,bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             Store = store;
             Store.Initialize();
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
         public DocumentStore Store { get; set; }
@@ -62,7 +69,8 @@ namespace OptimaJet.Workflow.RavenDB
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
                     ParentProcessId = processInstance.ParentProcessId,
-                    Persistence = new List<WorkflowProcessInstancePersistence>()
+                    Persistence = new List<WorkflowProcessInstancePersistence>(),
+                    TenantId = processInstance.TenantId
                 };
                 session.Store(newProcess);
                 session.SaveChanges();
@@ -281,25 +289,27 @@ namespace OptimaJet.Workflow.RavenDB
                     inst.ParentProcessId = processInstance.ParentProcessId;
                     inst.RootProcessId = processInstance.RootProcessId;
                 }
-
-                var history = new WorkflowProcessTransitionHistory
+                if (WriteToHistory)
                 {
-                    ActorIdentityId = impIdentityId,
-                    ExecutorIdentityId = identityId,
-                    Id = Guid.NewGuid(),
-                    IsFinalised = transition.To.IsFinal,
-                    ProcessId = processInstance.ProcessId,
-                    FromActivityName = transition.From.Name,
-                    FromStateName = transition.From.State,
-                    ToActivityName = transition.To.Name,
-                    ToStateName = transition.To.State,
-                    TransitionClassifier =
-                        transition.Classifier.ToString(),
-                    TransitionTime = _runtime.RuntimeDateTimeNow,
-                    TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
-                };
+                    var history = new WorkflowProcessTransitionHistory
+                    {
+                        ActorIdentityId = impIdentityId,
+                        ExecutorIdentityId = identityId,
+                        Id = Guid.NewGuid(),
+                        IsFinalised = transition.To.IsFinal,
+                        ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
+                        FromActivityName = transition.From.Name,
+                        FromStateName = transition.From.State,
+                        ToActivityName = transition.To.Name,
+                        ToStateName = transition.To.State,
+                        TransitionClassifier =
+                            transition.Classifier.ToString(),
+                        TransitionTime = _runtime.RuntimeDateTimeNow,
+                        TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                    };
 
-                session.Store(history);
+                    session.Store(history);
+                }
                 session.SaveChanges();
             }
         }
@@ -416,7 +426,10 @@ namespace OptimaJet.Workflow.RavenDB
                     processInstance.ParentProcessId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
-                    processInstance.RootProcessId)
+                    processInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    processInstance.TenantId)
             };
             return parameters;
         }
@@ -1015,7 +1028,7 @@ namespace OptimaJet.Workflow.RavenDB
             }
         }
 
-        public void SaveScheme(string schemeCode,  bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemeCode,  bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             using (var session = Store.OpenSession())
             {
@@ -1029,7 +1042,8 @@ namespace OptimaJet.Workflow.RavenDB
                         Code = schemeCode,
                         Scheme = scheme,
                         CanBeInlined = canBeInlined,
-                        InlinedSchemes = inlinedSchemes
+                        InlinedSchemes = inlinedSchemes,
+                        Tags = tags,
                     };
                     session.Store(wfscheme);
                 }
@@ -1038,6 +1052,7 @@ namespace OptimaJet.Workflow.RavenDB
                     wfscheme.CanBeInlined = canBeInlined;
                     wfscheme.InlinedSchemes = inlinedSchemes;
                     wfscheme.Scheme = scheme;
+                    wfscheme.Tags = tags;
                 }
 
                 session.SaveChanges();
@@ -1063,6 +1078,96 @@ namespace OptimaJet.Workflow.RavenDB
                         .Select(sch => sch.Code).ToList();
                 return codes;
             }
+        }
+
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            if (tags == null || !tags.Any())
+            {
+                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
+            }
+
+            using (IDocumentSession session = Store.OpenSession())
+            {
+                return session.Advanced.DocumentQuery<WorkflowScheme>()
+                    .WaitForNonStaleResultsAsOfNow()
+                    .ContainsAny(nameof(WorkflowScheme.Tags), tags)
+                    .Select(ws => ws.Code)
+                    .ToList();
+            }
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (IDocumentSession session = Store.OpenSession())
+            {
+                UpdateSchemeTags(session,
+                    schemeCode, 
+                    (schemeTags) => tags.Concat(schemeTags).ToList());
+
+                session.SaveChanges();
+            }
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (IDocumentSession session = Store.OpenSession())
+            {
+                UpdateSchemeTags(session, 
+                    schemeCode, 
+                     schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList());
+
+                session.SaveChanges();
+            }
+        }
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (IDocumentSession session = Store.OpenSession())
+            {
+                UpdateSchemeTags(session, 
+                    schemeCode, 
+                    schemeTags => tags.ToList());
+
+                session.SaveChanges();
+            }
+        }
+        private void UpdateSchemeTags(IDocumentSession session, string schemeCode, 
+            Func<List<string>, List<string>> getNewTags)
+        {
+            WorkflowScheme scheme = session.Query<WorkflowScheme>()
+                .Customize(c => c.WaitForNonStaleResultsAsOfNow())
+                .FirstOrDefault(wps => wps.Code == schemeCode);
+
+            if (scheme == null)
+            {
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowScheme);
+            }
+
+            List<string> newTags = getNewTags(scheme.Tags);
+            scheme.Tags = newTags;
+            scheme.Scheme = _runtime.Builder.ReplaceTagsInScheme(scheme.Scheme, newTags);
+
+            session.Store(scheme);
         }
 
         public XElement GetScheme(string code)

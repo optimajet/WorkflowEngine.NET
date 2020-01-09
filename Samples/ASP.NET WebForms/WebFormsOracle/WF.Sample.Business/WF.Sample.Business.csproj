@@ -52,7 +52,8 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core">
+    <Reference Include="OptimaJet.Workflow.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -100,7 +101,6 @@
   <ItemGroup>
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
   </ItemGroup>
-  <ItemGroup />
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />
   <Target Name="EnsureNuGetPackageBuildImports" BeforeTargets="PrepareForBuild">

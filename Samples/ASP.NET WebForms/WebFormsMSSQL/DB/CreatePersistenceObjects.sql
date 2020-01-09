@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL and Azure SQL
-Version: 4.0
+Version: 4.1
 File: CreatePersistenceObjects.sql
 
 */
@@ -55,6 +55,7 @@ BEGIN
 		,[ParentProcessId] UNIQUEIDENTIFIER
 		,[RootProcessId] UNIQUEIDENTIFIER NOT NULL
 		,[IsDeterminingParametersChanged] BIT DEFAULT 0 NOT NULL
+        ,[TenantId] NVARCHAR(1024)
 		)
 
 	PRINT 'WorkflowProcessInstance CREATE TABLE'
@@ -148,66 +149,11 @@ BEGIN
 		[Code] NVARCHAR(256) NOT NULL CONSTRAINT PK_WorkflowScheme PRIMARY KEY,
 		[Scheme] NVARCHAR(max) NOT NULL,
 		[CanBeInlined] [bit] NOT NULL DEFAULT(0),
-		[InlinedSchemes] [nvarchar](max) NULL
+		[InlinedSchemes] [nvarchar](max) NULL,
+        [Tags] [nvarchar](max) NULL,
 		)
 
 	PRINT 'WorkflowScheme CREATE TABLE'
-END
-
-IF NOT EXISTS (
-		SELECT 1
-		FROM sys.procedures
-		WHERE name = N'DropWorkflowProcess'
-		)
-BEGIN
-	EXECUTE (
-			'CREATE PROCEDURE [DropWorkflowProcess]
-		@id uniqueidentifier
-	AS
-	BEGIN
-		BEGIN TRAN
-
-		DELETE FROM dbo.WorkflowProcessInstance WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstanceStatus WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstancePersistence  WHERE ProcessId = @id
-
-		COMMIT TRAN
-	END'
-			)
-
-	PRINT 'DropWorkflowProcess CREATE PROCEDURE'
-END
-
-IF NOT EXISTS (
-		SELECT 1
-		FROM sys.procedures
-		WHERE name = N'DropWorkflowProcesses'
-		)
-BEGIN
-	EXECUTE (
-			'CREATE TYPE IdsTableType AS TABLE
-	( Id uniqueidentifier );'
-			)
-
-	PRINT 'IdsTableType CREATE TYPE'
-
-	EXECUTE (
-			'CREATE PROCEDURE [DropWorkflowProcesses]
-		@Ids  IdsTableType	READONLY
-	AS
-	BEGIN
-		BEGIN TRAN
-
-		DELETE dbo.WorkflowProcessInstance FROM dbo.WorkflowProcessInstance wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstanceStatus wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstancePersistence wpi  INNER JOIN @Ids  ids ON wpi.ProcessId = ids.Id
-
-
-		COMMIT TRAN
-	END'
-			)
-
-	PRINT 'DropWorkflowProcesses CREATE PROCEDURE'
 END
 
 IF NOT EXISTS (

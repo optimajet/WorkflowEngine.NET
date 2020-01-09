@@ -62,7 +62,7 @@ namespace OptimaJet.Workflow.Oracle
                     Name = value as string;
                     break;
                 case "Value":
-                    Value = value as string;;
+                    Value = value as string;
                     break;
                default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

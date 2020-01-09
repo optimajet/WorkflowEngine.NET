@@ -34,13 +34,13 @@
     <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.Core, Version=4.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+       <SpecificVersion>False</SpecificVersion> 
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.DbPersistence, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.DbPersistence, Version=4.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
+        <HintPath>..\..\DLL\OptimaJet.Workflow.DbPersistence.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />

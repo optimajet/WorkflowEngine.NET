@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading;
@@ -19,16 +19,20 @@ namespace OptimaJet.Workflow.PostgreSQL
     {
         public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
+        private readonly bool WriteToHistory;
+        private readonly bool WriteSubProcessToRoot;
 
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public PostgreSQLProvider(string connectionString, string schema = "public")
+        public PostgreSQLProvider(string connectionString, string schema = "public", bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             DbObject.SchemaName = schema;
             ConnectionString = connectionString;
+            WriteToHistory = writeToHistory;
+            WriteSubProcessToRoot = writeSubProcessToRoot;
         }
 
         #region IPersistenceProvider
@@ -49,7 +53,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                     ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
-                    ParentProcessId = processInstance.ParentProcessId
+                    ParentProcessId = processInstance.ParentProcessId,
+                    TenantId = processInstance.TenantId
                 };
                 newProcess.Insert(connection);
             }
@@ -232,13 +237,16 @@ namespace OptimaJet.Workflow.PostgreSQL
                     inst.Update(connection);
                 }
 
+                if (!WriteToHistory)
+                    return;
+
                 var history = new WorkflowProcessTransitionHistory()
                 {
                     ActorIdentityId = impIdentityId,
                     ExecutorIdentityId = identityId,
                     Id = Guid.NewGuid(),
                     IsFinalised = transition.To.IsFinal,
-                    ProcessId = processInstance.ProcessId,
+                    ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
                     FromActivityName = transition.From.Name,
                     FromStateName = transition.From.State,
                     ToActivityName = transition.To.Name,
@@ -392,6 +400,9 @@ namespace OptimaJet.Workflow.PostgreSQL
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterRootProcessId.Name),
                     processInstance.RootProcessId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
+                    processInstance.TenantId)
 
             };
             return parameters;
@@ -756,7 +767,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public void SaveScheme(string schemaCode,bool canBeInlined, List<string> inlinedSchemes, string scheme)
+        public void SaveScheme(string schemaCode,bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
@@ -768,7 +779,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                         Code = schemaCode,
                         Scheme = scheme,
                         CanBeInlined = canBeInlined,
-                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null
+                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null,
+                        Tags =  TagHelper.ToTagStringForDatabase(tags)
                     };
                     wfScheme.Insert(connection);
                 }
@@ -777,6 +789,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     wfScheme.Scheme = scheme;
                     wfScheme.CanBeInlined = canBeInlined;
                     wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
+                    wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
                     wfScheme.Update(connection);
                 }
 
@@ -811,6 +824,56 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
+        public List<string> SearchSchemesByTags(params string[] tags)
+        {
+            return SearchSchemesByTags(tags?.AsEnumerable());
+        }
+
+        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return WorkflowScheme.GetSchemeCodesByTags(connection, tags);
+            }
+        }
+
+        public void AddSchemeTags(string schemeCode, params string[] tags)
+        {
+            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowScheme.AddSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+
+        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+        {
+            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowScheme.RemoveSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
+        public void SetSchemeTags(string schemeCode, params string[] tags)
+        {
+            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+        }
+
+        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowScheme.SetSchemeTags(connection, schemeCode, tags, _runtime.Builder);
+            }
+        }
         #endregion
 
         #region IWorkflowGenerator

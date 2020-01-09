@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Redis
@@ -19,5 +19,6 @@ namespace OptimaJet.Workflow.Redis
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string TenantId { get; set; }
     }
 }

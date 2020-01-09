@@ -39,6 +39,16 @@
   </ItemGroup>
 
   <ItemGroup>
+    <None Remove="autofac.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Remove="autofac.json" />
+  </ItemGroup>
+  <ItemGroup>
+    <Content Include="autofac.json" />
+  </ItemGroup>
+
+  <ItemGroup>
     <Content Update="autofac.json">
       <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
     </Content>

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -465,7 +465,7 @@ return new List<string> { document.AuthorId.ToString() };]]></ActionCode>
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""VacationRequestCreated"" Value=""Vacation request created"" />
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""RequestApproved"" Value=""Request approved"" />
   </Localization>
-</Process>");
+</Process>", new List<string>());
             #endregion
 
             batch.Execute();

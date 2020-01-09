@@ -76,6 +76,7 @@
   <ItemGroup>
     <Content Include="Scripts\CreatePersistenceObjects.sql" />
     <Content Include="Scripts\DropPersistenceObjects.sql" />
+    <Content Include="Scripts\update_4_0_to_4_1.sql" />
     <Content Include="Scripts\update_1_4_4_to_1_5.sql" />
     <Content Include="Scripts\update_1_4_3_to_1_4_4.sql" />
   </ItemGroup>

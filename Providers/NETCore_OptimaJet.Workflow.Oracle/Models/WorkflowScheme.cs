@@ -1,8 +1,13 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Text;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Builder;
+using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Core.Persistence;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -14,6 +19,7 @@ namespace OptimaJet.Workflow.Oracle
         public string Scheme { get; set; }
         public bool CanBeInlined { get; set; }
         public string InlinedSchemes { get; set; }
+        public string Tags { get; set; }
 
         static WorkflowScheme ()
         {
@@ -23,10 +29,11 @@ namespace OptimaJet.Workflow.Oracle
         public WorkflowScheme()
         {
             DBColumns.AddRange(new[]{
-                new ColumnInfo {Name="Code", IsKey = true},
-                new ColumnInfo {Name="Scheme", Type = OracleDbType.Clob},
+                new ColumnInfo {Name = nameof(Code), IsKey = true},
+                new ColumnInfo {Name = nameof(Scheme), Type = OracleDbType.Clob},
                 new ColumnInfo {Name = nameof(CanBeInlined), Type = OracleDbType.Byte},
-                new ColumnInfo {Name = nameof(InlinedSchemes)}
+                new ColumnInfo {Name = nameof(InlinedSchemes)},
+                new ColumnInfo {Name = nameof(Tags), Type = OracleDbType.Clob}
             });
         }
 
@@ -34,14 +41,16 @@ namespace OptimaJet.Workflow.Oracle
         {
             switch(key)
             {
-                case "Code":
+                case nameof(Code):
                     return Code;
-                case "Scheme":
+                case nameof(Scheme):
                     return Scheme;
                 case nameof(CanBeInlined):
                     return CanBeInlined ? "1" : "0";
                 case nameof(InlinedSchemes):
                     return InlinedSchemes;
+                case nameof(Tags):
+                    return Tags;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
@@ -51,10 +60,10 @@ namespace OptimaJet.Workflow.Oracle
         {
             switch (key)
             {
-                case "Code":
+                case nameof(Code):
                     Code = value as string;
                     break;
-                case "Scheme":
+                case nameof(Scheme):
                     Scheme = value as string;
                     break;
                 case nameof(CanBeInlined):
@@ -62,6 +71,9 @@ namespace OptimaJet.Workflow.Oracle
                     break;
                 case nameof(InlinedSchemes):
                     InlinedSchemes = value as string;
+                    break;
+                case nameof(Tags):
+                    Tags = value as string;
                     break;
                 default:
                     throw new Exception($"Column {key} is not exists");
@@ -80,6 +92,77 @@ namespace OptimaJet.Workflow.Oracle
             var selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(InlinedSchemes).ToUpper()} LIKE '%' || :search || '%'";
             var p = new OracleParameter("search", OracleDbType.NVarchar2, $"\"{schemeCode}\"", ParameterDirection.Input);
             return Select(connection, selectText, p).Select(sch => sch.Code).ToList();
+        }
+
+        public static List<string> GetSchemeCodesByTags(OracleConnection connection, IEnumerable<string> tags)
+        {
+            IEnumerable<string> tagsList = tags?.ToList();
+
+            if (tags == null || !tags.Any())
+            {
+                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
+            }
+            
+            
+            var selectBuilder = new StringBuilder($"SELECT * FROM {DbTableName} WHERE ");
+            var parameters = new List<OracleParameter>();
+            var likes = new List<string>();
+            foreach (string tag in tagsList)
+            {
+                string paramName = $"search_{parameters.Count}";
+                string like = $"{nameof(Tags).ToUpper()} LIKE '%' || :{paramName} || '%'";
+                string paramValue = $"\"{tag}\"";
+
+                likes.Add(like);
+                parameters.Add(new OracleParameter(paramName, OracleDbType.NVarchar2, paramValue, ParameterDirection.Input));
+            }
+            
+            selectBuilder.Append(String.Join(" OR ", likes));
+
+            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+                .Select(sch => sch.Code)
+                .Distinct()
+                .ToList();
+        }
+
+        public static void AddSchemeTags(OracleConnection connection, string schemeCode, IEnumerable<string> tags,
+            IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder);
+        }
+
+        public static void RemoveSchemeTags(OracleConnection connection, string schemeCode,
+            IEnumerable<string> tags, IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
+                builder);
+        }
+
+        public static void SetSchemeTags(OracleConnection connection,
+            string schemeCode,
+            IEnumerable<string> tags,
+            IWorkflowBuilder builder)
+        {
+            UpdateSchemeTags(connection, schemeCode, schemeTags => tags.ToList(), builder);
+        }
+
+        private static void UpdateSchemeTags(OracleConnection connection, string schemeCode,
+            Func<List<string>,List<string>> getNewTags, IWorkflowBuilder builder)
+        {
+            WorkflowScheme scheme = SelectByKey(connection, schemeCode);
+
+            if (scheme == null)
+            {
+                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowScheme);
+            }
+
+            List<string> newTags = getNewTags.Invoke(TagHelper.FromTagStringForDatabase(scheme.Tags));
+
+            scheme.Tags = TagHelper.ToTagStringForDatabase(newTags);
+            scheme.Scheme = builder.ReplaceTagsInScheme(scheme.Scheme, newTags);
+
+            scheme.Update(connection);
+            Commit(connection);
         }
     }
 }

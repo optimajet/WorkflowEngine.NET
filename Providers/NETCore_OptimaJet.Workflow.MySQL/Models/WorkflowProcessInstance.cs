@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -19,6 +19,8 @@ namespace OptimaJet.Workflow.MySQL
         public string StateName { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string TenantId { get; set; }
+
 
         static WorkflowProcessInstance()
         {
@@ -42,6 +44,7 @@ namespace OptimaJet.Workflow.MySQL
                 new ColumnInfo {Name = "StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = MySqlDbType.Binary},
                 new ColumnInfo {Name = "RootProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "TenantId", Type=MySqlDbType.VarChar, Size=1024}
             });
         }
 
@@ -75,6 +78,8 @@ namespace OptimaJet.Workflow.MySQL
                     return ParentProcessId.HasValue ? ParentProcessId.Value.ToByteArray() : null;
                 case "RootProcessId":
                     return RootProcessId.ToByteArray();
+                case "TenantId":
+                    return TenantId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -130,6 +135,9 @@ namespace OptimaJet.Workflow.MySQL
                     break;
                 case "RootProcessId":
                     RootProcessId = new Guid((byte[])value);
+                    break;
+                case "TenantId":
+                    TenantId = value as string;
                     break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));

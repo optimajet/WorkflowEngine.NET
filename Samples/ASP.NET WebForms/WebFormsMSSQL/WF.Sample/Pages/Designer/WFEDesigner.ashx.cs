@@ -39,18 +39,18 @@ namespace Designer
                 }
             }
 
-            var res = WorkflowInit.Runtime.DesignerAPI(pars, filestream, true);
+            var res = WorkflowInit.Runtime.DesignerAPI(pars, out bool hasError, filestream, true);
             
             context.Response.Cache.SetNoStore();
             
-            if (pars["operation"].ToLower() == "downloadscheme")
+            if (pars["operation"].ToLower() == "downloadscheme" && !hasError)
             {
                 context.Response.ContentType = "file/xml";
                 context.Response.AddHeader("Content-Disposition", "attachment; filename=schema.xml");
                 context.Response.BinaryWrite(Encoding.UTF8.GetBytes(res));
                 context.Response.End();
             }
-            else if (pars["operation"].ToLower() == "downloadschemebpmn")
+            else if (pars["operation"].ToLower() == "downloadschemebpmn" && !hasError)
             {
                 context.Response.ContentType = "file/xml";
                 context.Response.AddHeader("Content-Disposition", "attachment; filename=schema.bpmn");

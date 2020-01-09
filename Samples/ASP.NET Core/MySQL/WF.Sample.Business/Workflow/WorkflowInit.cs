@@ -1,4 +1,5 @@
-﻿using System;
+using System;
+using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Builder;
@@ -8,6 +9,7 @@ using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
 using System.Threading.Tasks;
+using System.Collections.Generic;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -49,10 +51,27 @@ namespace WF.Sample.Business.Workflow
                             .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
                             .Start();
 
+                        var plugin = new OptimaJet.Workflow.Core.Plugins.BasicPlugin();
+                        //Settings for SendEmail actions
+                        // plugin.Setting_Mailserver = "smtp.yourserver.com";
+                        // plugin.Setting_MailserverPort = 25;
+                        // plugin.Setting_MailserverFrom = "from@yourserver.com";
+                        // plugin.Setting_MailserverLogin = "login@yourserver.com";
+                        // plugin.Setting_MailserverPassword = "password";
+                        // plugin.Setting_MailserverSsl = true;
+                        plugin.UsersInRoleAsync = UsersInRoleAsync;
+                        _runtime.WithPlugin(plugin);
+
                         _runtime.ProcessStatusChanged += _runtime_ProcessStatusChanged;
                     }
                 }
             }
+        }
+
+        public static async Task<IEnumerable<string>> UsersInRoleAsync(string roleName, Guid? processId = null)
+        {
+            var provider = DataServiceProvider.Get<IEmployeeRepository>();
+            return provider.GetInRole(roleName);            
         }
 
         public static WorkflowRuntime Runtime => _runtime;
