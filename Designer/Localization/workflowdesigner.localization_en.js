@@ -152,6 +152,7 @@
         ProcessParametersTabName: 'Process Parameters',
         HistoryTabName: 'History',
         TimersTabName: 'Timers',
+        TagsTabName: "Tags",
         HistoryTabFromLabel: 'From',
         HistoryTabFromStateLabel: 'From State',
         HistoryTabToLabel: 'To',
@@ -165,7 +166,8 @@
         ParametersValueLabel: 'Value',
         TimersTabNameLabel: 'Name',
         TimersTabValueLabel: 'Value',
-        RootProcess: "Root Process"
+        RootProcess: "Root Process",
+        TagsLabel:'Tags (separated by commas)'
     },
 
     CodeActionsFormLabel: {

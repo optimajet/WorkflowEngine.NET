@@ -150,6 +150,7 @@ var WorkflowDesignerConstants = {
         ProcessParametersTabName: 'Process Parameters',
         HistoryTabName: 'History',
         TimersTabName: 'Timers',
+        TagsTabName: "Tags",
         HistoryTabFromLabel: 'From',
         HistoryTabFromStateLabel: 'From State',
         HistoryTabToLabel: 'To',
@@ -163,7 +164,8 @@ var WorkflowDesignerConstants = {
         ParametersValueLabel: 'Value',
         TimersTabNameLabel: 'Name',
         TimersTabValueLabel: 'Value',
-        RootProcess: "Root Process"
+        RootProcess: "Root Process",
+        TagsLabel:'Tags (separated by commas)'
     },
     CodeActionsFormLabel: {
         Title: "Действия",

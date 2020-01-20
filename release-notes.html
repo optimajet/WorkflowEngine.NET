@@ -210,16 +210,19 @@ public bool IsGetIdentitiesAsync(string ruleName, string schemeCode)
 </ul>
 </li>
 <li>
-<p><strong>If in your project the Action Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithActionProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearActionProvider().WithActionProvider(...)</code></strong></p>
+<p><strong>IMPORTANT! Incorrect behavior was fixed when the subprocess was merged in the parent process via the set state of the parent process mechanism. Previously, the parent process parameters were OVERWRITTEN. Now, the parent process parameters won't be changed. Only new parameters from the subprocess will be written to the parent process automatically. The same way the merge via calculating conditions always works. If you consciously exploited this behavior, then the best way to get parameters from the subprocess is to use a property <code>processInstance.MergedSubprocessParameters</code> when merge occurs.</strong></p>
 </li>
 <li>
-<p><strong>If in your project the Rule Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithRuleProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearRuleProvider().WithRuleProvider(...)</code></strong></p>
+<p><strong>IMPORTANT! If in your project the Action Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithActionProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearActionProvider().WithActionProvider(...)</code></strong></p>
 </li>
 <li>
-<p><strong>If in your project the Designer Autocomplete Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithDesignerAutocompleteProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearDesignerAutocompleteProvider().WithDesignerAutocompleteProvider(...)</code></strong></p>
+<p><strong>IMPORTANT! If in your project the Rule Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithRuleProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearRuleProvider().WithRuleProvider(...)</code></strong></p>
 </li>
 <li>
-<p><strong>If in your project the Designer Parameter Format Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithDesignerParameterFormatProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearDesignerParameterFormatProvider().WithDesignerParameterFormatProvider(...)</code></strong></p>
+<p><strong>IMPORTANT! If in your project the Designer Autocomplete Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithDesignerAutocompleteProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearDesignerAutocompleteProvider().WithDesignerAutocompleteProvider(...)</code></strong></p>
+</li>
+<li>
+<p><strong>IMPORTANT! If in your project the Designer Parameter Format Provider has changed (after the first initialization) using the method <code>workflowRuntime.WithDesignerParameterFormatProvider(...)</code> replace this code with the following call <code>workflowRuntime.ClearDesignerParameterFormatProvider().WithDesignerParameterFormatProvider(...)</code></strong></p>
 </li>
 <li>
 <p>It is not necessary but suggested to change the Designer Controller the following way</p>
