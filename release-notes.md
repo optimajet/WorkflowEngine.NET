@@ -1,6 +1,6 @@
 # Workflow Engine: Release Notes
 
-## 4.2 (#4.2)
+## 4.2 {#4.2}
 
 - Support for the timers in multi-server mode has been added. You can configure `WorkflowRuntime` to work in a single or multi-server environment. This affects the timers and the recovering from failure. You can configure the runtime with the following code:
   
@@ -86,10 +86,10 @@
 - **Warning. If using Redis, please, contact our support for update instructions.**
 - **Warning. If you are using MongoDB. The multi-server feature will work only with MongoDB version > 4.0**
 - Run the SQL script update_4_1_to_4_2 for all relative databases and MongoDB.
-  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MSSQL/Scripts/update_4_1_to_4_2.sql)
-  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.PostgreSQL/Scripts/update_4_1_to_4_2.sql)
-  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.Oracle/Scripts/update_4_1_to_4_2.sql)
-  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MySQL/Scripts/update_4_1_to_4_2.sql)
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MSSQL/Scripts/update_4_1_to_4_2.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.PostgreSQL/Scripts/update_4_1_to_4_2.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.Oracle/Scripts/update_4_1_to_4_2.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MySQL/Scripts/update_4_1_to_4_2.sql)
   - [MongoDB](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MongoDB/Scripts/update_4_1_to_4_2.js)
 - Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
 - Update packages or dll to version 4.2. **If you connect the WFE with DLLs you must reference all DLLs from [this archive](https://workflowengine.io/downloads/assets/workflow-engine-net-4.2-core.zip) in your solution.
@@ -250,13 +250,15 @@
   var provider = new MSSQLProvider(connectionString, writeSubProcessToRoot:true);
   ```
 
+## Update guide to WFE4.1 {#update4.1}
+
 **The following additional actions must be taken to upgrade to Workflow Engine 4.1:**
 
-- Run the SQL script update_2_7_to_2_8.sql for all relative databases.
-  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MSSQL/Scripts/update_4_0_to_4_1.sql)
-  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.PostgreSQL/Scripts/update_4_0_to_4_1.sql)
-  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.Oracle/Scripts/update_4_0_to_4_1.sql)
-  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MySQL/Scripts/update_4_0_to_4_1.sql)
+- Run the following SQL script for all relative databases.
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MSSQL/Scripts/update_4_0_to_4_1.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.PostgreSQL/Scripts/update_4_1_to_4_2.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.Oracle/Scripts/update_4_1_to_4_2.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MySQL/Scripts/update_4_0_to_4_1.sql)
 - Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
 - Update packages or dll to version 4.1.
 - If the `IWorkflowActionProvider` interface is implemented in your project, the last parameter`string schemeCode` shall be added to the following methods:
@@ -351,6 +353,7 @@
  
 **The following additional actions must be taken to upgrade to Workflow Engine 4.0:**
 
+- Don't forget to update packages or dlls, and the Designer javascript, css and all designer related images.
 - Run the SQL  script `update_4_0.sql` for all relative databases. You will find this script in your provider's archive.  
 - If you have used process status change (for example `args.ProcessStatus = ProcessStatus.Idled;`) to cancel exception release after the event has been processed `workflowRuntime.OnWorkflowError`, you will need to use the following code `args.SuppressThrow = true;`. Status change hack won't work, custom status will be installed, but the exception will still be thrown. 
 
