@@ -10,5 +10,6 @@ namespace OptimaJet.Workflow.MongoDB
         public string Name { get; set; }
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
+        public Guid RootProcessId { get; set; }
     }
 }

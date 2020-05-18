@@ -11,18 +11,20 @@ using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Core.Runtime.Timers;
 using Oracle.ManagedDataAccess.Client;
 
 namespace OptimaJet.Workflow.Oracle
 {
-    public class OracleProvider : IWorkflowProvider
+    public class OracleProvider : IWorkflowProvider, IApprovalProvider
     {
         public string ConnectionString { get; set; }
         public string Schema { get; set; }
         private WorkflowRuntime _runtime;
         private readonly bool WriteToHistory;
         private readonly bool WriteSubProcessToRoot;
-        public void Init(WorkflowRuntime runtime)
+
+        public virtual void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
@@ -37,15 +39,109 @@ namespace OptimaJet.Workflow.Oracle
         }
 
         #region IPersistenceProvider
+
+        public void DeleteInactiveTimersByProcessId(Guid processId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.DeleteInactiveByProcessId(connection, processId);
+                DbObject.Commit(connection);
+            }
+        }
+
+        public Task DeleteTimerAsync(Guid timerId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.Delete(connection, timerId);
+                DbObject.Commit(connection);
+                return Task.FromResult(true);
+            }
+        }
+
+        public List<Guid> GetRunningProcesses(string runtimeId = null)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return WorkflowProcessInstanceStatus.GetProcessesByStatus(connection, ProcessStatus.Running.Id, runtimeId);
+            }
+        }
+
+        public WorkflowRuntimeModel CreateWorkflowRuntime(string runtimeId, RuntimeStatus status)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                var runtime = new Models.WorkflowRuntime() {RuntimeId = runtimeId, LOCKFLAG = Guid.NewGuid(), Status = status};
+
+                runtime.Insert(connection);
+                DbObject.Commit(connection);
+
+                return new WorkflowRuntimeModel {Lock = runtime.LOCKFLAG, RuntimeId = runtimeId, Status = status};
+            }
+        }
+
+        public void DeleteWorkflowRuntime(string name)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                Models.WorkflowRuntime.Delete(connection, name);
+                DbObject.Commit(connection);
+            }
+        }
+
+        public WorkflowRuntimeModel UpdateWorkflowRuntimeStatus(WorkflowRuntimeModel runtime, RuntimeStatus status)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.Status = status, Models.WorkflowRuntime.UpdateStatus);
+
+            if (res.Item1 != 1)
+            {
+                throw new ImpossibleToSetRuntimeStatusException();
+            }
+
+            return res.Item2;
+        }
+
+        public (bool Success, WorkflowRuntimeModel UpdatedModel) UpdateWorkflowRuntimeRestorer(WorkflowRuntimeModel runtime, string restorerId)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.RestorerId = restorerId, Models.WorkflowRuntime.UpdateRestorer);
+
+            return (res.Item1 == 1, res.Item2);
+        }
+
+        public bool MultiServerRuntimesExist()
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.MultiServerRuntimesExist(connection);
+            }
+        }
+
+        public int SingleServerRuntimesCount()
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.SingleServerRuntimesCount(connection);
+            }
+        }
+
+        public int ActiveMultiServerRuntimesCount(string currentRuntimeId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.ActiveMultiServerRuntimesCount(connection, currentRuntimeId);
+            }
+        }
+
         public void InitializeProcess(ProcessInstance processInstance)
         {
-            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
                 if (oldProcess != null)
                 {
                     throw new ProcessAlreadyExistsException(processInstance.ProcessId);
                 }
+
                 var newProcess = new WorkflowProcessInstance
                 {
                     Id = processInstance.ProcessId,
@@ -54,7 +150,8 @@ namespace OptimaJet.Workflow.Oracle
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
                     ParentProcessId = processInstance.ParentProcessId,
-                    TenantId = processInstance.TenantId
+                    TenantId = processInstance.TenantId,
+                    StartingTransition = processInstance.ProcessScheme.StartingTransition
                 };
                 newProcess.Insert(connection);
                 WorkflowProcessInstance.Commit(connection);
@@ -75,6 +172,7 @@ namespace OptimaJet.Workflow.Oracle
                     throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
+                oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
                 if (resetIsDeterminingParametersChanged)
                     oldProcess.IsDeterminingParametersChanged = false;
                 oldProcess.Update(connection);
@@ -100,15 +198,15 @@ namespace OptimaJet.Workflow.Oracle
         public void SavePersistenceParameters(ProcessInstance processInstance)
         {
             var parametersToPersistList =
-                 processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                     .Select(ptp =>
-                     {
-                         if (ptp.Type == typeof(UnknownParameterType))
-                             return new { Parameter = ptp, SerializedValue = (string)ptp.Value };
-                         return new { Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type) };
-                     })
-                     .ToList();
-           
+                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                    .Select(ptp =>
+                    {
+                        if (ptp.Type == typeof(UnknownParameterType))
+                            return new {Parameter = ptp, SerializedValue = (string)ptp.Value};
+                        return new {Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type)};
+                    })
+                    .ToList();
+
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).ToList();
@@ -145,10 +243,11 @@ namespace OptimaJet.Workflow.Oracle
                         }
                     }
                 }
+
                 WorkflowProcessInstancePersistence.Commit(connection);
             }
         }
-        
+
         public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
         {
             if (newStatus == ProcessStatus.Running)
@@ -157,7 +256,7 @@ namespace OptimaJet.Workflow.Oracle
             }
             else
             {
-                SetCustomStatus(processId,newStatus);
+                SetCustomStatus(processId, newStatus);
             }
         }
 
@@ -183,7 +282,7 @@ namespace OptimaJet.Workflow.Oracle
         }
 
 #pragma warning disable 612
-        public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+        public void SetWorkflowTerminated(ProcessInstance processInstance)
 #pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
@@ -193,7 +292,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id);
+                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id, _runtime.RuntimeDateTimeNow);
                 WorkflowProcessInstanceStatus.Commit(connection);
             }
         }
@@ -209,7 +308,7 @@ namespace OptimaJet.Workflow.Oracle
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 WorkflowProcessInstance inst = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
-                
+
                 if (inst != null)
                 {
                     if (!string.IsNullOrEmpty(transition.To.State))
@@ -240,6 +339,7 @@ namespace OptimaJet.Workflow.Oracle
 
                     inst.Update(connection);
                 }
+
                 if (WriteToHistory)
                 {
                     var history = new WorkflowProcessTransitionHistory()
@@ -248,7 +348,7 @@ namespace OptimaJet.Workflow.Oracle
                         ExecutorIdentityId = identityId,
                         Id = Guid.NewGuid(),
                         IsFinalised = transition.To.IsFinal,
-                        ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess)?processInstance.RootProcessId:processInstance.ProcessId,
+                        ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
                         FromActivityName = transition.From.Name,
                         FromStateName = transition.From.State,
                         ToActivityName = transition.To.Name,
@@ -260,13 +360,14 @@ namespace OptimaJet.Workflow.Oracle
                     };
                     history.Insert(connection);
                 }
+
                 WorkflowProcessTransitionHistory.Commit(connection);
             }
         }
 
         public bool IsProcessExists(Guid processId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 return WorkflowProcessInstance.SelectByKey(connection, processId) != null;
             }
@@ -285,7 +386,7 @@ namespace OptimaJet.Workflow.Oracle
                 return status;
             }
         }
-        
+
         private void SetRunningStatus(Guid processId)
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
@@ -295,55 +396,59 @@ namespace OptimaJet.Workflow.Oracle
                     throw new StatusNotDefinedException();
 
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
-                    throw new ImpossibleToSetStatusException();
+                    throw new ImpossibleToSetStatusException("Process already running");
 
-                var oldLock = instanceStatus.LOCKFLAG;
+                Guid oldLock = instanceStatus.LOCKFLAG;
 
                 instanceStatus.LOCKFLAG = Guid.NewGuid();
                 instanceStatus.Status = ProcessStatus.Running.Id;
+                instanceStatus.RuntimeId = _runtime.Id;
+                instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
                 var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
 
                 if (cnt != 1)
                     throw new ImpossibleToSetStatusException();
 
-                WorkflowProcessInstanceStatus.Commit(connection);
+                DbObject.Commit(connection);
             }
         }
-        
+
         private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
         {
-            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
+            if (instanceStatus == null)
             {
-                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
-                if(instanceStatus == null)
+                if (!createIfnotDefined)
+                    throw new StatusNotDefinedException();
+
+                instanceStatus = new WorkflowProcessInstanceStatus()
                 {
-                    if(!createIfnotDefined)
-                        throw new StatusNotDefinedException();
-
-                    instanceStatus = new WorkflowProcessInstanceStatus()
-                    {
-                        Id = processId,
-                        LOCKFLAG = Guid.NewGuid(),
-                        Status = status.Id
-                    };
-                    instanceStatus.Insert(connection);
-                }
-                else
-                {
-                    var oldLock = instanceStatus.LOCKFLAG;
-
-                    instanceStatus.Status = status.Id;
-                    instanceStatus.LOCKFLAG = Guid.NewGuid();
-
-                    var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
-
-                    if (cnt != 1)
-                        throw new ImpossibleToSetStatusException();
-                }
-
-                WorkflowProcessInstanceStatus.Commit(connection);
+                    Id = processId,
+                    LOCKFLAG = Guid.NewGuid(),
+                    Status = status.Id,
+                    RuntimeId = _runtime.Id,
+                    SetTime = _runtime.RuntimeDateTimeNow
+                };
+                instanceStatus.Insert(connection);
             }
+            else
+            {
+                Guid oldLock = instanceStatus.LOCKFLAG;
+
+                instanceStatus.Status = status.Id;
+                instanceStatus.LOCKFLAG = Guid.NewGuid();
+                instanceStatus.RuntimeId = _runtime.Id;
+                instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
+
+                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
+
+                if (cnt != 1)
+                    throw new ImpossibleToSetStatusException();
+            }
+
+            DbObject.Commit(connection);
         }
 
         private IEnumerable<ParameterDefinitionWithValue> GetProcessParameters(Guid processId, ProcessDefinition processDefinition)
@@ -430,12 +535,14 @@ namespace OptimaJet.Workflow.Oracle
                 var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
                 if (parameterDefinition == null)
                 {
-                    parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                    parameterDefinition =
+                        ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
                     parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
                 }
                 else
                 {
-                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition,
+                        ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
                 }
             }
 
@@ -445,7 +552,7 @@ namespace OptimaJet.Workflow.Oracle
 
         private WorkflowProcessInstance GetProcessInstance(Guid processId)
         {
-            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
                 if (processInstance == null)
@@ -462,7 +569,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public void DeleteProcess(Guid processId)
         {
-            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 WorkflowProcessInstance.Delete(connection, processId);
                 WorkflowProcessInstanceStatus.Delete(connection, processId);
@@ -474,7 +581,7 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
+        public void RegisterTimer(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
@@ -487,6 +594,7 @@ namespace OptimaJet.Workflow.Oracle
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
                         ProcessId = processId,
+                        RootProcessId = rootProcessId,
                         Ignore = false
                     };
 
@@ -511,21 +619,26 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public void ClearTimersIgnore()
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.ClearTimersIgnore(connection);
-                WorkflowProcessTimer.Commit(connection);
-            }
-        }
-
         public void ClearTimerIgnore(Guid timerId)
         {
             using (var connection = new OracleConnection(ConnectionString))
             {
                 WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
                 WorkflowProcessTimer.Commit(connection);
+            }
+        }
+
+        public int SetTimerIgnore(Guid timerId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                int result = WorkflowProcessTimer.SetTimerIgnore(connection, timerId);
+                if (result > 0)
+                {
+                    WorkflowProcessTimer.Commit(connection);
+                }
+
+                return result;
             }
         }
 
@@ -543,7 +656,7 @@ namespace OptimaJet.Workflow.Oracle
             using (var connection = new OracleConnection(ConnectionString))
             {
                 var timer = WorkflowProcessTimer.GetCloseExecutionTimer(connection);
-                return timer != null ? timer.NextExecutionDateTime : (DateTime?) null;
+                return timer != null ? timer.NextExecutionDateTime : (DateTime?)null;
             }
         }
 
@@ -557,7 +670,31 @@ namespace OptimaJet.Workflow.Oracle
                 WorkflowProcessTimer.SetIgnore(connection, timers);
                 WorkflowProcessTimer.Commit(connection);
 
-                return timers.Select(t => new TimerToExecute() { Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id }).ToList();
+                return timers.Select(t => new TimerToExecute() {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
+            }
+        }
+
+        public List<Core.Model.WorkflowTimer> GetTopTimersToExecute(int top)
+        {
+            var now = _runtime.RuntimeDateTimeNow;
+
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                var timers = WorkflowProcessTimer.GetTopTimersToExecute(connection, top, now);
+
+                if (timers.Length == 0)
+                {
+                    return new List<Core.Model.WorkflowTimer>();
+                }
+
+                return timers.Select(t => new Core.Model.WorkflowTimer()
+                {
+                    Name = t.Name,
+                    ProcessId = t.ProcessId,
+                    TimerId = t.Id,
+                    NextExecutionDateTime = t.NextExecutionDateTime,
+                    RootProcessId = t.RootProcessId
+                }).ToList();
             }
         }
 
@@ -569,13 +706,7 @@ namespace OptimaJet.Workflow.Oracle
 
                 if (parameter == null)
                 {
-                    parameter = new WorkflowGlobalParameter()
-                    {
-                        Id = Guid.NewGuid(),
-                        Type = type,
-                        Name = name,
-                        Value = JsonConvert.SerializeObject(value)
-                    };
+                    parameter = new WorkflowGlobalParameter() {Id = Guid.NewGuid(), Type = type, Name = name, Value = JsonConvert.SerializeObject(value)};
 
                     parameter.Insert(connection);
                 }
@@ -598,7 +729,7 @@ namespace OptimaJet.Workflow.Oracle
 
                 if (parameter == null)
                     return default(T);
-                
+
                 return JsonConvert.DeserializeObject<T>(parameter.Value);
             }
 
@@ -651,13 +782,129 @@ namespace OptimaJet.Workflow.Oracle
             using (var connection = new OracleConnection(ConnectionString))
             {
                 var timers = WorkflowProcessTimer.SelectByProcessId(connection, processId);
-                return timers.Select(t => new ProcessTimer { Name = t.Name, NextExecutionDateTime = t.NextExecutionDateTime });
+                return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
             }
+        }
+
+        public async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
+            }
+        }
+
+        public IEnumerable<ProcessTimer> GetActiveTimersForProcess(Guid processId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                var timers = WorkflowProcessTimer.SelectActiveByProcessId(connection, processId);
+                return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
+            }
+        }
+
+        public WorkflowRuntimeModel GetWorkflowRuntimeModel(string runtimeId)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.GetWorkflowRuntimeStatus(connection, runtimeId);
+            }
+        }
+
+        public int SendRuntimeLastAliveSignal()
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                var result = Models.WorkflowRuntime.SendRuntimeLastAliveSignal(connection, _runtime.Id, _runtime.RuntimeDateTimeNow);
+                DbObject.Commit(connection);
+                return result;
+            }
+        }
+
+
+        public DateTime? GetNextTimerDate(TimerCategory timerCategory, int timerInterval)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                var timerCategoryName = timerCategory.ToString();
+                var syncLock = Models.WorkflowSync.GetByName(connection, timerCategoryName);
+
+                if (syncLock == null)
+                {
+                    throw new Exception($"Sync lock {timerCategoryName} not found");
+                }
+
+                string nextTimeColumnName = null;
+
+                switch (timerCategory)
+                {
+                    case TimerCategory.Timer:
+                        nextTimeColumnName = "NextTimerTime";
+                        break;
+                    case TimerCategory.ServiceTimer:
+                        nextTimeColumnName = "NextServiceTimerTime";
+                        break;
+                    default:
+                        throw new Exception($"Unknown sync lock name: {timerCategoryName}");
+                }
+
+                DateTime? max = Models.WorkflowRuntime.GetMaxNextTime(connection, _runtime.Id, nextTimeColumnName);
+
+                DateTime result = _runtime.RuntimeDateTimeNow;
+
+                if (max > result)
+                {
+                    result = max.Value;
+                }
+
+                result += TimeSpan.FromMilliseconds(timerInterval);
+
+                var newLock = Guid.NewGuid();
+
+                Models.WorkflowRuntime.UpdateNextTime(connection, _runtime.Id, nextTimeColumnName, result);
+                var rowCount = Models.WorkflowSync.UpdateLock(connection, timerCategoryName, syncLock.LOCKFLAG, newLock);
+
+                if (rowCount == 0)
+                {
+                    return null;
+                }
+
+                DbObject.Commit(connection);
+
+                return result;
+            }
+        }
+
+        public List<WorkflowRuntimeModel> GetWorkflowRuntimes()
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.SelectAll(connection).Select(GetModel).ToList();
+            }
+        }
+
+        private WorkflowRuntimeModel GetModel(Models.WorkflowRuntime result)
+        {
+            return new WorkflowRuntimeModel
+            {
+                Lock = result.LOCKFLAG,
+                RuntimeId = result.RuntimeId,
+                Status = result.Status,
+                RestorerId = result.RestorerId,
+                LastAliveSignal = result.LastAliveSignal,
+                NextTimerTime = result.NextTimerTime
+            };
+        }
+
+        public IApprovalProvider GetIApprovalProvider()
+        {
+            return this;
         }
 
         #endregion
 
         #region ISchemePersistenceProvider
+
         public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
         {
             using (var connection = new OracleConnection(ConnectionString))
@@ -697,8 +944,8 @@ namespace OptimaJet.Workflow.Oracle
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 processSchemes =
-               WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
-                   rootSchemeId);
+                    WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
+                        rootSchemeId);
             }
 
             if (!processSchemes.Any())
@@ -739,7 +986,7 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public void SaveScheme(SchemeDefinition<XElement> scheme)
+        public SchemeDefinition<XElement> SaveScheme(SchemeDefinition<XElement> scheme)
         {
             var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
@@ -751,9 +998,11 @@ namespace OptimaJet.Workflow.Oracle
 
                 if (oldSchemes.Any())
                 {
-                    foreach (var oldScheme in oldSchemes)
-                        if (oldScheme.DefiningParameters == definingParameters)
-                            throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                    WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                    if (existing != null)
+                    {
+                        return ConvertToSchemeDefinition(existing);
+                    }
                 }
 
                 var newProcessScheme = new WorkflowProcessScheme
@@ -772,10 +1021,12 @@ namespace OptimaJet.Workflow.Oracle
 
                 newProcessScheme.Insert(connection);
                 WorkflowProcessScheme.Commit(connection);
+
+                return ConvertToSchemeDefinition(newProcessScheme);
             }
         }
 
-        public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
+        public virtual void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
@@ -805,9 +1056,9 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public XElement GetScheme(string code)
+        public virtual XElement GetScheme(string code)
         {
-            using(OracleConnection connection = new OracleConnection(ConnectionString))
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 var scheme = WorkflowScheme.SelectByKey(connection, code);
                 if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
@@ -816,20 +1067,20 @@ namespace OptimaJet.Workflow.Oracle
                 return XElement.Parse(scheme.Scheme);
             }
         }
-        
-        public List<string> GetInlinedSchemeCodes()
+
+        public virtual List<string> GetInlinedSchemeCodes()
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
                 return WorkflowScheme.GetInlinedSchemeCodes(connection);
             }
         }
-        
-        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+
+        public virtual List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
         {
             using (OracleConnection connection = new OracleConnection(ConnectionString))
             {
-                return WorkflowScheme.GetRelatedSchemeCodes(connection,schemeCode);
+                return WorkflowScheme.GetRelatedSchemeCodes(connection, schemeCode);
             }
         }
 
@@ -838,7 +1089,7 @@ namespace OptimaJet.Workflow.Oracle
             return SearchSchemesByTags(tags?.AsEnumerable());
         }
 
-        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        public virtual List<string> SearchSchemesByTags(IEnumerable<string> tags)
         {
             using (var connection = new OracleConnection(ConnectionString))
             {
@@ -851,7 +1102,7 @@ namespace OptimaJet.Workflow.Oracle
             AddSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new OracleConnection(ConnectionString))
             {
@@ -864,7 +1115,7 @@ namespace OptimaJet.Workflow.Oracle
             RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new OracleConnection(ConnectionString))
             {
@@ -877,7 +1128,7 @@ namespace OptimaJet.Workflow.Oracle
             SetSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new OracleConnection(ConnectionString))
             {
@@ -888,6 +1139,7 @@ namespace OptimaJet.Workflow.Oracle
         #endregion
 
         #region IWorkflowGenerator
+
         public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
             if (parameters.Count > 0)
@@ -895,6 +1147,7 @@ namespace OptimaJet.Workflow.Oracle
 
             return GetScheme(schemeCode);
         }
+
         #endregion
 
         #region Bulk methods
@@ -915,6 +1168,7 @@ namespace OptimaJet.Workflow.Oracle
         }
 
         #endregion
+
         private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
         {
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
@@ -924,5 +1178,122 @@ namespace OptimaJet.Workflow.Oracle
                 workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }
+
+        private Tuple<int, WorkflowRuntimeModel> UpdateWorkflowRuntime(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
+            Func<OracleConnection, WorkflowRuntimeModel, Guid, int> updateMethod)
+        {
+            using (var connection = new OracleConnection(ConnectionString))
+            {
+                Guid oldLock = runtime.Lock;
+                setter(runtime);
+                runtime.Lock = Guid.NewGuid();
+
+                int cnt = updateMethod(connection, runtime, oldLock);
+
+                if (cnt != 1)
+                {
+                    return new Tuple<int, WorkflowRuntimeModel>(cnt, null);
+                }
+
+                DbObject.Commit(connection);
+
+                return new Tuple<int, WorkflowRuntimeModel>(cnt, runtime);
+            }
+        }
+
+        #region IApprovalProvider
+
+        public async Task DropWorkflowInboxAsync(Guid processId)
+        {
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                WorkflowInbox.DeleteByProcessId(connection, processId);
+                WorkflowInbox.Commit(connection);
+            }
+        }
+
+        public async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        {
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                var inboxItems = newActors.Select(newactor => new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newactor, ProcessId = processId }).ToArray();
+                WorkflowInbox.InsertAll(connection, inboxItems);
+                WorkflowInbox.Commit(connection);
+            }
+        }
+
+        public async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
+        {
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                var historyItem = new WorkflowApprovalHistory
+                {
+                    Id = Guid.NewGuid(),
+                    AllowedTo = allowedToEmployeeNames,
+                    DestinationState = nextState,
+                    ProcessId = id,
+                    InitialState = currentState,
+                    TriggerName = triggerName,
+                    Sort = order
+                };
+
+                historyItem.Insert(connection);
+                WorkflowApprovalHistory.Commit(connection);
+            }
+        }
+
+        public async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+        {
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                var historyItem = WorkflowApprovalHistory.SelectByProcessId(connection, id).FirstOrDefault(h =>
+                    h.ProcessId == id && !h.TransitionTime.HasValue &&
+                    h.InitialState == currentState && h.DestinationState == nextState);
+
+                if (historyItem == null)
+                {
+                    historyItem = new WorkflowApprovalHistory
+                    {
+                        Id = Guid.NewGuid(),
+                        AllowedTo = string.Empty,
+                        DestinationState = nextState,
+                        ProcessId = id,
+                        InitialState = currentState,
+                        Sort = order,
+                        TriggerName = triggerName,
+                        Commentary = comment,
+                        TransitionTime =_runtime.RuntimeDateTimeNow,
+                        IdentityId = identityId
+                    };
+
+                    historyItem.Insert(connection);
+
+                }
+                else
+                {
+                    historyItem.TriggerName = triggerName;
+                    historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
+                    historyItem.IdentityId = identityId;
+                    historyItem.Commentary = comment;
+                    historyItem.Update(connection);
+                }
+
+                WorkflowApprovalHistory.Commit(connection);
+            }
+        }
+
+        public async Task DropEmptyApprovalHistoryAsync(Guid processId)
+        {
+            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            {
+                foreach (var record in WorkflowApprovalHistory.SelectByProcessId(connection, processId).Where(x => !x.TransitionTime.HasValue).ToList())
+                {
+                    WorkflowApprovalHistory.Delete(connection, record.Id);
+                }
+                WorkflowApprovalHistory.Commit(connection);
+            }
+        }
+
+        #endregion IApprovalProvider
     }
 }

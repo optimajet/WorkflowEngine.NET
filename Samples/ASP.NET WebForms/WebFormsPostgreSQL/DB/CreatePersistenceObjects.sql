@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 4.1
+Version: 4.2
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -32,8 +32,11 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstance" (
   "ParentProcessId" uuid NULL,
   "RootProcessId" uuid NOT NULL,
   "TenantId" character varying(1024) NULL,
+  "StartingTransition" text NULL,
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
+
+CREATE INDEX IF NOT EXISTS "WorkflowProcessInstance_RootProcessId_idx"  ON "WorkflowProcessInstance" USING btree ("RootProcessId");
 
 --WorkflowProcessInstancePersistence
 CREATE TABLE IF NOT EXISTS "WorkflowProcessInstancePersistence" (
@@ -50,9 +53,16 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstanceStatus" (
   "Id" uuid NOT NULL,
   "Status" smallint NOT NULL,
   "Lock" uuid NOT NULL,
+  "RuntimeId" character varying(450) NOT NULL,
+  "SetTime" timestamp NOT NULL,
   CONSTRAINT "WorkflowProcessInstanceStatus_pkey" PRIMARY KEY ("Id")
 );
 CREATE INDEX IF NOT EXISTS "WorkflowProcessInstanceStatus_Status_idx"  ON "WorkflowProcessInstanceStatus" USING btree ("Status");
+
+CREATE INDEX IF NOT EXISTS "WorkflowProcessInstanceStatus_Status_Runtime_ix"
+    ON public."WorkflowProcessInstanceStatus" USING btree
+    ("Status" ASC NULLS LAST, "RuntimeId" ASC NULLS LAST)
+;
 
 --WorkflowProcessScheme
 CREATE TABLE IF NOT EXISTS "WorkflowProcessScheme" (
@@ -76,6 +86,7 @@ CREATE INDEX IF NOT EXISTS "WorkflowProcessScheme_IsObsolete_idx"  ON "WorkflowP
 CREATE TABLE IF NOT EXISTS "WorkflowProcessTimer" (
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
+  "RootProcessId" uuid NOT NULL,
   "Name" character varying(256) NOT NULL,
   "NextExecutionDateTime" timestamp NOT NULL,
   "Ignore" boolean NOT NULL,
@@ -128,3 +139,44 @@ CREATE TABLE IF NOT EXISTS "WorkflowGlobalParameter" (
 
 CREATE INDEX IF NOT EXISTS "WorkflowGlobalParameter_Type_idx"  ON "WorkflowGlobalParameter" USING btree ("Type");
 CREATE INDEX IF NOT EXISTS "WorkflowGlobalParameter_Name_idx"  ON "WorkflowGlobalParameter" USING btree ("Name");
+
+CREATE TABLE IF NOT EXISTS "WorkflowRuntime" (
+  "RuntimeId" character varying(450),
+  "Lock" uuid NOT NULL,
+  "Status" smallint NOT NULL,
+  "RestorerId" character varying(450) NULL,
+  "NextTimerTime" timestamp NULL,
+  "NextServiceTimerTime" timestamp NULL,
+  "LastAliveSignal" timestamp NULL,
+  CONSTRAINT "WorkflowRuntime_pkey" PRIMARY KEY ("RuntimeId")
+);
+
+CREATE TABLE IF NOT EXISTS "WorkflowSync" (
+  "Name" character varying(450),
+  "Lock" uuid NOT NULL,
+  CONSTRAINT "WorkflowSync_pkey" PRIMARY KEY ("Name")
+);
+
+CREATE EXTENSION IF NOT EXISTS "uuid-ossp";
+
+INSERT INTO "WorkflowSync"("Name","Lock") VALUES ('Timer', uuid_generate_v4()) 
+	ON CONFLICT ("Name") DO NOTHING;
+
+INSERT INTO "WorkflowSync"("Name","Lock") VALUES ('ServiceTimer', uuid_generate_v4()) 
+	ON CONFLICT ("Name") DO NOTHING;
+
+CREATE TABLE IF NOT EXISTS "WorkflowApprovalHistory" (
+  "Id" uuid NOT NULL,
+  "ProcessId" uuid NOT NULL,
+  "IdentityId" character varying(1024) NULL,
+  "AllowedTo" text NULL,
+  "TransitionTime" timestamp NULL,
+  "Sort" bigint NULL,
+	"InitialState" character varying(1024) NOT NULL,
+	"DestinationState" character varying(1024) NOT NULL,
+	"TriggerName" character varying(1024) NULL,
+	"Commentary" text NULL,
+  CONSTRAINT "WorkflowApprovalHistory_pkey" PRIMARY KEY ("Id")
+);
+CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_ProcessId_idx"  ON "WorkflowApprovalHistory" USING btree ("ProcessId");
+

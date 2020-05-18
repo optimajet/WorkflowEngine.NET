@@ -1,5 +1,7 @@
 
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -21,6 +23,7 @@ namespace OptimaJet.Workflow.Oracle
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
         public string TenantId { get; set; }
+        public string StartingTransition { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -43,7 +46,8 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name="StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = OracleDbType.Raw},
                 new ColumnInfo {Name = "RootProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo {Name = "TenantId", Size=1024}
+                new ColumnInfo {Name = "TenantId", Size=1024},
+                new ColumnInfo {Name=nameof(StartingTransition)},
             });
         }
 
@@ -79,6 +83,8 @@ namespace OptimaJet.Workflow.Oracle
                     return RootProcessId.ToByteArray();
                 case "TenantId":
                     return TenantId;
+                case nameof(StartingTransition):
+                    return StartingTransition;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -137,9 +143,18 @@ namespace OptimaJet.Workflow.Oracle
                 case "TenantId":
                     TenantId = value as string;
                     break;
+                case nameof(StartingTransition):
+                    StartingTransition = value as string;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
+        }
+
+        public static WorkflowProcessInstance[] GetInstances(OracleConnection connection, IEnumerable<Guid> ids)
+        {
+            string selectText = String.Format("SELECT * FROM {0} WHERE ID IN ({1})", ObjectName, String.Join(",", ids.Select(x => $"HEXTORAW('{BitConverter.ToString(x.ToByteArray()).Replace("-", String.Empty)}')")));
+            return Select(connection, selectText);
         }
     }
 }

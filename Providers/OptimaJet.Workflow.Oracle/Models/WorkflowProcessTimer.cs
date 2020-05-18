@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace OptimaJet.Workflow.Oracle
     {
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
         public string Name { get; set; }
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
@@ -26,8 +27,9 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name="Id", IsKey = true, Type = OracleDbType.Raw},
                 new ColumnInfo {Name="ProcessId", Type = OracleDbType.Raw},
                 new ColumnInfo {Name="Name"},
-                new ColumnInfo {Name="NextExecutionDateTime", Type = OracleDbType.Date },
+                new ColumnInfo {Name="NextExecutionDateTime", Type = OracleDbType.TimeStamp },
                 new ColumnInfo {Name="Ignore", Type = OracleDbType.Byte },
+                new ColumnInfo {Name=nameof(RootProcessId), Type = OracleDbType.Raw},
             });
         }
 
@@ -45,6 +47,8 @@ namespace OptimaJet.Workflow.Oracle
                     return NextExecutionDateTime;
                 case "Ignore":
                     return Ignore ? "1" : "0";
+                case nameof(RootProcessId):
+                    return RootProcessId.ToByteArray();
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -69,9 +73,19 @@ namespace OptimaJet.Workflow.Oracle
                 case "Ignore":
                     Ignore = (string)value == "1";
                     break;
+                case nameof(RootProcessId):
+                    RootProcessId = new Guid((byte[])value);
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
+        }
+
+        public static int DeleteInactiveByProcessId(OracleConnection connection, Guid processId)
+        {
+            var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
+
+            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE PROCESSID = :processid AND IGNORE = 1", ObjectName), pProcessId);
         }
 
         public static int DeleteByProcessId(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
@@ -118,15 +132,24 @@ namespace OptimaJet.Workflow.Oracle
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
 
-        public static int ClearTimersIgnore(OracleConnection connection)
+        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(OracleConnection connection, Guid processId)
         {
-            string command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE IGNORE = 1", ObjectName);
-            return ExecuteCommand(connection, command);
+            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid AND IGNORE = 0", ObjectName);
+
+            return Select(connection, selectText,
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
         }
 
         public static int ClearTimerIgnore(OracleConnection connection, Guid timerId)
         {
             var command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE ID = :timerid", ObjectName);
+            var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
+            return ExecuteCommand(connection, command, p1);
+        }
+
+        public static int SetTimerIgnore(OracleConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID = :timerid AND IGNORE = 0", ObjectName);
             var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
             return ExecuteCommand(connection, command, p1);
         }
@@ -142,6 +165,18 @@ namespace OptimaJet.Workflow.Oracle
             string selectText = string.Format("SELECT * FROM {0}  WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime", ObjectName);
             return Select(connection, selectText,
                 new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input));
+        }
+
+        public static WorkflowProcessTimer[] GetTopTimersToExecute(OracleConnection connection, int top, DateTime now)
+        {
+            string selectText = $"SELECT * FROM (SELECT * FROM {ObjectName} " +
+                                "WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime " +
+                                "ORDER BY NextExecutionDateTime) WHERE ROWNUM <= :rowsCount";
+
+            return Select(connection, selectText,
+                new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input),
+                new OracleParameter("rowsCount", OracleDbType.Int32, top, ParameterDirection.Input)
+            );
         }
 
         public static int SetIgnore(OracleConnection connection, WorkflowProcessTimer[] timers)

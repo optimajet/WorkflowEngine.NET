@@ -12,17 +12,18 @@ using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Core.Runtime.Timers;
 
 namespace OptimaJet.Workflow.PostgreSQL
 {
-    public class PostgreSQLProvider : IWorkflowProvider
+    public class PostgreSQLProvider : IWorkflowProvider, IApprovalProvider
     {
         public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
         private readonly bool WriteToHistory;
         private readonly bool WriteSubProcessToRoot;
 
-        public void Init(WorkflowRuntime runtime)
+        public virtual void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
@@ -36,6 +37,97 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
 
         #region IPersistenceProvider
+        public void DeleteInactiveTimersByProcessId(Guid processId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowProcessTimer.DeleteInactiveByProcessId(connection, processId);
+            }
+        }
+
+        public async Task DeleteTimerAsync(Guid timerId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                await WorkflowProcessTimer.DeleteAsync(connection, timerId).ConfigureAwait(false);
+            }
+        }
+
+        public List<Guid> GetRunningProcesses(string runtimeId = null)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return WorkflowProcessInstanceStatus.GetProcessesByStatus(connection, ProcessStatus.Running.Id, runtimeId);
+            }
+        }
+
+        public WorkflowRuntimeModel CreateWorkflowRuntime(string runtimeId, RuntimeStatus status)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var runtime = new Models.WorkflowRuntime()
+                {
+                    RuntimeId = runtimeId,
+                    Lock = Guid.NewGuid(),
+                    Status = status
+                };
+
+                runtime.Insert(connection);
+
+                return new WorkflowRuntimeModel { Lock = runtime.Lock, RuntimeId = runtimeId, Status = status };
+            }
+        }
+
+        public void DeleteWorkflowRuntime(string name)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                Models.WorkflowRuntime.Delete(connection, name);
+            }
+        }
+
+        public WorkflowRuntimeModel UpdateWorkflowRuntimeStatus(WorkflowRuntimeModel runtime, RuntimeStatus status)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.Status = status, Models.WorkflowRuntime.UpdateStatus);
+
+            if (res.Item1 != 1)
+            {
+                throw new ImpossibleToSetRuntimeStatusException();
+            }
+
+            return res.Item2;
+        }
+
+        public (bool Success, WorkflowRuntimeModel UpdatedModel) UpdateWorkflowRuntimeRestorer(WorkflowRuntimeModel runtime, string restorerId)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.RestorerId = restorerId, Models.WorkflowRuntime.UpdateRestorer);
+
+            return (res.Item1 == 1, res.Item2);
+        }
+
+        public bool MultiServerRuntimesExist()
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.MultiServerRuntimesExist(connection);
+            }
+        }
+
+        public int SingleServerRuntimesCount()
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.SingleServerRuntimesCount(connection);
+            }
+        }
+
+        public int ActiveMultiServerRuntimesCount(string currentRuntimeId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.ActiveMultiServerRuntimesCount(connection, currentRuntimeId);
+            }
+        }
 
         public void InitializeProcess(ProcessInstance processInstance)
         {
@@ -54,7 +146,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                     StateName = processInstance.ProcessScheme.InitialActivity.State,
                     RootProcessId = processInstance.RootProcessId,
                     ParentProcessId = processInstance.ParentProcessId,
-                    TenantId = processInstance.TenantId
+                    TenantId = processInstance.TenantId,
+                    StartingTransition = processInstance.ProcessScheme.StartingTransition
                 };
                 newProcess.Insert(connection);
             }
@@ -74,6 +167,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     throw new ProcessNotFoundException(processInstance.ProcessId);
 
                 oldProcess.SchemeId = processInstance.SchemeId;
+                oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
                 if (resetIsDeterminingParametersChanged)
                     oldProcess.IsDeterminingParametersChanged = false;
                 oldProcess.Update(connection);
@@ -180,7 +274,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
 
 #pragma warning disable 612
-        public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+        public void SetWorkflowTerminated(ProcessInstance processInstance)
 #pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
@@ -190,7 +284,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
-                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id);
+                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id, _runtime.RuntimeDateTimeNow);
             }
         }
 
@@ -292,12 +386,14 @@ namespace OptimaJet.Workflow.PostgreSQL
                     throw new StatusNotDefinedException();
 
                 if (instanceStatus.Status == ProcessStatus.Running.Id)
-                    throw new ImpossibleToSetStatusException();
+                    throw new ImpossibleToSetStatusException("Process already running");
 
                 var oldLock = instanceStatus.Lock;
 
                 instanceStatus.Lock = Guid.NewGuid();
                 instanceStatus.Status = ProcessStatus.Running.Id;
+                instanceStatus.RuntimeId = _runtime.Id;
+                instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
                 var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
 
@@ -320,7 +416,9 @@ namespace OptimaJet.Workflow.PostgreSQL
                     {
                         Id = processId,
                         Lock = Guid.NewGuid(),
-                        Status = status.Id
+                        Status = status.Id,
+                        RuntimeId = _runtime.Id,
+                        SetTime = _runtime.RuntimeDateTimeNow
                     };
                     instanceStatus.Insert(connection);
                 }
@@ -330,6 +428,8 @@ namespace OptimaJet.Workflow.PostgreSQL
 
                     instanceStatus.Status = status.Id;
                     instanceStatus.Lock = Guid.NewGuid();
+                    instanceStatus.RuntimeId = _runtime.Id;
+                    instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
                     var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
 
@@ -473,7 +573,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
+        public void RegisterTimer(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -486,6 +586,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                         Name = name,
                         NextExecutionDateTime = nextExecutionDateTime,
                         ProcessId = processId,
+                        RootProcessId = rootProcessId,
                         Ignore = false
                     };
 
@@ -506,20 +607,19 @@ namespace OptimaJet.Workflow.PostgreSQL
                 WorkflowProcessTimer.DeleteByProcessId(connection, processId, timersIgnoreList);
             }
         }
-
-        public void ClearTimersIgnore()
-        {
-            using (var connection = new NpgsqlConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.ClearTimersIgnore(connection);
-            }
-        }
-
         public void ClearTimerIgnore(Guid timerId)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
+            }
+        }
+
+        public int SetTimerIgnore(Guid timerId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return WorkflowProcessTimer.SetTimerIgnore(connection, timerId);
             }
         }
 
@@ -553,6 +653,30 @@ namespace OptimaJet.Workflow.PostgreSQL
                 WorkflowProcessTimer.SetIgnore(connection, timers);
 
                 return timers.Select(t => new TimerToExecute() {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
+            }
+        }
+
+        public List<Core.Model.WorkflowTimer> GetTopTimersToExecute(int top)
+        {
+            var now = _runtime.RuntimeDateTimeNow;
+
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var timers = WorkflowProcessTimer.GetTopTimersToExecute(connection, top, now);
+
+                if (timers.Length == 0)
+                {
+                    return new List<Core.Model.WorkflowTimer>();
+                }
+
+                return timers.Select(t => new Core.Model.WorkflowTimer()
+                {
+                    Name = t.Name,
+                    ProcessId = t.ProcessId,
+                    TimerId = t.Id,
+                    NextExecutionDateTime = t.NextExecutionDateTime,
+                    RootProcessId = t.RootProcessId
+                }).ToList();
             }
         }
 
@@ -644,8 +768,116 @@ namespace OptimaJet.Workflow.PostgreSQL
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
                 var timers = WorkflowProcessTimer.SelectByProcessId(connection, processId);
-                return timers.Select(t => new ProcessTimer { Name = t.Name, NextExecutionDateTime = t.NextExecutionDateTime });
+                return timers.Select(t =>new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
             }
+        }
+        
+        public async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
+            }
+        }
+
+        public IEnumerable<ProcessTimer> GetActiveTimersForProcess(Guid processId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var timers = WorkflowProcessTimer.SelectActiveByProcessId(connection, processId);
+                return timers.Select(t =>new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
+            }
+        }
+
+        public WorkflowRuntimeModel GetWorkflowRuntimeModel(string runtimeId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.GetWorkflowRuntimeStatus(connection, runtimeId);
+            }
+        }
+
+        public int SendRuntimeLastAliveSignal()
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.SendRuntimeLastAliveSignal(connection, _runtime.Id, _runtime.RuntimeDateTimeNow);
+            }
+        }
+
+        public DateTime? GetNextTimerDate(TimerCategory timerCategory, int timerInterval)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var timerCategoryName = timerCategory.ToString();
+                var syncLock = Models.WorkflowSync.GetByName(connection, timerCategoryName);
+
+                if (syncLock == null)
+                {
+                    throw new Exception($"Sync lock {timerCategoryName} not found");
+                }
+
+                string nextTimeColumnName = null;
+
+                switch (timerCategory)
+                {
+                    case TimerCategory.Timer:
+                        nextTimeColumnName = "NextTimerTime";
+                        break;
+                    case TimerCategory.ServiceTimer:
+                        nextTimeColumnName = "NextServiceTimerTime";
+                        break;
+                    default:
+                        throw new Exception($"Unknown sync lock name: {timerCategoryName}");
+                }
+
+                DateTime? max = Models.WorkflowRuntime.GetMaxNextTime(connection, _runtime.Id, nextTimeColumnName);
+
+                DateTime result = _runtime.RuntimeDateTimeNow;
+
+                if (max > result)
+                {
+                    result = max.Value;
+                }
+
+                result += TimeSpan.FromMilliseconds(timerInterval);
+
+                using (NpgsqlTransaction transaction = connection.BeginTransaction())
+                {
+                    var newLock = Guid.NewGuid();
+
+                    Models.WorkflowRuntime.UpdateNextTime(connection, _runtime.Id, nextTimeColumnName, result, transaction);
+                    var rowCount = Models.WorkflowSync.UpdateLock(connection, timerCategoryName, syncLock.Lock, newLock, transaction);
+
+                    if (rowCount == 0)
+                    {
+                        transaction.Rollback();
+                        return null;
+                    }
+
+                    transaction.Commit();
+                }
+
+                return result;
+            }
+        }
+        
+        public List<WorkflowRuntimeModel> GetWorkflowRuntimes()
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                return Models.WorkflowRuntime.SelectAll(connection).Select(GetModel).ToList();
+            }
+        }
+
+        private WorkflowRuntimeModel GetModel(Models.WorkflowRuntime result)
+        {
+            return new WorkflowRuntimeModel { Lock = result.Lock, RuntimeId = result.RuntimeId, Status = result.Status, RestorerId = result.RestorerId, LastAliveSignal = result.LastAliveSignal, NextTimerTime = result.NextTimerTime };
+        }
+
+        public IApprovalProvider GetIApprovalProvider()
+        {
+            return this;
         }
 
         #endregion
@@ -731,7 +963,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public void SaveScheme(SchemeDefinition<XElement> scheme)
+        public SchemeDefinition<XElement> SaveScheme(SchemeDefinition<XElement> scheme)
         {
             var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
@@ -743,9 +975,10 @@ namespace OptimaJet.Workflow.PostgreSQL
 
                 if (oldSchemes.Any())
                 {
-                    if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
+                    WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                    if (existing != null)
                     {
-                        throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                        return ConvertToSchemeDefinition(existing);
                     }
                 }
 
@@ -764,10 +997,12 @@ namespace OptimaJet.Workflow.PostgreSQL
                 };
 
                 newProcessScheme.Insert(connection);
+
+                return ConvertToSchemeDefinition(newProcessScheme);
             }
         }
 
-        public void SaveScheme(string schemaCode,bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
+        public virtual void SaveScheme(string schemaCode,bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
@@ -796,7 +1031,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public XElement GetScheme(string code)
+        public virtual XElement GetScheme(string code)
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
@@ -807,16 +1042,16 @@ namespace OptimaJet.Workflow.PostgreSQL
                 return XElement.Parse(scheme.Scheme);
             }
         }
-        
-        public List<string> GetInlinedSchemeCodes()
+
+        public virtual List<string> GetInlinedSchemeCodes()
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
                 return WorkflowScheme.GetInlinedSchemeCodes(connection);
             }
         }
-        
-        public List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+
+        public virtual List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
         {
             using (NpgsqlConnection connection = new NpgsqlConnection(ConnectionString))
             {
@@ -829,7 +1064,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             return SearchSchemesByTags(tags?.AsEnumerable());
         }
 
-        public List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        public virtual List<string> SearchSchemesByTags(IEnumerable<string> tags)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -842,7 +1077,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             AddSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -855,7 +1090,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -867,7 +1102,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             SetSchemeTags(schemeCode, tags?.AsEnumerable());
         }
 
-        public void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
         {
             using (var connection = new NpgsqlConnection(ConnectionString))
             {
@@ -916,5 +1151,116 @@ namespace OptimaJet.Workflow.PostgreSQL
                 workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }
+
+        private Tuple<int, WorkflowRuntimeModel> UpdateWorkflowRuntime(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
+            Func<NpgsqlConnection, WorkflowRuntimeModel, Guid, int> updateMethod)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                Guid oldLock = runtime.Lock;
+                setter(runtime);
+                runtime.Lock = Guid.NewGuid();
+
+                var cnt = updateMethod(connection, runtime, oldLock);
+                
+                if (cnt != 1)
+                {
+                    return new Tuple<int, WorkflowRuntimeModel>(cnt,null);
+                }
+                
+                return new Tuple<int, WorkflowRuntimeModel>(cnt,runtime);
+                
+            }
+
+            
+        }
+
+        #region IApprovalProvider
+
+        public async Task DropWorkflowInboxAsync(Guid processId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                WorkflowInbox.DeleteByProcessId(connection, processId);
+            }
+        }
+
+        public async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var inboxItems = newActors.Select(newactor => new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newactor, ProcessId = processId }).ToArray();
+                await WorkflowInbox.InsertAllAsync(connection, inboxItems).ConfigureAwait(false);
+            }
+        }
+
+        public async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var historyItem = new WorkflowApprovalHistory
+                {
+                    Id = Guid.NewGuid(),
+                    AllowedTo = allowedToEmployeeNames,
+                    DestinationState = nextState,
+                    ProcessId = id,
+                    InitialState = currentState,
+                    TriggerName = triggerName,
+                    Sort = order
+                };
+
+                await historyItem.InsertAsync(connection).ConfigureAwait(false);
+            }
+        }
+
+        public async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                var historyItem = WorkflowApprovalHistory.SelectByProcessId(connection, id).FirstOrDefault(h => h.ProcessId == id && !h.TransitionTime.HasValue &&
+            h.InitialState == currentState && h.DestinationState == nextState);
+                ;
+
+                if (historyItem == null)
+                {
+                    historyItem = new WorkflowApprovalHistory
+                    {
+                        Id = Guid.NewGuid(),
+                        AllowedTo = string.Empty,
+                        DestinationState = nextState,
+                        ProcessId = id,
+                        InitialState = currentState,
+                        Sort = order,
+                        TriggerName = triggerName,
+                        Commentary = comment,
+                        TransitionTime =_runtime.RuntimeDateTimeNow,
+                        IdentityId = identityId
+                    };
+
+                    await historyItem.InsertAsync(connection).ConfigureAwait(false);
+                }
+                else
+                {
+                    historyItem.TriggerName = triggerName;
+                    historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
+                    historyItem.IdentityId = identityId;
+                    historyItem.Commentary = comment;
+                    await historyItem.UpdateAsync(connection).ConfigureAwait(false);
+                }
+            }
+        }
+
+        public async Task DropEmptyApprovalHistoryAsync(Guid processId)
+        {
+            using (var connection = new NpgsqlConnection(ConnectionString))
+            {
+                foreach (var record in WorkflowApprovalHistory.SelectByProcessId(connection, processId).Where(x => !x.TransitionTime.HasValue).ToList())
+                {
+                    await WorkflowApprovalHistory.DeleteAsync(connection, record.Id).ConfigureAwait(false);
+                }
+            }
+        }
+
+        #endregion IApprovalProvider
     }
 }

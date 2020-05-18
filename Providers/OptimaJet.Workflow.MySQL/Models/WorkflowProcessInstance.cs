@@ -1,10 +1,12 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
-    public class WorkflowProcessInstance: DbObject<WorkflowProcessInstance>
+    public class WorkflowProcessInstance : DbObject<WorkflowProcessInstance>
     {
         public string ActivityName { get; set; }
         public Guid Id { get; set; }
@@ -20,7 +22,7 @@ namespace OptimaJet.Workflow.MySQL
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
         public string TenantId { get; set; }
-
+        public string StartingTransition { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -31,20 +33,15 @@ namespace OptimaJet.Workflow.MySQL
         {
             DBColumns.AddRange(new[]
             {
-                new ColumnInfo {Name = "Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo {Name = "ActivityName"},
-                new ColumnInfo {Name = "IsDeterminingParametersChanged", Type = MySqlDbType.Bit},
-                new ColumnInfo {Name = "PreviousActivity"},
-                new ColumnInfo {Name = "PreviousActivityForDirect"},
-                new ColumnInfo {Name = "PreviousActivityForReverse"},
-                new ColumnInfo {Name = "PreviousState"},
-                new ColumnInfo {Name = "PreviousStateForDirect"},
-                new ColumnInfo {Name = "PreviousStateForReverse"},
-                new ColumnInfo {Name = "SchemeId", Type = MySqlDbType.Binary},
-                new ColumnInfo {Name = "StateName"},
-                new ColumnInfo {Name = "ParentProcessId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "Id", IsKey = true, Type = MySqlDbType.Binary}, new ColumnInfo {Name = "ActivityName"},
+                new ColumnInfo {Name = "IsDeterminingParametersChanged", Type = MySqlDbType.Bit}, new ColumnInfo {Name = "PreviousActivity"},
+                new ColumnInfo {Name = "PreviousActivityForDirect"}, new ColumnInfo {Name = "PreviousActivityForReverse"},
+                new ColumnInfo {Name = "PreviousState"}, new ColumnInfo {Name = "PreviousStateForDirect"},
+                new ColumnInfo {Name = "PreviousStateForReverse"}, new ColumnInfo {Name = "SchemeId", Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = "StateName"}, new ColumnInfo {Name = "ParentProcessId", Type = MySqlDbType.Binary},
                 new ColumnInfo {Name = "RootProcessId", Type = MySqlDbType.Binary},
-                new ColumnInfo {Name = "TenantId", Type=MySqlDbType.VarChar, Size=1024}
+                new ColumnInfo {Name = "TenantId", Type = MySqlDbType.VarChar, Size = 1024}, 
+                new ColumnInfo {Name = nameof(StartingTransition)},
             });
         }
 
@@ -80,6 +77,8 @@ namespace OptimaJet.Workflow.MySQL
                     return RootProcessId.ToByteArray();
                 case "TenantId":
                     return TenantId;
+                case nameof(StartingTransition):
+                    return StartingTransition;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -139,9 +138,18 @@ namespace OptimaJet.Workflow.MySQL
                 case "TenantId":
                     TenantId = value as string;
                     break;
+                case nameof(StartingTransition):
+                    StartingTransition = value as string;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
+        }
+
+        public static WorkflowProcessInstance[] GetInstances(MySqlConnection connection, IEnumerable<Guid> ids)
+        {
+            string selectText = String.Format("SELECT * FROM {0} WHERE `Id` IN ({1})", DbTableName, String.Join(",", ids.Select(x => $"UUID_TO_BIN('{BitConverter.ToString(x.ToByteArray()).Replace("-", String.Empty)}')")));
+            return Select(connection, selectText);
         }
     }
 }

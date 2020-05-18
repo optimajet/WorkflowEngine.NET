@@ -98,28 +98,34 @@ namespace OptimaJet.Workflow.Oracle
         {
             IEnumerable<string> tagsList = tags?.ToList();
 
-            if (tags == null || !tags.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
+            bool isEmpty = tagsList == null || !tagsList.Any();
             
-            
-            var selectBuilder = new StringBuilder($"SELECT * FROM {DbTableName} WHERE ");
+            string query;
             var parameters = new List<OracleParameter>();
-            var likes = new List<string>();
-            foreach (string tag in tagsList)
+
+            if (!isEmpty)
             {
-                string paramName = $"search_{parameters.Count}";
-                string like = $"{nameof(Tags).ToUpper()} LIKE '%' || :{paramName} || '%'";
-                string paramValue = $"\"{tag}\"";
+                var selectBuilder = new StringBuilder($"SELECT * FROM {DbTableName} WHERE ");
+                var likes = new List<string>();
+                foreach (string tag in tagsList)
+                {
+                    string paramName = $"search_{parameters.Count}";
+                    string like = $"{nameof(Tags).ToUpper()} LIKE '%' || :{paramName} || '%'";
+                    string paramValue = $"\"{tag}\"";
 
-                likes.Add(like);
-                parameters.Add(new OracleParameter(paramName, OracleDbType.NVarchar2, paramValue, ParameterDirection.Input));
+                    likes.Add(like);
+                    parameters.Add(new OracleParameter(paramName, OracleDbType.NVarchar2, paramValue, ParameterDirection.Input));
+                }
+
+                selectBuilder.Append(String.Join(" OR ", likes));
+                query = selectBuilder.ToString();
             }
-            
-            selectBuilder.Append(String.Join(" OR ", likes));
+            else
+            {
+                query = $"SELECT * FROM {DbTableName}";
+            }
 
-            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+            return Select(connection, query, parameters.ToArray())
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();

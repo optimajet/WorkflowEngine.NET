@@ -1,5 +1,126 @@
 # Workflow Engine: Release Notes
 
+## 4.2 (#4.2)
+
+- Support for the timers in multi-server mode has been added. You can configure `WorkflowRuntime` to work in a single or multi-server environment. This affects the timers and the recovering from failure. You can configure the runtime with the following code:
+  
+  ```csharp
+  _runtime = new WorkflowRuntime()
+    ...
+    .AsSingleServer() //.AsMultiServer()
+   .Start();
+  ```
+
+  **WARNING. `AsMultiServer ()` - works for Ultimate licenses only.**
+
+- If an abnormal server shutdown has occurred, then part of the processes may remain frozen in the *Running* status. This status will be changed by the automatic recovery procedure; one of the two statuses - either *Error* or *Terminated* - will be set. You can also change the recovery procedure using Process Restorer. For example, as follows:
+
+  ```csharp
+  public class ProcessRestorer : IProcessRestorer
+  {
+    ...
+  }
+  runtime.WithProcessRestorer(new ProcessRestorer())
+  ```
+
+  **Please, note that Process Restorer is only used in a case of server shutdown. For the workflow errors, use the `OnWorkflowError` event handler.**
+
+- The `runtime.Shutdown()` and `runtime.ShutdownAsync()` methods has been added. These methods provide the correct shutdown of the `WorkflowRuntime`. Using this method is very important for a multi-server environment.
+- The approach to the workflow execution has been changed. Now, the process is executed using a run loop. Therefore, you can create an endless workflow. One iteration of the loop is equivalent to one *Activity*. By default, the maximum number of iterations is limited by `Int64.MaxValue`. However, you can change it as follows:
+
+  ```csharp
+  _runtime.WithRuntimeSettings(new WorkflowRuntimeSettings()
+  {
+    MaxNumberOfPerformedActivities = -1 //Infinite loop allowed
+  });
+  ```
+
+- Now, you can safely change the workflow state from the workflow itself during its operation. Use the following code:
+
+  ```csharp
+  processInstance.SetActivityAfterActionExecution("ActivityName");
+  processInstance.SetActivityAfterActivityExecution("ActivityName");
+  processInstance.SetStateAfterActionExecution("StateName");
+  processInstance.SetStateAfterActivityExecution("StateName");
+  ```
+
+- If the complex object is stored in the process parameters, you can receive and set its properties on the fly, using partial parameters:
+  
+  ```csharp
+  processInstance.GetParameter<T>("ObjectParameter.Object.Value");
+  ```
+
+- A new type of *Expressions* has been added. This is a simple expression that returns true or false. You can use them instead of *Conditions*. Here, you can use the process parameters values, as well as string formatting of these parameters. The syntax of these expressions is as follows:
+
+  ```csharp
+  @ObjectParameter.BooleanProperty and @IntParameter <> 1"
+  ```
+
+  Here the 'ObjectParameter.BooleanProperty' and 'IntParameter' are *Process parameters*.
+
+- The parameters values ​​can be substituted into the values ​​of the *Actions*, *Conditions*, or *Rules*. The syntax is similar to the expressions:
+
+  ```javascript
+  {
+     JsonObject = "@ObjectParameter:json",
+     Int = "@IntParameter:json",
+     IntString = "@IntParameter",
+     Guid = "@GuidParameter:json",
+     GuidString = "@(GuidParameter:N)",
+     DateTime = "@(DateTimeParameter:json)",
+     DateTimeString = "Today is @(DateTimeParameter:dd-MM-yyyy HH:mm:ss)",
+  }
+  ```
+
+- You can connect the external parameter provider - `IWorkflowExternalParametersProvider` - to `WorkflowRuntime`. This allows you to access external data (for example, the document record which the process is linked to) as usual process parameters. It can be used in Expressions.
+
+- A plugin to work with files has been added - *File Plugin*.
+- A plugin to work with Inbox/Outbox has been added - *Approval Plugin*.
+- HTTPRequest and CheckHTTPRequest methods added by *Basic Plugin* can now send POST.
+- Methods to simplify work with parallel processes have been added to *Basic Plugin*.
+- In the *Parameter edit forms* you can use the *Multiselect Dropdown*.
+
+**The following additional actions must be taken to upgrade to Workflow Engine 4.2:**
+
+- **Warning. RavenDB provider is no longer supported.**
+- **Warning. If using Redis, please, contact our support for update instructions.**
+- **Warning. If you are using MongoDB. The multi-server feature will work only with MongoDB version > 4.0**
+- Run the SQL script update_4_1_to_4_2 for all relative databases and MongoDB.
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MSSQL/Scripts/update_4_1_to_4_2.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.PostgreSQL/Scripts/update_4_1_to_4_2.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.Oracle/Scripts/update_4_1_to_4_2.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MySQL/Scripts/update_4_1_to_4_2.sql)
+  - [MongoDB](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MongoDB/Scripts/update_4_1_to_4_2.js)
+- Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
+- Update packages or dll to version 4.2. **If you connect the WFE with DLLs you must reference all DLLs from [this archive](https://workflowengine.io/downloads/assets/workflow-engine-net-4.2-core.zip) in your solution.
+- Remove `runtime.WithBus(...)` call from your `WorkflowRuntime` configuration.
+- At the point, where you configure `WorkflowRuntime` remove the `.WithTimerManager (...)` call. And add a call of  `.AsSingleServer()` or `.AsMultiServer()`, depending on the mode you want to run the `WorkflowRuntime`. **WARNING. `AsMultiServer ()` - works for Ultimate licenses only.**
+- The signature of the `UsersInRoleAsync` delegate for *Basic Plugin* has changed.
+  The way, it was:
+
+  ```csharp
+  public delegate Task<IEnumerable<string>> UsersInRoleAsyncDelegate(string roleName, Guid? processId = null);
+  ```
+
+  The way, it is now:
+
+  ```csharp
+   public delegate Task<IEnumerable<string>> UsersInRoleAsyncDelegate(string roleName, ProcessInstance processInstance);
+  ```
+
+- If you are using *.Net Framework* for your web application most likely you will must add the following lines in your *web.config*.
+
+  ```xml
+  <system.web>
+    <compilation debug="true" targetFramework="4.5">
+        <assemblies>
+            <add assembly="System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a" />
+        </assemblies>
+    </compilation>
+    ...
+  </system.web>
+  ```
+
 ## 4.1 {#4.1}
 
 - Support for multi-tenant applications.

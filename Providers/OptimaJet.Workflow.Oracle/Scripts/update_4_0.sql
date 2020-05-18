@@ -1,4 +1,4 @@
-﻿/*
+/*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for Oracle
 Version: 4.0

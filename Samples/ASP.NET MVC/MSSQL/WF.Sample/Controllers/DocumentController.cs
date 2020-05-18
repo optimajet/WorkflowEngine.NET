@@ -9,6 +9,7 @@ using WF.Sample.Helpers;
 using WF.Sample.Models;
 using System.Threading;
 using AutoMapper;
+using OptimaJet.Workflow.Core.Runtime;
 using WF.Sample.Business.DataAccess;
 
 namespace WF.Sample.Controllers
@@ -213,7 +214,12 @@ namespace WF.Sample.Controllers
                 if (string.IsNullOrEmpty(document.StateNameToSet))
                     return;
 
-                WorkflowInit.Runtime.SetState(id, currentUser, currentUser, document.StateNameToSet, new Dictionary<string, object> { { "Comment", document.Comment } });
+                var setStateParams = new SetStateParams(id,document.StateNameToSet)
+                {
+                    IdentityId = currentUser,
+                    ImpersonatedIdentityId = currentUser
+                }.AddTemporaryParameter("Comment",document.Comment);
+                WorkflowInit.Runtime.SetState(setStateParams);
                 return;
             }
 

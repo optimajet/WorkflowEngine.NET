@@ -1,4 +1,4 @@
-﻿using MySql.Data.MySqlClient;
+using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
@@ -44,7 +44,7 @@ namespace OptimaJet.Workflow.MySQL
             return ExecuteCommand(connection, command, parameters);
         }
 
-        public int Update(MySqlConnection connection)
+        public virtual int Update(MySqlConnection connection)
         {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
                     DbTableName,
@@ -56,6 +56,11 @@ namespace OptimaJet.Workflow.MySQL
 
             return ExecuteCommand(connection, command, parameters);
             
+        }
+
+        public static T[] SelectAll(MySqlConnection connection)
+        {
+            return Select(connection, String.Format("SELECT * FROM {0}", DbTableName));
         }
 
         public static T SelectByKey(MySqlConnection connection, object id)
@@ -86,6 +91,8 @@ namespace OptimaJet.Workflow.MySQL
             return ExecuteCommand(connection,
                 string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name), transaction, pId);
         }
+
+
         public static int ExecuteCommand(MySqlConnection connection, string commandText,
             params MySqlParameter[] parameters)
         {
@@ -156,6 +163,30 @@ namespace OptimaJet.Workflow.MySQL
         }
         #endregion
 
+
+        public static int InsertAll(MySqlConnection connection, T[] values)
+        {
+            if (values.Length < 1)
+                return 0;
+
+            var parameters = new List<MySqlParameter>();
+            var names = new List<string>();
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                names.Add(String.Join(",", values[i].DBColumns.Select(c => "@" + i.ToString() + c.Name)));
+                parameters.AddRange(values[i].DBColumns.Select(c => values[i].CreateParameter(c, i.ToString())).ToArray());
+            }
+
+            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                DbTableName,
+                String.Join(",", values.First().DBColumns.Select(c => string.Format("`{0}`", c.Name))),
+                String.Join(",", names));
+
+
+            return ExecuteCommand(connection, command, parameters.ToArray());
+        }
+
         public static object ConvertToDBCompatibilityType(object obj)
         {
             if (obj is Guid)
@@ -163,9 +194,9 @@ namespace OptimaJet.Workflow.MySQL
             return obj;
         }
 
-        public virtual MySqlParameter CreateParameter(ColumnInfo c)
+        public virtual MySqlParameter CreateParameter(ColumnInfo c, string namePrefix = "")
         {
-            var p = new MySqlParameter(c.Name, c.Type) {Value = GetValue(c.Name)};
+            var p = new MySqlParameter(namePrefix+c.Name, c.Type) {Value = GetValue(c.Name)};
             return p;
         }
     }

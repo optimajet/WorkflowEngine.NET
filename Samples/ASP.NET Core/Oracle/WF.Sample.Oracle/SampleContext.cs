@@ -7,7 +7,6 @@ namespace WF.Sample.Oracle
     using Microsoft.EntityFrameworkCore;
     using Microsoft.EntityFrameworkCore.Storage;
     using Microsoft.Extensions.Configuration;
-    using WF.Sample.Oracle.Storage;
 
     public partial class SampleContext : DbContext
     {
@@ -33,7 +32,6 @@ namespace WF.Sample.Oracle
             if (!optionsBuilder.IsConfigured)
             {
                 optionsBuilder.UseOracle(_config.GetConnectionString("DefaultConnection"));
-                optionsBuilder.ReplaceService<ISqlGenerationHelper, UnquotedOracleSqlGenerationHelper>();
             }
         }
 
@@ -51,9 +49,15 @@ namespace WF.Sample.Oracle
             }
 
             
-            modelBuilder.Entity<Document>().Property(x => x.Number).HasColumnName("\"Number\"");
-            modelBuilder.Entity<Document>().Property(x => x.Comment).HasColumnName("\"Comment\"");
-            modelBuilder.Entity<DocumentTransitionHistory>().Property(x => x.Order).HasColumnName("\"Order\"");
+            modelBuilder.Entity<Document>().Property(x => x.Number)
+                .HasColumnName("Number")
+            ;
+            modelBuilder.Entity<Document>().Property(x => x.Comment)
+                .HasColumnName("Comment")
+            ;
+            modelBuilder.Entity<DocumentTransitionHistory>().Property(x => x.Order)
+                .HasColumnName("Order")
+            ;
    
             modelBuilder.Entity<Employee>()
                 .HasMany(e => e.Documents)

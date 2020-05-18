@@ -1,6 +1,10 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="4.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/dotnet</BaseIntermediateOutputPath>
+    <LangVersion>8</LangVersion>
+  </PropertyGroup>
+  <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
     <Platform Condition=" '$(Platform)' == '' ">AnyCPU</Platform>
     <ProductVersion>8.0.30703</ProductVersion>
@@ -42,9 +46,13 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <ItemGroup>
-    <Reference Include="Newtonsoft.Json, Version=7.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -60,6 +68,13 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbObject.cs" />
+    <Compile Include="Extensions.cs" />
+    <Compile Include="Models\WorkflowApprovalHistory.cs" />
+    <Compile Include="Models\WorkflowInbox.cs" />
+    <Compile Include="Models\WorkflowRuntime.cs" />
+    <Compile Include="Models\WorkflowSync.cs" />
+    <Compile Include="FileSchemePersistenceMSSQLProvider.cs" />
+    <Compile Include="Models\ProcessInstanceTreeItem.cs" />
     <Compile Include="Obsolete\DbPersistenceProvider.cs" />
     <Compile Include="Obsolete\DbProvider.cs" />
     <Compile Include="Obsolete\DbSchemePersistenceProvider.cs" />
@@ -82,6 +97,7 @@
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config" />
+    <None Include="packages.config" />
     <None Include="Properties\Settings.settings">
       <Generator>SettingsSingleFileGenerator</Generator>
       <LastGenOutput>Settings.Designer.cs</LastGenOutput>
@@ -92,12 +108,14 @@
     <Service Include="{3259AA49-8AA1-44D3-9025-A0B520596A8C}" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\ApprovalsPlugin.sql" />
     <Content Include="Scripts\update_1_4_to_1_4_3.sql" />
     <Content Include="Scripts\update_4_0_to_4_1.sql" />
     <Content Include="Scripts\update_1_4_5_to_1_5.sql" />
     <Content Include="Scripts\update_1_3_to_1_4.sql" />
     <Content Include="Scripts\CreatePersistenceObjects.sql" />
     <Content Include="Scripts\DropPersistenceObjects.sql" />
+    <Content Include="Scripts\update_4_1_to_4_2.sql" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj">

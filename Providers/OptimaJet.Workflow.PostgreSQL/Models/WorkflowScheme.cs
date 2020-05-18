@@ -96,27 +96,34 @@ namespace OptimaJet.Workflow.PostgreSQL
         public static List<string> GetSchemeCodesByTags(NpgsqlConnection connection, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
-             if (tags == null || !tags.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
-            
-            var selectBuilder = new StringBuilder($"SELECT \"{nameof(Code)}\" FROM {ObjectName} WHERE ");
+            bool isEmpty = tagsList == null || !tagsList.Any();
+
+            string query;
             var parameters = new List<NpgsqlParameter>();
-            var likes = new List<string>();
-            foreach (string tag in tagsList)
-            {
-                string paramName = $"search_{parameters.Count}";
-                string like = $"\"{nameof(Tags)}\" LIKE '%' || @{paramName} || '%'";
-                string paramValue = $"\"{tag}\"";
 
-                likes.Add(like);
-                parameters.Add(new NpgsqlParameter(paramName,NpgsqlDbType.Varchar) {Value = paramValue});
+            if (!isEmpty)
+            {
+                var selectBuilder = new StringBuilder($"SELECT \"{nameof(Code)}\" FROM {ObjectName} WHERE ");
+                var likes = new List<string>();
+                foreach (string tag in tagsList)
+                {
+                    string paramName = $"search_{parameters.Count}";
+                    string like = $"\"{nameof(Tags)}\" LIKE '%' || @{paramName} || '%'";
+                    string paramValue = $"\"{tag}\"";
+
+                    likes.Add(like);
+                    parameters.Add(new NpgsqlParameter(paramName, NpgsqlDbType.Varchar) {Value = paramValue});
+                }
+
+                selectBuilder.Append(String.Join(" OR ", likes));
+                query = selectBuilder.ToString();
+            }
+            else
+            {
+                query = $"SELECT \"{nameof(Code)}\" FROM {ObjectName}";
             }
 
-            selectBuilder.Append(String.Join(" OR ", likes));
-
-            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+            return Select(connection, query, parameters.ToArray())
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();

@@ -1,5 +1,8 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Data.SqlClient;
+using System.Linq;
 
 // ReSharper disable once CheckNamespace
 
@@ -14,7 +17,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public WorkflowProcessInstance()
         {
-            DbColumns.AddRange(new[]
+            DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "ActivityName"},
@@ -29,7 +32,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name = "StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = "TenantId", Type = SqlDbType.NVarChar, Size=1024}
+                new ColumnInfo {Name = "TenantId", Type = SqlDbType.NVarChar, Size=1024},
+                new ColumnInfo {Name = "StartingTransition", Type = SqlDbType.NVarChar}
             });
         }
 
@@ -47,6 +51,7 @@ namespace OptimaJet.Workflow.DbPersistence
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
         public string TenantId { get; set; }
+        public string StartingTransition { get; set; }
 
         public override object GetValue(string key)
         {
@@ -80,6 +85,8 @@ namespace OptimaJet.Workflow.DbPersistence
                     return RootProcessId;
                 case "TenantId":
                     return TenantId;
+                case "StartingTransition":
+                    return StartingTransition;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -131,11 +138,21 @@ namespace OptimaJet.Workflow.DbPersistence
                 case "TenantId":
                     TenantId = value as string;
                     break;
+                case "StartingTransition":
+                    StartingTransition = value as string;
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
 
         }
+
+        public static WorkflowProcessInstance[] GetInstances(SqlConnection connection, IEnumerable<Guid> ids)
+        {
+            string selectText = String.Format("SELECT * FROM {0} WHERE [Id] IN ({1})", ObjectName, String.Join(",", ids.Select(x => $"'{x}'")));
+            return Select(connection, selectText);
+        }
+
 #if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()
         {
@@ -154,6 +171,7 @@ namespace OptimaJet.Workflow.DbPersistence
             dt.Columns.Add("ParentProcessId", typeof(Guid));
             dt.Columns.Add("RootProcessId", typeof(Guid));
             dt.Columns.Add("TenantId", typeof(string));
+            dt.Columns.Add("StartingTransition", typeof(string));
             return dt;
         }
 #endif

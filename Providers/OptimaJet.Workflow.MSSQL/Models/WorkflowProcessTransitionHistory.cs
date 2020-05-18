@@ -15,7 +15,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public WorkflowProcessTransitionHistory()
         {
-            DbColumns.AddRange(new[]
+            DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "ActorIdentityId"},

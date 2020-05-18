@@ -1,22 +1,21 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Net;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
-using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Core.Runtime.Timers;
 using StackExchange.Redis;
 
 namespace OptimaJet.Workflow.Redis
 {
-    public class RedisProvider : IWorkflowProvider
+    public class RedisProvider : IWorkflowProvider, IApprovalProvider
     {
         private readonly ConnectionMultiplexer _connector;
         private readonly string _providerNamespace;
@@ -80,9 +79,14 @@ namespace OptimaJet.Workflow.Redis
             return $"{_providerNamespace}:processscheme:{schemeId:N}";
         }
 
-        public string GetKeyForCurrentScheme(string schemeCode)
+        public string GetKeyForCurrentScheme(string schemeCode, string parametersHash)
         {
-            return $"{_providerNamespace}:currentscheme:{schemeCode}";
+            return $"{_providerNamespace}:currentscheme:{schemeCode}:{parametersHash}";
+        }
+
+        public string GetKeyForCurrentSchemes(string schemeCode)
+        {
+            return $"{_providerNamespace}:currentschemes:{schemeCode}";
         }
 
         public string GetKeySchemeHierarchy(Guid schemeId)
@@ -95,14 +99,29 @@ namespace OptimaJet.Workflow.Redis
             return $"{_providerNamespace}:processrunning";
         }
 
-        public string GetKeyProcessStatus()
+        public string GetKeyProcessStatus(Guid processId)
         {
-            return $"{_providerNamespace}:processstatus";
+            return $"{_providerNamespace}:processstatus:{processId:N}";
         }
 
-        public string GetKeyProcessTimer(Guid processId)
+        public string GetKeyProcessStatus(string processId)
         {
-            return $"{_providerNamespace}:processtimer:{processId:N}";
+            return $"{_providerNamespace}:processstatus:{processId}";
+        }
+
+        public string GetKeyProcessStatusSetTime()
+        {
+            return $"{_providerNamespace}:processstatussettime";
+        }
+
+        public string GetKeyProcessTimer(Guid processId, string name)
+        {
+            return $"{_providerNamespace}:processtimer:{processId:N}:{name}";
+        }
+
+        public string GetKeyProcessTimers(Guid processId)
+        {
+            return $"{_providerNamespace}:processtimers:{processId:N}";
         }
 
         public string GetKeyTimerTime()
@@ -120,6 +139,16 @@ namespace OptimaJet.Workflow.Redis
             return $"{_providerNamespace}:timerignore";
         }
 
+        public string GetKeyTimerIgnoreLock(string timerId)
+        {
+            return $"{_providerNamespace}:timerignorelock:{timerId}";
+        }
+
+        public string GetKeyTimerIgnoreLock(Guid timerId)
+        {
+            return $"{_providerNamespace}:timerignorelock:{timerId:N}";
+        }
+
         public string GetKeyGlobalParameter(string type)
         {
             return $"{_providerNamespace}:globalparameter:{type}";
@@ -127,19 +156,84 @@ namespace OptimaJet.Workflow.Redis
 
         public string GetKeyCanBeInlined()
         {
-            return $"{_providerNamespace}:schemecanbeinlined"; 
+            return $"{_providerNamespace}:schemecanbeinlined";
         }
-        
+
         public string GetKeyForInlined()
         {
-            return $"{_providerNamespace}:schemeinlined"; 
+            return $"{_providerNamespace}:schemeinlined";
         }
 
         public string GetKeyForTags()
         {
             return $"{_providerNamespace}:schemetags";
         }
-        
+
+        public string GetKeyForSubprocesses(Guid rootProcessId)
+        {
+            return $"{_providerNamespace}:subprocesses:{rootProcessId:N}";
+        }
+
+        public string GetKeyForRootProcess(Guid processId)
+        {
+            return $"{_providerNamespace}:subprocesses:{processId:N}";
+        }
+
+        public string GetKeyForWorkflowRuntimeStatuses()
+        {
+            return $"{_providerNamespace}:workflowruntimestatus";
+        }
+
+        public string GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus status)
+        {
+            return $"{_providerNamespace}:workflowruntimestatus:{status}";
+        }
+
+        public string GetKeyForWorkflowRuntimeLocks(string runtimeId)
+        {
+            return $"{_providerNamespace}:workflowruntimelocks:{runtimeId}";
+        }
+
+        public string GetKeyForWorkflowLastAliveSignals()
+        {
+            return $"{_providerNamespace}:workflowruntimelastalivesignals";
+        }
+
+        public string GetKeyForWorkflowRuntimeRestorers()
+        {
+            return $"{_providerNamespace}:workflowruntimerestorers";
+        }
+
+        public string GetKeyForWorkflowRuntimeProcesses(string runtimeId)
+        {
+            return $"{_providerNamespace}:workflowruntimeprocesses:{runtimeId}";
+        }
+
+        public string GetKeyForWorkflowProcessRuntimes()
+        {
+            return $"{_providerNamespace}:workflowprocessruntimes";
+        }
+
+        public string GetKeyForWorkflowSyncLocks(TimerCategory timerCategory)
+        {
+            return $"{_providerNamespace}:workflowsynclocks:{timerCategory}";
+        }
+
+        public string GetKeyForWorkflowRuntimeTimer(string timerName)
+        {
+            return $"{_providerNamespace}:workflowruntimetimers:{timerName}";
+        }
+
+        public string GetKeyInbox(Guid processId)
+        {
+            return $"{_providerNamespace}:inbox:{processId:N}";
+        }
+
+        public string GetKeyApprovalHistory(Guid documentId)
+        {
+            return $"{_providerNamespace}:approvalhistory:{documentId:N}";
+        }
+
         #endregion
 
         #region Private
@@ -152,54 +246,153 @@ namespace OptimaJet.Workflow.Redis
                 workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }
-        
+
         private void SetRunningStatus(Guid processId)
         {
-            var db = _connector.GetDatabase();
-            var hash = String.Format("{0:N}", processId);
+            IDatabase db = _connector.GetDatabase();
+            string hash = $"{processId:N}";
+            bool exists = db.KeyExists(GetKeyProcessStatus(processId));
 
-            if (!db.HashExists(GetKeyProcessStatus(), hash))
+            if (!exists)
+            {
                 throw new StatusNotDefinedException();
+            }
 
-            var tran = db.CreateTransaction();
-            tran.AddCondition(Condition.HashNotExists(GetKeyProcessRunning(), hash));
+            string runtimeId = _runtime.Id;
+
+            if (db.HashExists(GetKeyForWorkflowProcessRuntimes(), hash))
+            {
+                runtimeId = db.HashGet(GetKeyForWorkflowProcessRuntimes(), hash);
+            }
+
+            ITransaction tran = db.CreateTransaction();
+            tran.AddCondition(Condition.StringNotEqual(GetKeyProcessStatus(processId), (int)ProcessStatus.Running.Id));
             tran.HashSetAsync(GetKeyProcessRunning(), hash, true);
-            tran.HashSetAsync(GetKeyProcessStatus(), hash, ProcessStatus.Running.Id);
+            tran.StringSetAsync(GetKeyProcessStatus(processId), (int)ProcessStatus.Running.Id);
+            tran.HashSetAsync(GetKeyProcessStatusSetTime(), hash, _runtime.RuntimeDateTimeNow.Ticks);
 
-            var res = tran.Execute();
+            if (runtimeId != _runtime.Id)
+            {
+                tran.SetRemoveAsync(GetKeyForWorkflowRuntimeProcesses(runtimeId), hash);
+            }           
+
+            tran.HashSetAsync(GetKeyForWorkflowProcessRuntimes(), hash, _runtime.Id);
+            tran.SetAddAsync(GetKeyForWorkflowRuntimeProcesses(_runtime.Id), hash);
+
+            bool res = tran.Execute();
 
             if (!res)
+            {
+                var status = db.StringGet(GetKeyProcessStatus(processId));
+
+                _runtime.LogError("Failed to SetRunningStatus", new Dictionary<string, string>()
+                {
+                    { "Status", status.ToString() },
+                    { "processId", processId.ToString()},
+                    { "runtimeId", _runtime.Id }
+                });
+                
+
                 throw new ImpossibleToSetStatusException();
+            }
         }
-        
+
         private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
         {
             var db = _connector.GetDatabase();
             var hash = string.Format("{0:N}", processId);
-            if (!createIfnotDefined && !db.HashExists(GetKeyProcessStatus(), hash))
+            var exists = db.KeyExists(GetKeyProcessStatus(processId));
+            if (!createIfnotDefined && !exists)
                 throw new StatusNotDefinedException();
             var batch = db.CreateBatch();
             batch.HashDeleteAsync(GetKeyProcessRunning(), hash);
-            batch.HashSetAsync(GetKeyProcessStatus(), hash, status.Id);
+            batch.StringSetAsync(GetKeyProcessStatus(processId),(int)status.Id);
+            batch.HashSetAsync(GetKeyProcessStatusSetTime(), hash, _runtime.RuntimeDateTimeNow.Ticks);
+
+            if (db.HashExists(GetKeyForWorkflowProcessRuntimes(), hash))
+            {
+                RedisValue runtimeId = db.HashGet(GetKeyForWorkflowProcessRuntimes(), hash);
+
+                if (runtimeId != _runtime.Id)
+                {
+                    batch.SetRemoveAsync(GetKeyForWorkflowRuntimeProcesses(runtimeId), hash);
+                }
+            }
+
+            batch.HashSetAsync(GetKeyForWorkflowProcessRuntimes(), hash, _runtime.Id);
+
+            if (!exists)
+            {
+                batch.SetAddAsync(GetKeyForWorkflowRuntimeProcesses(_runtime.Id), hash);
+            }
+
             batch.Execute();
         }
 
         private void AddDeleteTimersOperationsToBatch(Guid processId, List<string> timersIgnoreList, IDatabase db, IBatch batch)
         {
-            var keyProcessTimer = GetKeyProcessTimer(processId);
+            RedisValue[] timerNames = db.SetMembers(GetKeyProcessTimers(processId));
+
             var timers =
-                db.HashGetAll(keyProcessTimer)
+                timerNames.Select(x => new { Name = x, Value = db.StringGet(GetKeyProcessTimer(processId, x)) })
                     .Where(he => !timersIgnoreList.Contains(he.Name))
                     .Select(he => new TimerToExecute {Name = he.Name, ProcessId = processId, TimerId = Guid.Parse(he.Value)})
                     .ToList();
 
-            foreach (var timer in timers)
+            foreach (TimerToExecute timer in timers)
             {
                 batch.SortedSetRemoveAsync(GetKeyTimerTime(), timer.TimerId.ToString("N"));
-                batch.HashDeleteAsync(keyProcessTimer, timer.Name);
+                batch.KeyDeleteAsync(GetKeyProcessTimer(processId, timer.Name));
+                batch.SetRemoveAsync(GetKeyProcessTimers(processId), timer.Name);
                 batch.HashDeleteAsync(GetKeyTimerIgnore(), timer.TimerId.ToString("N"));
+                batch.KeyDeleteAsync(GetKeyTimerIgnoreLock(timer.TimerId));
                 batch.HashDeleteAsync(GetKeyTimer(), timer.TimerId.ToString("N"));
             }
+        }
+
+        private WorkflowRuntimeModel GetWorkflowRuntimeStatus(IDatabase db, string runtimeId)
+        {
+            RedisValue statusValue = db.HashGet(GetKeyForWorkflowRuntimeStatuses(), runtimeId);
+            if (statusValue.HasValue)
+            {
+                var status = (RuntimeStatus)Enum.Parse(typeof(RuntimeStatus), statusValue);
+
+                RedisValue lockValue = db.StringGet(GetKeyForWorkflowRuntimeLocks(runtimeId));
+
+                DateTime? lastAliveSignal = default;
+
+                double? lastAliveSignalValue = db.SortedSetScore(GetKeyForWorkflowLastAliveSignals(), runtimeId);
+
+                if (lastAliveSignalValue.HasValue)
+                {
+                    lastAliveSignal = _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(lastAliveSignalValue.Value));
+                }
+
+                RedisValue restorerIdValue = db.HashGet(GetKeyForWorkflowRuntimeRestorers(), runtimeId);
+
+                string sortedSetKey = GetKeyForWorkflowRuntimeTimer(TimerCategory.Timer.ToString());
+
+                DateTime? nextTimerTime = default;
+
+                double? nextTimerTimeValue = db.SortedSetScore(sortedSetKey, runtimeId);
+
+                if (nextTimerTimeValue.HasValue)
+                {
+                    nextTimerTime = _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(nextTimerTimeValue.Value));
+                }
+
+                return new WorkflowRuntimeModel
+                {
+                    Lock = Guid.Parse(lockValue),
+                    RuntimeId = runtimeId,
+                    Status = status,
+                    LastAliveSignal = lastAliveSignal,
+                    RestorerId = restorerIdValue,
+                    NextTimerTime = nextTimerTime
+                };
+            }
+
+            return null;
         }
 
         #endregion
@@ -250,9 +443,10 @@ namespace OptimaJet.Workflow.Redis
             if (string.IsNullOrEmpty(processScheme.Scheme))
                 throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
-            var key = GetKeyForCurrentScheme(processScheme.RootSchemeId.HasValue ? processScheme.RootSchemeCode : processScheme.SchemeCode);
+            var key = GetKeyForCurrentScheme(processScheme.RootSchemeId.HasValue ? processScheme.RootSchemeCode : processScheme.SchemeCode,
+                HashHelper.GenerateStringHash(processScheme.DefiningParameters));
 
-            var isObsolete = !db.HashExists(key, processScheme.DefiningParameters);
+            var isObsolete = !db.KeyExists(key);
 
             return ConvertToSchemeDefinition(schemeId, isObsolete, processScheme);
         }
@@ -277,6 +471,7 @@ namespace OptimaJet.Workflow.Redis
                 {
                     throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme);
                 }
+
                 var schemeId = Guid.Parse(schemeIdValue);
 
                 var processSchemeValue = db.StringGet(GetKeyForProcessScheme(schemeId));
@@ -285,7 +480,7 @@ namespace OptimaJet.Workflow.Redis
                     throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
 
                 var processScheme = JsonConvert.DeserializeObject<WorkflowProcessScheme>(processSchemeValue);
-                var isObsolete = !db.HashExists(GetKeyForCurrentScheme(processScheme.RootSchemeCode), parameters);
+                var isObsolete = !db.KeyExists(GetKeyForCurrentScheme(processScheme.RootSchemeCode, HashHelper.GenerateStringHash(parameters)));
 
                 if (!ignoreObsolete && isObsolete)
                 {
@@ -296,7 +491,7 @@ namespace OptimaJet.Workflow.Redis
             }
             else
             {
-                var schemeIdValue = db.HashGet(GetKeyForCurrentScheme(schemeCode), parameters);
+                var schemeIdValue = db.StringGet(GetKeyForCurrentScheme(schemeCode, HashHelper.GenerateStringHash(parameters)));
 
                 if (!schemeIdValue.HasValue)
                 {
@@ -337,7 +532,7 @@ namespace OptimaJet.Workflow.Redis
         /// </summary>
         /// <param name="scheme">Not parsed scheme of the process</param>
         /// <exception cref="SchemeAlreadyExistsException"></exception>
-        public void SaveScheme(SchemeDefinition<XElement> scheme)
+        public SchemeDefinition<XElement> SaveScheme(SchemeDefinition<XElement> scheme)
         {
             var db = _connector.GetDatabase();
 
@@ -348,10 +543,10 @@ namespace OptimaJet.Workflow.Redis
             {
                 if (!scheme.RootSchemeId.HasValue)
                 {
-                    var key = GetKeyForCurrentScheme(scheme.SchemeCode);
-                    var hash = scheme.DefiningParameters;
-                    tran.AddCondition(Condition.HashNotExists(key, hash));
-                    tran.HashSetAsync(key, hash, string.Format("{0:N}", scheme.Id));
+                    var key = GetKeyForCurrentScheme(scheme.SchemeCode, HashHelper.GenerateStringHash(scheme.DefiningParameters));
+                    tran.AddCondition(Condition.KeyNotExists(key));
+                    tran.StringSetAsync(key, String.Format("{0:N}", scheme.Id));
+                    tran.SetAddAsync(GetKeyForCurrentSchemes(scheme.SchemeCode), key);
                 }
             }
 
@@ -369,8 +564,6 @@ namespace OptimaJet.Workflow.Redis
             var newSchemeValue = JsonConvert.SerializeObject(newProcessScheme);
             var newSchemeKey = GetKeyForProcessScheme(scheme.Id);
 
-            
-
             tran.AddCondition(Condition.KeyNotExists(newSchemeKey));
 
             tran.StringSetAsync(newSchemeKey, newSchemeValue);
@@ -384,6 +577,8 @@ namespace OptimaJet.Workflow.Redis
 
             if (!result)
                 throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+
+            return null;
         }
 
 
@@ -397,7 +592,13 @@ namespace OptimaJet.Workflow.Redis
         {
             var definingParameters = DefiningParametersSerializer.Serialize(parameters);
             var db = _connector.GetDatabase();
-            db.HashDelete(GetKeyForCurrentScheme(schemeCode), definingParameters);
+            var key = GetKeyForCurrentScheme(schemeCode, HashHelper.GenerateStringHash(definingParameters));
+
+            var batch = db.CreateBatch();
+            batch.KeyDeleteAsync(key);
+            batch.SetRemoveAsync(GetKeyForCurrentSchemes(schemeCode), key);
+
+            batch.Execute();
         }
 
         /// <summary>
@@ -406,8 +607,17 @@ namespace OptimaJet.Workflow.Redis
         /// <param name="schemeCode">Name of the scheme</param>
         public void SetSchemeIsObsolete(string schemeCode)
         {
-            var db = _connector.GetDatabase();
-            db.KeyDelete(GetKeyForCurrentScheme(schemeCode));
+            IDatabase db = _connector.GetDatabase();
+
+            RedisValue[] keys = db.SetMembers(GetKeyForCurrentSchemes(schemeCode));
+
+            var batch = db.CreateBatch();
+
+            foreach(var k in keys.Where(k => k.HasValue))
+            {
+                batch.KeyDeleteAsync(k.ToString());
+            }
+            batch.KeyDeleteAsync(GetKeyForCurrentSchemes(schemeCode));
         }
 
 
@@ -426,16 +636,16 @@ namespace OptimaJet.Workflow.Redis
 
             var keyForInlined = GetKeyForInlined();
             var keyCanBeInlined = GetKeyCanBeInlined();
-            
+
             if (inlinedSchemes == null || !inlinedSchemes.Any())
             {
-                tran.HashDeleteAsync(keyForInlined,schemeCode);
+                tran.HashDeleteAsync(keyForInlined, schemeCode);
             }
             else
             {
                 tran.HashSetAsync(keyForInlined, schemeCode, JsonConvert.SerializeObject(inlinedSchemes));
             }
-            
+
             //can be inlined
             if (canBeInlined)
             {
@@ -466,7 +676,7 @@ namespace OptimaJet.Workflow.Redis
             var pairs = db.HashGetAll(GetKeyForInlined());
 
             var res = new List<string>();
-            
+
             foreach (HashEntry pair in pairs)
             {
                 var inlined = JsonConvert.DeserializeObject<List<string>>(pair.Value.ToString());
@@ -484,10 +694,7 @@ namespace OptimaJet.Workflow.Redis
 
         public List<string> SearchSchemesByTags(IEnumerable<string> tags)
         {
-            if (tags == null || !tags.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
+            bool isEmpty = tags == null || !tags.Any();
 
             IDatabase db = _connector.GetDatabase();
 
@@ -502,11 +709,18 @@ namespace OptimaJet.Workflow.Redis
                     continue;
                 }
 
-                List<string> storedTags = TagHelper.FromTagStringForDatabase(pair.Value);
-
-                if (storedTags.Any(st=>tags.Contains(st)))
+                if (isEmpty)
                 {
                     res.Add(pair.Name.ToString());
+                }
+                else
+                {
+                    List<string> storedTags = TagHelper.FromTagStringForDatabase(pair.Value);
+
+                    if (storedTags.Any(st => tags.Contains(st)))
+                    {
+                        res.Add(pair.Name.ToString());
+                    }
                 }
             }
 
@@ -543,7 +757,7 @@ namespace OptimaJet.Workflow.Redis
             UpdateTags(schemeCode, (schemeTags) => tags.ToList());
         }
 
-        private void UpdateTags(string schemeCode,  Func<List<string>, List<string>> getNewTags)
+        private void UpdateTags(string schemeCode, Func<List<string>, List<string>> getNewTags)
         {
             IDatabase db = _connector.GetDatabase();
             string key = GetKeyForTags();
@@ -579,6 +793,258 @@ namespace OptimaJet.Workflow.Redis
 
         #region Implementation of IPersistenceProvider
 
+        public void DeleteInactiveTimersByProcessId(Guid processId)
+        {
+            IDatabase db = _connector.GetDatabase();
+            string ignoreKey = GetKeyTimerIgnore();
+            IBatch batch = db.CreateBatch();
+
+            RedisValue[] timerNames = db.SetMembers(GetKeyProcessTimers(processId));
+
+            var timers =
+                timerNames.Select(x => new { Name = x, Value = db.StringGet(GetKeyProcessTimer(processId, x)) })
+                    .Where(he => db.HashExists(ignoreKey, he.Value))
+                    .Select(he => new TimerToExecute {Name = he.Name, ProcessId = processId, TimerId = Guid.Parse(he.Value)})
+                    .ToList();
+
+            foreach (TimerToExecute timer in timers)
+            {
+                batch.SortedSetRemoveAsync(GetKeyTimerTime(), timer.TimerId.ToString("N"));
+                batch.KeyDeleteAsync(GetKeyProcessTimer(processId, timer.Name));
+                batch.SetRemoveAsync(GetKeyProcessTimers(processId), timer.Name);
+                batch.HashDeleteAsync(ignoreKey, timer.TimerId.ToString("N"));
+                batch.HashDeleteAsync(GetKeyTimer(), timer.TimerId.ToString("N"));
+            }
+
+            batch.Execute();
+        }
+
+        public async Task DeleteTimerAsync(Guid timerId)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            string timerKey = timerId.ToString("N");
+
+            RedisValue timerValue = await db.HashGetAsync(GetKeyTimer(), timerKey).ConfigureAwait(false);
+
+            if (timerValue.HasValue)
+            {
+                TimerToExecute timer = JsonConvert.DeserializeObject<TimerToExecute>(timerValue);
+
+                IBatch batch = db.CreateBatch();
+
+#pragma warning disable 4014
+                batch.SortedSetRemoveAsync(GetKeyTimerTime(), timerKey);
+                batch.KeyDeleteAsync(GetKeyProcessTimer(timer.ProcessId, timer.Name));
+                batch.SetRemoveAsync(GetKeyProcessTimers(timer.ProcessId), timer.Name);
+                batch.HashDeleteAsync(GetKeyTimerIgnore(), timerKey);
+                batch.KeyDeleteAsync(GetKeyTimerIgnoreLock(timerKey));
+                batch.HashDeleteAsync(GetKeyTimer(), timerKey);
+#pragma warning restore 4014
+
+                batch.Execute();
+            }
+        }
+
+        public List<Guid> GetRunningProcesses(string runtimeId = null)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            if (!String.IsNullOrEmpty(runtimeId))
+            {
+                return db.SetMembers(GetKeyForWorkflowRuntimeProcesses(runtimeId)).Where(rp => rp.HasValue)
+                    .Select(x => Guid.Parse(x)).ToList();
+            }
+
+            return db.HashKeys(GetKeyProcessRunning()).Where(rp => rp.HasValue).Select(x => Guid.Parse(x)).ToList();
+        }
+
+        public WorkflowRuntimeModel CreateWorkflowRuntime(string runtimeId, RuntimeStatus status)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            IBatch batch = db.CreateBatch();
+
+            var runtime = new WorkflowRuntimeModel() {RuntimeId = runtimeId, Lock = Guid.NewGuid(), Status = status};
+
+            batch.HashSetAsync(GetKeyForWorkflowRuntimeStatuses(), runtimeId, status.ToString());
+            batch.StringSetAsync(GetKeyForWorkflowRuntimeLocks(runtimeId), runtime.Lock.ToString("N"));
+            batch.SetAddAsync(GetKeyForWorkflowRuntimeStatusSet(status), runtimeId);
+
+            batch.Execute();
+
+            return runtime;
+        }
+
+        public void DeleteWorkflowRuntime(string name)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            ITransaction tran = db.CreateTransaction();
+
+            RedisValue statusValue = db.HashGet(GetKeyForWorkflowRuntimeStatuses(), name);
+
+            if (statusValue.HasValue)
+            {
+                var status = (RuntimeStatus)Enum.Parse(typeof(RuntimeStatus), statusValue);
+
+                tran.HashDeleteAsync(GetKeyForWorkflowRuntimeStatuses(), name);
+                tran.KeyDeleteAsync(GetKeyForWorkflowRuntimeLocks(name));
+                tran.SetRemoveAsync(GetKeyForWorkflowRuntimeStatusSet(status), name);
+                tran.SortedSetRemoveAsync(GetKeyForWorkflowLastAliveSignals(), name);
+                tran.HashDeleteAsync(GetKeyForWorkflowRuntimeRestorers(), name);
+
+                tran.SortedSetRemoveAsync(GetKeyForWorkflowRuntimeTimer(TimerCategory.Timer.ToString()), name);
+                tran.SortedSetRemoveAsync(GetKeyForWorkflowRuntimeTimer(TimerCategory.ServiceTimer.ToString()), name);
+
+                tran.KeyDeleteAsync(GetKeyForWorkflowRuntimeProcesses(name));
+            }
+
+            tran.Execute();
+        }
+
+        public WorkflowRuntimeModel UpdateWorkflowRuntimeStatus(WorkflowRuntimeModel runtime, RuntimeStatus status)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            ITransaction tran = db.CreateTransaction();
+
+            Guid oldLock = runtime.Lock;
+            runtime.Lock = Guid.NewGuid();
+            runtime.Status = status;
+
+            tran.AddCondition(Condition.StringEqual(GetKeyForWorkflowRuntimeLocks(runtime.RuntimeId), oldLock.ToString("N")));
+
+            RedisValue statusValue = db.HashGet(GetKeyForWorkflowRuntimeStatuses(), runtime.RuntimeId);
+            if (statusValue.HasValue)
+            {
+                var currentStatus = (RuntimeStatus)Enum.Parse(typeof(RuntimeStatus), statusValue);
+                tran.SetRemoveAsync(GetKeyForWorkflowRuntimeStatusSet(currentStatus), runtime.RuntimeId);
+            }
+
+            tran.HashSetAsync(GetKeyForWorkflowRuntimeStatuses(), runtime.RuntimeId, status.ToString());
+            tran.StringSetAsync(GetKeyForWorkflowRuntimeLocks(runtime.RuntimeId), runtime.Lock.ToString("N"));
+            tran.SetAddAsync(GetKeyForWorkflowRuntimeStatusSet(status), runtime.RuntimeId);
+
+            bool res = tran.Execute();
+
+            if (!res)
+            {
+                throw new ImpossibleToSetRuntimeStatusException();
+            }
+
+            return runtime;
+        }
+
+        public (bool Success, WorkflowRuntimeModel UpdatedModel) UpdateWorkflowRuntimeRestorer(WorkflowRuntimeModel runtime, string restorerId)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            ITransaction tran = db.CreateTransaction();
+
+            Guid oldLock = runtime.Lock;
+            runtime.Lock = Guid.NewGuid();
+            runtime.RestorerId = restorerId;
+
+            tran.AddCondition(Condition.StringEqual(GetKeyForWorkflowRuntimeLocks(runtime.RuntimeId), oldLock.ToString("N")));
+
+            tran.HashSetAsync(GetKeyForWorkflowRuntimeRestorers(), runtime.RuntimeId, runtime.RestorerId);
+            tran.StringSetAsync(GetKeyForWorkflowRuntimeLocks(runtime.RuntimeId), runtime.Lock.ToString("N"));
+
+            bool res = tran.Execute();
+
+            if (!res)
+            {
+                return (false, null);
+            }
+
+            return (true, runtime);
+        }
+
+        public WorkflowRuntimeModel GetWorkflowRuntimeModel(string runtimeId)
+        {
+            IDatabase db = _connector.GetDatabase();
+            return GetWorkflowRuntimeStatus(db, runtimeId);
+        }
+
+        public bool MultiServerRuntimesExist()
+        {
+            IDatabase db = _connector.GetDatabase();
+            string runtimesKey = GetKeyForWorkflowRuntimeStatuses();
+
+            int emptyExists = db.HashExists(runtimesKey, Guid.Empty.ToString()) ? 1 : 0;
+
+            if (db.HashLength(runtimesKey) > emptyExists)
+            {
+                return true;
+            }
+
+            foreach (RuntimeStatus status in Enum.GetValues(typeof(RuntimeStatus)))
+            {
+                if (status == RuntimeStatus.Single || status == RuntimeStatus.Terminated || status == RuntimeStatus.Dead)
+                {
+                    continue;
+                }
+
+                if (db.SetLength(GetKeyForWorkflowRuntimeStatusSet(status)) > 0)
+                {
+                    return true;
+                }
+            }
+
+            return false;
+        }
+
+        public int SendRuntimeLastAliveSignal()
+        {
+            IDatabase db = _connector.GetDatabase();
+            string runtimeId = _runtime.Id;
+
+            if (!db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Alive), runtimeId) &&
+                !db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.SelfRestore), runtimeId))
+            {
+                return 0;
+            }
+
+            double unixTime = (_runtime.RuntimeDateTimeNow.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds;
+
+            db.SortedSetAdd(GetKeyForWorkflowLastAliveSignals(), runtimeId, unixTime);
+
+            return 1;
+        }
+
+        public int SingleServerRuntimesCount()
+        {
+            IDatabase db = _connector.GetDatabase();
+            return db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Single), Guid.Empty.ToString()) ? 1 : 0;
+        }
+
+        public int ActiveMultiServerRuntimesCount(string currentRuntimeId)
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            int result = (int)(
+                db.SetLength(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Alive)) +
+                db.SetLength(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Restore)) +
+                db.SetLength(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.SelfRestore))
+            );
+
+            if (db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Alive), currentRuntimeId))
+            {
+                result -= 1;
+            }
+            else if (db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Restore), currentRuntimeId))
+            {
+                result -= 1;
+            }
+            else if (db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.SelfRestore), currentRuntimeId))
+            {
+                result -= 1;
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Init the provider
         /// </summary>
@@ -586,6 +1052,23 @@ namespace OptimaJet.Workflow.Redis
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
+            CheckInitialData();
+        }
+
+        private void CheckInitialData()
+        {
+            IDatabase db = _connector.GetDatabase();
+
+            if (!db.KeyExists(GetKeyForWorkflowSyncLocks(TimerCategory.Timer)))
+            {
+                db.StringSetAsync(GetKeyForWorkflowSyncLocks(TimerCategory.Timer), Guid.NewGuid().ToString("N"));
+            }
+
+            if (!db.KeyExists(GetKeyForWorkflowSyncLocks(TimerCategory.ServiceTimer)))
+            {
+                db.StringSetAsync(GetKeyForWorkflowSyncLocks(TimerCategory.ServiceTimer), Guid.NewGuid().ToString("N"));
+            }
+
         }
 
         /// <summary>
@@ -612,6 +1095,11 @@ namespace OptimaJet.Workflow.Redis
             var tran = db.CreateTransaction();
             tran.AddCondition(Condition.KeyNotExists(processKey));
             tran.StringSetAsync(processKey, JsonConvert.SerializeObject(newProcess));
+            if (processInstance.IsSubprocess)
+            {
+                tran.StringSetAsync(GetKeyForRootProcess(processInstance.ProcessId), processInstance.RootProcessId.ToString("N"));
+                tran.ListLeftPushAsync(GetKeyForSubprocesses(processInstance.RootProcessId), processInstance.ProcessId.ToString("N"));
+            }
 
             var res = tran.Execute();
 
@@ -655,7 +1143,8 @@ namespace OptimaJet.Workflow.Redis
                 }
                 else
                 {
-                    parameters.Add(ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
+                    parameters.Add(ParameterDefinition.Create(parameterDefinition,
+                        ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
                 }
             }
 
@@ -741,13 +1230,14 @@ namespace OptimaJet.Workflow.Redis
                 .ToDictionary(ptp => ptp.Name, ptp =>
                 {
                     if (ptp.Type == typeof(UnknownParameterType))
-                        return (string) ptp.Value;
+                        return (string)ptp.Value;
                     return ParametersSerializer.Serialize(ptp.Value, ptp.Type);
 
                 });
 
             var parametersToRemove =
-                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Value == null).Select(ptp => ptp.Name).ToList();
+                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Value == null).Select(ptp => ptp.Name)
+                    .ToList();
 
             if (!parametersToSave.Any() && !parametersToRemove.Any())
                 return;
@@ -787,7 +1277,7 @@ namespace OptimaJet.Workflow.Redis
                     db.KeyDelete(key);
             }
         }
-        
+
         public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
         {
             if (newStatus == ProcessStatus.Running)
@@ -796,7 +1286,7 @@ namespace OptimaJet.Workflow.Redis
             }
             else
             {
-                SetCustomStatus(processId,newStatus);
+                SetCustomStatus(processId, newStatus);
             }
         }
 
@@ -849,7 +1339,7 @@ namespace OptimaJet.Workflow.Redis
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
 #pragma warning disable 612
-        public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+        public void SetWorkflowTerminated(ProcessInstance processInstance)
 #pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
@@ -863,11 +1353,16 @@ namespace OptimaJet.Workflow.Redis
             var db = _connector.GetDatabase();
             var allRunningIds = db.HashKeys(GetKeyProcessRunning());
 
+            var now = _runtime.RuntimeDateTimeNow.Ticks;
+
             var batch = db.CreateBatch();
+
             foreach (var hash in allRunningIds.Where(ari => ari.HasValue))
             {
-                batch.HashSetAsync(GetKeyProcessStatus(), hash, ProcessStatus.Idled.Id);
+                batch.HashSetAsync(GetKeyProcessStatusSetTime(), hash, now);
+                batch.StringSetAsync(GetKeyProcessStatus(hash), (int)ProcessStatus.Idled.Id);
             }
+
             batch.KeyDeleteAsync(GetKeyProcessRunning());
 
             batch.Execute();
@@ -891,8 +1386,8 @@ namespace OptimaJet.Workflow.Redis
 
             var paramIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterIdentityId.Name);
             var paramImpIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterImpersonatedIdentityId.Name);
-            var identityId = paramIdentityId == null ? string.Empty : (string) paramIdentityId.Value;
-            var impIdentityId = paramImpIdentityId == null ? identityId : (string) paramImpIdentityId.Value;
+            var identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
+            var impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
             if (!string.IsNullOrEmpty(transition.To.State))
                 inst.StateName = transition.To.State;
@@ -942,8 +1437,12 @@ namespace OptimaJet.Workflow.Redis
                     TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
                 };
 
-                batch.ListRightPushAsync(GetKeyForProcessHistory((WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId), JsonConvert.SerializeObject(history));
+                batch.ListRightPushAsync(
+                    GetKeyForProcessHistory((WriteSubProcessToRoot && processInstance.IsSubprocess)
+                        ? processInstance.RootProcessId
+                        : processInstance.ProcessId), JsonConvert.SerializeObject(history));
             }
+
             batch.Execute();
         }
 
@@ -966,10 +1465,10 @@ namespace OptimaJet.Workflow.Redis
         public ProcessStatus GetInstanceStatus(Guid processId)
         {
             var db = _connector.GetDatabase();
-            var statusValue = db.HashGet(GetKeyProcessStatus(), string.Format("{0:N}", processId));
+            var statusValue = db.StringGet(GetKeyProcessStatus(processId));
             if (!statusValue.HasValue)
                 return ProcessStatus.NotFound;
-            var statusId = int.Parse(statusValue);
+            var statusId = Int32.Parse(statusValue);
             var status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == statusId);
             return status ?? ProcessStatus.Unknown;
         }
@@ -1007,31 +1506,26 @@ namespace OptimaJet.Workflow.Redis
             db.StringSet(key, JsonConvert.SerializeObject(inst));
         }
 
-        /// <summary>
-        /// Register a new timer
-        /// </summary>
-        /// <param name="processId">Id of the process</param>
-        /// <param name="name">Timer name <see cref="TimerDefinition.Name"/></param>
-        /// <param name="nextExecutionDateTime">Next date and time of timer's execution</param>
-        /// <param name="notOverrideIfExists">If true specifies that the existing timer with same name will not be overriden <see cref="TimerDefinition.NotOverrideIfExists"/></param>
-        public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
+
+        public void RegisterTimer(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
             var db = _connector.GetDatabase();
             var unixTime = (nextExecutionDateTime.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds;
 
 
             var timerId = Guid.NewGuid();
-            var timerToExecute = new TimerToExecute() {ProcessId = processId, Name = name, TimerId = timerId};
+            var timerToExecute = new TimerToExecute() {ProcessId = processId, RootProcessId = rootProcessId, Name = name, TimerId = timerId};
 
             var tran = db.CreateTransaction();
 
             if (notOverrideIfExists)
             {
-                tran.AddCondition(Condition.HashNotExists(GetKeyProcessTimer(processId), name));
+                tran.AddCondition(Condition.KeyNotExists(GetKeyProcessTimer(processId, name)));
             }
 
             tran.SortedSetAddAsync(GetKeyTimerTime(), timerId.ToString("N"), unixTime);
-            tran.HashSetAsync(GetKeyProcessTimer(processId), name, timerId.ToString("N"));
+            tran.StringSetAsync(GetKeyProcessTimer(processId, name), timerId.ToString("N"));
+            tran.SetAddAsync(GetKeyProcessTimers(processId), name);
             tran.HashSetAsync(GetKeyTimer(), timerId.ToString("N"), JsonConvert.SerializeObject(timerToExecute));
 
             tran.Execute();
@@ -1053,15 +1547,6 @@ namespace OptimaJet.Workflow.Redis
         }
 
         /// <summary>
-        /// Clears sign Ignore for all timers
-        /// </summary>
-        public void ClearTimersIgnore()
-        {
-            var db = _connector.GetDatabase();
-            db.KeyDelete(GetKeyTimerIgnore());
-        }
-
-        /// <summary>
         /// Clears sign Ignore for specific timers
         /// </summary>
         public void ClearTimerIgnore(Guid timerId)
@@ -1069,6 +1554,22 @@ namespace OptimaJet.Workflow.Redis
             var db = _connector.GetDatabase();
             var keyTimerIgnore = GetKeyTimerIgnore();
             db.HashDelete(keyTimerIgnore, timerId.ToString("N"));
+            db.KeyDelete(GetKeyTimerIgnoreLock(timerId));
+        }
+
+        public int SetTimerIgnore(Guid timerId)
+        {
+            var db = _connector.GetDatabase();
+            var keyTimerIgnore = GetKeyTimerIgnore();
+            var timerIdValue = timerId.ToString("N");
+
+            var tran = db.CreateTransaction();
+            var conditionResult = tran.AddCondition(Condition.KeyNotExists(GetKeyTimerIgnoreLock(timerIdValue)));
+            tran.HashSetAsync(keyTimerIgnore, timerIdValue, true);
+            tran.StringSetAsync(GetKeyTimerIgnoreLock(timerIdValue), String.Empty);
+            tran.Execute();
+
+            return conditionResult.WasSatisfied ? 1 : 0;
         }
 
         /// <summary>
@@ -1088,13 +1589,14 @@ namespace OptimaJet.Workflow.Redis
                 var batchTimerNotExists = db.CreateBatch();
                 batchTimerNotExists.SortedSetRemoveAsync(keyTimerTime, timerId.ToString("N"));
                 batchTimerNotExists.HashDeleteAsync(keyTimerIgnore, timerId.ToString("N"));
+                batchTimerNotExists.KeyDeleteAsync(GetKeyTimerIgnoreLock(timerId));
                 batchTimerNotExists.Execute();
                 return;
             }
 
             var timer = JsonConvert.DeserializeObject<TimerToExecute>(timerValue);
-            var keyProcessTimer = GetKeyProcessTimer(timer.ProcessId);
-            var timerInProcessIdValue = db.HashGet(keyProcessTimer, timer.Name);
+            var keyProcessTimer = GetKeyProcessTimer(timer.ProcessId, timer.Name);
+            var timerInProcessIdValue = db.StringGet(keyProcessTimer);
 
             var batch = db.CreateBatch();
 
@@ -1104,6 +1606,7 @@ namespace OptimaJet.Workflow.Redis
                 batch.HashDeleteAsync(keyProcessTimer, timer.Name);
             batch.HashDeleteAsync(keyTimerIgnore, timerId.ToString("N"));
             batch.HashDeleteAsync(keyTimer, timerId.ToString("N"));
+            batch.KeyDeleteAsync(GetKeyTimerIgnoreLock(timerId));
             batch.Execute();
         }
 
@@ -1119,7 +1622,8 @@ namespace OptimaJet.Workflow.Redis
             var skip = 0;
             while (true)
             {
-                var closestTimers = db.SortedSetRangeByScore(keyTimer, double.NegativeInfinity, double.PositiveInfinity, Exclude.None, Order.Ascending, skip, 10);
+                var closestTimers =
+                    db.SortedSetRangeByScore(keyTimer, double.NegativeInfinity, double.PositiveInfinity, Exclude.None, Order.Ascending, skip, 10);
                 if (!closestTimers.Any())
                     return null;
 
@@ -1127,16 +1631,14 @@ namespace OptimaJet.Workflow.Redis
                 {
                     if (!db.HashExists(keyTimerIgnore, closestTimer))
                     {
-                        var unixTime = db.SortedSetScore(keyTimer, closestTimer);
+                        double? unixTime = db.SortedSetScore(keyTimer, closestTimer);
                         if (unixTime.HasValue)
                         {
-                            var executionTime = new DateTime(1970, 1, 1).AddMilliseconds(unixTime.Value);
-                            return _runtime.UseUtcDateTimeAsRuntimeTime
-                                ? executionTime.ToUniversalTime()
-                                : executionTime.ToLocalTime();
+                            return _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(unixTime.Value));
                         }
                     }
                 }
+
                 skip += 10;
             }
         }
@@ -1157,7 +1659,8 @@ namespace OptimaJet.Workflow.Redis
             foreach (var timerIdValue in timerIds)
             {
                 var tran = db.CreateTransaction();
-                tran.AddCondition(Condition.HashNotExists(keyTimerIgnore, timerIdValue));
+                tran.AddCondition(Condition.KeyNotExists(GetKeyTimerIgnoreLock(timerIdValue)));
+                tran.StringSetAsync(GetKeyTimerIgnoreLock(timerIdValue), String.Empty);
                 tran.HashSetAsync(keyTimerIgnore, timerIdValue, true);
                 var res = tran.Execute();
                 if (res)
@@ -1173,22 +1676,82 @@ namespace OptimaJet.Workflow.Redis
             return result;
         }
 
+        public List<Core.Model.WorkflowTimer> GetTopTimersToExecute(int top)
+        {
+            double unixTime = (DateTime.UtcNow - new DateTime(1970, 1, 1)).TotalMilliseconds;
+
+            IDatabase db = _connector.GetDatabase();
+
+            var timerIds = db.SortedSetRangeByScoreWithScores(GetKeyTimerTime(), double.NegativeInfinity, unixTime, take: top)
+                .Where(rv => rv.Element.HasValue).ToList();
+
+            var result = new List<Core.Model.WorkflowTimer>();
+
+            if (!timerIds.Any())
+            {
+                return result;
+            }
+
+            foreach (SortedSetEntry timerIdValue in timerIds)
+            {
+                RedisValue timerValue = db.HashGet(GetKeyTimer(), timerIdValue.Element);
+                if (timerValue.HasValue)
+                {
+                    TimerToExecute t = JsonConvert.DeserializeObject<TimerToExecute>(timerValue);
+
+                    result.Add(new Core.Model.WorkflowTimer
+                    {
+                        Name = t.Name,
+                        ProcessId = t.ProcessId,
+                        TimerId = t.TimerId,
+                        NextExecutionDateTime = _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(timerIdValue.Score)),
+                        RootProcessId = t.RootProcessId
+                    });
+                }
+            }
+
+            return result;
+        }
+
         /// <summary>
         /// Remove all information about the process from the store
         /// </summary>
         /// <param name="processId">Id of the process</param>
         public void DeleteProcess(Guid processId)
         {
-            var db = _connector.GetDatabase();
-            var batch = db.CreateBatch();
-            AddDeleteTimersOperationsToBatch(processId, new List<string>(), db, batch);
-            batch.KeyDeleteAsync(GetKeyForProcessInstance(processId));
-            batch.KeyDeleteAsync(GetKeyForProcessPersistence(processId));
-            batch.KeyDeleteAsync(GetKeyForProcessHistory(processId));
-            var hash = string.Format("{0:N}", processId);
-            batch.HashDeleteAsync(GetKeyProcessStatus(), hash);
-            batch.HashDeleteAsync(GetKeyProcessRunning(), hash);
-            batch.Execute();
+            IDatabase db = _connector.GetDatabase();
+            ITransaction tran = db.CreateTransaction();
+            AddDeleteTimersOperationsToBatch(processId, new List<string>(), db, tran);
+            tran.KeyDeleteAsync(GetKeyForProcessInstance(processId));
+            tran.KeyDeleteAsync(GetKeyForProcessPersistence(processId));
+            tran.KeyDeleteAsync(GetKeyForProcessHistory(processId));
+            string hash = $"{processId:N}";
+            tran.KeyDeleteAsync(GetKeyProcessStatus(hash));
+            tran.HashDeleteAsync(GetKeyProcessRunning(), hash);
+            tran.HashDeleteAsync(GetKeyProcessStatusSetTime(), hash);
+            
+            RedisValue[] timerNames = db.SetMembers(GetKeyProcessTimers(processId));
+
+            foreach(RedisValue tn in timerNames)
+            {
+                tran.KeyDeleteAsync(GetKeyProcessTimer(processId, tn));
+            }
+            tran.KeyDeleteAsync(GetKeyProcessTimers(processId));
+
+            RedisValue runtimeId = db.HashGet(GetKeyForWorkflowProcessRuntimes(), hash);
+
+            tran.SetRemoveAsync(GetKeyForWorkflowRuntimeProcesses(runtimeId), hash);
+            tran.HashDeleteAsync(GetKeyForWorkflowProcessRuntimes(), hash);
+
+            RedisValue rootProcessId = db.StringGet(GetKeyForRootProcess(processId));
+
+            if (rootProcessId.HasValue)
+            {
+                tran.ListRemoveAsync(GetKeyForSubprocesses(new Guid(rootProcessId.ToString())), processId.ToString("N"));
+                tran.KeyDeleteAsync(GetKeyForRootProcess(processId));
+            }
+
+            tran.Execute();
         }
 
         /// <summary>
@@ -1197,7 +1760,7 @@ namespace OptimaJet.Workflow.Redis
         /// <param name="processIds">List of ids of the process</param>
         public void DeleteProcess(Guid[] processIds)
         {
-            foreach (var processId in processIds)
+            foreach (Guid processId in processIds)
             {
                 DeleteProcess(processId);
             }
@@ -1289,28 +1852,160 @@ namespace OptimaJet.Workflow.Redis
 
         public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
         {
-            var db = _connector.GetDatabase();
+            return GetTimersForProcess(processId, false);
+        }
 
-            var keyProcessTimer = GetKeyProcessTimer(processId);
+        public IEnumerable<ProcessTimer> GetActiveTimersForProcess(Guid processId)
+        {
+            return GetTimersForProcess(processId, true);
+        }
 
-            var timerIds = db.HashGetAll(keyProcessTimer).Select(he => new { Id = Guid.Parse(he.Value), he.Name });
+        private IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId, bool excludeIgnored)
+        {
+            IDatabase db = _connector.GetDatabase();
 
-            List<ProcessTimer> result = new List<ProcessTimer>(timerIds.Count());
+            RedisValue[] timerNames = db.SetMembers(GetKeyProcessTimers(processId));
+
+            var timerIds = timerNames.Select(x => new { Name = x, Id = Guid.Parse(db.StringGet(GetKeyProcessTimer(processId, x))) });
+
+            var result = new List<ProcessTimer>(timerIds.Count());
 
             var times = db.SortedSetRangeByRankWithScores(GetKeyTimerTime())
-                          .Where(rv => rv.Element.HasValue)
-                          .Select(t => new
-                          {
-                              Id = Guid.Parse(t.Element),
-                              Time = t.Score
-                          });
+                .Where(rv => rv.Element.HasValue)
+                .Select(t => new {Id = Guid.Parse(t.Element), Time = t.Score});
 
-            return timerIds.Select(x => new ProcessTimer
+            if (excludeIgnored)
             {
-                Name = x.Name,
-                NextExecutionDateTime = new DateTime(1970, 1, 1).AddMilliseconds(times.First(t => t.Id == x.Id).Time)
-            });
-  
+                string keyTimerIgnore = GetKeyTimerIgnore();
+                timerIds = timerIds.Where(t => !db.HashExists(keyTimerIgnore, t.Id.ToString("N")));
+            }
+
+            var xxxx = timerIds.ToList();
+            var yyyy = times.ToList();
+
+            return timerIds.Select(x =>
+                new ProcessTimer(x.Id, x.Name, _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(times.First(t => t.Id == x.Id).Time))));
+        }
+
+        public DateTime? GetNextTimerDate(TimerCategory timerCategory, int timerInterval)
+        {
+            string timerCategoryName = timerCategory.ToString();
+
+            IDatabase db = _connector.GetDatabase();
+
+            RedisValue lockValue = db.StringGet(GetKeyForWorkflowSyncLocks(timerCategory));
+
+            if (!lockValue.HasValue)
+            {
+                throw new Exception($"Sync lock {timerCategoryName} not found");
+            }
+
+            string sortedSetKey = GetKeyForWorkflowRuntimeTimer(timerCategoryName);
+
+            DateTime result = _runtime.RuntimeDateTimeNow;
+
+            int index = 0;
+
+            while (true)
+            {
+                SortedSetEntry[] se = db.SortedSetRangeByRankWithScores(sortedSetKey, index, index + 1, Order.Descending);
+
+                index += 1;
+
+                if (se.Length == 0)
+                {
+                    break;
+                }
+
+                string runtimeId = se.First().Element;
+
+                if (runtimeId == _runtime.Id)
+                {
+                    continue;
+                }
+
+                if (db.SetContains(GetKeyForWorkflowRuntimeStatusSet(RuntimeStatus.Alive), runtimeId))
+                {
+                    DateTime newTime = _runtime.ToRuntimeTime(new DateTime(1970, 1, 1).AddMilliseconds(se.First().Score));
+
+                    if (newTime > result)
+                    {
+                        result = newTime;
+                    }
+
+                    break;
+                }
+            }
+
+            result += TimeSpan.FromMilliseconds(timerInterval);
+
+            var newLock = Guid.NewGuid();
+
+            ITransaction tran = db.CreateTransaction();
+
+            tran.AddCondition(Condition.StringEqual(GetKeyForWorkflowSyncLocks(timerCategory), lockValue));
+            tran.SortedSetAddAsync(sortedSetKey, _runtime.Id, (result.ToUniversalTime() - new DateTime(1970, 1, 1)).TotalMilliseconds);
+            tran.StringSetAsync(GetKeyForWorkflowSyncLocks(timerCategory), newLock.ToString("N"));
+
+            bool tranResult = tran.Execute();
+
+            if (!tranResult)
+            {
+                return null;
+            }
+
+            return result;
+        }
+
+        public List<WorkflowRuntimeModel> GetWorkflowRuntimes()
+        {
+            IDatabase db = _connector.GetDatabase();
+            return db.HashKeys(GetKeyForWorkflowRuntimeStatuses()).Select(v => GetWorkflowRuntimeStatus(db, v.ToString())).ToList();
+        }
+
+        public async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
+        {
+            var db = _connector.GetDatabase();
+
+            var processIdsLists = db.ListRange(GetKeyForSubprocesses(rootProcessId)).Where(v => v.HasValue).Select(v => new Guid(v.ToString())).ToList();
+
+            var processInfo = processIdsLists
+                .Select(processId => db.StringGet(GetKeyForProcessInstance(processId)))
+                .Where(v => v.HasValue)
+                .Select(v =>
+                {
+                    WorkflowProcessInstance processInstance = JsonConvert.DeserializeObject<WorkflowProcessInstance>(v);
+
+                    if (!processInstance.SchemeId.HasValue)
+                    {
+                        throw SchemeNotFoundException.Create(processInstance.Id, SchemeLocation.WorkflowProcessInstance);
+                    }
+
+                    return (processId: processInstance.Id, schemeId: processInstance.SchemeId.Value, parentProcessId: processInstance.ParentProcessId,
+                        rootProcessId: processInstance.RootProcessId);
+                }).ToList();
+
+
+            var startingTransitions = processInfo.Select(i => i.schemeId).Distinct().Select(schemeId =>
+            {
+                var s = db.StringGet(GetKeyForProcessScheme(schemeId));
+                if (!s.HasValue)
+                {
+                    throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
+                }
+
+                var processScheme = JsonConvert.DeserializeObject<WorkflowProcessScheme>(s);
+
+                return (schemeId: schemeId, startingTransition: processScheme.StartingTransition);
+            }).ToDictionary(t => t.schemeId, t => t.startingTransition);
+
+
+            return ProcessInstanceTreeItem.Create(rootProcessId, processInfo, startingTransitions);
+        }
+
+        public IApprovalProvider GetIApprovalProvider()
+        {
+            return this;
         }
 
         #endregion
@@ -1333,5 +2028,115 @@ namespace OptimaJet.Workflow.Redis
         }
 
         #endregion
+
+        #region IApprovalProvider
+
+        public async Task DropWorkflowInboxAsync(Guid processId)
+        {
+            var db = _connector.GetDatabase();
+            db.KeyDelete(GetKeyInbox(processId));
+        }
+
+        public async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        {
+            var db = _connector.GetDatabase();
+            var inboxItems = newActors.Select(newactor => new WorkflowInbox() {IdentityId = newactor, ProcessId = processId}).ToArray();
+            var batch = db.CreateBatch();
+            foreach (var inboxItem in inboxItems)
+            {
+#pragma warning disable 4014
+                batch.ListRightPushAsync(GetKeyInbox(processId), JsonConvert.SerializeObject(inboxItem));
+#pragma warning restore 4014
+            }
+
+            batch.Execute();
+        }
+
+        public async Task WriteApprovalHistoryAsync(Guid documentId, string currentState, string nextState, string triggerName, string allowedToEmployeeNames,
+            long order)
+        {
+            var db = _connector.GetDatabase();
+            var batch = db.CreateBatch();
+            var historyItem = new WorkflowApprovalHistory
+            {
+                AllowedTo = allowedToEmployeeNames,
+                DestinationState = nextState,
+                ProcessId = documentId,
+                InitialState = currentState,
+                TriggerName = triggerName,
+                Sort = order
+            };
+#pragma warning disable 4014
+            batch.ListRightPushAsync(GetKeyApprovalHistory(documentId), JsonConvert.SerializeObject(historyItem));
+#pragma warning restore 4014
+            batch.Execute();
+        }
+
+        public async Task UpdateApprovalHistoryAsync(Guid documentId, string currentState, string nextState, string triggerName, string identityId, long order,
+            string comment)
+        {
+            var db = _connector.GetDatabase();
+            var key = GetKeyApprovalHistory(documentId);
+            var items = db.ListRange(key).Select(x => JsonConvert.DeserializeObject<WorkflowApprovalHistory>(x)).ToList();
+            var historyItem = items.FirstOrDefault(h => h.ProcessId == documentId && !h.TransitionTime.HasValue &&
+                                                        h.InitialState == currentState && h.DestinationState == nextState);
+            var batch = db.CreateBatch();
+
+            if (historyItem == null)
+            {
+                historyItem = new WorkflowApprovalHistory
+                {
+                    AllowedTo = string.Empty,
+                    DestinationState = nextState,
+                    ProcessId = documentId,
+                    InitialState = currentState,
+                    Sort = order,
+                    TriggerName = triggerName,
+                    Commentary = comment,
+                    TransitionTime = _runtime.RuntimeDateTimeNow,
+                    IdentityId = identityId
+                };
+                items.Add(historyItem);
+            }
+            else
+            {
+                historyItem.TriggerName = triggerName;
+                historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
+                historyItem.IdentityId = identityId;
+                historyItem.Commentary = comment;
+            }
+
+            db.KeyDelete(key);
+
+            foreach (var record in items)
+            {
+#pragma warning disable 4014
+                batch.ListRightPushAsync(key, JsonConvert.SerializeObject(record));
+#pragma warning restore 4014
+            }
+
+            batch.Execute();
+        }
+
+        public async Task DropEmptyApprovalHistoryAsync(Guid processId)
+        {
+            var db = _connector.GetDatabase();
+            var key = GetKeyApprovalHistory(processId);
+            var items = db.ListRange(key).Select(x => JsonConvert.DeserializeObject<WorkflowApprovalHistory>(x)).ToList();
+            var notEmpty = items.Where(x => x.TransitionTime.HasValue);
+            var batch = db.CreateBatch();
+            db.KeyDelete(key);
+
+            foreach (var record in notEmpty)
+            {
+#pragma warning disable 4014
+                batch.ListRightPushAsync(key, JsonConvert.SerializeObject(record));
+#pragma warning restore 4014
+            }
+
+            batch.Execute();
+        }
+
+        #endregion IApprovalProvider
     }
 }

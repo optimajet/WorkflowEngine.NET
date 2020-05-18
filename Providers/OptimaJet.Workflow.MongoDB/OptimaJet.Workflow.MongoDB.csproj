@@ -1,5 +1,8 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/dotnet</BaseIntermediateOutputPath>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -41,20 +44,22 @@
     <Reference Include="DnsClient, Version=1.0.7.0, Culture=neutral, PublicKeyToken=4574bb5573c51424, processorArchitecture=MSIL">
       <HintPath>..\packages\DnsClient.1.0.7\lib\net45\DnsClient.dll</HintPath>
     </Reference>
-    <Reference Include="MongoDB.Bson, Version=2.7.0.0, Culture=neutral, PublicKeyToken=15b1115599983c50">
-      <HintPath>..\packages\MongoDB.Bson.signed.2.7.0\lib\net45\MongoDB.Bson.dll</HintPath>
+    <Reference Include="MongoDB.Bson, Version=2.7.3.0, Culture=neutral, PublicKeyToken=15b1115599983c50, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Bson.signed.2.7.3\lib\net45\MongoDB.Bson.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver, Version=2.7.3.0, Culture=neutral, PublicKeyToken=15b1115599983c50, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.signed.2.7.3\lib\net45\MongoDB.Driver.dll</HintPath>
+    </Reference>
+    <Reference Include="MongoDB.Driver.Core, Version=2.7.3.0, Culture=neutral, PublicKeyToken=15b1115599983c50, processorArchitecture=MSIL">
+      <HintPath>..\packages\MongoDB.Driver.Core.signed.2.7.3\lib\net45\MongoDB.Driver.Core.dll</HintPath>
+    </Reference>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="MongoDB.Driver, Version=2.7.0.0, Culture=neutral, PublicKeyToken=15b1115599983c50">
-      <HintPath>..\packages\MongoDB.Driver.signed.2.7.0\lib\net45\MongoDB.Driver.dll</HintPath>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
-    </Reference>
-    <Reference Include="MongoDB.Driver.Core, Version=2.7.0.0, Culture=neutral, PublicKeyToken=15b1115599983c50">
-      <HintPath>..\packages\MongoDB.Driver.Core.signed.2.7.0\lib\net45\MongoDB.Driver.Core.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.1.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -72,14 +77,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Models\DynamicEntity.cs" />
+    <Compile Include="Models\ProcessInstanceTreeItem.cs" />
+    <Compile Include="Models\WorkflowApprovalHistory.cs" />
     <Compile Include="Models\WorkflowGlobalParameter.cs" />
+    <Compile Include="Models\WorkflowInbox.cs" />
     <Compile Include="Models\WorkflowProcessInstance.cs" />
     <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />
     <Compile Include="Models\WorkflowProcessInstanceStatus.cs" />
     <Compile Include="Models\WorkflowProcessScheme.cs" />
     <Compile Include="Models\WorkflowProcessTransitionHistory.cs" />
     <Compile Include="Models\WorkflowProcessTimer.cs" />
+    <Compile Include="Models\WorkflowRuntime.cs" />
     <Compile Include="Models\WorkflowScheme.cs" />
+    <Compile Include="Models\WorkflowSync.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="MongoDBProvider.cs" />
   </ItemGroup>

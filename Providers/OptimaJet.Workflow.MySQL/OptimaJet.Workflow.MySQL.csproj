@@ -1,5 +1,9 @@
 ﻿<?xml version="1.0" encoding="utf-8"?>
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+  <PropertyGroup>
+    <BaseIntermediateOutputPath>obj/dotnet</BaseIntermediateOutputPath>
+    <LangVersion>8</LangVersion>
+  </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
     <Configuration Condition=" '$(Configuration)' == '' ">Debug</Configuration>
@@ -44,8 +48,13 @@
     <Reference Include="MySql.Data, Version=6.9.12.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.6.9.12\lib\net45\MySql.Data.dll</HintPath>
     </Reference>
-    <Reference Include="Newtonsoft.Json">
-      <HintPath>..\DLL\Newtonsoft.Json.dll</HintPath>
+    <Reference Include="Newtonsoft.Json, Version=12.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed">
+      <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
+      <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Core" />
@@ -57,14 +66,19 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="DbObject.cs" />
+    <Compile Include="Models\ProcessInstanceTreeItem.cs" />
+    <Compile Include="Models\WorkflowApprovalHistory.cs" />
     <Compile Include="Models\WorkflowGlobalParameter.cs" />
+    <Compile Include="Models\WorkflowInbox.cs" />
     <Compile Include="Models\WorkflowProcessInstance.cs" />
     <Compile Include="Models\WorkflowProcessInstancePersistence.cs" />
     <Compile Include="Models\WorkflowProcessInstanceStatus.cs" />
     <Compile Include="Models\WorkflowProcessScheme.cs" />
     <Compile Include="Models\WorkflowProcessTimer.cs" />
     <Compile Include="Models\WorkflowProcessTransitionHistory.cs" />
+    <Compile Include="Models\WorkflowRuntime.cs" />
     <Compile Include="Models\WorkflowScheme.cs" />
+    <Compile Include="Models\WorkflowSync.cs" />
     <Compile Include="MySQLProvider.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
   </ItemGroup>

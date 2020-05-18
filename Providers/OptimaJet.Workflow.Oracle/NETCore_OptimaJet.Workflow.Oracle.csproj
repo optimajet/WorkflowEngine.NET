@@ -1,0 +1,47 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>8</LangVersion>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
+    <Version>4.2.0</Version>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+    <Authors>OptimaJet, LLC</Authors>
+    <Company>OptimaJet, LLC</Company>
+    <Product>WorkflowEngine .NET</Product>
+    <Description>Contains dlls for Oracle Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+DbSchemePersistenceProvider  which implements interface ISchemePersistenceProvider,
+DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
+
+Steps for workflow runtime configuration with OracleProvider: http://workflowenginenet.com/Documentation/Detail/howtoconnect in 
+Create WorkflowRuntime section.</Description>
+    <Copyright>OptimaJet, LLC</Copyright>
+    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
+    <PackageTags>workflow engine, oracle, ora, provider for oracle</PackageTags>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>OptimaJet.Workflow.Oracle</RootNamespace>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="Oracle.ManagedDataAccess.Core">
+      <Version>2.18.3</Version>
+    </PackageReference>
+  </ItemGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+</Project>

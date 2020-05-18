@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -59,12 +59,12 @@ namespace OptimaJet.Workflow.PostgreSQL
             return ExecuteCommandAsync(connection, commandText, parameters);
         }
 
-        public int Update(NpgsqlConnection connection)
+        public virtual int Update(NpgsqlConnection connection)
         {
             return UpdateAsync(connection).Result;
         }
         
-        public Task<int> UpdateAsync(NpgsqlConnection connection)
+        public virtual Task<int> UpdateAsync(NpgsqlConnection connection)
         {
             string command = string.Format("UPDATE {0} SET {1} WHERE {2}",
                 ObjectName,
@@ -75,6 +75,11 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             return ExecuteCommandAsync(connection, command, parameters);
           
+        }
+
+        public static T[] SelectAll(NpgsqlConnection connection)
+        {
+            return Select(connection, string.Format("SELECT * FROM {0}", ObjectName));
         }
 
         public static T SelectByKey(NpgsqlConnection connection, object id)
@@ -198,6 +203,29 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
         #endregion
 
+        public static async Task<int> InsertAllAsync(NpgsqlConnection connection, T[] values)
+        {
+            if (values.Length < 1)
+                return 0;
+
+            var parameters = new List<NpgsqlParameter>();
+            var names = new List<string>();
+
+            for (int i = 0; i < values.Length; i++)
+            {
+                names.Add(String.Join(",", values[i].DBColumns.Select(c => "@" + i.ToString() + c.Name)));
+                parameters.AddRange(values[i].DBColumns.Select(c => values[i].CreateParameter(c, i.ToString())).ToArray());
+            }
+
+            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
+                ObjectName,
+                String.Join(",", values.First().DBColumns.Select(c => string.Format("\"{0}\"", c.Name))),
+                String.Join(",", names));
+
+
+            return await ExecuteCommandAsync(connection, command, parameters.ToArray()).ConfigureAwait(false);
+        }
+        
         public virtual NpgsqlParameter CreateParameter(ColumnInfo c)
         {
             var value = GetValue(c.Name);
@@ -210,6 +238,21 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
 
             var p = new NpgsqlParameter(c.Name, c.Type) {Value = value, IsNullable = isNullable};
+            return p;
+        }
+
+        public virtual NpgsqlParameter CreateParameter(ColumnInfo c, string namePrefix)
+        {
+            var value = GetValue(c.Name);
+
+            var isNullable = IsNullable(value);
+
+            if (isNullable && value == null)
+            {
+                value = DBNull.Value;
+            }
+
+            var p = new NpgsqlParameter(namePrefix + c.Name, c.Type) { Value = value, IsNullable = isNullable };
             return p;
         }
 

@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL
-Version: 4.1
+Version: 4.2
 File: DropPersistenceObjects.sql
 */
 
@@ -84,6 +84,18 @@ IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'W
 BEGIN
 	DROP TABLE WorkflowGlobalParameter
 	PRINT 'WorkflowGlobalParameter DROP TABLE'
+END
+
+IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowRuntime')
+BEGIN
+	DROP TABLE WorkflowRuntime
+	PRINT 'WorkflowRuntime DROP TABLE'
+END
+
+IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowSync')
+BEGIN
+	DROP TABLE WorkflowSync
+	PRINT 'WorkflowSync DROP TABLE'
 END
 
 COMMIT TRANSACTION

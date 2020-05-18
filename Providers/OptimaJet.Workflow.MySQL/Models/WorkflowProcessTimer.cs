@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
@@ -11,6 +11,7 @@ namespace OptimaJet.Workflow.MySQL
     {
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
         public string Name { get; set; }
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
@@ -28,6 +29,7 @@ namespace OptimaJet.Workflow.MySQL
                 new ColumnInfo {Name="Name"},
                 new ColumnInfo {Name="NextExecutionDateTime", Type = MySqlDbType.DateTime },
                 new ColumnInfo {Name="Ignore", Type = MySqlDbType.Bit },
+                new ColumnInfo {Name=nameof(RootProcessId), Type = MySqlDbType.Binary},
             });
         }
 
@@ -45,6 +47,8 @@ namespace OptimaJet.Workflow.MySQL
                     return NextExecutionDateTime;
                 case "Ignore":
                     return Ignore;
+                case nameof(RootProcessId):
+                    return RootProcessId.ToByteArray();
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -69,9 +73,19 @@ namespace OptimaJet.Workflow.MySQL
                 case "Ignore":
                     Ignore = value.ToString() == "1";
                     break;
+                case nameof(RootProcessId):
+                    RootProcessId = new Guid((byte[])value);
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
+        }
+
+        public static int DeleteInactiveByProcessId(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
+        {
+            var pProcessId = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
+
+            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid AND `Ignore` = 1", DbTableName), pProcessId);
         }
 
         public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
@@ -118,15 +132,25 @@ namespace OptimaJet.Workflow.MySQL
             return Select(connection, selectText, p1);
         }
 
-        public static int ClearTimersIgnore(MySqlConnection connection)
+        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(MySqlConnection connection, Guid processId)
         {
-            var command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Ignore` = 1", DbTableName);
-            return ExecuteCommand(connection, command);
+            var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid AND `Ignore` = 0", DbTableName);
+
+            var p1 = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
+
+            return Select(connection, selectText, p1);
         }
 
         public static int ClearTimerIgnore(MySqlConnection connection, Guid timerId)
         {
             var command = string.Format("UPDATE {0} SET `Ignore` = 0 WHERE `Id` = @timerid", DbTableName);
+            var p1 = new MySqlParameter("timerid", MySqlDbType.Binary) { Value = timerId.ToByteArray() };
+            return ExecuteCommand(connection, command, p1);
+        }
+
+        public static int SetTimerIgnore(MySqlConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET `Ignore` = 1 WHERE `Id` = @timerid AND `Ignore` = 0", DbTableName);
             var p1 = new MySqlParameter("timerid", MySqlDbType.Binary) { Value = timerId.ToByteArray() };
             return ExecuteCommand(connection, command, p1);
         }
@@ -144,6 +168,17 @@ namespace OptimaJet.Workflow.MySQL
             var selectText = string.Format("SELECT * FROM {0}  WHERE `Ignore` = 0 AND `NextExecutionDateTime` <= @currentTime", DbTableName);
             var p = new MySqlParameter("currentTime", MySqlDbType.DateTime) {Value = now};
             return Select(connection, selectText, p);
+        }
+
+        public static WorkflowProcessTimer[] GetTopTimersToExecute(MySqlConnection connection, int top, DateTime now)
+        {
+            string selectText = $"SELECT * FROM {DbTableName} " +
+                                "WHERE `Ignore` = 0 AND `NextExecutionDateTime` <= @currentTime " +
+                                $"ORDER BY `NextExecutionDateTime` LIMIT {top}";
+
+            var p1 = new MySqlParameter("currentTime", MySqlDbType.DateTime) { Value = now };
+
+            return Select(connection, selectText, p1);
         }
 
         public static int SetIgnore(MySqlConnection connection, WorkflowProcessTimer[] timers)

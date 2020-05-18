@@ -1,4 +1,142 @@
 <h1>Workflow Engine: Release Notes</h1>
+<h2>4.2 (#4.2)</h2>
+<ul>
+<li>
+<p>Support for the timers in multi-server mode has been added. You can configure <code>WorkflowRuntime</code> to work in a single or multi-server environment. This affects the timers and the recovering from failure. You can configure the runtime with the following code:</p>
+<pre><code class="language-csharp">_runtime = new WorkflowRuntime()
+  ...
+  .AsSingleServer() //.AsMultiServer()
+ .Start();
+</code></pre>
+<p><strong>WARNING. <code>ASMultiServer ()</code> - works for Ultimate licenses only.</strong></p>
+</li>
+<li>
+<p>If an abnormal server shutdown has occurred, then part of the processes may remain frozen in the <em>Running</em> status. This status will be changed by the automatic recovery procedure; one of the two statuses - either <em>Error</em> or <em>Terminated</em> - will be set. You can also change the recovery procedure using Process Restorer. For example, as follows:</p>
+<pre><code class="language-csharp">public class ProcessRestorer : IProcessRestorer
+{
+  ...
+}
+runtime.WithProcessRestorer(new ProcessRestorer())
+</code></pre>
+<p><strong>Please, note that Process Restorer is only used in a case of server shutdown. For the workflow errors, use the <code>OnWorkflowError</code> event handler.</strong></p>
+</li>
+<li>
+<p>The <code>runtime.Shutdown()</code> and <code>runtime.ShutdownAsync()</code> methods has been added. These methods provide the correct shutdown of the <code>WorkflowRuntime</code>. Using this method is very important for a multi-server environment.</p>
+</li>
+<li>
+<p>The approach to the workflow execution has been changed. Now, the process is executed using a run loop. Therefore, you can create an endless workflow. One iteration of the loop is equivalent to one <em>Activity</em>. By default, the maximum number of iterations is limited by <code>Int64.MaxValue</code>. However, you can change it as follows:</p>
+<pre><code class="language-csharp">_runtime.WithRuntimeSettings(new WorkflowRuntimeSettings()
+{
+  MaxNumberOfPerformedActivities = -1 //Infinite loop allowed
+});
+</code></pre>
+</li>
+<li>
+<p>Now, you can safely change the workflow state from the workflow itself during its operation. Use the following code:</p>
+<pre><code class="language-csharp">processInstance.SetActivityAfterActionExecution(&quot;ActivityName&quot;);
+processInstance.SetActivityAfterActivityExecution(&quot;ActivityName&quot;);
+processInstance.SetStateAfterActionExecution(&quot;StateName&quot;);
+processInstance.SetStateAfterActivityExecution(&quot;StateName&quot;);
+</code></pre>
+</li>
+<li>
+<p>If the complex object is stored in the process parameters, you can receive and set its properties on the fly, using partial parameters:</p>
+<pre><code class="language-csharp">processInstance.GetParameter&lt;T&gt;(&quot;ObjectParameter.Object.Value&quot;);
+</code></pre>
+</li>
+<li>
+<p>A new type of <em>Expressions</em> has been added. This is a simple expression that returns true or false. You can use them instead of <em>Conditions</em>. Here, you can use the process parameters values, as well as string formatting of these parameters. The syntax of these expressions is as follows:</p>
+<pre><code class="language-csharp">@ObjectParameter.BooleanProperty and @IntParameter &lt;&gt; 1&quot;
+</code></pre>
+<p>Here the 'ObjectParameter.BooleanProperty' and 'IntParameter' are <em>Process parameters</em>.</p>
+</li>
+<li>
+<p>The parameters values ​​can be substituted into the values ​​of the <em>Actions</em>, <em>Conditions</em>, or <em>Rules</em>. The syntax is similar to the expressions:</p>
+<pre><code class="language-javascript">{
+   JsonObject = &quot;@ObjectParameter:json&quot;,
+   Int = &quot;@IntParameter:json&quot;,
+   IntString = &quot;@IntParameter&quot;,
+   Guid = &quot;@GuidParameter:json&quot;,
+   GuidString = &quot;@(GuidParameter:N)&quot;,
+   DateTime = &quot;@(DateTimeParameter:json)&quot;,
+   DateTimeString = &quot;Today is @(DateTimeParameter:dd-MM-yyyy HH:mm:ss)&quot;,
+}
+</code></pre>
+</li>
+<li>
+<p>You can connect the external parameter provider - <code>IWorkflowExternalParametersProvider</code> - to <code>WorkflowRuntime</code>. This allows you to access external data (for example, the document record which the process is linked to) as usual process parameters. It can be used in Expressions.</p>
+</li>
+<li>
+<p>A plugin to work with files has been added - <em>File Plugin</em>.</p>
+</li>
+<li>
+<p>A plugin to work with Inbox/Outbox has been added - <em>Approval Plugin</em>.</p>
+</li>
+<li>
+<p>HTTPRequest and CheckHTTPRequest methods added by <em>Basic Plugin</em> can now send POST.</p>
+</li>
+<li>
+<p>Methods to simplify work with parallel processes have been added to <em>Basic Plugin</em>.</p>
+</li>
+<li>
+<p>In the <em>Parameter edit forms</em> you can use the <em>Multiselect Dropdown</em>.</p>
+</li>
+</ul>
+<p><strong>The following additional actions must be taken to upgrade to Workflow Engine 4.2:</strong></p>
+<ul>
+<li>
+<p><strong>Warning. RavenDB provider is no longer supported.</strong></p>
+</li>
+<li>
+<p><strong>Warning. If using Redis, please, contact our support for update instructions.</strong></p>
+</li>
+<li>
+<p><strong>Warning. If you are using MongoDB. The multi-server feature will work only with MongoDB version &gt; 4.0</strong></p>
+</li>
+<li>
+<p>Run the SQL script update_4_1_to_4_2 for all relative databases and MongoDB.</p>
+<ul>
+<li><a href="https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MSSQL/Scripts/update_4_1_to_4_2.sql">MSSQL</a></li>
+<li><a href="https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.PostgreSQL/Scripts/update_4_1_to_4_2.sql">PostgreSQL</a></li>
+<li><a href="https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.Oracle/Scripts/update_4_1_to_4_2.sql">Oracle</a></li>
+<li><a href="https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/NETCore_OptimaJet.Workflow.MySQL/Scripts/update_4_1_to_4_2.sql">MySQL</a></li>
+<li><a href="https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MongoDB/Scripts/update_4_1_to_4_2.js">MongoDB</a></li>
+</ul>
+</li>
+<li>
+<p>Update all files related to the Designer. They are available <a href="https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer">here</a>.</p>
+</li>
+<li>
+<p>Update packages or dll to version 4.2. **If you connect the WFE with DLLs you must reference all DLLs from <a href="https://workflowengine.io/downloads/assets/workflow-engine-net-4.2-core.zip">this archive</a> in your solution.</p>
+</li>
+<li>
+<p>Remove <code>runtime.WithBus(...)</code> call from your <code>WorkflowRuntime</code> configuration.</p>
+</li>
+<li>
+<p>At the point, where you configure <code>WorkflowRuntime</code> remove the <code>.WithTimerManager (...)</code> call. And add a call of  <code>.AsSingleServer()</code> or <code>.AsMultiServer()</code>, depending on the mode you want to run the <code>WorkflowRuntime</code>. <strong>WARNING. <code>ASMultiServer ()</code> - works for Ultimate licenses only.</strong></p>
+</li>
+<li>
+<p>The signature of the <code>UsersInRoleAsync</code> delegate for <em>Basic Plugin</em> has changed.
+The way, it was:</p>
+<pre><code class="language-csharp">public delegate Task&lt;IEnumerable&lt;string&gt;&gt; UsersInRoleAsyncDelegate(string roleName, Guid? processId = null);
+</code></pre>
+<p>The way, it is now:</p>
+<pre><code class="language-csharp"> public delegate Task&lt;IEnumerable&lt;string&gt;&gt; UsersInRoleAsyncDelegate(string roleName, ProcessInstance processInstance);
+</code></pre>
+</li>
+<li>
+<p>If you are using <em>.Net Framework</em> for your web application most likely you will must add the following lines in your <em>web.config</em>.</p>
+<pre><code class="language-xml">&lt;system.web&gt;
+  &lt;compilation debug=&quot;true&quot; targetFramework=&quot;4.5&quot;&gt;
+      &lt;assemblies&gt;
+          &lt;add assembly=&quot;System.Runtime, Version=4.0.0.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a&quot; /&gt;
+      &lt;/assemblies&gt;
+  &lt;/compilation&gt;
+  ...
+&lt;/system.web&gt;
+</code></pre>
+</li>
+</ul>
 <h2>4.1 {#4.1}</h2>
 <ul>
 <li>

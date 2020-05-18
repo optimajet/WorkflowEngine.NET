@@ -10,6 +10,7 @@ using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
 using System.Threading.Tasks;
 using System.Collections.Generic;
+using OptimaJet.Workflow.Core.Model;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -36,21 +37,6 @@ namespace WF.Sample.Business.Workflow
                 {
                     if (_runtime == null)
                     {
-                        var provider = DataServiceProvider.Get<IPersistenceProviderContainer>().Provider;
-
-                        var builder = new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache();
-
-                        _runtime = new WorkflowRuntime()
-                            .WithBuilder(builder)
-                            .WithActionProvider(new ActionProvider(DataServiceProvider))
-                            .WithRuleProvider(new RuleProvider(DataServiceProvider))
-                            .WithPersistenceProvider(provider)
-                            .WithTimerManager(new TimerManager())
-                            .WithBus(new NullBus())
-                            .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
-                            .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
-                            .Start();
-
                         var plugin = new OptimaJet.Workflow.Core.Plugins.BasicPlugin();
                         //Settings for SendEmail actions
                         // plugin.Setting_Mailserver = "smtp.yourserver.com";
@@ -60,15 +46,29 @@ namespace WF.Sample.Business.Workflow
                         // plugin.Setting_MailserverPassword = "password";
                         // plugin.Setting_MailserverSsl = true;
                         plugin.UsersInRoleAsync = UsersInRoleAsync;
-                        _runtime.WithPlugin(plugin);
+                        
+                        var provider = DataServiceProvider.Get<IPersistenceProviderContainer>().Provider;
 
+                        var builder = new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache();
+
+                        _runtime = new WorkflowRuntime()
+                            .WithBuilder(builder)
+                            .WithActionProvider(new ActionProvider(DataServiceProvider))
+                            .WithRuleProvider(new RuleProvider(DataServiceProvider))
+                            .WithPersistenceProvider(provider)
+                            .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
+                            .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
+                            .WithPlugin(plugin)
+                            .AsSingleServer() //.AsMultiServer()
+                            .Start();
+                       
                         _runtime.ProcessStatusChanged += _runtime_ProcessStatusChanged;
                     }
                 }
             }
         }
 
-        public static async Task<IEnumerable<string>> UsersInRoleAsync(string roleName, Guid? processId = null)
+        public static async Task<IEnumerable<string>> UsersInRoleAsync(string roleName, ProcessInstance processInstance)
         {
             var provider = DataServiceProvider.Get<IEmployeeRepository>();
             return provider.GetInRole(roleName);            

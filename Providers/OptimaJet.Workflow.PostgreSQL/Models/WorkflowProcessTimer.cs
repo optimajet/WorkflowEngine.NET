@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using Npgsql;
@@ -11,6 +11,7 @@ namespace OptimaJet.Workflow.PostgreSQL
     {
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }
+        public Guid RootProcessId { get; set; }
         public string Name { get; set; }
         public DateTime NextExecutionDateTime { get; set; }
         public bool Ignore { get; set; }
@@ -28,6 +29,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo {Name="Name"},
                 new ColumnInfo {Name="NextExecutionDateTime", Type = NpgsqlDbType.Timestamp },
                 new ColumnInfo {Name="Ignore", Type = NpgsqlDbType.Boolean },
+                new ColumnInfo {Name=nameof(RootProcessId), Type = NpgsqlDbType.Uuid},
             });
         }
 
@@ -45,6 +47,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                     return NextExecutionDateTime;
                 case "Ignore":
                     return Ignore;
+                case nameof(RootProcessId):
+                    return RootProcessId;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -69,9 +73,20 @@ namespace OptimaJet.Workflow.PostgreSQL
                 case "Ignore":
                     Ignore = (bool)value;
                     break;
+                case nameof(RootProcessId):
+                    RootProcessId = (Guid)value;
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
+        }
+
+        public static int DeleteInactiveByProcessId(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction = null)
+        {
+            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+
+            return ExecuteCommand(connection,
+                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid AND \"Ignore\" = TRUE", ObjectName), transaction, pProcessId);
         }
 
         public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
@@ -111,15 +126,25 @@ namespace OptimaJet.Workflow.PostgreSQL
             return Select(connection, selectText, p1);
         }
 
-        public static int ClearTimersIgnore(NpgsqlConnection connection)
+        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(NpgsqlConnection connection, Guid processId)
         {
-            string command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Ignore\" = TRUE", ObjectName);
-            return ExecuteCommand(connection, command);
+            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid AND \"Ignore\" = FALSE", ObjectName);
+
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+
+            return Select(connection, selectText, p1);
         }
 
         public static int ClearTimerIgnore(NpgsqlConnection connection, Guid timerId)
         {
             var command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Id\" = @timerid", ObjectName);
+            var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) { Value = timerId };
+            return ExecuteCommand(connection, command, p1);
+        }
+
+        public static int SetTimerIgnore(NpgsqlConnection connection, Guid timerId)
+        {
+            var command = string.Format("UPDATE {0} SET \"Ignore\" = TRUE WHERE \"Id\" = @timerid AND \"Ignore\" = FALSE", ObjectName);
             var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) { Value = timerId };
             return ExecuteCommand(connection, command, p1);
         }
@@ -132,10 +157,20 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public static WorkflowProcessTimer[] GetTimersToExecute(NpgsqlConnection connection, DateTime now)
         {
-            
             string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime", ObjectName);
             var p = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) { Value = now };
             return Select(connection, selectText, p);
+        }
+
+        public static WorkflowProcessTimer[] GetTopTimersToExecute(NpgsqlConnection connection, int top, DateTime now)
+        {
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                "WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime " +
+                                $"ORDER BY \"NextExecutionDateTime\" LIMIT {top}";
+
+            var p1 = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) { Value = now };
+           
+            return Select(connection, selectText, p1);
         }
 
         public static int SetIgnore(NpgsqlConnection connection, WorkflowProcessTimer[] timers)

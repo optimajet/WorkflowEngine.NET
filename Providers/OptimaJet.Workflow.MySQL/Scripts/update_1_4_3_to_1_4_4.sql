@@ -1,4 +1,4 @@
-﻿/*
+/*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
 Version: 1.4.4

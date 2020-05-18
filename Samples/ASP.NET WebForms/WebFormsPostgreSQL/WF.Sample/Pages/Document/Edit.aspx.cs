@@ -8,6 +8,7 @@ using System.Text;
 using System.Web;
 using System.Web.UI;
 using System.Web.UI.WebControls;
+using OptimaJet.Workflow.Core.Runtime;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Workflow;
 using WF.Sample.Extensions;
@@ -112,7 +113,14 @@ namespace WF.Sample.Pages.Document
                 if (string.IsNullOrEmpty(document.StateNameToSet))
                     return;
 
-                WorkflowInit.Runtime.SetState(id, currentUser, currentUser, document.StateNameToSet, new Dictionary<string, object> { { "Comment", document.Comment } });
+                
+                var setStateParams = new SetStateParams(id,document.StateNameToSet)
+                {
+                    IdentityId = currentUser,
+                    ImpersonatedIdentityId = currentUser
+                }.AddTemporaryParameter("Comment",document.Comment);
+                WorkflowInit.Runtime.SetState(setStateParams);
+                
                 return;
             }
 

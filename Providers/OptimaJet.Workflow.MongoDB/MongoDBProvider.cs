@@ -15,10 +15,11 @@ using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Core.Runtime.Timers;
 
 namespace OptimaJet.Workflow.MongoDB
 {
-    public class MongoDBConstants
+    public static class MongoDBConstants
     {
         public const string WorkflowProcessInstanceCollectionName = "WorkflowProcessInstance";
         public const string WorkflowProcessSchemeCollectionName = "WorkflowProcessScheme";
@@ -26,9 +27,14 @@ namespace OptimaJet.Workflow.MongoDB
         public const string WorkflowSchemeCollectionName = "WorkflowScheme";
         public const string WorkflowProcessTimerCollectionName = "WorkflowProcessTimer";
         public const string WorkflowGlobalParameterCollectionName = "WorkflowGlobalParameter";
+        public const string WorkflowRuntimeCollectionName = "WorkflowRuntime";
+        public const string WorkflowSyncCollectionName = "WorkflowSync";
+    
+        public const string WorkflowApprovalHistoryCollectionName = "WorkflowApprovalHistory";
+        public const string WorkflowInboxCollectionName = "WorkflowInbox";
     }
 
-    public class MongoDBProvider : IWorkflowProvider
+    public class MongoDBProvider : IWorkflowProvider, IApprovalProvider
     {
         private WorkflowRuntime _runtime;
         private readonly bool WriteToHistory;
@@ -46,6 +52,7 @@ namespace OptimaJet.Workflow.MongoDB
         public void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
+            CheckInitialData();
         }
 
         private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
@@ -58,6 +65,108 @@ namespace OptimaJet.Workflow.MongoDB
         }
 
         #region IPersistenceProvider
+        public void DeleteInactiveTimersByProcessId(Guid processId)
+        {
+            var dbcollTimer = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            dbcollTimer.DeleteMany(c => c.ProcessId == processId && c.Ignore);
+        }
+
+        public async Task DeleteTimerAsync(Guid timerId)
+        {
+            var dbcollTimer = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            await dbcollTimer.DeleteOneAsync(x => x.Id == timerId).ConfigureAwait(false);
+        }
+
+        public List<Guid> GetRunningProcesses(string runtimeId = null)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+
+            if(string.IsNullOrEmpty(runtimeId))
+            {
+                return dbcoll.Find(x => x.Status.Status == ProcessStatus.Running.Id).ToList().Select(x => x.Id).ToList();
+            }
+
+            return dbcoll.Find(x => x.Status.Status == ProcessStatus.Running.Id && x.Status.RuntimeId == runtimeId).ToList().Select(x => x.Id).ToList();
+        }
+
+        public WorkflowRuntimeModel CreateWorkflowRuntime(string runtimeId, RuntimeStatus status)
+        {
+            IMongoCollection<Models.WorkflowRuntime> dbcoll = 
+                Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+
+            var runtime = new Models.WorkflowRuntime()
+            {
+                RuntimeId = runtimeId,
+                Lock = Guid.NewGuid(),
+                Status = status
+            };
+
+            dbcoll.InsertOne(runtime);
+
+            return new WorkflowRuntimeModel { Lock = runtime.Lock, RuntimeId = runtimeId, Status = status };
+            
+        }
+
+        public void DeleteWorkflowRuntime(string name)
+        {
+            IMongoCollection<Models.WorkflowRuntime> dbcoll =
+                 Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+            dbcoll.DeleteOne(x => x.RuntimeId == name);
+        }
+        
+        public WorkflowRuntimeModel UpdateWorkflowRuntimeStatus(WorkflowRuntimeModel runtime, RuntimeStatus status)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.Status = status, Builders<Models.WorkflowRuntime>.Update.Set(x => x.Status, status));
+
+            if (res.Item1 != 1)
+            {
+                throw new ImpossibleToSetRuntimeStatusException();
+            }
+
+            return res.Item2;
+        }
+
+        public (bool Success, WorkflowRuntimeModel UpdatedModel) UpdateWorkflowRuntimeRestorer(WorkflowRuntimeModel runtime, string restorerId)
+        {
+            var res = UpdateWorkflowRuntime(runtime, x => x.RestorerId = restorerId, Builders<Models.WorkflowRuntime>.Update.Set(x => x.RestorerId, restorerId));
+
+            return (res.Item1 == 1, res.Item2);
+        }
+
+        public bool MultiServerRuntimesExist()
+        {
+            var empty = Guid.Empty.ToString();
+            return Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName)
+                        .Find(x => x.RuntimeId != empty || x.Status != RuntimeStatus.Single && x.Status != RuntimeStatus.Terminated && x.Status != RuntimeStatus.Dead)
+                        .FirstOrDefault() != null;
+        }
+
+        public int SingleServerRuntimesCount()
+        {
+            string empty = Guid.Empty.ToString();
+            return (int)Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName)
+                             .CountDocuments(x => x.RuntimeId == empty && x.Status == RuntimeStatus.Single);
+        }
+
+        public int ActiveMultiServerRuntimesCount(string currentRuntimeId)
+        {
+            return (int)Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName)
+                             .CountDocuments(x => x.RuntimeId != currentRuntimeId && (x.Status == RuntimeStatus.Alive || x.Status == RuntimeStatus.Restore || x.Status == RuntimeStatus.SelfRestore));
+        }
+
+        public WorkflowRuntimeModel GetWorkflowRuntimeModel(string runtimeId)
+        {
+            var result = Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName)
+                              .Find(x => x.RuntimeId == runtimeId)
+                              .FirstOrDefault();
+
+            if (result == null)
+            {
+                return null;
+            }
+
+            return GetModel(result);
+        }
 
         public void InitializeProcess(ProcessInstance processInstance)
         {
@@ -191,7 +300,9 @@ namespace OptimaJet.Workflow.MongoDB
             var status = new WorkflowProcessInstanceStatus
             {
                 Lock = Guid.NewGuid(),
-                Status = ProcessStatus.Initialized.Id
+                Status = ProcessStatus.Initialized.Id,
+                RuntimeId = _runtime.Id,
+                SetTime = _runtime.RuntimeDateTimeNow
             };
 
             if (instance.Status == null)
@@ -227,7 +338,7 @@ namespace OptimaJet.Workflow.MongoDB
         }
 
 #pragma warning disable 612
-        public void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage)
+        public void SetWorkflowTerminated(ProcessInstance processInstance)
 #pragma warning restore 612
         {
             SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
@@ -235,8 +346,12 @@ namespace OptimaJet.Workflow.MongoDB
 
         public void ResetWorkflowRunning()
         {
+            var time = _runtime.RuntimeDateTimeNow;
             var dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
-            dbcoll.UpdateMany(item => item.Status.Status == 1, Builders<WorkflowProcessInstance>.Update.Set(c => c.Status.Status, 2));
+            dbcoll.UpdateMany(item => item.Status.Status == 1, Builders<WorkflowProcessInstance>.Update
+                .Set(c => c.Status.Status, 2)
+                .Set(c => c.Status.SetTime, time)
+            );
         }
 
         public void UpdatePersistenceState(ProcessInstance processInstance, TransitionDefinition transition)
@@ -332,7 +447,9 @@ namespace OptimaJet.Workflow.MongoDB
             var newStatus = new WorkflowProcessInstanceStatus
             {
                 Lock = Guid.NewGuid(),
-                Status = status.Id
+                Status = status.Id,
+                SetTime = _runtime.RuntimeDateTimeNow,
+                RuntimeId = _runtime.Id
             };
 
             if (instance.Status == null)
@@ -360,12 +477,14 @@ namespace OptimaJet.Workflow.MongoDB
                 throw new StatusNotDefinedException();
 
             if (instance.Status.Status == ProcessStatus.Running.Id)
-                throw new ImpossibleToSetStatusException();
+                throw new ImpossibleToSetStatusException("Process already running");
 
             var status = new WorkflowProcessInstanceStatus
             {
                 Lock = Guid.NewGuid(),
-                Status = ProcessStatus.Running.Id
+                Status = ProcessStatus.Running.Id,
+                SetTime = _runtime.RuntimeDateTimeNow,
+                RuntimeId = _runtime.Id
             };
 
             var oldLock = instance.Status.Lock;
@@ -575,7 +694,7 @@ namespace OptimaJet.Workflow.MongoDB
             dbcollTimer.DeleteMany(c => c.ProcessId == processId);
         }
 
-        public void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
+        public void RegisterTimer(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
             var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             var timer = dbcoll.Find(item => item.ProcessId == processId && item.Name == name).FirstOrDefault();
@@ -586,7 +705,8 @@ namespace OptimaJet.Workflow.MongoDB
                     Id = Guid.NewGuid(),
                     Name = name,
                     NextExecutionDateTime = nextExecutionDateTime,
-                    ProcessId = processId
+                    ProcessId = processId,
+                    RootProcessId = rootProcessId
                 };
 
                 timer.Ignore = false;
@@ -605,17 +725,17 @@ namespace OptimaJet.Workflow.MongoDB
             dbcollTimer.DeleteMany(c => c.ProcessId == processId && !timersIgnoreList.Contains(c.Name));
         }
 
-        public void ClearTimersIgnore()
-        {
-            var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
-
-            dbcoll.UpdateMany(item => item.Ignore, Builders<WorkflowProcessTimer>.Update.Set(c => c.Ignore, false));
-        }
-
         public void ClearTimerIgnore(Guid timerId)
         {
             var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             dbcoll.UpdateMany(item => item.Id == timerId, Builders<WorkflowProcessTimer>.Update.Set(c => c.Ignore, false));
+        }
+
+        public int SetTimerIgnore(Guid timerId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            var result = dbcoll.UpdateMany(item => item.Id == timerId && !item.Ignore, Builders<WorkflowProcessTimer>.Update.Set(c => c.Ignore, true));
+            return (int)result.ModifiedCount;
         }
 
         public void ClearTimer(Guid timerId)
@@ -631,17 +751,40 @@ namespace OptimaJet.Workflow.MongoDB
             if (timer == null)
                 return null;
 
-            return timer.NextExecutionDateTime;
+            return _runtime.ToRuntimeTime(timer.NextExecutionDateTime);
         }
 
         public List<TimerToExecute> GetTimersToExecute()
         {
-            var now = _runtime.RuntimeDateTimeNow;
+            var now = _runtime.RuntimeDateTimeNow.ToUniversalTime();
             var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             var timers = dbcoll.Find(item => !item.Ignore && item.NextExecutionDateTime <= now).ToList();
             var selectedIds = timers.Select(t => t.Id).ToList();
             dbcoll.UpdateMany(item => selectedIds.Contains(item.Id), Builders<WorkflowProcessTimer>.Update.Set(c => c.Ignore, true));
             return timers.Select(t => new TimerToExecute {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
+        }
+
+        public List<Core.Model.WorkflowTimer> GetTopTimersToExecute(int top)
+        {
+            DateTime now = _runtime.RuntimeDateTimeNow.ToUniversalTime();
+
+            IMongoCollection<WorkflowProcessTimer> timerColl =
+                Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+
+
+            IEnumerable<Core.Model.WorkflowTimer> result = timerColl.AsQueryable()
+                .Where(x => !x.Ignore && x.NextExecutionDateTime <= now)
+                .ToList()
+                .Select(x => new Core.Model.WorkflowTimer
+                {
+                    Name = x.Name,
+                    ProcessId = x.ProcessId,
+                    TimerId = x.Id,
+                    NextExecutionDateTime = _runtime.ToRuntimeTime(x.NextExecutionDateTime),
+                    RootProcessId = x.RootProcessId
+                });
+
+            return result.ToList();
         }
 
         public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
@@ -659,7 +802,7 @@ namespace OptimaJet.Workflow.MongoDB
                     ToActivityName = hi.ToActivityName,
                     ToStateName = hi.ToStateName,
                     TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
-                    TransitionTime = hi.TransitionTime,
+                    TransitionTime = _runtime.ToRuntimeTime(hi.TransitionTime),
                     TriggerName = hi.TriggerName
                 })
                 .ToList();
@@ -669,11 +812,157 @@ namespace OptimaJet.Workflow.MongoDB
         {
             var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             var history = dbcoll.Find(hi => hi.ProcessId == processId).ToList();
-            return history.Select(hi => new ProcessTimer
+            return history.Select(hi => new ProcessTimer(hi.Id, hi.Name, _runtime.ToRuntimeTime(hi.NextExecutionDateTime)));
+        }
+
+        public async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
+        {
+            IMongoCollection<WorkflowProcessInstance> workflowProcessInstanceCollection =
+                Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+
+            ProjectionDefinition<WorkflowProcessInstance> workflowProcessInstanceProjection = Builders<WorkflowProcessInstance>.Projection
+                .Include(pi => pi.Id)
+                .Include(pi => pi.ParentProcessId)
+                .Include(pi => pi.RootProcessId)
+                .Include(pi => pi.SchemeId);
+
+            var workflowProcessInstanceOptions = new FindOptions<WorkflowProcessInstance, BsonDocument> {Projection = workflowProcessInstanceProjection};
+
+            FilterDefinition<WorkflowProcessInstance> workflowProcessInstanceFilter =
+                Builders<WorkflowProcessInstance>.Filter.Eq(pi => pi.RootProcessId, rootProcessId);
+
+            var instances = await (await workflowProcessInstanceCollection.FindAsync(workflowProcessInstanceFilter, workflowProcessInstanceOptions)
+                .ConfigureAwait(false)).ToListAsync().ConfigureAwait(false);
+            var schemeIds = instances.Select(i => i[nameof(WorkflowProcessInstance.SchemeId)].AsGuid).Distinct().ToList();
+
+            IMongoCollection<WorkflowProcessScheme> workflowProcessSchemeCollection =
+                Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
+
+            ProjectionDefinition<WorkflowProcessScheme> workflowProcessSchemeProjection = Builders<WorkflowProcessScheme>.Projection
+                .Include(ps => ps.Id)
+                .Include(ps => ps.StartingTransition);
+
+            var workflowProcessSchemeOptions = new FindOptions<WorkflowProcessScheme, BsonDocument> {Projection = workflowProcessSchemeProjection};
+
+            FilterDefinition<WorkflowProcessScheme> workflowProcessSchemeFilter = Builders<WorkflowProcessScheme>.Filter.In(ps => ps.Id, schemeIds);
+            List<BsonDocument> schemes =
+                await (await workflowProcessSchemeCollection.FindAsync(workflowProcessSchemeFilter, workflowProcessSchemeOptions).ConfigureAwait(false))
+                    .ToListAsync().ConfigureAwait(false);
+
+            return ProcessInstanceTreeItem.CreateFromBsonDocuments(instances, schemes);
+        }
+
+        public IEnumerable<ProcessTimer> GetActiveTimersForProcess(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            var history = dbcoll.Find(hi => hi.ProcessId == processId && !hi.Ignore).ToList();
+            return history.Select(hi => new ProcessTimer(hi.Id, hi.Name, _runtime.ToRuntimeTime(hi.NextExecutionDateTime)));
+        }
+
+        public int SendRuntimeLastAliveSignal()
+        {
+            var dbcoll = Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+
+            var time = _runtime.RuntimeDateTimeNow;
+            var id = _runtime.Id;
+
+            var result = dbcoll.UpdateOne(x => (x.Status == RuntimeStatus.Alive || x.Status == RuntimeStatus.SelfRestore) && x.RuntimeId == id,
+                Builders<Models.WorkflowRuntime>.Update.Set(x => x.LastAliveSignal, time));
+
+            return (int)result.ModifiedCount;
+        }
+
+        public DateTime? GetNextTimerDate(TimerCategory timerCategory, int timerInterval)
+        {
+            string timerCategoryName = timerCategory.ToString();
+            IMongoCollection<Models.WorkflowSync> lockColl = Store.GetCollection<Models.WorkflowSync>(MongoDBConstants.WorkflowSyncCollectionName);
+            Models.WorkflowSync sync = lockColl.Find(x => x.Name == timerCategoryName).FirstOrDefault();
+
+            if (sync == null)
             {
-                Name = hi.Name,
-                NextExecutionDateTime = hi.NextExecutionDateTime
-            });
+                throw new Exception($"Sync lock {timerCategoryName} not found");
+            }
+
+            Guid syncLock = sync.Lock;
+
+            IMongoCollection<Models.WorkflowRuntime> runtimeColl = Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+
+            string runtimeId = _runtime.Id;
+
+            Expression<Func<Models.WorkflowRuntime, object>> getterExpression = null;
+            Func<Models.WorkflowRuntime, DateTime?> getterFunction = null;
+
+            switch (timerCategory)
+            {
+                case TimerCategory.Timer:
+                    getterExpression = e => e.NextTimerTime;
+                    getterFunction = x => x.NextTimerTime;
+                    break;
+                case TimerCategory.ServiceTimer:
+                    getterExpression = e => e.NextServiceTimerTime;
+                    getterFunction = x => x.NextServiceTimerTime;
+                    break;
+                default:
+                    throw new Exception($"Unknown sync lock name: {timerCategoryName}");
+            }
+
+            Models.WorkflowRuntime max = runtimeColl.Find(x => x.RuntimeId != runtimeId && x.Status == RuntimeStatus.Alive).SortByDescending(getterExpression)
+                .Limit(1).FirstOrDefault();
+
+            DateTime result = _runtime.RuntimeDateTimeNow;
+
+            if(max != null && _runtime.ToRuntimeTime(getterFunction(max)) > result)
+            {
+                result = _runtime.ToRuntimeTime(getterFunction(max)).Value;
+            }
+
+            result += TimeSpan.FromMilliseconds(timerInterval);
+
+            using (IClientSessionHandle session = Store.Client.StartSession())
+            {
+                session.StartTransaction();
+
+                var newLock = Guid.NewGuid();
+
+                runtimeColl.UpdateOne(x => x.RuntimeId == runtimeId, Builders<Models.WorkflowRuntime>.Update.Set(getterExpression, result));
+
+                UpdateResult lockUpdateResult = lockColl.UpdateOne(x => x.Lock == syncLock && x.Name == timerCategoryName, 
+                    Builders<Models.WorkflowSync>.Update.Set(c => c.Lock, newLock));
+
+                if(lockUpdateResult.ModifiedCount == 0)
+                {
+                    session.AbortTransaction();
+
+                    return null;
+                }
+
+                session.CommitTransaction();
+            }
+
+            return result;
+        }
+
+        public List<WorkflowRuntimeModel> GetWorkflowRuntimes()
+        {
+            IMongoCollection<Models.WorkflowRuntime> runtimeColl = Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+            return runtimeColl.Find(Builders<Models.WorkflowRuntime>.Filter.Empty).ToList().Select(GetModel).ToList();
+        }
+        private WorkflowRuntimeModel GetModel(Models.WorkflowRuntime result)
+        {
+            return new WorkflowRuntimeModel
+            { 
+                Lock = result.Lock, 
+                RuntimeId = result.RuntimeId,
+                Status = result.Status,
+                RestorerId = result.RestorerId,
+                LastAliveSignal = _runtime.ToRuntimeTime(result.LastAliveSignal),
+                NextTimerTime = _runtime.ToRuntimeTime(result.NextTimerTime)
+            };
+        }
+
+        public IApprovalProvider GetIApprovalProvider()
+        {
+            return this;
         }
 
         #endregion
@@ -768,7 +1057,7 @@ namespace OptimaJet.Workflow.MongoDB
                 Builders<WorkflowProcessScheme>.Update.Set(c => c.IsObsolete, true));
         }
 
-        public void SaveScheme(SchemeDefinition<XElement> scheme)
+        public SchemeDefinition<XElement> SaveScheme(SchemeDefinition<XElement> scheme)
         {
             var definingParameters = scheme.DefiningParameters;
             var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
@@ -777,13 +1066,17 @@ namespace OptimaJet.Workflow.MongoDB
 
             var oldSchemes =
                 dbcoll.Find(
-                    wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode && wps.IsObsolete == scheme.IsObsolete).ToList();
+                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode &&
+                               wps.IsObsolete == scheme.IsObsolete)
+                    .ToList();
 
             if (oldSchemes.Any())
             {
-                if (oldSchemes.Any(oldScheme => oldScheme.DefiningParameters == definingParameters))
+                var existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+
+                if (existing != null)
                 {
-                    throw SchemeAlreadyExistsException.Create(scheme.SchemeCode, SchemeLocation.WorkflowProcessScheme, scheme.DefiningParameters);
+                    return ConvertToSchemeDefinition(existing);
                 }
             }
 
@@ -802,6 +1095,8 @@ namespace OptimaJet.Workflow.MongoDB
             };
 
             dbcoll.InsertOne(newProcessScheme);
+
+            return ConvertToSchemeDefinition(newProcessScheme);
         }
 
         public void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
@@ -865,21 +1160,23 @@ namespace OptimaJet.Workflow.MongoDB
 
         public List<string> SearchSchemesByTags(IEnumerable<string> tags)
         {
-            if (tags == null || !tags.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
+            bool isEmpty = tags == null || !tags.Any();
+            
             IMongoCollection<WorkflowScheme> dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
 
             var filters = new List<FilterDefinition<WorkflowScheme>>();
 
-            foreach (string tag in tags)
+            if (!isEmpty)
             {
-                filters.Add(Builders<WorkflowScheme>.Filter.AnyEq(s => s.Tags, tag));
+                foreach (string tag in tags)
+                {
+                    filters.Add(Builders<WorkflowScheme>.Filter.AnyEq(s => s.Tags, tag));
+                }
+
+                return dbcoll.Find(Builders<WorkflowScheme>.Filter.Or(filters)).Project(sch => sch.Code).ToList();
             }
-            
-            List<string> codes = dbcoll.Find(Builders<WorkflowScheme>.Filter.Or(filters)).Project(sch => sch.Code).ToList();
-            return codes;
+
+            return dbcoll.Find(Builders<WorkflowScheme>.Filter.Empty).Project(sch => sch.Code).ToList();
         }
 
         public void AddSchemeTags(string schemeCode, params string[] tags)
@@ -984,5 +1281,115 @@ namespace OptimaJet.Workflow.MongoDB
         }
 
         #endregion
+
+        private Tuple<long, WorkflowRuntimeModel> UpdateWorkflowRuntime(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
+            UpdateDefinition<Models.WorkflowRuntime> updater)
+        {
+            var dbcoll = Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
+
+            Guid oldLock = runtime.Lock;
+            runtime.Lock = Guid.NewGuid();
+            setter(runtime);
+
+            UpdateResult result = dbcoll.UpdateOne(x => x.RuntimeId == runtime.RuntimeId && x.Lock == oldLock,
+                updater.Set(x => x.Lock, runtime.Lock)
+            );
+
+            if (result.MatchedCount != 1)
+            {
+                return new Tuple<long, WorkflowRuntimeModel>(result.ModifiedCount, null);
+            }
+
+            return new Tuple<long, WorkflowRuntimeModel>(result.ModifiedCount, runtime);
+        }
+
+        #region IApprovalProvider
+
+        public  async Task DropWorkflowInboxAsync(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            await dbcoll.DeleteOneAsync(c => c.ProcessId == processId).ConfigureAwait(false);
+        }
+
+        public  async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        {
+            var dbcoll = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            var inboxItems = newActors.Select(newactor => new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newactor, ProcessId = processId }).ToArray();
+            if (inboxItems.Any())
+            {
+                await dbcoll.InsertManyAsync(inboxItems).ConfigureAwait(false);
+            }
+        }
+
+        public  async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
+        {
+            var dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            var historyItem = new WorkflowApprovalHistory
+            {
+                Id = Guid.NewGuid(),
+                AllowedTo = allowedToEmployeeNames,
+                DestinationState = nextState,
+                ProcessId = id,
+                InitialState = currentState,
+                TriggerName = triggerName,
+                Sort = order
+            };
+            await dbcoll.InsertOneAsync(historyItem).ConfigureAwait(false);
+        }
+
+        public  async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+        {
+            var dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            var historyItem = dbcoll.Find(h => h.ProcessId == id && !h.TransitionTime.HasValue &&
+            h.InitialState == currentState && h.DestinationState == nextState).FirstOrDefault();
+
+            if (historyItem == null)
+            {
+                historyItem = new WorkflowApprovalHistory
+                {
+                    Id = Guid.NewGuid(),
+                    AllowedTo = string.Empty,
+                    DestinationState = nextState,
+                    ProcessId = id,
+                    InitialState = currentState,
+                    Sort = order,
+                    TriggerName = triggerName,
+                    Commentary = comment,
+                    TransitionTime =_runtime.RuntimeDateTimeNow,
+                    IdentityId = identityId
+                };
+
+                await dbcoll.InsertOneAsync(historyItem).ConfigureAwait(false);
+            }
+            else
+            {
+               await dbcoll.UpdateOneAsync(x => x.Id == historyItem.Id,
+                   Builders<WorkflowApprovalHistory>.Update.Set(x => x.TriggerName, triggerName).Set(x => x.TransitionTime, _runtime.RuntimeDateTimeNow)
+                       .Set(x => x.IdentityId, identityId).Set(x => x.Commentary, comment)).ConfigureAwait(false);
+            }
+
+        }
+
+        public async Task DropEmptyApprovalHistoryAsync(Guid processId)
+        {
+            var dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            await dbcoll.DeleteManyAsync(h => h.ProcessId == processId && !h.TransitionTime.HasValue).ConfigureAwait(false);
+        }
+
+        #endregion IApprovalProvider
+
+        private void CheckInitialData()
+        {
+            IMongoCollection<Models.WorkflowSync> lockColl = 
+                Store.GetCollection<Models.WorkflowSync>(MongoDBConstants.WorkflowSyncCollectionName);
+
+            lockColl.UpdateOne(x => x.Name == "Timer", Builders<Models.WorkflowSync>.Update
+                .SetOnInsert(x => x.Name, "Timer")
+                .SetOnInsert(x => x.Lock, Guid.NewGuid()), new UpdateOptions { IsUpsert = true });
+
+            lockColl.UpdateOne(x => x.Name == "ServiceTimer", Builders<Models.WorkflowSync>.Update
+              .SetOnInsert(x => x.Name, "ServiceTimer")
+              .SetOnInsert(x => x.Lock, Guid.NewGuid()), new UpdateOptions { IsUpsert = true });
+        }
     }
 }

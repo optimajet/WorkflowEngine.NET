@@ -95,26 +95,34 @@ namespace OptimaJet.Workflow.MySQL
         public static List<string> GetSchemeCodesByTags(MySqlConnection connection, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
-            if (tagsList == null || !tagsList.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
-
-            var selectBuilder = new StringBuilder($"SELECT `Code` FROM {DbTableName} WHERE ");
+            bool isEmpty = tagsList == null || !tagsList.Any();
+            
+            string query;
             var parameters = new List<MySqlParameter>();
-            var likes = new List<string>();
-            foreach (string tag in tagsList)
-            {
-                string paramName = $"search_{parameters.Count}";
-                string like = $"`{nameof(Tags)}` LIKE CONCAT('%',@{paramName},'%')";
-                string paramValue = $"\"{tag}\"";
 
-                likes.Add(like);
-                parameters.Add(new MySqlParameter(paramName,  MySqlDbType.VarString) {Value = paramValue});
+            if (!isEmpty)
+            {
+                var selectBuilder = new StringBuilder($"SELECT `Code` FROM {DbTableName} WHERE ");
+                var likes = new List<string>();
+                foreach (string tag in tagsList)
+                {
+                    string paramName = $"search_{parameters.Count}";
+                    string like = $"`{nameof(Tags)}` LIKE CONCAT('%',@{paramName},'%')";
+                    string paramValue = $"\"{tag}\"";
+
+                    likes.Add(like);
+                    parameters.Add(new MySqlParameter(paramName, MySqlDbType.VarString) {Value = paramValue});
+                }
+
+                selectBuilder.Append(String.Join(" OR ", likes));
+                query = selectBuilder.ToString();
+            }
+            else
+            {
+                query = $"SELECT `Code` FROM {DbTableName}";
             }
 
-            selectBuilder.Append(String.Join(" OR ", likes));
-            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+            return Select(connection, query, parameters.ToArray())
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();

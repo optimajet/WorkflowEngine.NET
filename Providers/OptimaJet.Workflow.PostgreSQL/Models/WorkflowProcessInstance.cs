@@ -1,4 +1,7 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
+using Npgsql;
 using NpgsqlTypes;
 
 // ReSharper disable once CheckNamespace
@@ -20,6 +23,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
         public string TenantId { get; set; }
+        public string StartingTransition { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -42,7 +46,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo {Name="StateName"},
                 new ColumnInfo {Name = "ParentProcessId", Type = NpgsqlDbType.Uuid},
                 new ColumnInfo {Name = "RootProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name = "TenantId", Size=1024}
+                new ColumnInfo {Name = "TenantId", Size=1024},
+                new ColumnInfo {Name=nameof(StartingTransition)}
             });
         }
 
@@ -78,6 +83,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                     return RootProcessId;
                 case "TenantId":
                     return TenantId;
+                case nameof(StartingTransition):
+                    return StartingTransition;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -139,9 +146,18 @@ namespace OptimaJet.Workflow.PostgreSQL
                 case "TenantId":
                     TenantId = value as string;
                     break;
+                case nameof(StartingTransition):
+                    StartingTransition = value as string;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
+        }
+
+        public static WorkflowProcessInstance[] GetInstances(NpgsqlConnection connection, IEnumerable<Guid> ids)
+        {
+            string selectText = String.Format("SELECT * FROM {0} WHERE \"Id\" IN ({1})", ObjectName, String.Join(",", ids.Select(x => $"'{x}'")));
+            return Select(connection, selectText);
         }
     }
 }

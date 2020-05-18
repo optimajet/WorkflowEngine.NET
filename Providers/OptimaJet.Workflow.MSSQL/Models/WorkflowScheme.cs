@@ -23,7 +23,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public WorkflowScheme()
         {
-            DbColumns.AddRange(new[]
+            DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(Code), IsKey = true},
                 new ColumnInfo {Name = nameof(Scheme), Size = -1},
@@ -99,26 +99,39 @@ namespace OptimaJet.Workflow.DbPersistence
         public static List<string> GetSchemeCodesByTags(SqlConnection connection, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
-            if (tagsList == null || !tagsList.Any())
-            {
-                throw new ArgumentException($"{nameof(tags)} should be not null and not empty");
-            }
 
-            var selectBuilder = new StringBuilder($"SELECT Code FROM {ObjectName} WHERE ");
+            bool isEmpty = tagsList == null || !tagsList.Any();
+
+            string query;
             var parameters = new List<SqlParameter>();
-            var likes = new List<string>();
-            foreach (string tag in tagsList)
+            
+            if (!isEmpty)
             {
-                string paramName = $"search_{parameters.Count}";
-                string like = $"[{nameof(Tags)}] LIKE '%' + @{paramName} + '%'";
-                string paramValue = $"\"{tag}\"";
+                var selectBuilder = new StringBuilder($"SELECT Code FROM {ObjectName} WHERE ");
+               
+                var likes = new List<string>();
+                foreach (string tag in tagsList)
+                {
+                    string paramName = $"search_{parameters.Count}";
+                    string like = $"[{nameof(Tags)}] LIKE '%' + @{paramName} + '%'";
+                    string paramValue = $"\"{tag}\"";
 
-                likes.Add(like);
-                parameters.Add(new SqlParameter(paramName, SqlDbType.NVarChar) {Value = paramValue});
+                    likes.Add(like);
+                    parameters.Add(new SqlParameter(paramName, SqlDbType.NVarChar) {Value = paramValue});
+                }
+
+                selectBuilder.Append(String.Join(" OR ", likes));
+
+                query = selectBuilder.ToString();
+
+            }
+            else
+            {
+                query = $"SELECT Code FROM {ObjectName}";
             }
 
-            selectBuilder.Append(String.Join(" OR ", likes));
-            return Select(connection, selectBuilder.ToString(), parameters.ToArray())
+
+            return Select(connection, query, parameters.ToArray())
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();

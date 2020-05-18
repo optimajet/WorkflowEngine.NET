@@ -15,7 +15,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public WorkflowProcessInstancePersistence()
         {
-            DbColumns.AddRange(new[]
+            DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "ProcessId", Type = SqlDbType.UniqueIdentifier},
