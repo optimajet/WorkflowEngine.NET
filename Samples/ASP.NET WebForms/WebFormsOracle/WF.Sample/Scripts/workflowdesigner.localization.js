@@ -76,13 +76,14 @@
         Condition: 'Condition',
         ConditionType: 'Type',
         ConditionAction: 'Action',
-        ResultOnPreExecution: 'Result on PreExecution',
+        ResultOnPreExecution: 'PreExec. Result',
         Trigger: 'Trigger',
         TriggerType: 'Type',
         TriggerCommand: 'Command',
         TriggerTimer: 'Timer',
         ConditionActionParameter: 'Action parameter',
-        ConditionInversion: 'Invert action result',
+        ConditionExpression: 'Expression',
+        ConditionInversion: 'Invert result',
         ConditionsConcatenationType: 'Conditions concatenation type',
         AllowConcatenationType: 'Concat allow as',
         RestrictConcatenationType: 'Concat restrict as',
@@ -152,6 +153,7 @@
         ProcessParametersTabName: 'Process Parameters',
         HistoryTabName: 'History',
         TimersTabName: 'Timers',
+        TagsTabName: "Tags",
         HistoryTabFromLabel: 'From',
         HistoryTabFromStateLabel: 'From State',
         HistoryTabToLabel: 'To',
@@ -165,7 +167,8 @@
         ParametersValueLabel: 'Value',
         TimersTabNameLabel: 'Name',
         TimersTabValueLabel: 'Value',
-        RootProcess: "Root Process"
+        RootProcess: "Root Process",
+        TagsLabel:'Tags (separated by commas)',
     },
 
     CodeActionsFormLabel: {
@@ -180,9 +183,11 @@
         EditParameters: "Edit parameters",
         Parameters: "Parameters" ,
         Text: "Text",
+        TextArea: "TextArea",
         Number: "Number",
         Checkbox: "Checkbox",
         Dropdown: "Dropdown",
+        MultiSelect: "MultiSelect",
         DateTime: "Date/Time",
         Values: 'Values',
         DropdownName: 'Name',
@@ -239,7 +244,6 @@
         return "Can't save the schema. Those objects are in invalid state: " + objects;
     },
     BrokenReferencesDialogText: "This schema contains references to Actions, Conditions or Rules that aren't defined by this schema or current action providers. Do you want to keep them?",
-    FormMaxHeight: 700,
     EditCodeSettings: {
         Height: 600,
         Width: 1000,
@@ -270,6 +274,24 @@
         Title: "Edit value in JSON",
         CreateEmptyType: "Create",
         Format: "Format"
+    },
+    EditExpressionSettings:
+        {
+            Height: 600,
+            Width: 1000,
+            CodeHeight: 390,
+            MessageBoxHeight: 400,
+            MessageBoxWidth: 600,
+            SuccessBoxHeight: 150,
+            SuccessBoxWidth: 300
+        },
+    EditExpressionLabel: {
+        Title: "Edit expression",
+        Validate: "Validate",
+        Succeeded: "Expression is valid.",
+        Success: "Success",
+        Error: "Error",
+        OK: "OK"
     },
     OverviewMap: {
         show: true,

@@ -78,6 +78,7 @@ var WorkflowDesignerConstants = {
         TriggerTimer: "Minuteur",
         ConditionActionParameter: "Paramètre d'action",
         ConditionInversion: "Inverser le résultat de l'action",
+        ConditionExpression: 'Expression',
         ConditionsConcatenationType: "Type de concaténation des conditions",
         AllowConcatenationType: "Concat permettent comme",
         RestrictConcatenationType: "Concat restreindre comme",
@@ -179,9 +180,11 @@ var WorkflowDesignerConstants = {
         EditParameters: "Edit parameters",
         Parameters: "Parameters",
         Text: "Text",
+        TextArea: "TextArea",
         Number: "Number",
         Checkbox: "Checkbox",
         Dropdown: "Dropdown",
+        MultiSelect: "MultiSelect",
         DateTime: "Date/Time",
         Values: 'Values',
         DropdownName: 'Name',
@@ -236,7 +239,6 @@ var WorkflowDesignerConstants = {
         return "Can't save the schema. Those objects are in invalid state: " + objects;
     },
     BrokenReferencesDialogText: "This schema contains references to Actions, Conditions or Rules that aren't defined by this schema or current action providers. Do you want to keep them?",
-    FormMaxHeight: 700,
     EditCodeSettings: {
         Height: 600,
         Width: 1000,
@@ -267,6 +269,24 @@ var WorkflowDesignerConstants = {
         Title: "Modifier la valeur en JSON",
         CreateEmptyType: "Créer",
         Format: "Format"
+    },
+    EditExpressionSettings:
+        {
+            Height: 600,
+            Width: 1000,
+            CodeHeight: 390,
+            MessageBoxHeight: 400,
+            MessageBoxWidth: 600,
+            SuccessBoxHeight: 150,
+            SuccessBoxWidth: 300
+        },
+    EditExpressionLabel: {
+        Title: "Edit expression",
+        Validate: "Validate",
+        Succeeded: "Expression is valid.",
+        Success: "Success",
+        Error: "Error",
+        OK: "OK"
     },
     OverviewMap: {
         show: true,

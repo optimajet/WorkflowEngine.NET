@@ -78,6 +78,7 @@ var WorkflowDesignerConstants = {
         TriggerTimer: "Timer",
         ConditionActionParameter: "Parameter",
         ConditionInversion: "Ergebnis umkehren",
+        ConditionExpression: 'Expression',
         ConditionsConcatenationType: "Bedingungen Verkettungstyp",
         AllowConcatenationType: "Verkettung erlauben als",
         RestrictConcatenationType: "Verkettung einschränken als",
@@ -179,9 +180,11 @@ var WorkflowDesignerConstants = {
         EditParameters: "Parameter editieren",
         Parameters: "Parameter",
         Text: "Text",
+        TextArea: "TextArea",
         Number: "Zahl",
         Checkbox: "Auswahlbox",
         Dropdown: "Auswahlliste",
+        MultiSelect: "MultiSelect",
         DateTime: "Datum/Uhrzeit",
         Values: 'Werte',
         DropdownName: 'Name',
@@ -236,7 +239,6 @@ var WorkflowDesignerConstants = {
         return "Das Schema kann nicht gespeichert werden. Die folgenden Objekte sind in einem ungültigen Zustand: " + objects;
     },
     BrokenReferencesDialogText: "Dieses Schema enthält Referenzen zu Code-Aktionen, die nicht durch den aktuellen Code-Provider oder das aktuelle Schema bereitgestellt werden. Wollen Sie diese behalten?",
-    FormMaxHeight: 700,
     EditCodeSettings: {
         Height: 600,
         Width: 1000,
@@ -267,6 +269,24 @@ var WorkflowDesignerConstants = {
         Title: "Bearbeiten Sie den Wert in JSON-Format",
         CreateEmptyType: "Erstellen",
         Format: "Format"
+    },
+    EditExpressionSettings:
+        {
+            Height: 600,
+            Width: 1000,
+            CodeHeight: 390,
+            MessageBoxHeight: 400,
+            MessageBoxWidth: 600,
+            SuccessBoxHeight: 150,
+            SuccessBoxWidth: 300
+        },
+    EditExpressionLabel: {
+        Title: "Edit expression",
+        Validate: "Validate",
+        Succeeded: "Expression is valid.",
+        Success: "Success",
+        Error: "Error",
+        OK: "OK"
     },
     OverviewMap: {
         show: true,
