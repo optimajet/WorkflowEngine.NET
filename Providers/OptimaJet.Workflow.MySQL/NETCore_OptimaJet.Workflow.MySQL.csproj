@@ -1,0 +1,48 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <LangVersion>8</LangVersion>
+    <TargetFrameworks>netstandard2.0;</TargetFrameworks>
+    <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
+    <Version>4.2.0</Version>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+    <Authors>OptimaJet, LLC</Authors>
+    <Product>WorkflowEngine .NET</Product>
+    <Description>Contains dlls for MySQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+DbSchemePersistenceProvider  which implements interface ISchemePersistenceProvider,
+DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
+
+Steps for workflow runtime configuration with MySQLProvider: http://workflowenginenet.com/Documentation/Detail/howtoconnect in 
+Create WorkflowRuntime section.</Description>
+    <Copyright>OptimaJet, LLC</Copyright>
+    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
+    <PackageTags>workflow engine, MySQL, provider for MySQL</PackageTags>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+    <RootNamespace>OptimaJet.Workflow.MySQL</RootNamespace>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|netstandard2.0|AnyCPU'">
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="MySql.Data" Version="8.0.11" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
+</Project>

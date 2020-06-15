@@ -1,0 +1,102 @@
+﻿<div bsModal #editUserModal="bs-modal" class="modal fade" (onShown)="onShown()" tabindex="-1" role="dialog" aria-labelledby="editUserModal" aria-hidden="true" [config]="{backdrop: 'static'}">
+    <div class="modal-dialog">
+
+        <div #modalContent class="modal-content">
+            <form *ngIf="active" #editUserForm="ngForm" id="frm_edit_user" novalidate (ngSubmit)="save()">
+                <div class="modal-header">
+                    <button type="button" class="close" (click)="close()" aria-label="Close">
+                        <span aria-hidden="true">&times;</span>
+                    </button>
+                    <h4 class="modal-title">
+                        <span>{{ "EditUser" | localize }}</span>
+                    </h4>
+                </div>
+                <div class="modal-body">
+                    <ul class="nav nav-tabs tab-nav-right" role="tablist">
+                        <li role="presentation" class="active"><a href="#edit-user-details" data-toggle="tab">User Details</a></li>
+                        <li role="presentation"><a href="#edit-user-roles" data-toggle="tab">User Roles</a></li>
+                    </ul>
+                    <div class="tab-content">
+                        <div role="tabpanel" class="tab-pane animated fadeIn active" id="edit-user-details">
+
+                            <div class="row clearfix" style="margin-top:10px;">
+                                <div class="col-sm-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="username" type="text" name="UserName" [(ngModel)]="user.userName" required maxlength="32" minlength="2" class="validate form-control">
+                                            <label for="username" class="form-label">{{ "UserName" | localize }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row clearfix">
+                                <div class="col-sm-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="name" type="text" name="Name" [(ngModel)]="user.name" required maxlength="32" class="validate form-control">
+                                            <label for="name" class="form-label">{{ "Name" | localize }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                                <div class="col-sm-6">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="surname" type="text" name="Surname" [(ngModel)]="user.surname" required maxlength="32" class="validate form-control">
+                                            <label for="surname" class="form-label">{{ "Surname" | localize }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row clearfix">
+                                <div class="col-sm-12">
+                                    <div class="form-group form-float">
+                                        <div class="form-line">
+                                            <input id="email" type="email" name="EmailAddress" [(ngModel)]="user.emailAddress" maxlength="256" pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$" class="validate form-control">
+                                            <label for="email" class="form-label">{{ "EmailAddress" | localize }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div class="row clearfix">
+                                <div class="col-sm-12">
+                                    <div class="form-group form-float">
+                                        <div class="">
+                                            <input id="isactive" type="checkbox" name="IsActive" [(ngModel)]="user.isActive" checked class="form-control" />
+                                            <label for="isactive" class="form-label">{{ "IsActive" | localize }}</label>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+
+                        <div role="tabpanel" class="tab-pane animated fadeIn" id="edit-user-roles">
+                            <div class="row">
+                                <div class="col-sm-12 ">
+                                    <ng-template ngFor let-role [ngForOf]="roles" let-roleIndex="index">
+                                        <div class="col-sm-6">
+                                            <input type="checkbox" name="role" value="{{role.normalizedName}}" title="{{role.description}}" class="filled-in" id="role-{{roleIndex}}" checked="{{userInRole(role,user)}}" />
+                                            <label for="role-{{roleIndex}}" title="{{role.displayName}}">{{role.name}}</label>
+                                        </div>
+                                    </ng-template>
+                                </div>
+                            </div>
+                        </div>
+
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button [disabled]="saving" type="button" class="btn btn-default waves-effect" (click)="close()">
+                        {{ "Cancel" | localize }}
+                    </button>
+                    <button [disabled]="!editUserForm.form.valid" type="submit" class="btn btn-primary waves-effect">
+                        {{ "Save" | localize }}
+                    </button>
+                </div>
+
+            </form>
+        </div>
+    </div>
+</div>

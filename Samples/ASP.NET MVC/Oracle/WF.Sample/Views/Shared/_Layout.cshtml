@@ -1,0 +1,38 @@
+﻿@{
+    ViewBag.Title = string.Format("WorkflowEngine NET :: {0}", ViewBag.Title);
+}
+<!DOCTYPE html>
+<html lang="ru">
+<head>
+    <meta charset="utf-8" />
+    <title>@ViewBag.Title</title>
+    <script src="@Url.Content("~/Scripts/jquery.js")" type="text/javascript"></script>
+    <link href="@Url.Content("~/Content/semantic.min.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/workflowdesigner.css")" rel="stylesheet" type="text/css" />
+    <link href="@Url.Content("~/Content/site.css")" rel="stylesheet" type="text/css" />
+
+    <link href="@Url.Content("~/Content/pace-theme-minimal.css")" rel="stylesheet" type="text/css" />
+    <script>window.paceOptions = { restartOnPushState: false };</script>
+    <script src="@Url.Content("~/Scripts/pace.min.js")" type="text/javascript"></script>
+
+
+    <meta name="viewport" content="width=device-width">
+</head>
+<body>
+    <script>
+        $(document).ajaxStart(function () { Pace.restart(); });
+    </script>
+    @Html.Partial("Partial/MainMenu")
+    <div id="content" class="wfe-application">
+        <div class="wfe-application-topmenu">
+            @Html.Partial("Partial/Folders")
+            @Html.Partial("Partial/Header")
+        </div>
+        <div style="clear: both;"></div>
+        <div class="wfe-application-content">
+            @RenderBody()
+        </div>
+        @Html.Partial("Partial/Footer")
+    </div>
+</body>
+</html>

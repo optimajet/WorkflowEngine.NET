@@ -54,7 +54,7 @@ namespace OptimaJet.Workflow.Core.Runtime
     /// <summary>
     /// Default timer manager <see cref="ITimerManager"/>
     /// </summary>
-    public sealed class TimerManager : ITimerManager
+    public class TimerManager : ITimerManager
     {
         /// <summary>
         /// Value of Unspecified Timer which indicates that the timer transition will be executed immediately
@@ -103,7 +103,8 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <param name="processInstance">Process instance</param>
         public void RequestTimerValue(ProcessInstance processInstance, ActivityDefinition activity = null)
         {
-            if (NeedTimerValue == null)
+            var needTimerValueHandler = NeedTimerValue;
+            if (needTimerValueHandler == null)
                 return;
 
             var notDefinedTimerTransitions =
@@ -118,7 +119,7 @@ namespace OptimaJet.Workflow.Core.Runtime
 
             var eventArgs = new NeedTimerValueEventArgs(processInstance, notDefinedTimerTransitions);
 
-            NeedTimerValue(this, eventArgs);
+            needTimerValueHandler(this, eventArgs);
 
             foreach (var request in eventArgs.TimerValueRequests)
             {
@@ -439,7 +440,7 @@ namespace OptimaJet.Workflow.Core.Runtime
             return _runtime.RuntimeDateTimeNow;
         }
 
-        private double GetInterval(string value)
+        protected virtual double GetInterval(string value)
         {
             int res;
 
@@ -577,7 +578,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         {
             ThreadPool.QueueUserWorkItem(async (obj) =>
             {
-                await _startStopSemaphore.WaitAsync();
+                await _startStopSemaphore.WaitAsync().ConfigureAwait(false);
 
                 if (_stopped)
                     return;
@@ -595,8 +596,9 @@ namespace OptimaJet.Workflow.Core.Runtime
 
                 try
                 {
-
-                    await Task.WhenAll(timers.Select(t => ExecuteTimer(t, _cancellationTokenSource.Token)));
+                    var actions = timers.Select(t =>(Action)(()=> ExecuteTimer(t, _cancellationTokenSource.Token).Wait())).ToArray();
+                    Parallel.Invoke(new ParallelOptions {MaxDegreeOfParallelism = Environment.ProcessorCount, CancellationToken = _cancellationTokenSource.Token}, actions);
+                    //await Task.WhenAll(timers.Select(t => ExecuteTimer(t, _cancellationTokenSource.Token)));
                 }
                 finally
                 {
@@ -614,17 +616,70 @@ namespace OptimaJet.Workflow.Core.Runtime
                 return;
             }
 
+            void LogException(Exception ex)
+            {
+                _runtime.LogError("Execute timer error", new Dictionary<string, string>()
+                {
+                    {"Message", ex.Message},
+                    {"StackTrace", ex.StackTrace},
+                    {"ProcessId", timer.ProcessId.ToString("D")},
+                    {"TimerId", timer.TimerId.ToString("D")},
+                    {"TimerName", timer.Name},
+                });
+            }
+
+            void LogExceptionOrThrow(Exception ex)
+            {
+                if (_runtime.Logger != null)
+                {
+                    LogException(ex);
+                }
+                else
+                {
+                    throw ex;
+                }
+            }
+
+            void LogExceptionOrSuppress(Exception ex)
+            {
+                if (_runtime.Logger != null)
+                {
+                    LogException(ex);
+                }
+            }
+
             try
             {
                 var timerToExecute = timer;
-                await _runtime.ExecuteTimer(timerToExecute.ProcessId, timerToExecute.Name);
+                await _runtime.ExecuteTimerAsync(timerToExecute.ProcessId, timerToExecute.Name).ConfigureAwait(false);
             }
             // After implementing logger insert log here
-            catch(ImpossibleToSetStatusException){}
-            catch(ProcessNotFoundException){}
-            finally 
+            catch (ImpossibleToSetStatusException ex)
             {
-                _runtime.PersistenceProvider.ClearTimer(timer.TimerId);
+                LogExceptionOrSuppress(ex);
+            }
+            catch (ProcessNotFoundException ex)
+            {
+                LogExceptionOrSuppress(ex);
+            }
+            catch (StatusNotDefinedException ex)
+            {
+                LogExceptionOrSuppress(ex);
+            }
+            catch (Exception ex)
+            {
+                LogExceptionOrThrow(ex);
+            }
+            finally
+            {
+                try
+                {
+                    _runtime.PersistenceProvider.ClearTimer(timer.TimerId);
+                }
+                catch (Exception ex)
+                {
+                    LogExceptionOrThrow(ex);
+                }
             }
         }
 

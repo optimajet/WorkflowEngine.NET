@@ -1,0 +1,8 @@
+﻿<div *ngIf="isMultiTenancyEnabled" class="card tenant-change-component" style="margin-bottom: 3px;">
+    <div class="body text-center">
+        <span>
+            {{ "CurrentTenant" | localize }}: <span *ngIf="tenancyName" title="{{name}}"><strong>{{tenancyName}}</strong></span> <span *ngIf="!tenancyName">{{ "NotSelected" | localize }}</span> (<a href="javascript:void();" (click)="showChangeModal()">{{ "Change" | localize }}</a>)
+            <tenantChangeModal #tenantChangeModal></tenantChangeModal>
+        </span>
+    </div>
+</div>

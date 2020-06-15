@@ -1,0 +1,54 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+  <PropertyGroup>
+    <RootNamespace>OptimaJet.Workflow.Redis</RootNamespace>
+    <AssemblyName>OptimaJet.Workflow.Redis</AssemblyName>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+    <AssemblyVersion>4.2.0.0</AssemblyVersion>
+    <FileVersion>4.2.0.0</FileVersion>
+ <Version>4.2.0</Version>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Authors>OptimaJet, LLC</Authors>
+    <Company>OptimaJet, LLC</Company>
+    <Product>WorkflowEngine .NET</Product>
+    <Description>Contains dlls for Redis Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+DbSchemePersistenceProvider  which implements interface ISchemePersistenceProvider,
+DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
+
+Steps for workflow runtime configuration with DbPersistenceProvider: http://workflowenginenet.com/Documentation/Detail/howtoconnect in 
+Create WorkflowRuntime section.</Description>
+    <Copyright>OptimaJet, LLC</Copyright>
+    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <PackageId>WorkflowEngine.NETCore-ProviderForRedis</PackageId>
+    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
+    <PackageTags>workflow engine, ms sql, for sql</PackageTags>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
+    <TargetFramework>netstandard2.0</TargetFramework>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG;NETCOREAPP</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'netstandard1.6'">TRACE;DEBUG;NETCOREAPP;NETCORE2</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;NETCOREAPP;RELEASE</DefineConstants>
+    <DefineConstants Condition="'$(TargetFramework)' != 'netstandard1.6'">TRACE;NETCOREAPP;RELEASE;NETCORE2</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+    <Compile Remove="Properties\Settings.Designer.cs" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Properties\Settings.settings" />
+  </ItemGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
+  </ItemGroup>
+ 
+</Project>

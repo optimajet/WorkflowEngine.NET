@@ -15,7 +15,7 @@ WorkflowEngine.NET - component that adds workflow in your application. It can be
 </ul>
 
 <h2>Workflow Engine NET includes a html5 designer:</h2>
-<a href="https://workflowengine.io/demo/designer"><img src="https://workflowengine.io/images/schemes/scheme.png" alt="graph.jpg" width="580" style="
+<a href="https://workflowengine.io/demo/designer"><img src="scheme.png" width="580" style="
     border: 1px solid;
     border-color: #3e4d5c;"></a>
 

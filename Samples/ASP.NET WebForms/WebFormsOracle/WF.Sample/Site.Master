@@ -1,0 +1,83 @@
+﻿<%@ Master Language="C#" AutoEventWireup="true" CodeBehind="Site.master.cs" Inherits="WF.Sample.SiteMaster" %>
+<%@ Register TagPrefix="uc" TagName="Header" Src="~/Controls/HeaderControl.ascx" %>
+<%@ Register TagPrefix="uc" TagName="Folders" Src="~/Controls/FoldersControl.ascx" %>
+
+<!DOCTYPE html>
+
+<html lang="en">
+<head runat="server">
+
+    <meta charset="utf-8" />
+    <title>"WorkflowEngine NET :: <%: Page.Title %></title>
+    <asp:PlaceHolder runat="server">
+        <%: Scripts.Render("~/Scripts/jquery.js") %>
+        <%: Styles.Render("~/Content/semantic.min.css") %>
+        <%: Styles.Render("~/Content/workflowdesigner.css") %>
+        <%: Styles.Render("~/Content/Site.css") %>
+        <%: Styles.Render("~/Content/pace-theme-minimal.css") %>
+    </asp:PlaceHolder>
+ 
+    <script>window.paceOptions = { restartOnPushState: false };</script>
+    <asp:PlaceHolder runat="server">
+        <%: Scripts.Render("~/Scripts/pace.min.js") %>
+    </asp:PlaceHolder>
+    <meta name="viewport" content="width=device-width">
+
+</head>
+<body>
+     <script>
+        $(document).ajaxStart(function () { Pace.restart(); });
+    </script>
+    <form runat="server">
+        <asp:ScriptManager runat="server">
+            <Scripts>
+                <%--To learn more about bundling scripts in ScriptManager see https://go.microsoft.com/fwlink/?LinkID=301884 --%>
+                <%--Framework Scripts--%>
+                <asp:ScriptReference Name="MsAjaxBundle" />
+                <asp:ScriptReference Name="WebForms.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebForms.js" />
+                <asp:ScriptReference Name="WebUIValidation.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebUIValidation.js" />
+                <asp:ScriptReference Name="MenuStandards.js" Assembly="System.Web" Path="~/Scripts/WebForms/MenuStandards.js" />
+                <asp:ScriptReference Name="GridView.js" Assembly="System.Web" Path="~/Scripts/WebForms/GridView.js" />
+                <asp:ScriptReference Name="DetailsView.js" Assembly="System.Web" Path="~/Scripts/WebForms/DetailsView.js" />
+                <asp:ScriptReference Name="TreeView.js" Assembly="System.Web" Path="~/Scripts/WebForms/TreeView.js" />
+                <asp:ScriptReference Name="WebParts.js" Assembly="System.Web" Path="~/Scripts/WebForms/WebParts.js" />
+                <asp:ScriptReference Name="Focus.js" Assembly="System.Web" Path="~/Scripts/WebForms/Focus.js" />
+                <asp:ScriptReference Name="WebFormsBundle" />
+                <%--Site Scripts--%>
+            </Scripts>
+        </asp:ScriptManager>
+
+        <div class="wfe-application-mainmenu" style="height:50px">
+            <div style="float:left">
+                <div class="logotitle">
+                    <a href="https://workflowengine.io"><img height="32" runat="server" src="~/Images/logo.png" /></a>
+                </div>
+            </div>
+            <div style="float:right">
+                <a runat="server" href="~/Document/Edit" class="ui primary button">Create a vacation request</a>
+                <a runat="server" href="~/Designer" class="ui secondary button">Designer</a>
+                <a runat="server" href="~/" class="ui secondary button">Vacation requests</a>
+                <a runat="server" href="~/Settings/Edit" class="ui secondary button">Settings</a>
+            </div>
+        </div>
+
+        <div id="content" class="wfe-application">
+            <div class="wfe-application-topmenu">
+                 <uc:Folders id="Folders" runat="server" />
+                 <uc:Header id="Header" runat="server" />
+            </div>
+            <div style="clear: both;"></div>
+            <div class="wfe-application-content">
+                 <asp:ContentPlaceHolder ID="MainContent" runat="server">
+                </asp:ContentPlaceHolder>
+            </div>
+            <div class="wfe-application-footer">
+                <span style="padding-top: 20px;">
+                    <b>Only non-commercial use. For commercial use, please contact <a href="mailto:sales@optimajet.com">sales@optimajet.com</a>.</b>
+                    Official site - <a href="https://workflowengine.io">https://workflowengine.io</a>
+                </span>
+            </div>
+        </div>
+    </form>
+</body>
+</html>

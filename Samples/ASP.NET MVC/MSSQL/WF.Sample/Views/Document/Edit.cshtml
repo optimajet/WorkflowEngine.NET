@@ -1,0 +1,139 @@
+﻿@using WF.Sample.Business.DataAccess
+@{
+    ViewBag.Title = "Edit";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model WF.Sample.Models.DocumentModel
+
+@{
+    var designerUrl = "/Designer?schemeName=SimpleWF";
+    if (Model.Id != Guid.Empty)
+    {
+        designerUrl = "/Designer?processid=" + Model.Id.ToString();
+    }
+    IEmployeeRepository er = DependencyResolver.Current.GetService<IEmployeeRepository>();
+}
+
+<form class="ui form" method="post">
+    @Html.HiddenFor(model => model.Id)
+
+    <div class="fields">
+
+        @if (Model.Commands.Count() == 0 && Model.HistoryModel.Items != null)
+        {
+            var nextStep = Model.HistoryModel.Items.FirstOrDefault(c => !c.TransitionTime.HasValue);
+
+            if (nextStep != null)
+            {
+            <div class="field">
+                <span style="color: #CC3300">
+                    For the current user commands are not available.<br />
+                    @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedToEmployeeNames))
+                </span>
+            </div>
+            }
+        }
+
+        @if (Model.Commands.Count() > 0 || Model.AvailiableStates.Count > 0)
+        {
+            if (Model.Commands.Count() > 0)
+            {
+                <div class="field">
+                    @foreach (var command in Model.Commands)
+                    {
+                        if (command.Classifier == OptimaJet.Workflow.Core.Model.TransitionClassifier.Direct)
+                        {
+                            <button name="button" value="@command.key" class="ui primary button">@command.value</button>
+                        }
+                        else if (command.Classifier == OptimaJet.Workflow.Core.Model.TransitionClassifier.Reverse)
+                        {
+                            <button name="button" value="@command.key" class="ui secondary button">@command.value</button>
+                        }
+                        else
+                        {
+                            <button name="button" value="@command.key" class="ui floated button">@command.value</button>
+                        }
+                    }
+                </div>
+            }
+
+            <div class="field">
+                <button name="button" value="SetState" class="ui button">Set This State</button>
+            </div>
+            <div class="field">
+                @Html.DropDownListFor(model => model.StateNameToSet, new List<SelectListItem>
+                    (Model.AvailiableStates.Select(s => new SelectListItem { Selected = false, Text = s.Value, Value = s.Key })),
+                    new { @class = "ui selection dropdown" })
+            </div>
+            <div class="field">
+                <a class="ui circular left floated button" target="_blank" style="text-align:right" href="@designerUrl">Open in Workflow Designer</a>
+            </div>
+
+        }
+    </div>
+
+    @{
+        var nameError = ViewData.ModelState["Name"] != null && ViewData.ModelState["Name"].Errors.Count > 0 ? "error" : "";
+        var employeeControllerError = ViewData.ModelState["ManagerId"] != null && ViewData.ModelState["ManagerId"].Errors.Count > 0 ? "error" : "";
+        var sumError = ViewData.ModelState["Sum"] != null && ViewData.ModelState["Sum"].Errors.Count > 0 ? "error" : "";
+    }
+
+    <div class="three fields">
+        <div class="field @nameError">
+            @Html.LabelFor(model => model.Name)
+            @Html.EditorFor(model => model.Name)
+        </div>
+        <div class="field @employeeControllerError">
+            @Html.LabelFor(model => model.ManagerId)
+            @{
+                List<SelectListItem> employeeList = new List<SelectListItem>();
+                employeeList.Add(new SelectListItem());
+                employeeList.AddRange(er.GetAll().Select(item => new SelectListItem()
+                {
+                    Text = string.Format("{0}; StructDivision: {1}; Roles: {2}", item.Name, item.StructDivision.Name, item.GetListRoles()),
+                    Value = item.Id.ToString()
+                }).ToList());
+            }
+
+            @Html.DropDownListFor(model => model.ManagerId, employeeList, new { @class = "ui selection dropdown" })
+        </div>
+        <div class="field">
+            @Html.LabelFor(model => model.Number)
+            @Html.HiddenFor(model => model.Number)
+            @Html.TextBoxFor(model => model.Number, new { @readonly = "readonly" })
+        </div>
+    </div>
+    <div class="three fields">
+        <div class="field @sumError">
+            @Html.LabelFor(model => model.Sum)
+            @Html.EditorFor(model => model.Sum)
+        </div>
+        <div class="field">
+            @Html.LabelFor(model => model.AuthorName)
+            @Html.HiddenFor(model => model.AuthorId)
+            @Html.HiddenFor(model => model.StateName)
+            @Html.TextBoxFor(model => model.AuthorName, new { @readonly = "readonly" })
+        </div>
+        <div class="field">
+            @Html.LabelFor(model => model.StateName)
+            @Html.HiddenFor(model => model.StateName)
+            @Html.TextBoxFor(model => model.StateName, new { @readonly = "readonly" })
+        </div>
+    </div>
+    <div class="field">
+        @Html.LabelFor(model => model.Comment)
+        @Html.TextAreaFor(model => model.Comment, 6, 100, new { style = "width:98%" })
+    </div>
+
+    @{
+        var hModel = Model.HistoryModel;
+    }
+
+    <div class="field">
+        @Html.Partial("DocumentHistory", hModel)
+    </div>
+    <div class="field">
+        <button name="button" value="Save" class="ui primary button">Save</button>
+        <button name="button" value="SaveAndExit" class="ui secondary button">Save & Exit</button>
+    </div>
+</form>

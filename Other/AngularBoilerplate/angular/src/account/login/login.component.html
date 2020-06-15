@@ -1,0 +1,40 @@
+﻿<div class="card" id="LoginArea" [@routerTransition]>
+    <div #cardBody class="body">
+        <form #loginForm="ngForm" id="LoginForm" method="post" novalidate (ngSubmit)="login()">
+            <h4 class="text-center">{{ "LogIn" | localize }}</h4>
+
+            <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="material-icons">person</i>
+                </span>
+                <div class="form-line">
+                    <input materialInput [(ngModel)]="loginService.authenticateModel.userNameOrEmailAddress" autoFocus class="form-control" type="text" autocomplete="off" placeholder="{{ 'UserNameOrEmail' | localize }}" name="userNameOrEmailAddress" required maxlength="255" />
+                </div>
+            </div>
+
+            <div class="input-group">
+                <span class="input-group-addon">
+                    <i class="material-icons">lock</i>
+                </span>
+                <div class="form-line">
+                    <input materialInput type="password" [(ngModel)]="loginService.authenticateModel.password" class="form-control" name="password" placeholder="{{ 'Password' | localize }}" required maxlength="32">
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-xs-8 p-t-5">
+                    <input type="checkbox"  [(ngModel)]="loginService.rememberMe" name="rememberMe" id="rememberme" class="filled-in chk-col-pink" value="true">
+                    <label for="rememberme">{{ "RememberMe" | localize }}</label>
+                </div>
+                <div class="col-xs-4">
+                    <button id="LoginButton" class="btn btn-block bg-pink waves-effect" type="submit">{{ "LogIn" | localize }}</button>
+                </div>
+            </div>
+
+            <div class="row m-t-15 m-b--20" *ngIf="isSelfRegistrationAllowed">
+                <div class="col-xs-12">
+                    <a [routerLink]="['../register']">{{ "Register" | localize }}</a>
+                </div>
+            </div>
+        </form>
+    </div>
+</div>

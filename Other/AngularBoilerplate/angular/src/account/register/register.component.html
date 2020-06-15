@@ -1,0 +1,48 @@
+﻿<div class="card" [@routerTransition]>
+    <div #cardBody class="body">
+        <form #registerForm="ngForm" method="post" novalidate (ngSubmit)="save()">
+            <h4 class="text-center">{{ "Register" | localize }}</h4>
+
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <input materialInput class="form-control" autoFocus type="text" [(ngModel)]="model.name" name="Name" required maxlength="32" />
+                    <label class="form-label">{{ 'Name' | localize }}</label>
+                </div>
+            </div>
+
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <input materialInput class="form-control" type="text" [(ngModel)]="model.surname" name="Surname" required maxlength="32" />
+                    <label class="form-label">{{ 'Surname' | localize }}</label>
+                </div>
+            </div>
+
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <input materialInput class="form-control" type="email" [(ngModel)]="model.emailAddress" name="EmailAddress" required maxlength="255" pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$" />
+                    <label class="form-label">{{ 'EmailAddress' | localize }}</label>
+                </div>
+            </div>
+
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <input materialInput class="form-control" type="text" autocomplete="off" [(ngModel)]="model.userName" name="UserName" required maxlength="32" />
+                    <label class="form-label">{{ 'UserName' | localize }}</label>
+                </div>
+            </div>
+
+            <div class="form-group form-float">
+                <div class="form-line">
+                    <input materialInput class="form-control" type="password" [(ngModel)]="model.password" name="Password" required maxlength="32" />
+                    <label class="form-label">{{ 'Password' | localize }}</label>
+                </div>
+            </div>
+
+            <div class="form-actions">
+                <button [disabled]="saving" [routerLink]="['../login']" type="button" class="btn btn-default">{{ "Back" | localize }}</button>
+                <button type="submit" class="btn btn-success" [disabled]="!registerForm.form.valid">{{ "Submit" | localize }}</button>
+            </div>
+
+        </form>
+    </div>
+</div>

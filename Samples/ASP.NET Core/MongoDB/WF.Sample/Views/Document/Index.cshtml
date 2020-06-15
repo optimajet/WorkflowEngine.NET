@@ -1,0 +1,91 @@
+﻿@{
+    ViewBag.Title = "Vacation requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model WF.Sample.Models.DocumentListModel
+@functions {
+
+    string GetActionName()
+    {
+        return ViewContext.RouteData.Values["action"].ToString() == "Index" ? string.Empty : "/Document/" + ViewContext.RouteData.Values["action"].ToString();
+    }
+
+}
+<div class="wfe-application-toolbar">
+    <a href="@Url.Action("Edit", "Document")" class="ui primary button">Create</a>
+    <a onclick="DeleteSelected()" href="#" class="ui secondary button">Delete</a>
+</div>
+<table class="grid">
+    <tbody>
+        <tr class="grid-header">
+            <th style="width:20px">#</th>
+            <th style="width:20px">Number</th>
+            <th>State</th>
+            <th>Name</th>
+            <th>Comment </th>
+            <th>Author</th>
+            <th>Manager</th>
+            <th>Sum</th>
+        </tr>
+        @foreach (var item in Model.Docs)
+        {
+            <tr ondblclick="javascript: document.location.href = '@Url.Action("Edit", "Document", new { Id = item.Id })'">
+                <td><div class="ui checkbox"><input type="checkbox" name="checkedbox" class="selectedValues" value="@item.Id" /><label></label></div> </td>
+                <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Number</a></td>
+                <td>@item.StateName </td>
+                <td><a href="@Url.Action("Edit", "Document", new { Id = item.Id })">@item.Name</a></td>
+                <td>@item.Comment </td>
+                <td>@item.AuthorName </td>
+                <td>@item.ManagerName</td>
+                <td>@item.Sum.ToString("n2")</td>
+            </tr>
+        }
+</table>
+Current Page: @Html.Raw(Model.Page + 1)<br />
+Items count: @Model.Count <br />
+
+@if (Model.Page != 0)
+{
+    <a href="@GetActionName()?page=0">fist page</a>
+}
+
+@if (Model.Page > 0)
+{
+    <a href="@GetActionName()?page=@(Model.Page - 1)">prev page</a>
+}
+
+@if ((Model.Page + 1) * Model.PageSize < Model.Count)
+{
+    <a href="@GetActionName()?page=@(Model.Page + 1)">next page</a>
+}
+
+@if ((Model.Page + 2) * Model.PageSize < Model.Count)
+{
+    <a href="@GetActionName()?page=@((int)(Model.Count / Model.PageSize))">last page</a>
+}
+
+<script>
+    function DeleteSelected() {
+        var data = new Array();
+        var selectedValues = $('.selectedValues:checked');
+
+        if (selectedValues.length < 1) {
+            alert('Please, select rows for deleting!');
+            return;
+        }
+
+        for (var i = 0; i < selectedValues.length; i++) {
+            data.push({ name: 'ids', value: selectedValues[i].value });
+        }
+
+        $.ajax({
+            type: "POST",
+            url: "@Url.Action("DeleteRows", "Document")",
+            data: data,
+            success: function(msg) {
+                alert(msg);
+                location.reload();
+            }
+        });
+    }
+</script>

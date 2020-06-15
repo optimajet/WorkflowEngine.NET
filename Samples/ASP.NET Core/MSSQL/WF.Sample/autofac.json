@@ -1,0 +1,48 @@
+{
+  "defaultAssembly": "WF.Sample.MsSql",
+  "components": [
+    {
+      "type": "WF.Sample.MsSql.SampleContext"
+    },
+    {
+      "type": "WF.Sample.MsSql.Implementation.DocumentRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IDocumentRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MsSql.Implementation.EmployeeRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IEmployeeRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MsSql.Implementation.SettingsProvider",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.ISettingsProvider, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MsSql.Implementation.PersistenceProviderContainer",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IPersistenceProviderContainer, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.MsSql.Implementation.InboxRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IInboxRepository, WF.Sample.Business"
+        }
+      ]
+    }
+  ]
+}

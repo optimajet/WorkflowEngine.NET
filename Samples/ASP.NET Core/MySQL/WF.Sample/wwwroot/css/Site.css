@@ -1,0 +1,231 @@
+﻿/**
+* Application
+**/
+
+body {
+    min-width: 800px;
+    overflow: auto;
+}
+
+.wfe-application {
+   min-width: 500px;
+}
+
+.logotitle {
+    color: red;
+    font-size: 30px;
+    padding-top: 5px;
+}
+
+.wfe-application-header {
+    height: 100px;
+}
+
+.wfe-application-header-left {
+    width: 200px;
+    float: left;
+    margin-top: 18px;
+}
+
+.wfe-application-header-center {
+    float: left;
+    margin-top: 24px;
+    margin-left: 70px;
+}
+
+.wfe-application-header-center .ui.selection.dropdown {
+    width: 300px !important;
+    padding-top: 16px !important;
+    margin-left: 10px;
+}
+
+.wfe-application-header-right {
+    float: right;
+    margin-right: 30px;
+    margin-top: 25px;
+}
+
+.wfe-application-header .ui.menu {
+    border: none;
+    box-shadow: none;
+    font-size: 12px;
+}
+
+.wfe-application-header .ui.menu {
+    padding-right: 5px;
+}
+
+    .wfe-application-header .ui.menu:not(.vertical) .item {
+        padding-right: 5px;
+        padding-left: 5px;
+    }
+
+    .wfe-application-header .ui.menu .item:before {
+        background: none;
+    }
+
+.wfe-application-mainmenu {
+    padding-left: 20px;
+    padding-right: 20px;
+    padding-top: 5px;
+}
+
+.wfe-application-content {
+    margin-left: 20px;
+    margin-right: 20px;
+    margin-bottom: 10px;
+    margin-top: 10px;
+    min-height: calc(100vh - 195px);
+}
+
+.wfe-application-footer {
+    clear: both;
+    box-shadow: 0 -2px 2px -2px rgba(0,0,0,0.50);
+    color: #6D6D6D;
+    text-align: center;
+    padding-top: 20px;
+    padding-bottom: 20px;
+}
+
+.wfe-application-basecontent {
+    min-height: 300px;
+}
+
+.wfe-application-top {
+    background-image: linear-gradient(-180deg, #F2F2F2 0%, rgba(254,254,254,0.00) 100%);
+    height: 15px;
+    width: 100%;
+}
+
+.wfe-application-toolbar {
+    padding-bottom: 10px;
+}
+
+.wfe-application-topmenu {
+    background: #F4F4F4;
+    height: 61px;
+    padding-left: 20px;
+    padding-right: 20px;
+}
+
+.wfe-application-topmenu .ui.menu {
+    border: none;
+    box-shadow: none;
+    font-size: 14px;
+    margin-bottom: 10px;
+    background: transparent;
+    padding-top: 10px;
+}
+
+.wfe-application-topmenu .ui.menu .item {
+    color: #1262E2;
+}
+
+.wfe-application-topmenu .ui.menu .item:before {
+    background: none;
+}
+
+.wfe-application-topmenu .ui.selection.dropdown {
+    background: transparent;
+}
+
+.table {
+    width: 100%;
+    border-spacing: 0px;
+}
+
+.table th {
+    padding: 5px 7px;
+    font-weight: bold;
+    text-align: left;
+}
+
+.table td {
+    padding: 9px 7px;
+}
+
+.table tr td {
+    border: none;
+    border-bottom-style: solid;
+    border-bottom-width: 1px;
+    border-bottom-color: rgba(148,149,154,0.20);
+}
+
+.table-header {
+    background: #F4F4F4;
+    border-radius: 0 0 2px 2px;
+}
+
+.grid {
+    width: 100%;
+    border-spacing: 0px;
+}
+
+    .grid th {
+        padding: 5px 7px;
+        font-weight: bold;
+        text-align: left;
+    }
+
+    .grid td {
+        padding: 9px 7px;
+    }
+
+    .grid tr td {
+        border: none;
+        border-bottom-style: solid;
+        border-bottom-width: 1px;
+        border-bottom-color: rgba(148,149,154,0.20);
+    }
+
+    .grid tr:hover {
+        background: #F2F2F2;
+    }
+
+.grid-header {
+    background: #F4F4F4;
+    border-radius: 0 0 2px 2px;
+}
+
+.ui.primary.button,
+.ui.primary.button:focus {
+    background: #f24d00;
+    border: 1px solid #f24d00;
+    border-radius: 2px;
+    font-weight: normal;
+    color: #FFFFFF;
+}
+
+    .ui.primary.button:hover {
+        background: #CA4000;
+    }
+
+    .ui.primary.button:active {
+        background: #B63A00;
+    }
+
+.ui.secondary.button,
+.ui.secondary.button:focus {
+    background: #FFFFFF;
+    border: 1px solid #f24d00;
+    border-radius: 2px;
+    font-weight: normal;
+    color: #f24d00;
+}
+
+    .ui.secondary.button:hover {
+        background: #FF4A06;
+        color: #FFFFFF;
+    }
+
+    .ui.secondary.button:active {
+        background: #DB3E04;
+        color: #FFFFFF;
+    }
+
+div.field > label {
+    font-size: 12px !important;
+    color: #97A3B4 !important;
+    line-height: 16px !important;
+    font-weight: inherit !important;
+}

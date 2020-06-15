@@ -1,0 +1,17 @@
+version: '2'
+
+services:
+
+    abp_host:
+        image: abp/host
+        environment:
+            - ASPNETCORE_ENVIRONMENT=Staging
+        ports:
+            - "9901:80"
+        volumes:
+            - "./Host-Logs:/app/App_Data/Logs"
+
+    abp_ng:
+        image: abp/ng
+        ports:
+            - "9902:80"

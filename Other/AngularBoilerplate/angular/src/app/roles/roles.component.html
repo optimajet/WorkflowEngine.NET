@@ -1,0 +1,59 @@
+﻿<div class="row clearfix" [@routerTransition]>
+    <div class="col-lg-12 col-md-12 col-sm-12 col-xs-12">
+        <div class="card main-content">
+            <div class="header">
+                <h2>
+                    {{ 'Roles' | localize }}
+                </h2>
+                <ul class="header-dropdown m-r--5">
+                    <i class="fa fa-spin fa-spinner" *ngIf="isTableLoading"></i>
+                    <li class="dropdown">
+                        <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                            <i class="material-icons">more_vert</i>
+                        </a>
+                        <ul class="dropdown-menu pull-right">
+                            <li><a href="javascript:void(0);" class=" waves-effect <waves-block></waves-block>" (click)="refresh();"><i class="material-icons">refresh</i> Refresh</a></li>
+                        </ul>
+                    </li>
+                </ul>
+            </div>
+            <div class="body table-responsive">
+
+                <table class="table table-hover table-striped">
+                    <thead>
+                        <tr>
+                            <th>{{ 'RoleName' | localize }}</th>
+                            <th>{{ 'DisplayName' | localize }}</th>
+                            <th>{{ 'Actions' | localize }}</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr *ngFor="let role of roles | paginate: { id: 'server', itemsPerPage: pageSize, currentPage: pageNumber, totalItems: totalItems }">
+                            <td>{{role.name}}</td>
+                            <td>{{role.displayName}}</td>
+                            <td class="dropdown">
+                                <a href="javascript:void(0);" class="dropdown-toggle" data-toggle="dropdown" role="button" aria-haspopup="true" aria-expanded="false">
+                                    <i class="material-icons">menu</i>
+                                </a>
+                                <ul class="dropdown-menu pull-right">
+                                    <li><a href="javascript:void(0);" class="waves-effect waves-block" (click)="editRole(role)"><i class="material-icons">create</i>Edit</a></li>
+                                    <li><a href="javascript:void(0);" class="waves-effect waves-block" (click)="delete(role)"><i class="material-icons">delete_sweep</i>Delete</a></li>
+                                </ul>
+                            </td>
+                        </tr>
+                    </tbody>
+                </table>
+
+                <div class="text-align: center;" *ngIf="totalItems > pageSize">
+                    <abp-pagination-controls (pageChange)="getDataPage($event)" id="server"></abp-pagination-controls>
+                </div>
+                <button type="button" data-toggle="modal" class="btn btn-primary btn-circle waves-effect waves-circle waves-float pull-right" (click)="createRole()">
+                    <i class="material-icons">add</i>
+                </button>
+            </div>
+        </div>
+    </div>
+</div>
+
+<create-role-modal #createRoleModal (modalSave)="refresh()"></create-role-modal>
+<edit-role-modal #editRoleModal (modalSave)="refresh()"></edit-role-modal>

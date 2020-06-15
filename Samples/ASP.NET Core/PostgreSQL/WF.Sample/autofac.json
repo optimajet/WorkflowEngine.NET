@@ -1,0 +1,48 @@
+{
+  "defaultAssembly": "WF.Sample.PostgreSql",
+  "components": [
+    {
+      "type": "WF.Sample.PostgreSql.SampleContext"
+    },
+    {
+      "type": "WF.Sample.PostgreSql.Implementation.DocumentRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IDocumentRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.PostgreSql.Implementation.EmployeeRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IEmployeeRepository, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.PostgreSql.Implementation.SettingsProvider",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.ISettingsProvider, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.PostgreSql.Implementation.PersistenceProviderContainer",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IPersistenceProviderContainer, WF.Sample.Business"
+        }
+      ]
+    },
+    {
+      "type": "WF.Sample.PostgreSql.Implementation.InboxRepository",
+      "services": [
+        {
+          "type": "WF.Sample.Business.DataAccess.IInboxRepository, WF.Sample.Business"
+        }
+      ]
+    }
+  ]
+}

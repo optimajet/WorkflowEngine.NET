@@ -1,0 +1,47 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="es">
+  <texts>
+    <text name="HomePage" value="Página de inicio" />
+    <text name="About" value="Acerca de" />
+    <text name="WelcomeMessage" value="Bienvenido a WMS!" />
+
+    <text name="FormIsNotValidMessage" value="Formulario no es válido. Por favor, compruebe y corrija los errores." />
+    <text name="TenantNameCanNotBeEmpty" value="Nombre de la empresa no puede estar vacío" />
+
+    <text name="InvalidUserNameOrPassword" value="Usuario o contraseña invalido" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="No hay empresa definida con el nombre {0}" />
+    <text name="TenantIsNotActive" value="La empresa {0} no está activa." />
+    <text name="UserIsNotActiveAndCanNotLogin" value="El usuario {0} no está activo y no puede conectarse." />
+    <text name="PleaseEnterLoginInformation" value="Por favor, introduzca la información de inicio de sesión" />
+    <text name="TenancyName" value="Nombre de la empresa" />
+    <text name="UserNameOrEmail" value="Nombre de usuario o correo electrónico" />
+    <text name="Password" value="Contraseña" />
+    <text name="RememberMe" value="Recuérdame" />
+    <text name="LogIn" value="Iniciar sesión" />
+
+    <text name="LoginFailed" value="¡Error de inicio de sesion!" />
+
+    <text name="NameSurname" value="Nombre Apellido" />
+    <text name="UserName" value="Nombre de usuario" />
+    <text name="Name" value="Nombre" />
+    <text name="Surname" value="Apellido" />
+    <text name="EmailAddress" value="Dirección de correo electrónico" />
+
+    <text name="Tenants" value="Empresas" />
+    <text name="SavedSuccessfully" value="Guardado correctamente" />
+    <text name="CreateNewTenant" value="Crear nueva empresa" />
+    <text name="AdminEmailAddress" value="Dirección de correo electrónico del administrador" />
+    <text name="Save" value="Guardar" />
+    <text name="Cancel" value="Cancelar" />
+    <text name="TenantName_Regex_Description" value="El nombre de la empresa debe ser de al menos 2 caracteres, empieza con una letra y continua con una letra, número, guión o un guión bajo." />
+    <text name="DefaultPasswordIs" value="La contraseña por defecto es {0}" />
+    <text name="CanBeEmptyToLoginAsHost" value="Puede estar vacía para iniciar la sesión como anfitrión." />
+    <text name="Register" value="Registro" />
+    <text name="OrLoginWith" value="o iniciar sesión con" />
+    <text name="WaitingForActivationMessage" value="Su cuenta está en espera de ser activada por el administrador del sistema." />
+    <text name="TenantSelection" value="Selección de Empresa" />
+    <text name="TenantSelection_Detail" value="Por favor seleccione una de las siguientes empresas." />
+    <text name="Logout" value="Cerrar sesión" />
+
+  </texts>
+</localizationDictionary>
