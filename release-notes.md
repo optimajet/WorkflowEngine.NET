@@ -1,5 +1,97 @@
 # Workflow Engine: Release Notes
 
+## 5.0 {#5.0}
+
+### Designer
+
+- Designer windows have been reworked to behave as non-modal which allows:
+  - to keep them open while working with a scheme.
+  - to open multiple windows, change their size and behavior.
+- Customization of Designer windows is now simplified; each window is represented by a Vue.js template which can be now altered independently from the rest of the Designer.
+- Customization of Designer toolbars simplified.
+- A Designer library of typical schemes added which represent most frequently used blocks which can be dragged onto your schemas.
+- A library of custom activities added; these are single action activities whose settings are adjustable within the form.
+- Forms to edit properties of activities and transitions now have two viewing modes - Default and Expert. The Default mode represents only the essential and most used settings, while the Expert mode combines all the settings.
+
+### Sub-processes
+
+- Sub-processes can now be launched in a separate thread to allow for physical parallelism at the scheme level.
+- Methods to copy parameters into a sub-process can now be carried out using the following options:
+  - copy all parameters (default option, previously available)
+  - not to copy parameters
+  - only copy specified parameters
+  - ignore specified parameters.
+- New feature to specify a method to transfer sub-process parameters on to its parent process when merging. The following options are available:
+  - transfer only the parameters absent in the parent process (default option, previously available)
+  - transfer all parameters
+  - only copy indicated parameters
+  - ignore indicated parameters.
+- New feature to cleary indicate whether a particular transition starts a sub-process or finalizes it; previously identified automatically, the transition can be now obviously set.
+- New feature to specify a sub-process name which can be represented as a simple string or a calculated expression; expressions can consume parameters (this is syntactically similar to conditional expressions). In this way, new sub-processes can be created simply by changing paramater values used when a sub-process name is generated.  As an example, consider creating an invoice approval scheme where the invoice will contain several product items. It is now possible to design a scheme in which approval of the items will be represented by a sub-process. Furthermore, by combining loops (in the plugin) and sub-process naming calculations a sub-process for each product item can be created.
+- New feature to specify a sub-process id, or calculate it based on the parameters; herein, substitutions are used - not expressions.
+
+### Persistence Providers
+
+- All persistence providers are implemented as completely asynchronous. As a result, the WFE core operates in a completely asynchronous fashion suitable for scalability.
+- .NET Core provider for MsSql utilizes Microsoft.Data.SqlClient instead of System.Data.SqlClient.
+
+### Workflow Runtime
+
+- Method *Resume* is added to API Workflow Runtime. Contrary to the *SetSatate* method, it does not execute a current activity, or a set one, but rather attempts to continue execution of the process.
+This method can be used to go on with a process execution after a failure, or in the case of changes in external conditions.
+- Restorer Restore Decision *Resume* added.
+- New in the ProcessInstance class:
+  - Indexer for getting and setting paramater values
+  - Methods to manipulate root process parameters from within a sub-process.
+  - For all standard events, now exist their asynchronous counterparts.
+
+### Plugins
+
+- FTP и SFTP support added to the File Plugin. **Attention. File Plugin is supplied as a seperate Nuget package/dll**
+- New plugin, *Loops Plugin*, added for simple implementation of the *for* and *foreach*.
+- Within the action *BasicPlugin.HttpRequest* you can specify the name of the paramater which is to hold the result.
+- Within the action *BasicPlugin.SetParameter*, and the *BasicPlugin.CheckParameter* condition, you can set and verify the root process' paramaters.
+- Many new conditions added to *BasicPlugin.CheckParameter* и *BasicPlugin.CheckHTTPRequest*.
+- New plugins added for interaction with Slack, Telegram, Twilio, Nexmo are provided as Nuget packages (dlls).
+
+### Update instruction {#5.0_update}
+
+**The following additional actions must be taken to upgrade to Workflow Engine 5.0:**
+
+- **Warning. If using Redis, please, contact our support for update instructions.**
+- Run the SQL script update_4_2_to_5_0 for all relative databases and MongoDB.
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MSSQL/Scripts/update_4_2_to_5_0.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.PostgreSQL/Scripts/update_4_2_to_5_0.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.Oracle/Scripts/update_4_2_to_5_0.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MySQL/Scripts/update_4_2_to_5_0.sql)
+  - [MongoDB](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MongoDB/Scripts/update_4_2_to_5_0.js)
+- Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
+- Be mindful, that these files must be linked to the designer page:
+  - workflowdesigner.min.css
+  - workflowdesigner.min.js
+  - jquery
+
+  All the other javascript libraries previously required, do not need a separate attachement for they are now compiled inside workflowdesigner.min.js.
+- Pay attention to the new way of initializating a WorkflowDesigner object instance.
+
+  ```javascript
+  wfdesigner = new WorkflowDesigner({
+    name: 'simpledesigner',
+    apiurl: '/Designer/API',
+    renderTo: 'wfdesigner',
+    templatefolder: '/templates/',
+    graphwidth: graphwidth,
+    graphheight: graphheight
+  });
+  ```
+
+  - Indicating the path to the images folder is no longer required and the folder can be deleted.
+  - Yet, the path to the templates folder must be specified as it contains templates for all the forms and the library of schemes.
+  - It is advised to reimplement WorkflowDesigner initializations, as is shown [here]().
+- If you are using .NET Framework you may need to use `Request.Unvalidated[key]` instead of `context.Request.Form[key]` in the DesignerConroller.cs.
+
+- **Attention. Event handlers OnSchemaWasChanged and OnSchemaWasChangedAsync are now initialized inside a locked process. That is, prior to releasing the *Running* status. The code, [as described in the documentation](https://workflowengine.io/documentation/execution/scheme-update/#manual) will continue to work as expected without need to change it. Yet, if SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async] are called in these handlers, it should be done using this flag *doNotSetRunningStatus = true*. In turn, if you utilized methods ExecuteCommand, SetSatate and similar, be aware that there methods which lock the process. Therefore, is might be best to use methods: SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async]. If you have implemented a complicated logic for updating schemes which leads to a failed attempt at updating you WFE version because of this change, reach us at support@optimajet.com and we'll help you.**
+
 ## 4.2 {#4.2}
 
 - Support for the timers in multi-server mode has been added. You can configure `WorkflowRuntime` to work in a single or multi-server environment. This affects the timers and the recovering from failure. You can configure the runtime with the following code:
