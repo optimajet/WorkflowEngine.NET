@@ -1,0 +1,69 @@
+<Process Name="ParallelProcessesWithWaiting" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="SubprocessStart" State="SubprocessStart" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="State1" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1020" Y="500" Hidden="false" />
+    </Activity>
+    <Activity Name="SubprocessWork" State="SubprocessWork" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="SubState1" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1310" Y="600" Hidden="false" />
+    </Activity>
+    <Activity Name="MainProcessWork" State="MainProcessWork" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Final" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1320" Y="500" Hidden="false" />
+    </Activity>
+    <Activity Name="WaitingForMerge" State="WaitingForMerge" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="RootProcessFinal" OriginalSchemeCode="ParallelProcessesWithoutWaiting">
+      <Designer X="1620" Y="500" Hidden="false" />
+    </Activity>
+    <Activity Name="Final" State="Final" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Final" OriginalSchemeCode="ParallelProcessesWithWaitting">
+      <Designer X="1940" Y="500" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="State1_Activity_1" To="SubprocessWork" From="SubprocessStart" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false" IsFork="true" SubprocessInOutDefinition="Start" SubprocessStartupType="AnotherThread" SubprocessStartupParameterCopyStrategy="CopyAll">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="SubprocessStart_Final_1" To="MainProcessWork" From="SubprocessStart" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1267" Y="527" Hidden="false" />
+    </Transition>
+    <Transition Name="Final_Activity_1" To="WaitingForMerge" From="MainProcessWork" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="SubprocessWork_RootProcessFinal_1" To="WaitingForMerge" From="SubprocessWork" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false" IsFork="true" SubprocessInOutDefinition="Finalize" SubprocessFinalizeParameterMergeStrategy="OverwriteAllNulls">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="WaitingForMerge_Activity_1" To="Final" From="WaitingForMerge" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="CheckAllSubprocessesCompleted" ConditionInversion="false">
+          <ActionParameter><![CDATA[{"Mode":"AllSubprocessesAndParent"}]]></ActionParameter>
+        </Condition>
+      </Conditions>
+      <Designer X="1876" Y="531" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -76,9 +77,9 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static List<Guid> GetProcessesByStatus(MySqlConnection connection, byte status, string runtimeId = null)
+        public static async Task<List<Guid>> GetProcessesByStatusAsync(MySqlConnection connection, byte status, string runtimeId = null)
         {
-            string command = String.Format("SELECT `Id` FROM {0} WHERE `Status` = @status", DbTableName);
+            string command = $"SELECT `Id` FROM {DbTableName} WHERE `Status` = @status";
             var p = new List<MySqlParameter>();
 
             if (!String.IsNullOrEmpty(runtimeId))
@@ -88,22 +89,12 @@ namespace OptimaJet.Workflow.MySQL
             }
 
             p.Add(new MySqlParameter("status", MySqlDbType.Byte) { Value = status });
-            return Select(connection, command, p.ToArray()).Select(s => s.Id).ToList();
+            return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static int MassChangeStatus(MySqlConnection connection, byte stateFrom, byte stateTo, DateTime time)
+        public static async Task<int> ChangeStatusAsync(MySqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            var command = string.Format("UPDATE {0} SET `Status` = @stateto, `SetTime` = @settime WHERE `Status` = @statefrom", DbTableName);
-            var p1 = new MySqlParameter("statefrom", MySqlDbType.Byte) {Value = stateFrom};
-            var p2 = new MySqlParameter("stateto", MySqlDbType.Byte) {Value = stateTo};
-            var p3 = new MySqlParameter("settime", MySqlDbType.DateTime) { Value = time };
-
-            return ExecuteCommand(connection, command, p1, p2, p3);
-        }
-
-        public static int ChangeStatus(MySqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
-        {
-            var command = string.Format("UPDATE {0} SET `Status` = @newstatus, `Lock` = @newlock, `SetTime` = @settime, `RuntimeId` = @runtimeid WHERE `Id` = @id AND `Lock` = @oldlock", DbTableName);
+            string command = $"UPDATE {DbTableName} SET `Status` = @newstatus, `Lock` = @newlock, `SetTime` = @settime, `RuntimeId` = @runtimeid WHERE `Id` = @id AND `Lock` = @oldlock";
             var p1 = new MySqlParameter("newstatus", MySqlDbType.Byte) { Value = status.Status };
             var p2 = new MySqlParameter("newlock", MySqlDbType.Binary) { Value = status.Lock.ToByteArray() };
             var p3 = new MySqlParameter("id", MySqlDbType.Binary) { Value = status.Id.ToByteArray() };
@@ -111,7 +102,7 @@ namespace OptimaJet.Workflow.MySQL
             var p5 = new MySqlParameter("settime", MySqlDbType.DateTime) { Value = status.SetTime };
             var p6 = new MySqlParameter("runtimeid", MySqlDbType.VarChar) { Value = status.RuntimeId };
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4, p5, p6);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
     }
 }

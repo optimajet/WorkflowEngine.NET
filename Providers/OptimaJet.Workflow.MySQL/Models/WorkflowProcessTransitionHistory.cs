@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -121,21 +122,21 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static int DeleteByProcessId(MySqlConnection connection, Guid processId,
+        public static async Task<int> DeleteByProcessIdAsync(MySqlConnection connection, Guid processId,
             MySqlTransaction transaction = null)
         {
             var pProcessId = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), transaction, pProcessId);
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static WorkflowProcessTransitionHistory[] SelectByProcessId(MySqlConnection connection, Guid processId)
+        public static async Task<WorkflowProcessTransitionHistory[]> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processid", DbTableName);
+            string selectText = $"SELECT * FROM {DbTableName} WHERE `ProcessId` = @processid";
 
             var p1 = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

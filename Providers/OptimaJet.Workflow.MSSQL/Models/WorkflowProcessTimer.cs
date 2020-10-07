@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Linq;
+using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Fault;
 
 // ReSharper disable once CheckNamespace
@@ -84,16 +89,15 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static int DeleteInactiveByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
+        public static async Task<int> DeleteInactiveByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
             var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
-            return ExecuteCommand(connection,
-                String.Format("DELETE FROM {0} WHERE [ProcessId] = @processid AND [Ignore] = 1", ObjectName), transaction, pProcessId);
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid AND [Ignore] = 1", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static int DeleteByProcessId(SqlConnection connection, Guid processId,
-            List<string> timersIgnoreList = null, SqlTransaction transaction = null)
+        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, List<string> timersIgnoreList = null, SqlTransaction transaction = null)
         {
             var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
@@ -101,35 +105,30 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 var parameters = new List<string>();
                 var sqlParameters = new List<SqlParameter> {pProcessId};
-                var cnt = 0;
-                foreach (var timer in timersIgnoreList)
+                int cnt = 0;
+                foreach (string timer in timersIgnoreList)
                 {
-                    var parameterName = string.Format("ignore{0}", cnt);
-                    parameters.Add(string.Format("@{0}", parameterName));
+                    string parameterName = $"ignore{cnt}";
+                    parameters.Add($"@{parameterName}");
                     sqlParameters.Add(new SqlParameter(parameterName, SqlDbType.NVarChar) {Value = timer});
                     cnt++;
                 }
 
-                var commandText = string.Format(
-                    "DELETE FROM {0} WHERE [ProcessId] = @processid AND [Name] NOT IN ({1})",
-                    ObjectName, string.Join(",", parameters));
+                string commandText = $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid AND [Name] NOT IN ({String.Join(",", parameters)})";
 
                 try
                 {
-                    return ExecuteCommand(connection,
-                        commandText, transaction, sqlParameters.ToArray());
+                    return await ExecuteCommandAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
                     throw ex.RethrowAllowedIfRetrievable();
                 }
-
             }
 
             try
             {
-                return ExecuteCommand(connection,
-                    string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, pProcessId);
+                return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, pProcessId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -137,68 +136,45 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static WorkflowProcessTimer SelectByProcessIdAndName(SqlConnection connection, Guid processId, string name)
+        public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(SqlConnection connection, Guid processId, string name)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [ProcessId] = @processid AND [Name] = @name", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid AND [Name] = @name";
 
             var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             var p2 = new SqlParameter("name", SqlDbType.NVarChar) {Value = name};
 
-            return Select(connection, selectText, p1, p2).FirstOrDefault();
+            return (await SelectAsync(connection, selectText, p1, p2).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(SqlConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [ProcessId] = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid";
 
             var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(SqlConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectActiveByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [ProcessId] = @processid AND [Ignore] = 0", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid AND [Ignore] = 0";
 
             var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static int ClearTimerIgnore(SqlConnection connection, Guid timerId)
+        public static async Task<int> SetTimerIgnoreAsync(SqlConnection connection, Guid timerId)
         {
-            var command = string.Format("UPDATE {0} SET [Ignore] = 0 WHERE [Id] = @timerid", ObjectName);
-            var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) {Value = timerId};
-            return ExecuteCommand(connection, command, p1);
-        }
-
-        public static int SetTimerIgnore(SqlConnection connection, Guid timerId)
-        {
-            var command = string.Format("UPDATE {0} SET [Ignore] = 1 WHERE [Id] = @timerid AND [Ignore] = 0", ObjectName);
+            string command = $"UPDATE {ObjectName} SET [Ignore] = 1 WHERE [Id] = @timerid AND [Ignore] = 0";
+            
             var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) { Value = timerId };
-            return ExecuteCommand(connection, command, p1);
+            
+            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
         }
 
-        public static WorkflowProcessTimer GetCloseExecutionTimer(SqlConnection connection)
-        {
-            var selectText = string.Format("SELECT TOP 1 * FROM {0}  WHERE [Ignore] = 0 ORDER BY [NextExecutionDateTime]", ObjectName);
-
-            var parameters = new SqlParameter[] {};
-
-            return Select(connection, selectText, parameters).FirstOrDefault();
-        }
-
-        public static WorkflowProcessTimer[] GetTimersToExecute(SqlConnection connection, DateTime now)
-        {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [Ignore] = 0 AND [NextExecutionDateTime] <= @currentTime", ObjectName);
-
-            var p = new SqlParameter("currentTime", SqlDbType.DateTime) {Value = now};
-
-            return Select(connection, selectText, p);
-        }
-
-        public static WorkflowProcessTimer[] GetTopTimersToExecute(SqlConnection connection, int top, DateTime now)
+        public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(SqlConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT TOP {top} * FROM {ObjectName}" +
                                 "WHERE [Ignore] = 0 AND [NextExecutionDateTime] <= @currentTime " +
@@ -206,41 +182,9 @@ namespace OptimaJet.Workflow.DbPersistence
 
             var p1 = new SqlParameter("currentTime", SqlDbType.DateTime) { Value = now };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static int SetIgnore(SqlConnection connection, WorkflowProcessTimer[] timers)
-        {
-            if (timers.Length == 0)
-                return 0;
-            var result = 0;
-            var skip = 0;
-            var take = 2000;
-
-            while (skip < timers.Length)
-            {
-
-                var parameters = new List<string>();
-                var sqlParameters = new List<SqlParameter>();
-                var cnt = 0;
-
-                foreach (var timer in timers.Skip(skip).Take(take))
-                {
-                    var parameterName = string.Format("timer{0}", cnt);
-                    parameters.Add(string.Format("@{0}", parameterName));
-                    sqlParameters.Add(new SqlParameter(parameterName, SqlDbType.UniqueIdentifier) {Value = timer.Id});
-                    cnt++;
-                }
-
-                result = result + ExecuteCommand(connection,
-                             string.Format("UPDATE {0} SET [Ignore] = 1 WHERE [Id] IN ({1})", ObjectName, string.Join(",", parameters)),
-                             sqlParameters.ToArray());
-
-                skip = skip + take;
-            }
-
-            return result;
-        }
 #if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()
         {

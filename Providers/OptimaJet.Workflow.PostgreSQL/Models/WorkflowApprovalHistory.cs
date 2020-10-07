@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -115,13 +116,13 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static WorkflowApprovalHistory[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE  \"ProcessId\" = @processId", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE  \"ProcessId\" = @processId";
 
             var processIdParameter = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) { Value = processId };
 
-            return Select(connection, selectText, processIdParameter);
+            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
         }
     }
 }

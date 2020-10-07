@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
 using Oracle.ManagedDataAccess.Client;
@@ -91,56 +92,48 @@ namespace OptimaJet.Workflow.Oracle.Models
             }
         }
 
-        public static int UpdateStatus(OracleConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
+        public static async Task<int> UpdateStatusAsync(OracleConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
         {
-            var command = String.Format("UPDATE {0} SET STATUS = :newstatus, LOCKFLAG = :newlock WHERE RUNTIMEID = :id AND LOCKFLAG = :oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET STATUS = :newstatus, LOCKFLAG = :newlock WHERE RUNTIMEID = :id AND LOCKFLAG = :oldlock";
             var p1 = new OracleParameter("newstatus", OracleDbType.Int16, runtime.Status, ParameterDirection.Input);
             var p2 = new OracleParameter("newlock", OracleDbType.Raw, runtime.Lock.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("id", OracleDbType.NVarchar2, runtime.RuntimeId, ParameterDirection.Input);
             var p4 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
-        public static int UpdateRestorer(OracleConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
+        public static async Task<int> UpdateRestorerAsync(OracleConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
         {
-            var command = String.Format("UPDATE {0} SET RESTORERID = :restorer, LOCKFLAG = :newlock WHERE RUNTIMEID = :id AND LOCKFLAG = :oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET RESTORERID = :restorer, LOCKFLAG = :newlock WHERE RUNTIMEID = :id AND LOCKFLAG = :oldlock";
             var p1 = new OracleParameter("restorer", OracleDbType.NVarchar2, runtime.RestorerId, ParameterDirection.Input);
             var p2 = new OracleParameter("newlock", OracleDbType.Raw, runtime.Lock.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("id", OracleDbType.NVarchar2, runtime.RuntimeId, ParameterDirection.Input);
             var p4 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
-        public static bool MultiServerRuntimesExist(OracleConnection connection)
+        public static async Task<bool> MultiServerRuntimesExistAsync(OracleConnection connection)
         {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE RUNTIMEID != :empty OR STATUS NOT IN ({(int)RuntimeStatus.Dead}, {(int)RuntimeStatus.Terminated}, {(int)RuntimeStatus.Single})";
-            var runtimes = Select(connection, selectText, new OracleParameter("empty", OracleDbType.NVarchar2, Guid.Empty.ToString(), ParameterDirection.Input));
+            string selectText = $"SELECT * FROM {ObjectName} WHERE RUNTIMEID != :empty AND STATUS NOT IN ({(int)RuntimeStatus.Dead}, {(int)RuntimeStatus.Terminated})";
+            WorkflowRuntime[] runtimes = await SelectAsync(connection, selectText, new OracleParameter("empty", OracleDbType.NVarchar2, Guid.Empty.ToString(), ParameterDirection.Input)).ConfigureAwait(false);
 
             return runtimes.Length > 0;
         }
 
-        public static int SingleServerRuntimesCount(OracleConnection connection)
-        {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE RUNTIMEID = :empty AND STATUS = {(int)RuntimeStatus.Single}";
-            var runtimes = Select(connection, selectText, new OracleParameter("empty", OracleDbType.NVarchar2, Guid.Empty.ToString(), ParameterDirection.Input));
-
-            return runtimes.Length;
-        }
-
-        public static int ActiveMultiServerRuntimesCount(OracleConnection connection, string currentRuntimeId)
+        public static async Task<int> ActiveMultiServerRuntimesCountAsync(OracleConnection connection, string currentRuntimeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE RUNTIMEID != :current AND STATUS IN ({(int)RuntimeStatus.Alive}, {(int)RuntimeStatus.Restore}, {(int)RuntimeStatus.SelfRestore})";
-            var runtimes = Select(connection, selectText, new OracleParameter("current", OracleDbType.NVarchar2, currentRuntimeId, ParameterDirection.Input));
+            WorkflowRuntime[] runtimes = await SelectAsync(connection, selectText, new OracleParameter("current", OracleDbType.NVarchar2, currentRuntimeId, ParameterDirection.Input)).ConfigureAwait(false);
 
             return runtimes.Length;
         }
 
-        public static WorkflowRuntimeModel GetWorkflowRuntimeStatus(OracleConnection connection, string runtimeId)
+        public static async Task<WorkflowRuntimeModel> GetWorkflowRuntimeStatusAsync(OracleConnection connection, string runtimeId)
         {
-            string selectText = String.Format("SELECT * FROM {0} WHERE RUNTIMEID = :id", ObjectName);
-            WorkflowRuntime r = Select(connection, selectText, new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input))
+            string selectText = $"SELECT * FROM {ObjectName} WHERE RUNTIMEID = :id";
+            WorkflowRuntime r = (await SelectAsync(connection, selectText, new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input)).ConfigureAwait(false))
                 .FirstOrDefault();
 
             if (r == null)
@@ -151,43 +144,38 @@ namespace OptimaJet.Workflow.Oracle.Models
             return new WorkflowRuntimeModel { Lock = r.LOCKFLAG, RuntimeId = r.RuntimeId, Status = r.Status, RestorerId = r.RestorerId, LastAliveSignal = r.LastAliveSignal, NextTimerTime = r.NextTimerTime };
         }
 
-        public static int SendRuntimeLastAliveSignal(OracleConnection connection, string runtimeId, DateTime time)
+        public static async Task<int> SendRuntimeLastAliveSignalAsync(OracleConnection connection, string runtimeId, DateTime time)
         {
-            var command = $"UPDATE {ObjectName} SET LASTALIVESIGNAL = :time WHERE RUNTIMEID = :id AND STATUS IN ({(int)RuntimeStatus.Alive},{(int)RuntimeStatus.SelfRestore})";
+            string command = $"UPDATE {ObjectName} SET LASTALIVESIGNAL = :time WHERE RUNTIMEID = :id AND STATUS IN ({(int)RuntimeStatus.Alive},{(int)RuntimeStatus.SelfRestore})";
             var p1 = new OracleParameter("time", OracleDbType.TimeStamp, time, ParameterDirection.Input);
             var p2 = new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2);
+            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
-        public static int UpdateNextTime(OracleConnection connection, string runtimeId, string nextTimeColumnName, DateTime time)
+        public static async Task<int> UpdateNextTimeAsync(OracleConnection connection, string runtimeId, string nextTimeColumnName, DateTime time)
         {
-            var command = String.Format("UPDATE {0} SET {1} = :time WHERE RUNTIMEID = :id", DbTableName, nextTimeColumnName);
+            string command = $"UPDATE {DbTableName} SET {nextTimeColumnName} = :time WHERE RUNTIMEID = :id";
             var p1 = new OracleParameter("time", OracleDbType.TimeStamp, time, ParameterDirection.Input);
             var p2 = new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2);
+            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
-        public static DateTime? GetMaxNextTime(OracleConnection connection, string runtimeId, string nextTimeColumnName)
+        public static async Task<DateTime?> GetMaxNextTimeAsync(OracleConnection connection, string runtimeId, string nextTimeColumnName)
         {
-            var commandText = String.Format("SELECT MAX({1}) FROM {0} WHERE STATUS = 0 AND RUNTIMEID != :id", DbTableName, nextTimeColumnName);
+            string commandText = $"SELECT MAX({nextTimeColumnName}) FROM {DbTableName} WHERE STATUS = 0 AND RUNTIMEID != :id";
 
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             using var command = new OracleCommand(commandText, connection);
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             command.Parameters.Add(new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input));
 
-            object result = command.ExecuteScalar();
-
-            if (result == null)
-            {
-                return null;
-            }
+            object result = await command.ExecuteScalarAsync().ConfigureAwait(false);
 
             return result as DateTime?;
         }

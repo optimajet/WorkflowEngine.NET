@@ -89,60 +89,52 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
                     LastAliveSignal = value as DateTime?;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
-        public static int UpdateStatus(NpgsqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
+        public static async Task<int> UpdateStatusAsync(NpgsqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
         {
-            var command = String.Format("UPDATE {0} SET \"Status\" = @newstatus, \"Lock\" = @newlock WHERE \"RuntimeId\" = @id AND \"Lock\" = @oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET \"Status\" = @newstatus, \"Lock\" = @newlock WHERE \"RuntimeId\" = @id AND \"Lock\" = @oldlock";
             var p1 = new NpgsqlParameter("newstatus", NpgsqlDbType.Smallint) { Value = (int)status.Status };
             var p2 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = status.Lock };
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
             var p4 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
-        public static int UpdateRestorer(NpgsqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
+        public static async Task<int> UpdateRestorerAsync(NpgsqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
         {
-            var command = String.Format("UPDATE {0} SET \"RestorerId\" = @restorer, \"Lock\" = @newlock WHERE \"RuntimeId\" = @id AND \"Lock\" = @oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET \"RestorerId\" = @restorer, \"Lock\" = @newlock WHERE \"RuntimeId\" = @id AND \"Lock\" = @oldlock";
             var p1 = new NpgsqlParameter("restorer", NpgsqlDbType.Varchar) { Value = status.RestorerId };
             var p2 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = status.Lock };
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
             var p4 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
-        public static bool MultiServerRuntimesExist(NpgsqlConnection connection)
+        public static async Task<bool> MultiServerRuntimesExistAsync(NpgsqlConnection connection)
         {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE \"RuntimeId\" != @empty OR \"Status\" NOT IN ({(int)RuntimeStatus.Dead}, {(int)RuntimeStatus.Terminated}, {(int)RuntimeStatus.Single})";
-            var runtimes = Select(connection, selectText, new NpgsqlParameter("empty", NpgsqlDbType.Varchar) { Value = Guid.Empty.ToString() });
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"RuntimeId\" != @empty AND \"Status\" NOT IN ({(int)RuntimeStatus.Dead}, {(int)RuntimeStatus.Terminated})";
+            WorkflowRuntime[] runtimes = await SelectAsync(connection, selectText, new NpgsqlParameter("empty", NpgsqlDbType.Varchar) { Value = Guid.Empty.ToString() }).ConfigureAwait(false);
 
             return runtimes.Length > 0;
         }
 
-        public static int SingleServerRuntimesCount(NpgsqlConnection connection)
-        {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE \"RuntimeId\" = @empty AND \"Status\" = {(int)RuntimeStatus.Single}";
-            var runtimes = Select(connection, selectText, new NpgsqlParameter("empty", NpgsqlDbType.Varchar) { Value = Guid.Empty.ToString() });
-
-            return runtimes.Length;
-        }
-
-        public static int ActiveMultiServerRuntimesCount(NpgsqlConnection connection, string currentRuntimeId)
+        public static async Task<int> GetActiveMultiServerRuntimesCountAsync(NpgsqlConnection connection, string currentRuntimeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE \"RuntimeId\" != @current AND \"Status\" IN ({(int)RuntimeStatus.Alive}, {(int)RuntimeStatus.Restore}, {(int)RuntimeStatus.SelfRestore})";
-            var runtimes = Select(connection, selectText, new NpgsqlParameter("current", NpgsqlDbType.Varchar) { Value = currentRuntimeId });
+            WorkflowRuntime[] runtimes = await SelectAsync(connection, selectText, new NpgsqlParameter("current", NpgsqlDbType.Varchar) { Value = currentRuntimeId }).ConfigureAwait(false);
 
             return runtimes.Length;
         }
 
-        public static WorkflowRuntimeModel GetWorkflowRuntimeStatus(NpgsqlConnection connection, string runtimeId)
+        public static async Task<WorkflowRuntimeModel> GetWorkflowRuntimeStatusAsync(NpgsqlConnection connection, string runtimeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE \"RuntimeId\" = @id";
-            WorkflowRuntime r = Select(connection, selectText, new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId }).FirstOrDefault();
+            WorkflowRuntime r = (await SelectAsync(connection, selectText, new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId }).ConfigureAwait(false)).FirstOrDefault();
 
             if (r == null)
             {
@@ -152,44 +144,39 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             return new WorkflowRuntimeModel { Lock = r.Lock, RuntimeId = r.RuntimeId, Status = r.Status, RestorerId = r.RestorerId, LastAliveSignal = r.LastAliveSignal, NextTimerTime = r.NextTimerTime };
         }
 
-        public static int SendRuntimeLastAliveSignal(NpgsqlConnection connection, string runtimeId, DateTime time)
+        public static async Task<int> SendRuntimeLastAliveSignalAsync(NpgsqlConnection connection, string runtimeId, DateTime time)
         {
-            var command = $"UPDATE {ObjectName} SET \"LastAliveSignal\" = @time WHERE \"RuntimeId\" = @id AND \"Status\" IN ({(int)RuntimeStatus.Alive},{(int)RuntimeStatus.SelfRestore})";
+            string command = $"UPDATE {ObjectName} SET \"LastAliveSignal\" = @time WHERE \"RuntimeId\" = @id AND \"Status\" IN ({(int)RuntimeStatus.Alive},{(int)RuntimeStatus.SelfRestore})";
             var p1 = new NpgsqlParameter("time", NpgsqlDbType.Timestamp) { Value = time };
             var p2 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId };
 
-            return ExecuteCommand(connection, command, p1, p2);
+            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
-        public static int UpdateNextTime(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName, DateTime time,
+        public static async Task<int> UpdateNextTimeAsync(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName, DateTime time,
             NpgsqlTransaction transaction = null)
         {
-            var command = String.Format("UPDATE {0} SET \"{1}\" = @time WHERE \"RuntimeId\" = @id", ObjectName, nextTimeColumnName);
+            string command = $"UPDATE {ObjectName} SET \"{nextTimeColumnName}\" = @time WHERE \"RuntimeId\" = @id";
             var p1 = new NpgsqlParameter("time", NpgsqlDbType.Timestamp) { Value = time };
             var p2 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId };
 
-            return ExecuteCommand(connection, command, transaction, p1, p2);
+            return await ExecuteCommandAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
         }
 
-        public static DateTime? GetMaxNextTime(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName)
+        public static async Task<DateTime?> GetMaxNextTimeAsync(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName)
         {
-            var commandText = String.Format("SELECT MAX(\"{1}\") FROM {0} WHERE \"Status\" = 0 AND \"RuntimeId\" != @id", ObjectName, nextTimeColumnName);
+            string commandText = $"SELECT MAX(\"{nextTimeColumnName}\") FROM {ObjectName} WHERE \"Status\" = 0 AND \"RuntimeId\" != @id";
 
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             using var command = new NpgsqlCommand(commandText, connection);
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
             command.Parameters.Add(new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId });
 
-            object result = command.ExecuteScalar();
-
-            if (result == null)
-            {
-                return null;
-            }
+            object result = await command.ExecuteScalarAsync().ConfigureAwait(false);
 
             return result as DateTime?;
         }

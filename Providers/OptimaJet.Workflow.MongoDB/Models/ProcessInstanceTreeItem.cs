@@ -14,6 +14,7 @@ namespace OptimaJet.Workflow.MongoDB
         public Guid Id { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string SubprocessName { get; set; }
         public string StartingTransition { get; set; }
 
         public static List<IProcessInstanceTreeItem> CreateFromBsonDocuments(List<BsonDocument> instances, List<BsonDocument> schemes)
@@ -27,6 +28,7 @@ namespace OptimaJet.Workflow.MongoDB
                     Id = i["_id"].AsGuid,
                     ParentProcessId = i[nameof(WorkflowProcessInstance.ParentProcessId)].AsNullableGuid,
                     RootProcessId = i[nameof(WorkflowProcessInstance.RootProcessId)].AsGuid,
+                    SubprocessName = i[nameof(WorkflowProcessInstance.SubprocessName)] == BsonNull.Value ? null : i[nameof(WorkflowProcessInstance.SubprocessName)].AsString,
                     StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString
                 } as IProcessInstanceTreeItem).ToList();
 

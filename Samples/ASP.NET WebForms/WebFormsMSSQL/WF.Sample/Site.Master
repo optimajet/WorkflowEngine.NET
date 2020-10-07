@@ -12,7 +12,7 @@
     <asp:PlaceHolder runat="server">
         <%: Scripts.Render("~/Scripts/jquery.js") %>
         <%: Styles.Render("~/Content/semantic.min.css") %>
-        <%: Styles.Render("~/Content/workflowdesigner.css") %>
+        <%: Styles.Render("~/Content/workflowdesigner.min.css") %>
         <%: Styles.Render("~/Content/Site.css") %>
         <%: Styles.Render("~/Content/pace-theme-minimal.css") %>
     </asp:PlaceHolder>

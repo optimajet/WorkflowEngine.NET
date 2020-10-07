@@ -1,4 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -65,19 +68,42 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static WorkflowProcessInstancePersistence[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        public static async Task<WorkflowProcessInstancePersistence[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid";
             var p = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
-            return Select(connection, selectText, p);
+            return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
         }
 
-        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction)
+        public static async Task<WorkflowProcessInstancePersistence> SelectByNameAsync(NpgsqlConnection connection, Guid processId,  string parameterName)
+        {
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"ParameterName\" = @parameterName";
+
+            var parameters = new List<NpgsqlParameter>
+            {
+                new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId}, 
+                new NpgsqlParameter("parameterName", NpgsqlDbType.Text) {Value = parameterName}
+            };
+            return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
+        }
+
+        public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction = null)
         {
             var p = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, p);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, p).ConfigureAwait(false);
+        }
+
+        public static async Task<int> DeleteByNameAsync(NpgsqlConnection connection, Guid processId, string parameterName, NpgsqlTransaction transaction = null)
+        {
+            var parameters = new List<NpgsqlParameter>
+            {
+                new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId},
+                new NpgsqlParameter("parameterName", NpgsqlDbType.Text) {Value = parameterName}
+            };
+
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"ParameterName\" = @parameterName", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
     }
 }

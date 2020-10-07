@@ -1,0 +1,192 @@
+<h3>{{ParentItem.Name ? ParentItem.Name : "Unnamed code acttion"}} {{ labels.Title }}</h3>
+
+<b>{{ labels.Usings }}</b>
+<el-input v-model="Usings" :readonly="readonly" :title="labels.Usings" type="textarea" rows="4"></el-input>
+<div>{{ ReturnValue }} <b>{{ ParentItem.Name }}</b> ({{FuncSignature}}){</div>
+<div :id="editor_container" class="WorkflowDesignerJsonEditor" style="height: calc(100% - 230px)"></div>
+}
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onCompile" type="info">{{ labels.Compile }}</el-button>
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="infodialog.title"
+    :before-close="function() {infodialog.visible = false}"
+    :visible="infodialog.visible"
+    :modal-append-to-body="false"
+    width="50%">
+    <span v-html="infodialog.message"></span>
+    <span slot="footer" class="dialog-footer">
+        <el-button @click="infodialog.visible = false">{{labels.OK}}</el-button>
+    </span>
+</el-dialog>
+<script>
+    function codeform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            editor_container: me.id + "_editor",
+            readonly: false,
+            labels: WorkflowDesignerConstants.EditCodeLabel,                
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            Usings: "",
+            Name: "",
+            ReturnValue: "void",
+            FuncSignature: "ProcessInstance processInstance, WorkflowRuntime runtime, string parameter",
+            infodialog: {
+                title: "",
+                message: "",
+                visible: false,
+                onSuccess: function(){
+                    me.VueConfig.data.infodialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+        });
+
+        var modifyUsingString = function (usings) {
+            var lastsymbol = usings.substring(usings.length - 1);
+
+            if (lastsymbol === ';')
+                usings = usings.substring(0, usings.length - 1);
+
+            return usings.split(';').join(';\r\n') + ';';
+        }
+        
+        var updateDataFromParent = function () {
+            var data = me.VueConfig.data;
+            var ParentItem = data.ParentItem;
+            data.Name = ParentItem.Name;
+            data.Type = ParentItem.Type;
+            data.IsAsync = ParentItem.IsAsync;
+            data.Usings = modifyUsingString(ParentItem.Usings ? decodeURIComponent(ParentItem.Usings) : (me.graph.data.AdditionalParams.Usings.join(';') + ';'));
+           
+            var code = ParentItem.ActionCode;
+            if (ParentItem.Type === 'Action') {
+                data.ReturnValue = ParentItem.IsAsync ? 'async Task ' : 'void ';
+
+                if(!code){
+                    code = "// TODO Insert your code here";
+                }
+            }
+            if (ParentItem.Type === 'Condition') {
+                data.ReturnValue = ParentItem.IsAsync ? 'async Task<bool> ' : 'bool ';
+
+                if(!code){
+                    code = "bool result = true;\n\n// TODO Insert your code here\n\nreturn result;";
+                }
+            }
+            if (ParentItem.Type === 'RuleGet') {
+                data.ReturnValue = ParentItem.IsAsync ? 'async Task<IEnumerable<string>> ' : 'IEnumerable<string> ';
+
+                    if(!code){
+                    code = "var result = new List<string>();\n\n// TODO Insert your code here\n\nreturn result;";
+                }
+            }
+
+            if (ParentItem.Type === 'RuleCheck') {
+                data.ReturnValue = ParentItem.IsAsync ? 'async Task<bool> ' : 'bool ';
+                data.FuncSignature = "ProcessInstance processInstance, WorkflowRuntime runtime, string parameter, string identityId";
+
+                if(!code){
+                    code = "bool result = true;\n\n// TODO Insert your code here\n\nreturn result;";
+                }
+            }
+
+            setTimeout(function(){
+                me.VueConfig.methods.renderEditor(decodeURIComponent(code));
+            }, 10);
+        }
+
+        me.VueConfig.methods.onUpdate = function(item){
+            var data = me.VueConfig.data;
+            data.readonly = me.graph.Settings.readonly;
+            data.ParentItem = item;
+            updateDataFromParent();            
+        };
+    
+        me.VueConfig.watch = {
+            ParentItem : {
+                handler(val){
+                    updateDataFromParent();
+                },
+                deep: true
+            }
+        }
+
+        me.VueConfig.methods.renderEditor = function(value){
+            if(!me.editor){
+                me.editor = ace.edit(me.VueConfig.data.editor_container);
+                var session = me.editor.getSession();
+                session.setMode("ace/mode/csharp");
+                session.setOption("useWorker", false);
+
+                WorkflowDesignerWindows.Autocompleter.enableAceEditor({
+                    editor: me.editor,
+                    getUsingsCallback:function(){
+                        return me.VueConfig.data.usings;
+                    },
+                    getVariablesCallback:function(){
+                        return WorkflowDesignerWindows.getVariablesList(me.VueConfig.data.Type, me.VueConfig.data.IsAsync);
+                    }
+                });
+            }
+
+            me.editor.setOptions({ readOnly: me.graph.Settings.readonly });
+            me.editor.setValue(value ? value : "");
+            me.editor.clearSelection();
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            var actionCode = encodeURIComponent(me.editor.getValue());
+            me.onSuccess({
+                Usings : me.VueConfig.data.Usings ? encodeURIComponent(me.VueConfig.data.Usings.replace(/(\r\n|\n|\r)/gm, "")) : "",
+                ActionCode: actionCode
+            });
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.VueConfig.data.infodialog.visible = false;
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onCompile = function(){
+            var data = me.VueConfig.data;
+            var item = {
+                Name: data.Name, 
+                Type: data.Type, 
+                IsGlobal: false, 
+                IsAsync: data.IsAsync, 
+                ActionCode: encodeURIComponent(me.editor.getValue()),
+                Usings: encodeURIComponent(data.Usings ? data.Usings.replace(/(\r\n|\n|\r)/gm, "") : "")
+            }
+            
+            var callbackfn = function (response) {
+                var infodialog = me.VueConfig.data.infodialog;
+                infodialog.title = response.Success ? WorkflowDesignerConstants.EditCodeLabel.Success : WorkflowDesignerConstants.EditCodeLabel.Error;
+                infodialog.message = response.Success ? WorkflowDesignerConstants.EditCodeLabel.CompileSucceeded : response.Message;
+                infodialog.visible = true;
+            }
+
+            me.graph.designer.compile(item, callbackfn);
+        };
+        
+        me.VueConfig.methods.onHideEvent = function(){
+            me.graph.setParam("codeform_showusings", me.VueConfig.data.showusings);
+
+            if(me.editor){
+                me.editor.destroy();
+                delete me.editor;
+            }
+
+            if(me.editors){
+                for(var editor in me.editors){
+                    me.editors[editor].destroy();
+                    delete me.editors[editor];
+                }
+                delete me.editors;
+            }
+        }
+    };
+</script>

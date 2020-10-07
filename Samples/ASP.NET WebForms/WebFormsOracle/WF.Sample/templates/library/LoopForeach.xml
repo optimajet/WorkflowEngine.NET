@@ -1,0 +1,74 @@
+<Process Name="SimpleWF" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="StartLoopForeach" State="StartLoopForeach" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="StartLoopForeach" OriginalSchemeCode="LoopForeach">
+      <Implementation>
+        <ActionRef Order="1" NameRef="StartLoopForeach">
+          <ActionParameter><![CDATA[{"LoopName":"Loop","LoopStateParameterName":"LoopState","LoopCounterValueParameterName":"LoopCounterValue","Separator":",","Values":"one, two, three, four, five","ValuesFromParameter":false,"ValuesParameterName":""}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="1257" Y="703" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_1" State="ActivityInLoop_1" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_1" OriginalSchemeCode="LoopForeach">
+      <Designer X="1580" Y="700" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_2" State="ActivityInLoop_2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_2" OriginalSchemeCode="LoopForeach">
+      <Designer X="1580" Y="840" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityBeforeLoop" State="ActivityBeforeLoop" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="BeforeLoopActivity " OriginalSchemeCode="LoopForeach">
+      <Designer X="960" Y="700" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityAfterLoop" State="ActivityAfterLoop" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Activity" OriginalSchemeCode="LoopForeach">
+      <Designer X="1260" Y="840" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_2_1" To="ActivityInLoop_1" From="StartLoopForeach" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="LoopIsNotCompletedAndBroken" ConditionInversion="false">
+          <ActionParameter><![CDATA[{"LoopName":"Loop"}]]></ActionParameter>
+        </Condition>
+      </Conditions>
+      <Designer X="1513" Y="729" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_2_Activity_1_1" To="ActivityInLoop_2" From="ActivityInLoop_1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1680" Y="793" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_1_Activity_1" To="StartLoopForeach" From="ActivityInLoop_2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1512.5" Y="771.5" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_StartLoopForeach_1" To="StartLoopForeach" From="ActivityBeforeLoop" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1201.5" Y="731.5" Hidden="false" />
+    </Transition>
+    <Transition Name="StartLoopForeach_Activity_1" To="ActivityAfterLoop" From="StartLoopForeach" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Otherwise" />
+      </Conditions>
+      <Designer X="1354" Y="793" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

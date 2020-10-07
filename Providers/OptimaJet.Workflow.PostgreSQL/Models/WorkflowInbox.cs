@@ -62,21 +62,22 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId,
+        public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId,
             NpgsqlTransaction transaction = null)
         {
             var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, pProcessId);
+            return await ExecuteCommandAsync(connection,
+                    $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, pProcessId)
+                .ConfigureAwait(false);
         }
 
-        public static WorkflowInbox[] SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        public static async Task<WorkflowInbox[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid";
 
             var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

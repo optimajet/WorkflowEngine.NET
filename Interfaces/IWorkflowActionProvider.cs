@@ -1,4 +1,4 @@
-﻿using System.Collections.Generic;
+using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Model;
@@ -52,31 +52,32 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <returns>Condition result</returns>
         Task<bool> ExecuteConditionAsync(string name, ProcessInstance processInstance, WorkflowRuntime runtime, string actionParameter, CancellationToken token);
 
-
         /// <summary>
         /// Checks whether the action should be called asynchronously
         /// </summary>
         /// <param name="name">Name of the action</param>
-        bool IsActionAsync(string name);
+        /// <param name="schemeCode">Scheme code</param>
+        bool IsActionAsync(string name, string schemeCode);
 
         /// <summary>
         /// Checks whether the condition should be called asynchronously
         /// </summary>
         /// <param name="name">Name of the condition</param>
-        bool IsConditionAsync(string name);
+        /// <param name="schemeCode">Scheme code</param>
+        bool IsConditionAsync(string name, string schemeCode);
 
         /// <summary>
         /// Return all user actions names
         /// </summary>
+        /// <param name="schemeCode">Scheme code</param>
         /// <returns>List of actions names</returns>
-        List<string> GetActions();
+        List<string> GetActions(string schemeCode);
 
         /// <summary>
         /// Return all user conditions names
         /// </summary>
+        /// <param name="schemeCode">Scheme code</param>
         /// <returns>List of conditions names</returns>
-        List<string> GetConditions();
-
-       
+        List<string> GetConditions(string schemeCode);
     }
 }

@@ -25,13 +25,15 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
                 new ColumnInfo {Name = "ParentProcessId", Type = OracleDbType.Raw},
                 new ColumnInfo {Name = "RootProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo {Name = "StartingTransition"}
+                new ColumnInfo {Name = "StartingTransition"},
+                new ColumnInfo {Name = nameof(SubprocessName)}
             });
         }
 
         public Guid Id { get; set; }
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
+        public string SubprocessName { get; set; }
         public string StartingTransition { get; set; }
 
         public override object GetValue(string key)
@@ -46,6 +48,8 @@ namespace OptimaJet.Workflow.Oracle
                     return RootProcessId.ToByteArray();
                 case "StartingTransition":
                     return StartingTransition;
+                case nameof(SubprocessName):
+                    return SubprocessName;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
@@ -73,6 +77,9 @@ namespace OptimaJet.Workflow.Oracle
                 case "StartingTransition":
                     StartingTransition = value as string;
                     break;
+                case nameof(SubprocessName):
+                    SubprocessName = value as string;
+                    break;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
@@ -83,7 +90,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             var builder = new StringBuilder();
             builder.Append("SELECT ");
-            builder.Append($"{nameof(Id)}, {nameof(ParentProcessId)}, {nameof(RootProcessId)}, {nameof(StartingTransition)} ");
+            builder.Append($"{nameof(Id)}, {nameof(ParentProcessId)}, {nameof(RootProcessId)}, {nameof(StartingTransition)}, {nameof(SubprocessName)} ");
             builder.Append($"FROM {WorkflowProcessInstance.ObjectName} ");
             builder.Append($"WHERE {nameof(RootProcessId)} = :rootProcessId");
 

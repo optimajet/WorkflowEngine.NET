@@ -1,0 +1,74 @@
+<Process Name="SimpleWF" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="StartLoopFor" State="StartLoopFor" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="StartLoopFor" OriginalSchemeCode="StartLoopForDateTime">
+      <Implementation>
+        <ActionRef Order="1" NameRef="StartLoopFor">
+          <ActionParameter><![CDATA[{"LoopName":"Loop","LoopStateParameterName":"LoopState","LoopCounterValueParameterName":"LoopCounterValue","CounterType":"DateTime","StepType":"Increment","StartValue":"2020-08-20 17:30:55.000","EndValue":"2020-09-20 17:30:55.000","Step":"1d","IncludeLastValue":true}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="920" Y="480" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_1" State="ActivityInLoop_1" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_1" OriginalSchemeCode="StartLoopForDateTime">
+      <Designer X="1240" Y="480" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_2" State="ActivityInLoop_2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_2" OriginalSchemeCode="StartLoopForDateTime">
+      <Designer X="1240" Y="620" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityBeforeLoop" State="ActivityBeforeLoop" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="620" Y="480" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityAfterLoop" State="ActivityAfterLoop" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True">
+      <Designer X="920" Y="620" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_2_1" To="ActivityInLoop_1" From="StartLoopFor" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="LoopIsNotCompletedAndBroken" ConditionInversion="false">
+          <ActionParameter><![CDATA[{"LoopName":"Loop"}]]></ActionParameter>
+        </Condition>
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_2_Activity_1_1" To="ActivityInLoop_2" From="ActivityInLoop_1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1340" Y="572" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_1_Activity_1" To="StartLoopFor" From="ActivityInLoop_2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1176" Y="567" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_StartLoopFor_1" To="StartLoopFor" From="ActivityBeforeLoop" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="864" Y="510" Hidden="false" />
+    </Transition>
+    <Transition Name="StartLoopFor_Activity_1" To="ActivityAfterLoop" From="StartLoopFor" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Otherwise" />
+      </Conditions>
+      <Designer X="1020" Y="575" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

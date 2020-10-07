@@ -13,16 +13,17 @@ using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Runtime.Timers;
 using Oracle.ManagedDataAccess.Client;
+using WorkflowSync = OptimaJet.Workflow.Oracle.Models.WorkflowSync;
 
 namespace OptimaJet.Workflow.Oracle
 {
     public class OracleProvider : IWorkflowProvider, IApprovalProvider
     {
         public string ConnectionString { get; set; }
-        public string Schema { get; set; }
+        private string Schema { get; set; }
         private WorkflowRuntime _runtime;
-        private readonly bool WriteToHistory;
-        private readonly bool WriteSubProcessToRoot;
+        private readonly bool _writeToHistory;
+        private readonly bool _writeSubProcessToRoot;
 
         public virtual void Init(WorkflowRuntime runtime)
         {
@@ -34,64 +35,53 @@ namespace OptimaJet.Workflow.Oracle
             DbObject.SchemaName = schema;
             ConnectionString = connectionString;
             Schema = schema;
-            WriteToHistory = writeToHistory;
-            WriteSubProcessToRoot = writeSubProcessToRoot;
+            _writeToHistory = writeToHistory;
+            _writeSubProcessToRoot = writeSubProcessToRoot;
         }
 
         #region IPersistenceProvider
 
-        public void DeleteInactiveTimersByProcessId(Guid processId)
+       public virtual async Task DeleteInactiveTimersByProcessIdAsync(Guid processId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.DeleteInactiveByProcessId(connection, processId);
-                DbObject.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessTimer.DeleteInactiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public Task DeleteTimerAsync(Guid timerId)
+       public virtual async Task DeleteTimerAsync(Guid timerId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.Delete(connection, timerId);
-                DbObject.Commit(connection);
-                return Task.FromResult(true);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessTimer.DeleteAsync(connection, timerId).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public List<Guid> GetRunningProcesses(string runtimeId = null)
+       public virtual async Task<List<Guid>> GetRunningProcessesAsync(string runtimeId = null)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowProcessInstanceStatus.GetProcessesByStatus(connection, ProcessStatus.Running.Id, runtimeId);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await WorkflowProcessInstanceStatus.GetProcessesByStatusAsync(connection, ProcessStatus.Running.Id, runtimeId).ConfigureAwait(false);
         }
 
-        public WorkflowRuntimeModel CreateWorkflowRuntime(string runtimeId, RuntimeStatus status)
+       public virtual async Task<WorkflowRuntimeModel> CreateWorkflowRuntimeAsync(string runtimeId, RuntimeStatus status)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var runtime = new Models.WorkflowRuntime() {RuntimeId = runtimeId, LOCKFLAG = Guid.NewGuid(), Status = status};
+            using var connection = new OracleConnection(ConnectionString);
+            var runtime = new Models.WorkflowRuntime() {RuntimeId = runtimeId, LOCKFLAG = Guid.NewGuid(), Status = status};
 
-                runtime.Insert(connection);
-                DbObject.Commit(connection);
+            await runtime.InsertAsync(connection).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
 
-                return new WorkflowRuntimeModel {Lock = runtime.LOCKFLAG, RuntimeId = runtimeId, Status = status};
-            }
+            return new WorkflowRuntimeModel {Lock = runtime.LOCKFLAG, RuntimeId = runtimeId, Status = status};
         }
 
-        public void DeleteWorkflowRuntime(string name)
+       public virtual async Task DeleteWorkflowRuntimeAsync(string name)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                Models.WorkflowRuntime.Delete(connection, name);
-                DbObject.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await Models.WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public WorkflowRuntimeModel UpdateWorkflowRuntimeStatus(WorkflowRuntimeModel runtime, RuntimeStatus status)
+       public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
-            var res = UpdateWorkflowRuntime(runtime, x => x.Status = status, Models.WorkflowRuntime.UpdateStatus);
+            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.Status = status, Models.WorkflowRuntime.UpdateStatusAsync).ConfigureAwait(false);
 
             if (res.Item1 != 1)
             {
@@ -101,327 +91,357 @@ namespace OptimaJet.Workflow.Oracle
             return res.Item2;
         }
 
-        public (bool Success, WorkflowRuntimeModel UpdatedModel) UpdateWorkflowRuntimeRestorer(WorkflowRuntimeModel runtime, string restorerId)
+       public virtual async Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(WorkflowRuntimeModel runtime, string restorerId)
         {
-            var res = UpdateWorkflowRuntime(runtime, x => x.RestorerId = restorerId, Models.WorkflowRuntime.UpdateRestorer);
+            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.RestorerId = restorerId, Models.WorkflowRuntime.UpdateRestorerAsync).ConfigureAwait(false);
 
             return (res.Item1 == 1, res.Item2);
         }
 
-        public bool MultiServerRuntimesExist()
+       public virtual async Task<bool> MultiServerRuntimesExistAsync()
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return Models.WorkflowRuntime.MultiServerRuntimesExist(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await Models.WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
         }
 
-        public int SingleServerRuntimesCount()
+       public virtual async Task<int> ActiveMultiServerRuntimesCountAsync(string currentRuntimeId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return Models.WorkflowRuntime.SingleServerRuntimesCount(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await Models.WorkflowRuntime.ActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
         }
 
-        public int ActiveMultiServerRuntimesCount(string currentRuntimeId)
+       public virtual async Task InitializeProcessAsync(ProcessInstance processInstance)
         {
-            using (var connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            if (oldProcess != null)
             {
-                return Models.WorkflowRuntime.ActiveMultiServerRuntimesCount(connection, currentRuntimeId);
+                throw new ProcessAlreadyExistsException(processInstance.ProcessId);
             }
+
+            var newProcess = new WorkflowProcessInstance
+            {
+                Id = processInstance.ProcessId,
+                SchemeId = processInstance.SchemeId,
+                ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
+                StateName = processInstance.ProcessScheme.InitialActivity.State,
+                RootProcessId = processInstance.RootProcessId,
+                ParentProcessId = processInstance.ParentProcessId,
+                TenantId = processInstance.TenantId,
+                StartingTransition = processInstance.ProcessScheme.StartingTransition,
+                SubprocessName = processInstance.SubprocessName
+            };
+            await newProcess.InsertAsync(connection).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public void InitializeProcess(ProcessInstance processInstance)
+       public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            await BindProcessToNewSchemeAsync(processInstance, false).ConfigureAwait(false);
+        }
+
+       public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            if (oldProcess == null)
             {
-                var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
-                if (oldProcess != null)
+                throw new ProcessNotFoundException(processInstance.ProcessId);
+            }
+
+            oldProcess.SchemeId = processInstance.SchemeId;
+            oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
+            if (resetIsDeterminingParametersChanged)
+            {
+                oldProcess.IsDeterminingParametersChanged = false;
+            }
+
+            await oldProcess.UpdateAsync(connection).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task FillProcessParametersAsync(ProcessInstance processInstance)
+        {
+            processInstance.AddParameters(await GetProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+        }
+
+       public virtual async Task FillPersistedProcessParametersAsync(ProcessInstance processInstance)
+        {
+            processInstance.AddParameters(await GetPersistedProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+        }
+
+       public virtual async Task FillPersistedProcessParameterAsync(ProcessInstance processInstance, string parameterName)
+        {
+            ParameterDefinitionWithValue persistedProcessParameter = await GetPersistedProcessParameterAsync(processInstance.ProcessId, processInstance.ProcessScheme, parameterName).ConfigureAwait(false);
+            if (persistedProcessParameter == null)
+            {
+                return;
+            }
+            processInstance.AddParameter(persistedProcessParameter);
+        }
+
+       public virtual async Task FillSystemProcessParametersAsync(ProcessInstance processInstance)
+        {
+            processInstance.AddParameters(await GetSystemProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+        }
+
+       public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
+        {
+            var parametersToPersistList = processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
+                                                                           .Select(ptp => ParameterDefinitionWithValueToDynamic(ptp)).ToList();
+
+            using var connection = new OracleConnection(ConnectionString);
+            var persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processInstance.ProcessId).ConfigureAwait(false)).ToList();
+
+            foreach (dynamic parameterDefinitionWithValue in parametersToPersistList)
+            {
+                WorkflowProcessInstancePersistence persistence =
+                    persistedParameters.SingleOrDefault(
+                        pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
+
+                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence).ConfigureAwait(false);
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+       public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
+        {
+            dynamic parameter = ParameterDefinitionWithValueToDynamic(processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstancePersistence persistence = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            await InsertOrUpdateParameterAsync(connection, processInstance, parameter, persistence).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+        private dynamic ParameterDefinitionWithValueToDynamic(ParameterDefinitionWithValue ptp)
+        {
+            string serializedValue = ptp.Type == typeof(UnknownParameterType) ? (string)ptp.Value : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
+            return new { Parameter = ptp, SerializedValue = serializedValue };
+        }
+
+        private async Task InsertOrUpdateParameterAsync(OracleConnection connection, ProcessInstance processInstance, dynamic parameter, WorkflowProcessInstancePersistence persistence)
+        {
+            if (persistence == null)
+            {
+                if (parameter.SerializedValue != null)
                 {
-                    throw new ProcessAlreadyExistsException(processInstance.ProcessId);
-                }
-
-                var newProcess = new WorkflowProcessInstance
-                {
-                    Id = processInstance.ProcessId,
-                    SchemeId = processInstance.SchemeId,
-                    ActivityName = processInstance.ProcessScheme.InitialActivity.Name,
-                    StateName = processInstance.ProcessScheme.InitialActivity.State,
-                    RootProcessId = processInstance.RootProcessId,
-                    ParentProcessId = processInstance.ParentProcessId,
-                    TenantId = processInstance.TenantId,
-                    StartingTransition = processInstance.ProcessScheme.StartingTransition
-                };
-                newProcess.Insert(connection);
-                WorkflowProcessInstance.Commit(connection);
-            }
-        }
-
-        public void BindProcessToNewScheme(ProcessInstance processInstance)
-        {
-            BindProcessToNewScheme(processInstance, false);
-        }
-
-        public void BindProcessToNewScheme(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var oldProcess = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
-                if (oldProcess == null)
-                    throw new ProcessNotFoundException(processInstance.ProcessId);
-
-                oldProcess.SchemeId = processInstance.SchemeId;
-                oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
-                if (resetIsDeterminingParametersChanged)
-                    oldProcess.IsDeterminingParametersChanged = false;
-                oldProcess.Update(connection);
-                WorkflowProcessInstance.Commit(connection);
-            }
-        }
-
-        public void FillProcessParameters(ProcessInstance processInstance)
-        {
-            processInstance.AddParameters(GetProcessParameters(processInstance.ProcessId, processInstance.ProcessScheme));
-        }
-
-        public void FillPersistedProcessParameters(ProcessInstance processInstance)
-        {
-            processInstance.AddParameters(GetPersistedProcessParameters(processInstance.ProcessId, processInstance.ProcessScheme));
-        }
-
-        public void FillSystemProcessParameters(ProcessInstance processInstance)
-        {
-            processInstance.AddParameters(GetSystemProcessParameters(processInstance.ProcessId, processInstance.ProcessScheme));
-        }
-
-        public void SavePersistenceParameters(ProcessInstance processInstance)
-        {
-            var parametersToPersistList =
-                processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                    .Select(ptp =>
+                    persistence = new WorkflowProcessInstancePersistence()
                     {
-                        if (ptp.Type == typeof(UnknownParameterType))
-                            return new {Parameter = ptp, SerializedValue = (string)ptp.Value};
-                        return new {Parameter = ptp, SerializedValue = ParametersSerializer.Serialize(ptp.Value, ptp.Type)};
-                    })
-                    .ToList();
-
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processInstance.ProcessId).ToList();
-
-                foreach (var parameterDefinitionWithValue in parametersToPersistList)
-                {
-                    var persistence =
-                        persistedParameters.SingleOrDefault(
-                            pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
-                    {
-                        if (persistence == null)
-                        {
-                            if (parameterDefinitionWithValue.SerializedValue != null)
-                            {
-                                persistence = new WorkflowProcessInstancePersistence()
-                                {
-                                    Id = Guid.NewGuid(),
-                                    ProcessId = processInstance.ProcessId,
-                                    ParameterName = parameterDefinitionWithValue.Parameter.Name,
-                                    Value = parameterDefinitionWithValue.SerializedValue
-                                };
-                                persistence.Insert(connection);
-                            }
-                        }
-                        else
-                        {
-                            if (parameterDefinitionWithValue.SerializedValue != null)
-                            {
-                                persistence.Value = parameterDefinitionWithValue.SerializedValue;
-                                persistence.Update(connection);
-                            }
-                            else
-                                WorkflowProcessInstancePersistence.Delete(connection, persistence.Id);
-                        }
-                    }
+                        Id = Guid.NewGuid(),
+                        ProcessId = processInstance.ProcessId,
+                        ParameterName = parameter.Parameter.Name,
+                        Value = parameter.SerializedValue
+                    };
+                    await persistence.InsertAsync(connection).ConfigureAwait(false);
                 }
-
-                WorkflowProcessInstancePersistence.Commit(connection);
-            }
-        }
-
-        public void SetProcessStatus(Guid processId, ProcessStatus newStatus)
-        {
-            if (newStatus == ProcessStatus.Running)
-            {
-                SetRunningStatus(processId);
             }
             else
             {
-                SetCustomStatus(processId, newStatus);
-            }
-        }
-
-        public void SetWorkflowIniialized(ProcessInstance processInstance)
-        {
-            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Initialized, true);
-        }
-
-        public void SetWorkflowIdled(ProcessInstance processInstance)
-        {
-            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Idled);
-        }
-
-        public void SetWorkflowRunning(ProcessInstance processInstance)
-        {
-            var processId = processInstance.ProcessId;
-            SetRunningStatus(processId);
-        }
-
-        public void SetWorkflowFinalized(ProcessInstance processInstance)
-        {
-            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Finalized);
-        }
-
-#pragma warning disable 612
-        public void SetWorkflowTerminated(ProcessInstance processInstance)
-#pragma warning restore 612
-        {
-            SetCustomStatus(processInstance.ProcessId, ProcessStatus.Terminated);
-        }
-
-        public void ResetWorkflowRunning()
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessInstanceStatus.MassChangeStatus(connection, ProcessStatus.Running.Id, ProcessStatus.Idled.Id, _runtime.RuntimeDateTimeNow);
-                WorkflowProcessInstanceStatus.Commit(connection);
-            }
-        }
-
-        public void UpdatePersistenceState(ProcessInstance processInstance, TransitionDefinition transition)
-        {
-            var paramIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterIdentityId.Name);
-            var paramImpIdentityId = processInstance.GetParameter(DefaultDefinitions.ParameterImpersonatedIdentityId.Name);
-
-            var identityId = paramIdentityId == null ? string.Empty : (string)paramIdentityId.Value;
-            var impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
-
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessInstance inst = WorkflowProcessInstance.SelectByKey(connection, processInstance.ProcessId);
-
-                if (inst != null)
+                if (parameter.SerializedValue != null)
                 {
-                    if (!string.IsNullOrEmpty(transition.To.State))
-                        inst.StateName = transition.To.State;
-
-                    inst.ActivityName = transition.To.Name;
-                    inst.PreviousActivity = transition.From.Name;
-
-                    if (!string.IsNullOrEmpty(transition.From.State))
-                        inst.PreviousState = transition.From.State;
-
-                    if (transition.Classifier == TransitionClassifier.Direct)
-                    {
-                        inst.PreviousActivityForDirect = transition.From.Name;
-
-                        if (!string.IsNullOrEmpty(transition.From.State))
-                            inst.PreviousStateForDirect = transition.From.State;
-                    }
-                    else if (transition.Classifier == TransitionClassifier.Reverse)
-                    {
-                        inst.PreviousActivityForReverse = transition.From.Name;
-                        if (!string.IsNullOrEmpty(transition.From.State))
-                            inst.PreviousStateForReverse = transition.From.State;
-                    }
-
-                    inst.ParentProcessId = processInstance.ParentProcessId;
-                    inst.RootProcessId = processInstance.RootProcessId;
-
-                    inst.Update(connection);
+                    persistence.Value = parameter.SerializedValue;
+                    await persistence.UpdateAsync(connection).ConfigureAwait(false);
                 }
-
-                if (WriteToHistory)
+                else
                 {
-                    var history = new WorkflowProcessTransitionHistory()
-                    {
-                        ActorIdentityId = impIdentityId,
-                        ExecutorIdentityId = identityId,
-                        Id = Guid.NewGuid(),
-                        IsFinalised = transition.To.IsFinal,
-                        ProcessId = (WriteSubProcessToRoot && processInstance.IsSubprocess) ? processInstance.RootProcessId : processInstance.ProcessId,
-                        FromActivityName = transition.From.Name,
-                        FromStateName = transition.From.State,
-                        ToActivityName = transition.To.Name,
-                        ToStateName = transition.To.State,
-                        TransitionClassifier =
-                            transition.Classifier.ToString(),
-                        TransitionTime = _runtime.RuntimeDateTimeNow,
-                        TriggerName = string.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
-                    };
-                    history.Insert(connection);
+                    await WorkflowProcessInstancePersistence.DeleteAsync(connection, persistence.Id).ConfigureAwait(false);
                 }
-
-                WorkflowProcessTransitionHistory.Commit(connection);
             }
         }
 
-        public bool IsProcessExists(Guid processId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowProcessInstance.SelectByKey(connection, processId) != null;
-            }
-        }
-
-        public ProcessStatus GetInstanceStatus(Guid processId)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var instance = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
-                if (instance == null)
-                    return ProcessStatus.NotFound;
-                var status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status);
-                if (status == null)
-                    return ProcessStatus.Unknown;
-                return status;
-            }
-        }
-
-        private void SetRunningStatus(Guid processId)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
-                if (instanceStatus == null)
-                    throw new StatusNotDefinedException();
-
-                if (instanceStatus.Status == ProcessStatus.Running.Id)
-                    throw new ImpossibleToSetStatusException("Process already running");
-
-                Guid oldLock = instanceStatus.LOCKFLAG;
-
-                instanceStatus.LOCKFLAG = Guid.NewGuid();
-                instanceStatus.Status = ProcessStatus.Running.Id;
-                instanceStatus.RuntimeId = _runtime.Id;
-                instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
-
-                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
-
-                if (cnt != 1)
-                    throw new ImpossibleToSetStatusException();
-
-                DbObject.Commit(connection);
-            }
-        }
-
-        private void SetCustomStatus(Guid processId, ProcessStatus status, bool createIfnotDefined = false)
+       public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
         {
             using var connection = new OracleConnection(ConnectionString);
-            var instanceStatus = WorkflowProcessInstanceStatus.SelectByKey(connection, processId);
+            await WorkflowProcessInstancePersistence.DeleteByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus)
+        {
+            if (newStatus == ProcessStatus.Running)
+            {
+               await SetRunningStatusAsync(processId).ConfigureAwait(false);
+            }
+            else
+            {
+               await SetCustomStatusAsync(processId, newStatus).ConfigureAwait(false);
+            }
+        }
+
+       public virtual async Task SetWorkflowInitializedAsync(ProcessInstance processInstance)
+        {
+            await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Initialized, true).ConfigureAwait(false);
+        }
+
+       public virtual async Task SetWorkflowIdledAsync(ProcessInstance processInstance)
+        {
+            await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Idled).ConfigureAwait(false);
+        }
+
+       public virtual async Task SetWorkflowRunningAsync(ProcessInstance processInstance)
+        {
+            Guid processId = processInstance.ProcessId;
+            await SetRunningStatusAsync(processId).ConfigureAwait(false);
+        }
+
+       public virtual async Task SetWorkflowFinalizedAsync(ProcessInstance processInstance)
+        {
+            await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Finalized).ConfigureAwait(false);
+        }
+
+       public virtual async Task SetWorkflowTerminatedAsync(ProcessInstance processInstance)
+        {
+            await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Terminated).ConfigureAwait(false);
+        }
+
+       public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
+        {
+            ParameterDefinitionWithValue paramIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterIdentityId.Name).ConfigureAwait(false);
+            ParameterDefinitionWithValue paramImpIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterImpersonatedIdentityId.Name).ConfigureAwait(false);
+
+            string identityId = paramIdentityId == null ? String.Empty : (string)paramIdentityId.Value;
+            string impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
+
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstance inst = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+
+            if (inst != null)
+            {
+                if (!String.IsNullOrEmpty(transition.To.State))
+                {
+                    inst.StateName = transition.To.State;
+                }
+
+                inst.ActivityName = transition.To.Name;
+                inst.PreviousActivity = transition.From.Name;
+
+                if (!String.IsNullOrEmpty(transition.From.State))
+                {
+                    inst.PreviousState = transition.From.State;
+                }
+
+                if (transition.Classifier == TransitionClassifier.Direct)
+                {
+                    inst.PreviousActivityForDirect = transition.From.Name;
+
+                    if (!String.IsNullOrEmpty(transition.From.State))
+                    {
+                        inst.PreviousStateForDirect = transition.From.State;
+                    }
+                }
+                else if (transition.Classifier == TransitionClassifier.Reverse)
+                {
+                    inst.PreviousActivityForReverse = transition.From.Name;
+                    if (!String.IsNullOrEmpty(transition.From.State))
+                    {
+                        inst.PreviousStateForReverse = transition.From.State;
+                    }
+                }
+
+                inst.ParentProcessId = processInstance.ParentProcessId;
+                inst.RootProcessId = processInstance.RootProcessId;
+
+                await inst.UpdateAsync(connection).ConfigureAwait(false);
+            }
+
+            if (_writeToHistory)
+            {
+                var history = new WorkflowProcessTransitionHistory()
+                {
+                    ActorIdentityId = impIdentityId,
+                    ExecutorIdentityId = identityId,
+                    Id = Guid.NewGuid(),
+                    IsFinalised = transition.To.IsFinal,
+                    ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
+                    FromActivityName = transition.From.Name,
+                    FromStateName = transition.From.State,
+                    ToActivityName = transition.To.Name,
+                    ToStateName = transition.To.State,
+                    TransitionClassifier =
+                        transition.Classifier.ToString(),
+                    TransitionTime = _runtime.RuntimeDateTimeNow,
+                    TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                };
+                await history.InsertAsync(connection).ConfigureAwait(false);
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task<bool> IsProcessExistsAsync(Guid processId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            return await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false) != null;
+        }
+
+       public virtual async Task<ProcessStatus> GetInstanceStatusAsync(Guid processId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstanceStatus instance = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            if (instance == null)
+            {
+                return ProcessStatus.NotFound;
+            }
+
+            ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status);
+            if (status == null)
+            {
+                return ProcessStatus.Unknown;
+            }
+
+            return status;
+        }
+
+        private async Task SetRunningStatusAsync(Guid processId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
             if (instanceStatus == null)
             {
-                if (!createIfnotDefined)
+                throw new StatusNotDefinedException();
+            }
+
+            if (instanceStatus.Status == ProcessStatus.Running.Id)
+            {
+                throw new ImpossibleToSetStatusException("Process already running");
+            }
+
+            Guid oldLock = instanceStatus.LOCKFLAG;
+
+            instanceStatus.LOCKFLAG = Guid.NewGuid();
+            instanceStatus.Status = ProcessStatus.Running.Id;
+            instanceStatus.RuntimeId = _runtime.Id;
+            instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
+
+            int cnt = await WorkflowProcessInstanceStatus.ChangeStatusAsync(connection, instanceStatus, oldLock).ConfigureAwait(false);
+            
+            if (cnt == 0)
+            {
+                instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+                if (instanceStatus == null)
+                {
                     throw new StatusNotDefinedException();
+                }
+            }
+
+            if (cnt != 1)
+            {
+                throw new ImpossibleToSetStatusException();
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+        private async Task SetCustomStatusAsync(Guid processId, ProcessStatus status, bool createIfNotDefined = false)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            if (instanceStatus == null)
+            {
+                if (!createIfNotDefined)
+                {
+                    throw new StatusNotDefinedException();
+                }
 
                 instanceStatus = new WorkflowProcessInstanceStatus()
                 {
@@ -431,7 +451,8 @@ namespace OptimaJet.Workflow.Oracle
                     RuntimeId = _runtime.Id,
                     SetTime = _runtime.RuntimeDateTimeNow
                 };
-                instanceStatus.Insert(connection);
+                
+                await instanceStatus.InsertAsync(connection).ConfigureAwait(false);
             }
             else
             {
@@ -442,27 +463,37 @@ namespace OptimaJet.Workflow.Oracle
                 instanceStatus.RuntimeId = _runtime.Id;
                 instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
-                var cnt = WorkflowProcessInstanceStatus.ChangeStatus(connection, instanceStatus, oldLock);
+                int cnt = await WorkflowProcessInstanceStatus.ChangeStatusAsync(connection, instanceStatus, oldLock).ConfigureAwait(false);
+                
+                if (cnt == 0)
+                {
+                    instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+                    if (instanceStatus == null)
+                    {
+                        throw new StatusNotDefinedException();
+                    }
+                }
 
                 if (cnt != 1)
+                {
                     throw new ImpossibleToSetStatusException();
+                }
             }
 
-            DbObject.Commit(connection);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        private IEnumerable<ParameterDefinitionWithValue> GetProcessParameters(Guid processId, ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
         {
             var parameters = new List<ParameterDefinitionWithValue>(processDefinition.Parameters.Count);
-            parameters.AddRange(GetPersistedProcessParameters(processId, processDefinition));
-            parameters.AddRange(GetSystemProcessParameters(processId, processDefinition));
+            parameters.AddRange(await GetPersistedProcessParametersAsync(processId, processDefinition).ConfigureAwait(false));
+            parameters.AddRange(await GetSystemProcessParametersAsync(processId, processDefinition).ConfigureAwait(false));
             return parameters;
         }
 
-        private IEnumerable<ParameterDefinitionWithValue> GetSystemProcessParameters(Guid processId,
-            ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
         {
-            var processInstance = GetProcessInstance(processId);
+            WorkflowProcessInstance processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
 
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
@@ -513,374 +544,324 @@ namespace OptimaJet.Workflow.Oracle
                     processInstance.RootProcessId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterTenantId.Name),
-                    processInstance.TenantId)
+                    processInstance.TenantId),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSubprocessName.Name),
+                    processInstance.SubprocessName)
             };
             return parameters;
         }
 
-        private IEnumerable<ParameterDefinitionWithValue> GetPersistedProcessParameters(Guid processId, ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetPersistedProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
             var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count);
 
             List<WorkflowProcessInstancePersistence> persistedParameters;
 
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
-                persistedParameters = WorkflowProcessInstancePersistence.SelectByProcessId(connection, processId).ToList();
+                persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false)).ToList();
             }
 
-            foreach (var persistedParameter in persistedParameters)
+            foreach (WorkflowProcessInstancePersistence persistedParameter in persistedParameters)
             {
-                var parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
-                if (parameterDefinition == null)
-                {
-                    parameterDefinition =
-                        ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
-                    parameters.Add(ParameterDefinition.Create(parameterDefinition, persistedParameter.Value));
-                }
-                else
-                {
-                    parameters.Add(ParameterDefinition.Create(parameterDefinition,
-                        ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type)));
-                }
+                parameters.Add(WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter));
             }
 
             return parameters;
         }
 
-
-        private WorkflowProcessInstance GetProcessInstance(Guid processId)
+        private async Task<ParameterDefinitionWithValue> GetPersistedProcessParameterAsync(Guid processId, ProcessDefinition processDefinition, string parameterName)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            var persistenceParameters = processDefinition.PersistenceParameters.ToList();
+            WorkflowProcessInstancePersistence persistedParameter;
+            using (var connection = new OracleConnection(ConnectionString))
             {
-                var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
-                if (processInstance == null)
-                    throw new ProcessNotFoundException(processId);
-                return processInstance;
+                persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processId, parameterName).ConfigureAwait(false);
+            }
+
+            if (persistedParameter == null)
+            {
+                return null;
+            }
+
+            return WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter);
+        }
+
+        private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(List<ParameterDefinition> persistenceParameters, WorkflowProcessInstancePersistence persistedParameter)
+        {
+            ParameterDefinition parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+            if (parameterDefinition == null)
+            {
+                parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                return ParameterDefinition.Create(parameterDefinition, persistedParameter.Value);
+            }
+
+            return ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
+        }
+
+
+        private async Task<WorkflowProcessInstance> GetProcessInstanceAsync(Guid processId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            if (processInstance == null)
+            {
+                throw new ProcessNotFoundException(processId);
+            }
+
+            return processInstance;
+        }
+
+       public virtual async Task DeleteProcessAsync(Guid[] processIds)
+        {
+            foreach (Guid processId in processIds)
+            {
+                await DeleteProcessAsync(processId).ConfigureAwait(false);
             }
         }
 
-        public void DeleteProcess(Guid[] processIds)
+       public virtual async Task DeleteProcessAsync(Guid processId)
         {
-            foreach (var processId in processIds)
-                DeleteProcess(processId);
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessInstance.DeleteAsync(connection, processId).ConfigureAwait(false);
+            await WorkflowProcessInstanceStatus.DeleteAsync(connection, processId).ConfigureAwait(false) ;
+            await WorkflowProcessInstancePersistence.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await WorkflowProcessTransitionHistory.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await WorkflowProcessTimer.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public void DeleteProcess(Guid processId)
+       public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessTimer timer = await WorkflowProcessTimer.SelectByProcessIdAndNameAsync(connection, processId, name).ConfigureAwait(false);
+            if (timer == null)
             {
-                WorkflowProcessInstance.Delete(connection, processId);
-                WorkflowProcessInstanceStatus.Delete(connection, processId);
-                WorkflowProcessInstancePersistence.DeleteByProcessId(connection, processId);
-                WorkflowProcessTransitionHistory.DeleteByProcessId(connection, processId);
-                WorkflowProcessTimer.DeleteByProcessId(connection, processId);
-
-                WorkflowProcessInstance.Commit(connection);
-            }
-        }
-
-        public void RegisterTimer(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var timer = WorkflowProcessTimer.SelectByProcessIdAndName(connection, processId, name);
-                if (timer == null)
+                timer = new WorkflowProcessTimer
                 {
-                    timer = new WorkflowProcessTimer
-                    {
-                        Id = Guid.NewGuid(),
-                        Name = name,
-                        NextExecutionDateTime = nextExecutionDateTime,
-                        ProcessId = processId,
-                        RootProcessId = rootProcessId,
-                        Ignore = false
-                    };
+                    Id = Guid.NewGuid(),
+                    Name = name,
+                    NextExecutionDateTime = nextExecutionDateTime,
+                    ProcessId = processId,
+                    RootProcessId = rootProcessId,
+                    Ignore = false
+                };
 
-                    timer.Insert(connection);
-                }
-                else if (!notOverrideIfExists)
+                await timer.InsertAsync(connection).ConfigureAwait(false);
+            }
+            else if (!notOverrideIfExists)
+            {
+                timer.NextExecutionDateTime = nextExecutionDateTime;
+                await timer.UpdateAsync(connection).ConfigureAwait(false);
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task ClearTimersAsync(Guid processId, List<string> timersIgnoreList)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessTimer.DeleteByProcessIdAsync(connection, processId, timersIgnoreList).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task<int> SetTimerIgnoreAsync(Guid timerId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            int result = await WorkflowProcessTimer.SetTimerIgnoreAsync(connection, timerId).ConfigureAwait(false);
+            if (result > 0)
+            {
+                await DbObject.CommitAsync(connection).ConfigureAwait(false);
+            }
+
+            return result;
+        }
+
+       public virtual async Task<List<Core.Model.WorkflowTimer>> GetTopTimersToExecuteAsync(int top)
+        {
+            DateTime now = _runtime.RuntimeDateTimeNow;
+
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessTimer[] timers = await WorkflowProcessTimer.GetTopTimersToExecuteAsync(connection, top, now).ConfigureAwait(false);
+
+            if (timers.Length == 0)
+            {
+                return new List<Core.Model.WorkflowTimer>();
+            }
+
+            return timers.Select(t => new Core.Model.WorkflowTimer()
+            {
+                Name = t.Name,
+                ProcessId = t.ProcessId,
+                TimerId = t.Id,
+                NextExecutionDateTime = t.NextExecutionDateTime,
+                RootProcessId = t.RootProcessId
+            }).ToList();
+        }
+
+       public virtual async Task SaveGlobalParameterAsync<T>(string type, string name, T value)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+
+            if (parameter == null)
+            {
+                parameter = new WorkflowGlobalParameter() {Id = Guid.NewGuid(), Type = type, Name = name, Value = JsonConvert.SerializeObject(value)};
+
+                await parameter.InsertAsync(connection).ConfigureAwait(false);
+            }
+            else
+            {
+                parameter.Value = JsonConvert.SerializeObject(value);
+
+                await parameter.UpdateAsync(connection).ConfigureAwait(false);
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task<T> LoadGlobalParameterAsync<T>(string type, string name)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+
+            if (parameter == null)
+            {
+                return default;
+            }
+
+            return JsonConvert.DeserializeObject<T>(parameter.Value);
+        }
+
+       public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowGlobalParameter[] parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+
+            return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+        }
+
+       public virtual async Task DeleteGlobalParametersAsync(string type, string name = null)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowGlobalParameter.DeleteByTypeAndNameAsync(connection, type, name).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            return (await WorkflowProcessTransitionHistory.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false))
+                .Select(hi => new ProcessHistoryItem
                 {
-                    timer.NextExecutionDateTime = nextExecutionDateTime;
-                    timer.Update(connection);
-                }
-
-                WorkflowProcessTimer.Commit(connection);
-            }
+                    ActorIdentityId = hi.ActorIdentityId,
+                    ExecutorIdentityId = hi.ExecutorIdentityId,
+                    FromActivityName = hi.FromActivityName,
+                    FromStateName = hi.FromStateName,
+                    IsFinalised = hi.IsFinalised,
+                    ProcessId = hi.ProcessId,
+                    ToActivityName = hi.ToActivityName,
+                    ToStateName = hi.ToStateName,
+                    TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
+                    TransitionTime = hi.TransitionTime,
+                    TriggerName = hi.TriggerName
+                })
+                .ToList();
         }
 
-        public void ClearTimers(Guid processId, List<string> timersIgnoreList)
+       public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.DeleteByProcessId(connection, processId, timersIgnoreList);
-                WorkflowProcessTimer.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
-        public void ClearTimerIgnore(Guid timerId)
+       public virtual async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.ClearTimerIgnore(connection, timerId);
-                WorkflowProcessTimer.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
         }
 
-        public int SetTimerIgnore(Guid timerId)
+       public virtual async Task<List<ProcessTimer>> GetActiveTimersForProcessAsync(Guid processId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                int result = WorkflowProcessTimer.SetTimerIgnore(connection, timerId);
-                if (result > 0)
-                {
-                    WorkflowProcessTimer.Commit(connection);
-                }
-
-                return result;
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectActiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
-        public void ClearTimer(Guid timerId)
+       public virtual async Task<WorkflowRuntimeModel> GetWorkflowRuntimeModelAsync(string runtimeId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessTimer.Delete(connection, timerId);
-                WorkflowProcessTimer.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await Models.WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
         }
 
-        public DateTime? GetCloseExecutionDateTime()
+       public virtual async Task<int> SendRuntimeLastAliveSignalAsync()
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var timer = WorkflowProcessTimer.GetCloseExecutionTimer(connection);
-                return timer != null ? timer.NextExecutionDateTime : (DateTime?)null;
-            }
-        }
-
-        public List<TimerToExecute> GetTimersToExecute()
-        {
-            var now = _runtime.RuntimeDateTimeNow;
-
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var timers = WorkflowProcessTimer.GetTimersToExecute(connection, now);
-                WorkflowProcessTimer.SetIgnore(connection, timers);
-                WorkflowProcessTimer.Commit(connection);
-
-                return timers.Select(t => new TimerToExecute() {Name = t.Name, ProcessId = t.ProcessId, TimerId = t.Id}).ToList();
-            }
-        }
-
-        public List<Core.Model.WorkflowTimer> GetTopTimersToExecute(int top)
-        {
-            var now = _runtime.RuntimeDateTimeNow;
-
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var timers = WorkflowProcessTimer.GetTopTimersToExecute(connection, top, now);
-
-                if (timers.Length == 0)
-                {
-                    return new List<Core.Model.WorkflowTimer>();
-                }
-
-                return timers.Select(t => new Core.Model.WorkflowTimer()
-                {
-                    Name = t.Name,
-                    ProcessId = t.ProcessId,
-                    TimerId = t.Id,
-                    NextExecutionDateTime = t.NextExecutionDateTime,
-                    RootProcessId = t.RootProcessId
-                }).ToList();
-            }
-        }
-
-        public void SaveGlobalParameter<T>(string type, string name, T value)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
-
-                if (parameter == null)
-                {
-                    parameter = new WorkflowGlobalParameter() {Id = Guid.NewGuid(), Type = type, Name = name, Value = JsonConvert.SerializeObject(value)};
-
-                    parameter.Insert(connection);
-                }
-                else
-                {
-                    parameter.Value = JsonConvert.SerializeObject(value);
-
-                    parameter.Update(connection);
-                }
-
-                WorkflowProcessInstance.Commit(connection);
-            }
-        }
-
-        public T LoadGlobalParameter<T>(string type, string name)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var parameter = WorkflowGlobalParameter.SelectByTypeAndName(connection, type, name).FirstOrDefault();
-
-                if (parameter == null)
-                    return default(T);
-
-                return JsonConvert.DeserializeObject<T>(parameter.Value);
-            }
-
-        }
-
-        public List<T> LoadGlobalParameters<T>(string type)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var parameters = WorkflowGlobalParameter.SelectByTypeAndName(connection, type);
-
-                return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
-            }
-        }
-
-        public void DeleteGlobalParameters(string type, string name = null)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowGlobalParameter.DeleteByTypeAndName(connection, type, name);
-                WorkflowProcessInstance.Commit(connection);
-            }
-        }
-
-        public List<ProcessHistoryItem> GetProcessHistory(Guid processId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowProcessTransitionHistory.SelectByProcessId(connection, processId)
-                    .Select(hi => new ProcessHistoryItem
-                    {
-                        ActorIdentityId = hi.ActorIdentityId,
-                        ExecutorIdentityId = hi.ExecutorIdentityId,
-                        FromActivityName = hi.FromActivityName,
-                        FromStateName = hi.FromStateName,
-                        IsFinalised = hi.IsFinalised,
-                        ProcessId = hi.ProcessId,
-                        ToActivityName = hi.ToActivityName,
-                        ToStateName = hi.ToStateName,
-                        TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
-                        TransitionTime = hi.TransitionTime,
-                        TriggerName = hi.TriggerName
-                    })
-                    .ToList();
-            }
-        }
-
-        public IEnumerable<ProcessTimer> GetTimersForProcess(Guid processId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var timers = WorkflowProcessTimer.SelectByProcessId(connection, processId);
-                return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
-            }
-        }
-
-        public async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
-            }
-        }
-
-        public IEnumerable<ProcessTimer> GetActiveTimersForProcess(Guid processId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var timers = WorkflowProcessTimer.SelectActiveByProcessId(connection, processId);
-                return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime));
-            }
-        }
-
-        public WorkflowRuntimeModel GetWorkflowRuntimeModel(string runtimeId)
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return Models.WorkflowRuntime.GetWorkflowRuntimeStatus(connection, runtimeId);
-            }
-        }
-
-        public int SendRuntimeLastAliveSignal()
-        {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                var result = Models.WorkflowRuntime.SendRuntimeLastAliveSignal(connection, _runtime.Id, _runtime.RuntimeDateTimeNow);
-                DbObject.Commit(connection);
-                return result;
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            int result = await Models.WorkflowRuntime.SendRuntimeLastAliveSignalAsync(connection, _runtime.Id, _runtime.RuntimeDateTimeNow).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+            return result;
         }
 
 
-        public DateTime? GetNextTimerDate(TimerCategory timerCategory, int timerInterval)
+       public virtual async Task<DateTime?> GetNextTimerDateAsync(TimerCategory timerCategory, int timerInterval)
         {
-            using (var connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            string timerCategoryName = timerCategory.ToString();
+            WorkflowSync syncLock = await WorkflowSync.GetByNameAsync(connection, timerCategoryName).ConfigureAwait(false);
+
+            if (syncLock == null)
             {
-                var timerCategoryName = timerCategory.ToString();
-                var syncLock = Models.WorkflowSync.GetByName(connection, timerCategoryName);
-
-                if (syncLock == null)
-                {
-                    throw new Exception($"Sync lock {timerCategoryName} not found");
-                }
-
-                string nextTimeColumnName = null;
-
-                switch (timerCategory)
-                {
-                    case TimerCategory.Timer:
-                        nextTimeColumnName = "NextTimerTime";
-                        break;
-                    case TimerCategory.ServiceTimer:
-                        nextTimeColumnName = "NextServiceTimerTime";
-                        break;
-                    default:
-                        throw new Exception($"Unknown sync lock name: {timerCategoryName}");
-                }
-
-                DateTime? max = Models.WorkflowRuntime.GetMaxNextTime(connection, _runtime.Id, nextTimeColumnName);
-
-                DateTime result = _runtime.RuntimeDateTimeNow;
-
-                if (max > result)
-                {
-                    result = max.Value;
-                }
-
-                result += TimeSpan.FromMilliseconds(timerInterval);
-
-                var newLock = Guid.NewGuid();
-
-                Models.WorkflowRuntime.UpdateNextTime(connection, _runtime.Id, nextTimeColumnName, result);
-                var rowCount = Models.WorkflowSync.UpdateLock(connection, timerCategoryName, syncLock.LOCKFLAG, newLock);
-
-                if (rowCount == 0)
-                {
-                    return null;
-                }
-
-                DbObject.Commit(connection);
-
-                return result;
+                throw new Exception($"Sync lock {timerCategoryName} not found");
             }
+
+            string nextTimeColumnName;
+
+            switch (timerCategory)
+            {
+                case TimerCategory.Timer:
+                    nextTimeColumnName = "NextTimerTime";
+                    break;
+                case TimerCategory.ServiceTimer:
+                    nextTimeColumnName = "NextServiceTimerTime";
+                    break;
+                default:
+                    throw new Exception($"Unknown sync lock name: {timerCategoryName}");
+            }
+
+            DateTime? max = await Models.WorkflowRuntime.GetMaxNextTimeAsync(connection, _runtime.Id, nextTimeColumnName).ConfigureAwait(false);
+
+            DateTime result = _runtime.RuntimeDateTimeNow;
+
+            if (max > result)
+            {
+                result = max.Value;
+            }
+
+            result += TimeSpan.FromMilliseconds(timerInterval);
+
+            var newLock = Guid.NewGuid();
+
+            await Models.WorkflowRuntime.UpdateNextTimeAsync(connection, _runtime.Id, nextTimeColumnName, result).ConfigureAwait(false);
+            int rowCount = await WorkflowSync.UpdateLockAsync(connection, timerCategoryName, syncLock.LOCKFLAG, newLock).ConfigureAwait(false);
+
+            if (rowCount == 0)
+            {
+                return null;
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+
+            return result;
         }
 
-        public List<WorkflowRuntimeModel> GetWorkflowRuntimes()
+       public virtual async Task<List<WorkflowRuntimeModel>> GetWorkflowRuntimesAsync()
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return Models.WorkflowRuntime.SelectAll(connection).Select(GetModel).ToList();
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return (await Models.WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
         }
 
         private WorkflowRuntimeModel GetModel(Models.WorkflowRuntime result)
@@ -905,59 +886,63 @@ namespace OptimaJet.Workflow.Oracle
 
         #region ISchemePersistenceProvider
 
-        public SchemeDefinition<XElement> GetProcessSchemeByProcessId(Guid processId)
+       public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeByProcessIdAsync(Guid processId)
         {
-            using (var connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            if (processInstance == null)
             {
-                var processInstance = WorkflowProcessInstance.SelectByKey(connection, processId);
-                if (processInstance == null)
-                    throw new ProcessNotFoundException(processId);
-
-                if (!processInstance.SchemeId.HasValue)
-                    throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
-
-                var schemeDefinition = GetProcessSchemeBySchemeId(processInstance.SchemeId.Value);
-                schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
-                return schemeDefinition;
+                throw new ProcessNotFoundException(processId);
             }
+
+            if (!processInstance.SchemeId.HasValue)
+            {
+                throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
+            }
+
+            SchemeDefinition<XElement> schemeDefinition = await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
+            schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
+            return schemeDefinition;
         }
 
-        public SchemeDefinition<XElement> GetProcessSchemeBySchemeId(Guid schemeId)
+       public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeBySchemeIdAsync(Guid schemeId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessScheme processScheme = await WorkflowProcessScheme.SelectByKeyAsync(connection, schemeId).ConfigureAwait(false);
+
+            if (processScheme == null || String.IsNullOrEmpty(processScheme.Scheme))
             {
-                WorkflowProcessScheme processScheme = WorkflowProcessScheme.SelectByKey(connection, schemeId);
-
-                if (processScheme == null || string.IsNullOrEmpty(processScheme.Scheme))
-                    throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
-
-                return ConvertToSchemeDefinition(processScheme);
+                throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
             }
+
+            return ConvertToSchemeDefinition(processScheme);
         }
 
-        public SchemeDefinition<XElement> GetProcessSchemeWithParameters(string schemeCode, string definingParameters,
+       public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
             IEnumerable<WorkflowProcessScheme> processSchemes;
-            var hash = HashHelper.GenerateStringHash(definingParameters);
+            string hash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using (var connection = new OracleConnection(ConnectionString))
             {
                 processSchemes =
-                    WorkflowProcessScheme.Select(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
-                        rootSchemeId);
+                    await WorkflowProcessScheme.SelectAsync(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
+                        rootSchemeId).ConfigureAwait(false);
             }
 
             if (!processSchemes.Any())
+            {
                 throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
+            }
 
             if (processSchemes.Count() == 1)
             {
-                var scheme = processSchemes.First();
+                WorkflowProcessScheme scheme = processSchemes.First();
                 return ConvertToSchemeDefinition(scheme);
             }
 
-            foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
+            foreach (WorkflowProcessScheme processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
                 return ConvertToSchemeDefinition(processScheme);
             }
@@ -965,204 +950,186 @@ namespace OptimaJet.Workflow.Oracle
             throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
-        public void SetSchemeIsObsolete(string schemeCode, IDictionary<string, object> parameters)
+       public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
         {
-            var definingParameters = DefiningParametersSerializer.Serialize(parameters);
-            var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
+            string definingParameters = DefiningParametersSerializer.Serialize(parameters);
+            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessScheme.SetObsolete(connection, schemeCode, definingParametersHash);
-                WorkflowProcessScheme.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, definingParametersHash).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public void SetSchemeIsObsolete(string schemeCode)
+       public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowProcessScheme.SetObsolete(connection, schemeCode);
-                WorkflowProcessScheme.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public SchemeDefinition<XElement> SaveScheme(SchemeDefinition<XElement> scheme)
+       public virtual async Task<SchemeDefinition<XElement>> SaveSchemeAsync(SchemeDefinition<XElement> scheme)
         {
-            var definingParameters = scheme.DefiningParameters;
-            var definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
+            string definingParameters = scheme.DefiningParameters;
+            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowProcessScheme[] oldSchemes = await WorkflowProcessScheme.SelectAsync(connection, scheme.SchemeCode, definingParametersHash, scheme.IsObsolete, scheme.RootSchemeId).ConfigureAwait(false);
+
+            if (oldSchemes.Any())
             {
-                var oldSchemes = WorkflowProcessScheme.Select(connection, scheme.SchemeCode, definingParametersHash,
-                    scheme.IsObsolete, scheme.RootSchemeId);
-
-                if (oldSchemes.Any())
+                WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                if (existing != null)
                 {
-                    WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
-                    if (existing != null)
-                    {
-                        return ConvertToSchemeDefinition(existing);
-                    }
+                    return ConvertToSchemeDefinition(existing);
                 }
+            }
 
-                var newProcessScheme = new WorkflowProcessScheme
+            var newProcessScheme = new WorkflowProcessScheme
+            {
+                Id = scheme.Id,
+                DefiningParameters = definingParameters,
+                DefiningParametersHash = definingParametersHash,
+                Scheme = scheme.Scheme.ToString(),
+                SchemeCode = scheme.SchemeCode,
+                RootSchemeCode = scheme.RootSchemeCode,
+                RootSchemeId = scheme.RootSchemeId,
+                AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
+                StartingTransition = scheme.StartingTransition,
+                IsObsolete = scheme.IsObsolete
+            };
+
+            await newProcessScheme.InsertAsync(connection).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+
+            return ConvertToSchemeDefinition(newProcessScheme);
+        }
+
+        public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowScheme wfScheme = await WorkflowScheme.SelectByKeyAsync(connection, schemaCode).ConfigureAwait(false);
+            if (wfScheme == null)
+            {
+                wfScheme = new WorkflowScheme
                 {
-                    Id = scheme.Id,
-                    DefiningParameters = definingParameters,
-                    DefiningParametersHash = definingParametersHash,
-                    Scheme = scheme.Scheme.ToString(),
-                    SchemeCode = scheme.SchemeCode,
-                    RootSchemeCode = scheme.RootSchemeCode,
-                    RootSchemeId = scheme.RootSchemeId,
-                    AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
-                    StartingTransition = scheme.StartingTransition,
-                    IsObsolete = scheme.IsObsolete
+                    Code = schemaCode,
+                    Scheme = scheme,
+                    CanBeInlined = canBeInlined,
+                    InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null,
+                    Tags = TagHelper.ToTagStringForDatabase(tags)
                 };
-
-                newProcessScheme.Insert(connection);
-                WorkflowProcessScheme.Commit(connection);
-
-                return ConvertToSchemeDefinition(newProcessScheme);
+               await wfScheme.InsertAsync(connection).ConfigureAwait(false);
             }
-        }
-
-        public virtual void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            else
             {
-                WorkflowScheme wfScheme = WorkflowScheme.SelectByKey(connection, schemaCode);
-                if (wfScheme == null)
-                {
-                    wfScheme = new WorkflowScheme
-                    {
-                        Code = schemaCode,
-                        Scheme = scheme,
-                        CanBeInlined = canBeInlined,
-                        InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null,
-                        Tags = TagHelper.ToTagStringForDatabase(tags)
-                    };
-                    wfScheme.Insert(connection);
-                }
-                else
-                {
-                    wfScheme.Scheme = scheme;
-                    wfScheme.CanBeInlined = canBeInlined;
-                    wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
-                    wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
-                    wfScheme.Update(connection);
-                }
-
-                WorkflowScheme.Commit(connection);
+                wfScheme.Scheme = scheme;
+                wfScheme.CanBeInlined = canBeInlined;
+                wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
+                wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
+                await wfScheme.UpdateAsync(connection).ConfigureAwait(false);
             }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public virtual XElement GetScheme(string code)
+        public virtual async Task<XElement> GetSchemeAsync(string code)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowScheme scheme = await WorkflowScheme.SelectByKeyAsync(connection, code).ConfigureAwait(false);
+            if (scheme == null || String.IsNullOrEmpty(scheme.Scheme))
             {
-                var scheme = WorkflowScheme.SelectByKey(connection, code);
-                if (scheme == null || string.IsNullOrEmpty(scheme.Scheme))
-                    throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
-
-                return XElement.Parse(scheme.Scheme);
+                throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowScheme);
             }
+
+            return XElement.Parse(scheme.Scheme);
         }
 
-        public virtual List<string> GetInlinedSchemeCodes()
+        public virtual async Task<List<string>> GetInlinedSchemeCodesAsync()
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowScheme.GetInlinedSchemeCodes(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await WorkflowScheme.GetInlinedSchemeCodesAsync(connection).ConfigureAwait(false);
         }
 
-        public virtual List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        public virtual async Task<List<string>> GetRelatedByInliningSchemeCodesAsync(string schemeCode)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowScheme.GetRelatedSchemeCodes(connection, schemeCode);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await WorkflowScheme.GetRelatedSchemeCodesAsync(connection, schemeCode).ConfigureAwait(false);
         }
 
-        public List<string> SearchSchemesByTags(params string[] tags)
+       public virtual async Task<List<string>> SearchSchemesByTagsAsync(params string[] tags)
         {
-            return SearchSchemesByTags(tags?.AsEnumerable());
+            return await SearchSchemesByTagsAsync(tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
-        public virtual List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        public virtual async Task<List<string>> SearchSchemesByTagsAsync(IEnumerable<string> tags)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                return WorkflowScheme.GetSchemeCodesByTags(connection, tags);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            return await WorkflowScheme.GetSchemeCodesByTagsAsync(connection, tags).ConfigureAwait(false);
         }
 
-        public void AddSchemeTags(string schemeCode, params string[] tags)
+       public virtual async Task AddSchemeTagsAsync(string schemeCode, params string[] tags)
         {
-            AddSchemeTags(schemeCode, tags?.AsEnumerable());
+            await AddSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
-        public virtual void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual async Task AddSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowScheme.AddSchemeTags(connection, schemeCode, tags, _runtime.Builder);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowScheme.AddSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
-        public void RemoveSchemeTags(string schemeCode, params string[] tags)
+       public virtual async Task RemoveSchemeTagsAsync(string schemeCode, params string[] tags)
         {
-            RemoveSchemeTags(schemeCode, tags?.AsEnumerable());
+            await RemoveSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
-        public virtual void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual async Task RemoveSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowScheme.RemoveSchemeTags(connection, schemeCode, tags, _runtime.Builder);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowScheme.RemoveSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
-        public void SetSchemeTags(string schemeCode, params string[] tags)
+       public virtual async Task SetSchemeTagsAsync(string schemeCode, params string[] tags)
         {
-            SetSchemeTags(schemeCode, tags?.AsEnumerable());
+            await SetSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
-        public virtual void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public virtual async Task SetSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using (var connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowScheme.SetSchemeTags(connection, schemeCode, tags, _runtime.Builder);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowScheme.SetSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
         #endregion
 
         #region IWorkflowGenerator
 
-        public XElement Generate(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
+       public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
             if (parameters.Count > 0)
+            {
                 throw new InvalidOperationException("Parameters not supported");
+            }
 
-            return GetScheme(schemeCode);
+            return await GetSchemeAsync(schemeCode).ConfigureAwait(false);
         }
 
         #endregion
 
         #region Bulk methods
 
-        public bool IsBulkOperationsSupported
-        {
-            get { return false; }
-        }
+        public bool IsBulkOperationsSupported => false;
 
-        public async Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
+#pragma warning disable 1998
+       public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
+#pragma warning restore 1998
         {
             throw new NotImplementedException();
         }
 
-        public async Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
+#pragma warning disable 1998
+       public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
+#pragma warning restore 1998
         {
             throw new NotImplementedException();
         }
@@ -1179,119 +1146,107 @@ namespace OptimaJet.Workflow.Oracle
                 workflowProcessScheme.DefiningParameters);
         }
 
-        private Tuple<int, WorkflowRuntimeModel> UpdateWorkflowRuntime(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
-            Func<OracleConnection, WorkflowRuntimeModel, Guid, int> updateMethod)
+        private async Task<Tuple<int, WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
+            Func<OracleConnection, WorkflowRuntimeModel, Guid, Task<int>> updateMethod)
         {
-            using (var connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            Guid oldLock = runtime.Lock;
+            setter(runtime);
+            runtime.Lock = Guid.NewGuid();
+
+            int cnt = await updateMethod(connection, runtime, oldLock).ConfigureAwait(false);
+
+            if (cnt != 1)
             {
-                Guid oldLock = runtime.Lock;
-                setter(runtime);
-                runtime.Lock = Guid.NewGuid();
-
-                int cnt = updateMethod(connection, runtime, oldLock);
-
-                if (cnt != 1)
-                {
-                    return new Tuple<int, WorkflowRuntimeModel>(cnt, null);
-                }
-
-                DbObject.Commit(connection);
-
-                return new Tuple<int, WorkflowRuntimeModel>(cnt, runtime);
+                return new Tuple<int, WorkflowRuntimeModel>(cnt, null);
             }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+
+            return new Tuple<int, WorkflowRuntimeModel>(cnt, runtime);
         }
 
         #region IApprovalProvider
 
-        public async Task DropWorkflowInboxAsync(Guid processId)
+       public virtual async Task DropWorkflowInboxAsync(Guid processId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                WorkflowInbox.DeleteByProcessId(connection, processId);
-                WorkflowInbox.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            await WorkflowInbox.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public async Task InsertInboxAsync(Guid processId, List<string> newActors)
+       public virtual async Task InsertInboxAsync(Guid processId, List<string> newActors)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                var inboxItems = newActors.Select(newactor => new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newactor, ProcessId = processId }).ToArray();
-                WorkflowInbox.InsertAll(connection, inboxItems);
-                WorkflowInbox.Commit(connection);
-            }
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowInbox[] inboxItems = newActors.Select(newActor => new WorkflowInbox { Id = Guid.NewGuid(), IdentityId = newActor, ProcessId = processId }).ToArray();
+            await WorkflowInbox.InsertAllAsync(connection, inboxItems).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
+       public virtual async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            var historyItem = new WorkflowApprovalHistory
             {
-                var historyItem = new WorkflowApprovalHistory
+                Id = Guid.NewGuid(),
+                AllowedTo = allowedToEmployeeNames,
+                DestinationState = nextState,
+                ProcessId = id,
+                InitialState = currentState,
+                TriggerName = triggerName,
+                Sort = order
+            };
+
+            await historyItem.InsertAsync(connection).ConfigureAwait(false);
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
+        }
+
+       public virtual async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+        {
+            using var connection = new OracleConnection(ConnectionString);
+            WorkflowApprovalHistory historyItem = (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, id).ConfigureAwait(false)).FirstOrDefault(h =>
+                h.ProcessId == id && !h.TransitionTime.HasValue &&
+                h.InitialState == currentState && h.DestinationState == nextState);
+
+            if (historyItem == null)
+            {
+                historyItem = new WorkflowApprovalHistory
                 {
                     Id = Guid.NewGuid(),
-                    AllowedTo = allowedToEmployeeNames,
+                    AllowedTo = String.Empty,
                     DestinationState = nextState,
                     ProcessId = id,
                     InitialState = currentState,
+                    Sort = order,
                     TriggerName = triggerName,
-                    Sort = order
+                    Commentary = comment,
+                    TransitionTime =_runtime.RuntimeDateTimeNow,
+                    IdentityId = identityId
                 };
 
-                historyItem.Insert(connection);
-                WorkflowApprovalHistory.Commit(connection);
+                await historyItem.InsertAsync(connection).ConfigureAwait(false);
+
             }
+            else
+            {
+                historyItem.TriggerName = triggerName;
+                historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
+                historyItem.IdentityId = identityId;
+                historyItem.Commentary = comment;
+                await historyItem.UpdateAsync(connection).ConfigureAwait(false);
+            }
+
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
-        public async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+       public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
         {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
+            using var connection = new OracleConnection(ConnectionString);
+            foreach (WorkflowApprovalHistory record in (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false)).Where(x => !x.TransitionTime.HasValue).ToList())
             {
-                var historyItem = WorkflowApprovalHistory.SelectByProcessId(connection, id).FirstOrDefault(h =>
-                    h.ProcessId == id && !h.TransitionTime.HasValue &&
-                    h.InitialState == currentState && h.DestinationState == nextState);
-
-                if (historyItem == null)
-                {
-                    historyItem = new WorkflowApprovalHistory
-                    {
-                        Id = Guid.NewGuid(),
-                        AllowedTo = string.Empty,
-                        DestinationState = nextState,
-                        ProcessId = id,
-                        InitialState = currentState,
-                        Sort = order,
-                        TriggerName = triggerName,
-                        Commentary = comment,
-                        TransitionTime =_runtime.RuntimeDateTimeNow,
-                        IdentityId = identityId
-                    };
-
-                    historyItem.Insert(connection);
-
-                }
-                else
-                {
-                    historyItem.TriggerName = triggerName;
-                    historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
-                    historyItem.IdentityId = identityId;
-                    historyItem.Commentary = comment;
-                    historyItem.Update(connection);
-                }
-
-                WorkflowApprovalHistory.Commit(connection);
+                await WorkflowApprovalHistory.DeleteAsync(connection, record.Id).ConfigureAwait(false);
             }
-        }
-
-        public async Task DropEmptyApprovalHistoryAsync(Guid processId)
-        {
-            using (OracleConnection connection = new OracleConnection(ConnectionString))
-            {
-                foreach (var record in WorkflowApprovalHistory.SelectByProcessId(connection, processId).Where(x => !x.TransitionTime.HasValue).ToList())
-                {
-                    WorkflowApprovalHistory.Delete(connection, record.Id);
-                }
-                WorkflowApprovalHistory.Commit(connection);
-            }
+            await DbObject.CommitAsync(connection).ConfigureAwait(false);
         }
 
         #endregion IApprovalProvider

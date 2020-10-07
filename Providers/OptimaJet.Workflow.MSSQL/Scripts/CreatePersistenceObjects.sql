@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL and Azure SQL
-Version: 4.2
+Version: 5.0
 File: CreatePersistenceObjects.sql
 
 */
@@ -57,6 +57,7 @@ BEGIN
 		,[IsDeterminingParametersChanged] BIT DEFAULT 0 NOT NULL
         ,[TenantId] NVARCHAR(1024)
 		,[StartingTransition] NVARCHAR(max)
+		,[SubprocessName] NVARCHAR(max)
 		)
 
 	CREATE INDEX IX_RootProcessId ON WorkflowProcessInstance (RootProcessId)

@@ -1,12 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <RootNamespace>OptimaJet.Workflow.Redis</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.Redis</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <FileVersion>4.2.0.0</FileVersion>
- <Version>4.2.0</Version>
+    <AssemblyVersion>5.0.0.0</AssemblyVersion>
+    <FileVersion>5.0.0.0</FileVersion>
+    <Version>5.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>
@@ -50,5 +50,4 @@ Create WorkflowRuntime section.</Description>
   <ItemGroup>
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
   </ItemGroup>
- 
 </Project>

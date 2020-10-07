@@ -6,6 +6,7 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
+#pragma warning disable 1998
 
 namespace OptimaJet.Workflow.PostgreSQL
 {
@@ -21,42 +22,42 @@ namespace OptimaJet.Workflow.PostgreSQL
             _storePath = storePath;
         }
 
-        public override void AddSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public override async Task AddSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             _schemeFilePersistence.AddSchemeTags(schemeCode, tags);
         }
 
-        public override List<string> GetInlinedSchemeCodes()
+        public override async Task<List<string>> GetInlinedSchemeCodesAsync()
         {
             return _schemeFilePersistence.GetInlinedSchemeCodes();
         }
 
-        public override List<string> GetRelatedByInliningSchemeCodes(string schemeCode)
+        public override async Task<List<string>> GetRelatedByInliningSchemeCodesAsync(string schemeCode)
         {
             return _schemeFilePersistence.GetRelatedByInliningSchemeCodes(schemeCode);
         }
 
-        public override XElement GetScheme(string code)
+        public override async Task<XElement> GetSchemeAsync(string code)
         {
             return _schemeFilePersistence.GetScheme(code);
         }
 
-        public override void RemoveSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public override async Task RemoveSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             _schemeFilePersistence.RemoveSchemeTags(schemeCode, tags);
         }
 
-        public override void SaveScheme(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
+        public override async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             _schemeFilePersistence.SaveScheme(schemaCode, canBeInlined, inlinedSchemes, scheme, tags);
         }
 
-        public override List<string> SearchSchemesByTags(IEnumerable<string> tags)
+        public override async Task<List<string>> SearchSchemesByTagsAsync(IEnumerable<string> tags)
         {
             return _schemeFilePersistence.SearchSchemesByTags(tags);
         }
 
-        public override void SetSchemeTags(string schemeCode, IEnumerable<string> tags)
+        public override async Task SetSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             _schemeFilePersistence.SetSchemeTags(schemeCode, tags);
         }

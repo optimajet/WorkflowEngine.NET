@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 
@@ -110,13 +115,13 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static WorkflowProcessScheme[] Select(SqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
+        public static async Task<WorkflowProcessScheme[]> SelectAsync(SqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [SchemeCode] = @schemecode AND [DefiningParametersHash] = @dphash", ObjectName);
+            string selectText = string.Format("SELECT * FROM {0} WHERE [SchemeCode] = @schemecode AND [DefiningParametersHash] = @dphash", ObjectName);
 
-            var pSchemecode = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
+            var pSchemeCode = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
-            var pDphash = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
+            var pHash = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
 
             if (isObsolete.HasValue)
             {
@@ -138,33 +143,30 @@ namespace OptimaJet.Workflow.DbPersistence
                     Value = rootSchemeId.Value
                 };
 
-                return Select(connection, selectText, pSchemecode, pDphash, pRootSchemeId);
+                return await SelectAsync(connection, selectText, pSchemeCode, pHash, pRootSchemeId).ConfigureAwait(false);
             }
 
             selectText += " AND [RootSchemeId] IS NULL";
-            return Select(connection, selectText, pSchemecode, pDphash);
+            return await SelectAsync(connection, selectText, pSchemeCode, pHash).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(SqlConnection connection, string schemeCode)
+        public static async Task<int> SetObsoleteAsync(SqlConnection connection, string schemeCode)
         {
-            var command = string.Format("UPDATE {0} SET [IsObsolete] = 1 WHERE [SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode", ObjectName);
+            string command = $"UPDATE {ObjectName} SET [IsObsolete] = 1 WHERE [SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode";
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
-            return ExecuteCommand(connection, command, p);
+            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(SqlConnection connection, string schemeCode, string definingParametersHash)
+        public static async Task<int> SetObsoleteAsync(SqlConnection connection, string schemeCode, string definingParametersHash)
         {
-            var command =
-                string.Format(
-                    "UPDATE {0} SET [IsObsolete] = 1 WHERE ([SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode) AND [DefiningParametersHash] = @dphash",
-                    ObjectName);
+            string command = $"UPDATE {ObjectName} SET [IsObsolete] = 1 WHERE ([SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode) AND [DefiningParametersHash] = @dphash";
 
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
             var p2 = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
 
-            return ExecuteCommand(connection, command, p, p2);
+            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

@@ -1,0 +1,37 @@
+<Process Name="DirectTransitionsWithApproval" CanBeInlined="false" Tags="">
+  <Designer />
+  <Commands>
+    <Command Name="Approve" />
+  </Commands>
+  <Activities>
+    <Activity Name="Created" State="Created" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Created" OriginalSchemeCode="DirectTransitionsWithApproval">
+      <Designer X="960" Y="300" Hidden="false" />
+    </Activity>
+    <Activity Name="PendingApproval" State="PendingApproval" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="PendingApproval" OriginalSchemeCode="DirectTransitionsWithApproval">
+      <Designer X="1260" Y="300" Hidden="false" />
+    </Activity>
+    <Activity Name="Approved" State="Approved" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Approved" OriginalSchemeCode="DirectTransitionsWithApproval">
+      <Designer X="1580" Y="300" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_1_1" To="PendingApproval" From="Created" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1203.5" Y="332.5" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_1_Activity_2_1" To="Approved" From="PendingApproval" Classifier="Direct" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Command" NameRef="Approve" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1514" Y="330" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

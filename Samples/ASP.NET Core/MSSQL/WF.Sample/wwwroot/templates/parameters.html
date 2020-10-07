@@ -1,0 +1,234 @@
+<h3>{{ labels.Title }}  |  
+    <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+</h3>
+<div id="WorkflowDesignerParametersList" class="WorkflowDesignerWindowForm">
+    
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
+        <el-switch v-model="showSystem" :active-text="labels.ShowSystemParameters"></el-switch>
+    </div>
+    <table class="WorkflowDesignerTable">
+        <th>
+            <td v-if="isIE"></td>
+            <td><b>{{labels.Name}}</b></td>
+            <td><b>{{labels.Type}}</b></td>
+            <td><b>{{labels.Purpose}}</b></td>
+            <td><b>{{labels.InitialValue}}</b></td>
+        </th>
+        <tr v-for="(item, index) in items" v-if="showSystem || item.Purpose != 'System'"
+            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
+            @dragover="dragover(item, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+            <td>
+                <el-input
+                    v-model="item.Name" 
+                    :title="validateField('Name', item)" 
+                    :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+                    :readonly="readonly || item.Purpose == 'System'"
+                ></el-input>
+            </td>
+            <td>
+                <el-autocomplete resize="horizontal"
+                    v-model="item.Type" 
+                    :readonly="readonly || item.Purpose == 'System'" 
+                    :fetch-suggestions="querySearch" 
+                    :title="validateField('Type', item)" 
+                    :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
+                    style="width: 100%;">
+                </el-autocomplete>                
+            </td>
+            <td>
+                <el-select 
+                    v-model="item.Purpose" 
+                    style="width: 100%;" 
+                    :disabled="readonly || item.Purpose == 'System'"
+                    filterable clearable 
+                    placeholder="" 
+                    :title="validateField('Purpose', item)" 
+                    :class="validateField('Purpose', item) ? 'WorkflowDesignerInputError' : ''">
+                        <el-option key="Temporary" label="Temporary" value="Temporary"></el-option>
+                        <el-option key="Persistence" label="Persistence" value="Persistence"></el-option>
+                        <el-option v-if="item.Purpose == 'System'" key="System" label="System" value="System"></el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-input
+                    v-if="item.Purpose == 'Persistence'"
+                    v-model="item.InitialValue" 
+                    :title="validateField('InitialValue', item)" 
+                    :class="validateField('InitialValue', item) ? 'WorkflowDesignerInputError' : ''"
+                    :readonly="readonly"
+                ></el-input>
+            </td>
+
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button v-if="item.Purpose == 'Persistence'" @click="showjson('InitialValue', item)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"></el-button>
+                    <el-button v-if="item.Purpose != 'System'" @click="remove(index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function parameters_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.ParameterFormLabel,
+            editItem: undefined,     
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            showSystem: false
+        });
+
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+        me.VueConfig.methods.querySearch = function(queryString, cb) {
+            if(me.VueConfig.data.readonly)
+                return cb([]);
+                
+            var types = me.graph.getTypeNames();
+            var res = [];
+
+            var query = queryString ? queryString.toLowerCase() : queryString;
+            types.forEach(function(item){
+                if(!query || !item || item.toLowerCase().indexOf(query) >= 0){
+                    res.push({"value": item});
+                }
+            });
+
+            cb(res);
+        };
+
+        me.VueConfig.methods.onUpdate = function(){
+            me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.Parameters);
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.add = function(){
+            me.VueConfig.data.items.push({Name:"", Type:"", Purpose:"", InitialValue:""});
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerParametersList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },10);
+        };
+
+        me.VueConfig.methods.remove = function(index){
+            me.VueConfig.data.items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.showjson = function(name, item) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function(value){
+                if(me.editItem){
+                    me.editItem[name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function(value){
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var params = {
+
+            };
+            me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name' && name != 'Type' && name != "Purpose")
+                return;
+
+            if(!item[name]){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if(name == "Name"){
+                var res = me.VueConfig.data.items.filter(function(i){ return i != item && i.Name == item.Name });
+                if(res.length > 0){
+                    return WorkflowDesignerConstants.FieldMustBeUnique;
+                }
+            }
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+            me.VueConfig.data.jsonform && me.VueConfig.data.jsonform.destroy();
+        }
+
+        me.VueConfig.methods.validate = function(){
+            var validateFunc = me.VueConfig.methods.validateField;
+            var items = me.VueConfig.data.items;
+            for(var i=0; i < items.length; i++){
+                var item = items[i];
+                if(validateFunc('Name', item) || validateFunc('Rule', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(me.VueConfig.methods.validate && me.VueConfig.methods.validate()){
+                me.graph.UpdateData(me.graph.data.Parameters, me.VueConfig.data.items);
+                me.onClose(true);
+            }
+        };
+        
+        me.VueConfig.methods.onClose = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+           
+            if(me.VueConfig.data.readonly){
+                me.onClose(true);
+                return;
+            }
+
+            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
+                me.graph.data.Parameters, 
+                me.VueConfig.data.items, 
+                ["Name", "Type", "Purpose", "InitialValue"])) {
+                
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+            else{
+                me.onClose(true);
+            }
+        };
+    };
+</script>

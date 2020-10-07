@@ -24,7 +24,7 @@ namespace Designer
 
             var pars = new NameValueCollection
             {
-                context.Request.Params
+                context.Request.QueryString
             };
 
             if (context.Request.HttpMethod.Equals("POST", StringComparison.InvariantCultureIgnoreCase))
@@ -34,7 +34,7 @@ namespace Designer
                 {
                     if (!parsKeys.Contains(key))
                     {
-                        pars.Add(key, context.Request.Form[key]);
+                        pars.Add(key, context.Request.Unvalidated[key]);
                     }
                 }
             }
@@ -46,14 +46,12 @@ namespace Designer
             if (pars["operation"].ToLower() == "downloadscheme" && !hasError)
             {
                 context.Response.ContentType = "file/xml";
-                context.Response.AddHeader("Content-Disposition", "attachment; filename=schema.xml");
                 context.Response.BinaryWrite(Encoding.UTF8.GetBytes(res));
                 context.Response.End();
             }
             else if (pars["operation"].ToLower() == "downloadschemebpmn" && !hasError)
             {
                 context.Response.ContentType = "file/xml";
-                context.Response.AddHeader("Content-Disposition", "attachment; filename=schema.bpmn");
                 context.Response.BinaryWrite(Encoding.UTF8.GetBytes(res));
                 context.Response.End();
             }

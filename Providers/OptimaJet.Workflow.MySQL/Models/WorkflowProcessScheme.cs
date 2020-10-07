@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -112,13 +113,13 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static WorkflowProcessScheme[] Select(MySqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId )
+        public static async Task<WorkflowProcessScheme[]> SelectAsync(MySqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId )
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE `SchemeCode` = @schemecode AND `DefiningParametersHash` = @dphash", DbTableName);
+            string selectText = $"SELECT * FROM {DbTableName} WHERE `SchemeCode` = @schemecode AND `DefiningParametersHash` = @dphash";
 
-            var pSchemecode = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
+            var pSchemeCode = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
 
-            var pDphash = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
+            var pHash = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
             if (isObsolete.HasValue)
             {
@@ -137,34 +138,31 @@ namespace OptimaJet.Workflow.MySQL
                 selectText += " AND `ROOTSCHEMEID` = @drootschemeid";
                 var pRootSchemeId = new MySqlParameter("drootschemeid", MySqlDbType.Binary) {Value = rootSchemeId.Value.ToByteArray()};
 
-                return Select(connection, selectText, pSchemecode, pDphash, pRootSchemeId);
+                return await SelectAsync(connection, selectText, pSchemeCode, pHash, pRootSchemeId).ConfigureAwait(false);
             }
-            else
-            {
-                selectText += " AND `ROOTSCHEMEID` IS NULL";
-                return Select(connection, selectText, pSchemecode, pDphash);
-            }
+
+            selectText += " AND `ROOTSCHEMEID` IS NULL";
+            return await SelectAsync(connection, selectText, pSchemeCode, pHash).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(MySqlConnection connection, string schemeCode)
+        public static async Task<int> SetObsoleteAsync(MySqlConnection connection, string schemeCode)
         {
-            var command = string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE `SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode", DbTableName);
+            string command = $"UPDATE {DbTableName} SET `IsObsolete` = 1 WHERE `SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode";
             var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
 
-            return ExecuteCommand(connection, command, p);
+            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(MySqlConnection connection, string schemeCode, string definingParametersHash)
+        public static async Task<int> SetObsoleteAsync(MySqlConnection connection, string schemeCode, string definingParametersHash)
         {
-            var command =
-                string.Format("UPDATE {0} SET `IsObsolete` = 1 WHERE (`SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode) AND `DefiningParametersHash` = @dphash",
-                    DbTableName);
+            string command =
+                $"UPDATE {DbTableName} SET `IsObsolete` = 1 WHERE (`SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode) AND `DefiningParametersHash` = @dphash";
 
             var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
 
             var p2 = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
-            return ExecuteCommand(connection, command, p, p2);
+            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

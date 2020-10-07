@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -77,9 +78,9 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static List<Guid> GetProcessesByStatus(NpgsqlConnection connection, byte status, string runtimeId = null)
+        public static async Task<List<Guid>> GetProcessesByStatusAsync(NpgsqlConnection connection, byte status, string runtimeId = null)
         {
-            string command = String.Format("SELECT \"Id\" FROM {0} WHERE \"Status\" = @status", ObjectName);
+            string command = $"SELECT \"Id\" FROM {ObjectName} WHERE \"Status\" = @status";
 
             var p = new List<NpgsqlParameter>();
 
@@ -90,24 +91,13 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
 
             p.Add(new NpgsqlParameter("status", NpgsqlDbType.Smallint) { Value = status });
-            return Select(connection, command, p.ToArray()).Select(s => s.Id).ToList();
+            return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static int MassChangeStatus(NpgsqlConnection connection, byte stateFrom, byte stateTo, DateTime time)
+        public static async Task<int> ChangeStatusAsync(NpgsqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            string command = string.Format("UPDATE {0} SET \"Status\" = @stateto, \"SetTime\" = @settime WHERE \"Status\" = @statefrom", ObjectName);
-            var p1 = new NpgsqlParameter("statefrom", NpgsqlDbType.Smallint) {Value = stateFrom};
-            var p2 = new NpgsqlParameter("stateto", NpgsqlDbType.Smallint) {Value = stateTo};
-            var p3 = new NpgsqlParameter("settime", NpgsqlDbType.Timestamp) { Value = time };
-
-            return ExecuteCommand(connection, command, p1, p2, p3);
-        }
-
-        public static int ChangeStatus(NpgsqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
-        {
-            string command = string.Format(
-                "UPDATE {0} SET \"Status\" = @newstatus, \"Lock\" = @newlock, \"SetTime\" = @settime, \"RuntimeId\" = @runtimeid " + 
-                "WHERE \"Id\" = @id AND \"Lock\" = @oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET \"Status\" = @newstatus, \"Lock\" = @newlock, \"SetTime\" = @settime, \"RuntimeId\" = @runtimeid " +
+                             "WHERE \"Id\" = @id AND \"Lock\" = @oldlock";
             var p1 = new NpgsqlParameter("newstatus", NpgsqlDbType.Smallint) { Value = status.Status };
             var p2 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = status.Lock };
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Uuid) { Value = status.Id };
@@ -115,7 +105,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             var p5 = new NpgsqlParameter("settime", NpgsqlDbType.Timestamp) { Value = status.SetTime };
             var p6 = new NpgsqlParameter("runtimeid", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4, p5, p6);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
     }
 }

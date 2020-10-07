@@ -1,4 +1,5 @@
 using System;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -114,13 +115,13 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static WorkflowApprovalHistory[] SelectByProcessId(MySqlConnection connection, Guid processId)
+        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE `ProcessId` = @processId", DbTableName);
+            string selectText = $"SELECT * FROM {DbTableName} WHERE `ProcessId` = @processId";
 
             var processIdParameter = new MySqlParameter("processId", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
-            return Select(connection, selectText, processIdParameter);
+            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
         }
     }
 }

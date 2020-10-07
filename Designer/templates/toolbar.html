@@ -1,0 +1,343 @@
+<div class="WorkflowDesignerToolbarMultiBlock">
+    <div v-if="!settings.hideElementsToolbar && !settings.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
+        <el-tooltip :content="labels.Undo">
+            <el-button :disabled="undoDisabled" :class="getButtonClass()" @click="undo()">
+                <div class="WorkflowDesignerToolbarIcon Undo"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.Redo">            
+            <el-button :disabled="redoDisabled" :class="getButtonClass()" @click="redo()">
+                <div class="WorkflowDesignerToolbarIcon Redo"></div>
+            </el-button>
+        </el-tooltip>
+        
+        <span class="WorkflowDesignerToolbarDivider"></span>
+        <el-tooltip :content="labels.Elements">
+            <el-button :class="getButtonClass(elements)" @click="showElements()">
+                <div class="WorkflowDesignerToolbarIcon Elements"></div>
+            </el-button>
+        </el-tooltip>
+
+        <el-tooltip :content="labels.CreateActivity">
+            <el-button :class="getButtonClass()" @click="createActivity()">
+                <div class="WorkflowDesignerToolbarIcon CreateActivity"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.CreateInline">
+            <el-button :class="getButtonClass()" @click="createInline()">
+                <div class="WorkflowDesignerToolbarIcon CreateInline"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.CopySelected">
+            <el-button :disabled="!selected" :class="getButtonClass()" @click="copySelected()">
+                <div class="WorkflowDesignerToolbarIcon CopySelected"></div>
+            </el-button>            
+        </el-tooltip>
+        <el-tooltip :content="labels.Delete">
+            <el-button :disabled="!selected" :class="getButtonClass()" @click="deleteSelected()">
+                <div class="WorkflowDesignerToolbarIcon Delete"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div v-if="!settings.hideElementsToolbar && !settings.notshowwindows" class="WorkflowDesignerToolbarBlock Horizontal">
+        <el-tooltip :content="labels.Actors">
+            <el-button :class="getButtonClass(actors)" @click="showActors()">
+                <div class="WorkflowDesignerToolbarIcon Actors"></div>
+            </el-button>
+        </el-tooltip>
+        
+        <el-tooltip :content="labels.Commands">
+            <el-button :class="getButtonClass(commands)" @click="showCommands()">
+                <div class="WorkflowDesignerToolbarIcon Commands"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.Timers">
+            <el-button :class="getButtonClass(timers)" @click="showTimers()">
+                <div class="WorkflowDesignerToolbarIcon Timers"></div>
+            </el-button>            
+        </el-tooltip>
+        <el-tooltip v-if="settings.disableCodeActions !== true" :content="labels.CodeActions">
+            <el-button   :class="getButtonClass(codeactions)" @click="showCodeActions()">
+                <div class="WorkflowDesignerToolbarIcon CodeActions"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.Parameters ">
+            <el-button   :class="getButtonClass(parameters)" @click="showParameters()">
+                <div class="WorkflowDesignerToolbarIcon Parameters"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip :content="labels.Localization ">
+            <el-button :class="getButtonClass(localization)" @click="showLocalization()">
+                <div class="WorkflowDesignerToolbarIcon Localization"></div>
+            </el-button>
+        </el-tooltip>
+
+        <el-tooltip :content="labels.ProcessInfo">
+            <el-button :class="getButtonClass(processinfo)" @click="showProcessInfo()">
+                <div class="WorkflowDesignerToolbarIcon ProcessInfo"></div>
+            </el-button>            
+        </el-tooltip>
+
+        <el-tooltip v-if="!settings.readonly" :content="labels.Inline">
+            <el-button :class="getButtonClass()" @click="inlinePress()">
+                <div :class="'WorkflowDesignerToolbarIcon ' + (canBeInlined ? 'Inline' : 'NotInline')"></div>
+            </el-button>
+        </el-tooltip>       
+    </div>
+
+    <div v-if="!settings.hideElementsToolbar" class="WorkflowDesignerToolbarBlock Horizontal">
+        <el-tooltip v-if="settings.apiurl" :content="labels.Refresh">
+            <el-button :class="getButtonClass()" @click="refresh()">
+                <div class="WorkflowDesignerToolbarIcon Refresh"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip v-if="!settings.disableobjectmovements" :content="labels.AutoArrangement">
+            <el-button :class="getButtonClass()"  @click="autoArrangement()">
+                <div class="WorkflowDesignerToolbarIcon AutoArrangement"></div>
+            </el-button>        
+        </el-tooltip>
+
+        <span class="WorkflowDesignerToolbarDivider"></span>
+
+        <el-tooltip v-if="!settings.disableobjectmovements" :content="labels.Info">
+            <el-button :class="getButtonClass(exinfo)" @click="showExInfo()">
+                <div class="WorkflowDesignerToolbarIcon Info"></div>
+            </el-button>
+        </el-tooltip>
+
+        <el-tooltip v-if="!settings.hideLegend" :content="labels.Legend">
+            <el-button :class="getButtonClass(legend)" @click="showLegend()">
+                <div class="WorkflowDesignerToolbarIcon Legend"></div>
+            </el-button>
+        </el-tooltip>
+        <el-tooltip v-if="!settings.readonly" :content="labels.Library">
+            <el-button  :class="getButtonClass(library)" @click="showLibrary()">
+                <div class="WorkflowDesignerToolbarIcon Library"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+</div>
+<script>
+    function toolbar_Init(me){
+        var data = me.VueConfig.data;
+        data.labels = WorkflowDesignerConstants.ToolbarLabel;
+        data.legend = false;
+  
+        me.VueConfig.methods.onUpdate = function(){
+            data.settings = me.graph.Settings;
+            data.undoDisabled = me.graph.graphDataIndex <= 0;
+            data.redoDisabled = me.graph.graphData && me.graph.graphData.length <= (me.graph.graphDataIndex + 1);
+            data.selected = me.graph.selected;
+            data.canBeInlined = me.graph.data.CanBeInlined;
+            data.exinfo = me.graph.getParam("exinfo");
+
+            var windowsNames = [
+                {name: "legend", show: me.VueConfig.methods.showLegend, editmode: true},
+                {name: "library", show: me.VueConfig.methods.showLibrary, editmode: true},
+                {name: "elements", show: me.VueConfig.methods.showElements, editmode: true},
+                {name: "actors", show: me.VueConfig.methods.showActors, editmode: false},
+                {name: "timers", show: me.VueConfig.methods.showTimers, editmode: false},
+                {name: "commands", show: me.VueConfig.methods.showCommands, editmode: false},
+                {name: "parameters", show: me.VueConfig.methods.showParameters, editmode: false},
+                {name: "codeactions", show: me.VueConfig.methods.showCodeActions, editmode: false},
+                {name: "localization", show: me.VueConfig.methods.showLocalization, editmode: false},
+                {name: "processinfo", show: me.VueConfig.methods.showProcessInfo, editmode: false}];
+
+            var restoreWindowState = function (obj){
+                if(obj.editmode && data.settings.readonly)
+                        return;
+
+                data[obj.name] = me.graph.getParam(obj.name);
+                if(data[obj.name] && me[obj.name] == undefined){
+                    obj.show();
+                }
+            }
+
+            if(!data.settings.hideElementsToolbar){
+                windowsNames.forEach(function(w){
+                    restoreWindowState(w);
+                });            
+            }
+        };
+
+        
+        me.VueConfig.methods.getButtonClass= function(isActive){
+            var res = "WorkflowDesignerToolbarIconContainer"
+            if(isActive){
+                res += " " + "WorkflowDesignerToolbarButtonActive";
+            }
+            return res;
+        };
+
+        me.VueConfig.methods.undo = function(){
+            me.graph.Undo();
+        };
+
+        me.VueConfig.methods.redo = function(){
+            me.graph.Redo();
+        };
+
+        me.VueConfig.methods.createActivity = function(){
+            me.graph.CreateActivity();
+        };
+        
+        me.VueConfig.methods.createInline = function(){
+            me.graph.CreateInline();
+        };
+
+        me.VueConfig.methods.copySelected = function(){
+            me.graph.CopySelected();
+        };
+
+        me.VueConfig.methods.deleteSelected = function(){
+            me.graph.DeleteSelected();
+        };
+
+        me.VueConfig.methods.showActors = function(){
+            me.VueConfig.methods.showPropertyWindow("actors", "WorkflowDesignerActors");
+        };
+
+        me.VueConfig.methods.showTimers = function(){
+            me.VueConfig.methods.showPropertyWindow("timers", "WorkflowDesignerTimers");
+        };
+
+        me.VueConfig.methods.showCommands = function(){
+            me.VueConfig.methods.showPropertyWindow("commands", "WorkflowDesignerCommands");
+        };
+
+        me.VueConfig.methods.showCodeActions = function(){
+            me.VueConfig.methods.showPropertyWindow("codeactions", "WorkflowDesignerCodeActions");
+        };
+
+        me.VueConfig.methods.showParameters = function(){
+            me.VueConfig.methods.showPropertyWindow("parameters", "WorkflowDesignerParameters");
+        };
+
+        me.VueConfig.methods.showLocalization = function(){
+            me.VueConfig.methods.showPropertyWindow("localization", "WorkflowDesignerLocalization");
+        };
+
+        me.VueConfig.methods.showProcessInfo = function(){
+            me.VueConfig.methods.showPropertyWindow("processinfo", "WorkflowDesignerProcessInfo");
+        };
+
+        me.VueConfig.methods.showPropertyWindow = function(name, className){
+            if(!me[name]){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true,     
+                    class: className,
+                    onClose: function(){
+                        me.graph.setParam(name, false);
+                        me.VueConfig.data[name] = false;
+                    }
+                };
+                me[name] = me.graph.CreateWindow(name, options);
+            }
+
+            if(me[name].isOpen)
+                me[name].onClose();
+            else{
+                me[name].show(name);
+                me.graph.setParam(name, true);
+                me.VueConfig.data[name] = true;
+            }
+        };
+
+        me.VueConfig.methods.inlinePress = function(){
+            if(me.graph.data.CanBeInlined)
+                me.graph.setInlinedFlag(false);
+            else
+                me.graph.setInlinedFlag(true);
+        };  
+        
+        me.VueConfig.methods.refresh = function(){
+            me.graph.Refresh();
+        };
+
+        me.VueConfig.methods.autoArrangement = function(){
+            me.graph.AutoArrangement();
+        };
+
+        me.VueConfig.methods.showExInfo = function(){
+            var value = me.graph.getParam("exinfo");
+            value = !value;
+            me.graph.setParam("exinfo", value);
+            me.graph.Draw();
+        }
+
+        me.VueConfig.methods.showLegend = function(){
+            if(!me.legend){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true,     
+                    class: "WorkflowDesignerLegend",
+                    onClose: function(){
+                        me.graph.setParam("legend", false);
+                        me.VueConfig.data.legend = false;
+                    }
+                };
+                me.legend = me.graph.CreateWindow("legend", options);
+            }
+
+            if(me.legend.isOpen)
+                me.legend.onClose();
+            else{
+                me.legend.show("legend");
+                me.graph.setParam("legend", true);
+                me.VueConfig.data.legend = true;
+            }
+        };
+
+        me.VueConfig.methods.showElements = function(){
+            if(!me.elements){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true,     
+                    class: "WorkflowDesignerElements",
+                    onClose: function(){
+                        me.graph.setParam("elements", false);
+                        me.VueConfig.data.elements = false;
+                    }
+                };
+                me.elements = me.graph.CreateWindow("elements", options);
+            }
+
+            if(me.elements.isOpen)
+                me.elements.onClose();
+            else{
+                me.elements.show("elements");
+                me.graph.setParam("elements", true);
+                me.VueConfig.data.elements = true;
+            }
+        };
+
+        me.VueConfig.methods.showLibrary = function(){
+            if(!me.library){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true,     
+                    class: "WorkflowDesignerLibrary",
+                    onClose: function(){
+                        me.graph.setParam("library", false);
+                        me.VueConfig.data.library = false;
+                    }
+                };
+                me.library = me.graph.CreateWindow("library", options);
+            }
+
+            if(me.library.isOpen)
+                me.library.onClose();
+            else{
+                me.library.show("library");
+                me.graph.setParam("library", true);
+                me.VueConfig.data.library = true;
+            }
+        };
+    };
+</script>

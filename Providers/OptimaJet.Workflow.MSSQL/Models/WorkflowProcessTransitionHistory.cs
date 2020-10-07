@@ -1,6 +1,11 @@
 ﻿using System;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 
@@ -124,21 +129,20 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
+        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
             var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, pProcessId);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static WorkflowProcessTransitionHistory[] SelectByProcessId(SqlConnection connection, Guid processId)
+        public static async Task<WorkflowProcessTransitionHistory[]> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE [ProcessId] = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid";
 
             var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

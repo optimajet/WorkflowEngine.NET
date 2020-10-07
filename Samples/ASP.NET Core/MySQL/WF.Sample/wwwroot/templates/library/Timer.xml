@@ -1,0 +1,25 @@
+<Process Name="Timer" CanBeInlined="false" Tags="">
+  <Designer />
+  <Timers>
+    <Timer Name="Minute" Type="Time" Value="1m" NotOverrideIfExists="false" />
+  </Timers>
+  <Activities>
+    <Activity Name="BeforeTimer" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="BeforeTimer" OriginalSchemeCode="Timer">
+      <Designer X="1020" Y="300" Hidden="false" />
+    </Activity>
+    <Activity Name="AfterTimer" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="AfterTimer" OriginalSchemeCode="Timer">
+      <Designer X="1340" Y="300" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_1_Activity_2_1" To="AfterTimer" From="BeforeTimer" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Timer" NameRef="Minute" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1275" Y="329.5" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

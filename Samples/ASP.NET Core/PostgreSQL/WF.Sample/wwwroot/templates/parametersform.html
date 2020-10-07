@@ -1,0 +1,297 @@
+<h3>{{name}} {{ labels.EditParameters }}  |  
+    <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+</h3>
+<div id="WorkflowDesignerCodeActionsParametersList" class="WorkflowDesignerWindowForm">
+    <table class="WorkflowDesignerTable">
+        <th>
+            <td v-if="isIE"></td>
+            <td><b>{{labels.Name}}</b></td>
+            <td><b>{{labels.TitleField}}</b></td>
+            <td><b>{{labels.Type}}</b></td>
+            <td><b>{{labels.IsRequired}}</b></td>
+            <td><b>{{labels.DefaultValue}}</b></td>
+            <td><b>{{labels.Values}}</b></td>
+        </th>
+        <tr v-for="(item, index) in items"
+            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
+            @dragover="dragover(item, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+            <td>
+                <el-input
+                    v-model="item.Name" 
+                    :title="items.length > 1? validateField('Name', item):''"
+                    :class="validateField('Name', item) && items.length > 1? 'WorkflowDesignerInputError' : ''"
+                    :readonly="readonly"
+                ></el-input>
+            </td>
+            <td>
+                <el-input v-model="item.Title" :readonly="readonly"></el-input>
+            </td>
+            <td>
+                <el-select 
+                    v-model="item.Type" 
+                    style="width: 100%;" 
+                    :disabled="readonly"
+                    filterable 
+                    placeholder="" 
+                    @change="typeOnChange(item)"
+                    :title="validateField('Type', item)" 
+                    :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''">
+                    <el-option :key="labels.Text" :labels.Text="labels.Text" value="Text"></el-option>
+                    <el-option :key="labels.TextArea" :labels.Text="labels.TextArea" value="TextArea"></el-option>
+                    <el-option :key="labels.Number" :labels.Text="labels.Number" value="Number"></el-option>
+                    <el-option :key="labels.Checkbox" :labels.Text="labels.Checkbox" value="Checkbox"></el-option>
+                    <el-option :key="labels.Dropdown" :labels.Text="labels.Dropdown" value="Dropdown"></el-option>
+                    <el-option :key="labels.MultiSelect" :labels.Text="labels.MultiSelect" value="MultiSelect"></el-option>
+                    <el-option :key="labels.DateTime" :labels.Text="labels.DateTime" value="DateTime"></el-option>
+                    <el-option :key="labels.Json" :labels.Text="labels.Text" value="Json"></el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-checkbox
+                    v-model="item.IsRequired"
+                    :readonly="readonly"
+                ></el-checkbox>
+            </td>
+            <td>
+                <el-input v-if="item.Type == 'Text' || item.Type == 'Json'" v-model="item.DefaultValue" :readonly="readonly"></el-input>
+                <el-input-number v-if="item.Type == 'Number'" controls-position="right" v-model="item.DefaultValue"
+                    :readonly="readonly"></el-input-number>
+                <el-checkbox v-if="item.Type == 'Checkbox'" v-model="item.DefaultValue" :readonly="readonly"></el-checkbox>
+                <el-input v-if="item.Type == 'TextArea'" v-model="item.DefaultValue" type="textarea" rows="4" :readonly="readonly">
+                </el-input>
+                <el-input v-if="item.Type == 'DateTime'" v-model="item.DefaultValue" :readonly="readonly"
+                    :title="validateField('DefaultValue', item)" :class="validateField('DefaultValue', item) ? 'WorkflowDesignerInputError' : ''">
+                </el-input>
+                <el-select v-if="item.Type == 'Dropdown'" v-model="item.DefaultValue" placeholder=""filterable :disabled="readonly" style="width: 100%;">
+                    <el-option
+                    v-for="item in item.DropdownValues"
+                    :key="item.Value"
+                    :label="item.Name"
+                    :value="item.Value">
+                    </el-option>
+                </el-select>
+                <el-select v-if="item.Type == 'MultiSelect'" v-model="item.DefaultValue" multiple filterable placeholder="" :disabled="readonly" style="width: 100%;">
+                    <el-option
+                    v-for="v in item.DropdownValues"
+                    :key="v.Value"
+                    :label="v.Name"
+                    :value="v.Value">
+                    </el-option>
+                </el-select> 
+            </td>
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button v-if="item.Type == 'Dropdown' || item.Type == 'MultiSelect' " @click="showDropdownValuesWindow(item)" :class="'WorkflowDesignerTableCodeParametersButton ' + (editParametersItem == item ? 'is-active' : '')"></el-button>
+                    <el-button v-if="item.Type == 'Json'" @click="showjson('DefaultValue', item)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"></el-button>
+                    <el-button @click="remove(index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function parametersform_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.CodeActionsFormLabel,  
+            editParametersItem: undefined,
+            editItem: undefined, 
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            }
+        });
+       
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+        
+        me.VueConfig.methods.typeOnChange = function(item){
+            item.DefaultValue = undefined;
+        }
+
+        me.VueConfig.methods.onUpdate = function(parentItem){
+            me.parentItem = parentItem;
+            me.VueConfig.data.items = WorkflowDesignerCommon.clone(parentItem.ParameterDefinitions);
+            me.VueConfig.data.name = parentItem.Name;
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.add = function(){
+            me.VueConfig.data.items.push({Name: "", Title:"", Type: "Text", DropdownValues: [], IsRequired:false, DefaultValue:null});
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerCodeActionsParametersList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },10);
+        };
+
+        me.VueConfig.methods.remove = function(index){
+            me.VueConfig.data.items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.showjson = function(name, item) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function(value){
+                if(me.editItem){
+                    me.editItem[name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function(value){
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var params = {
+                name: item["Rule"],
+                type: ['RuleCheck', 'RuleGet']
+            };
+            me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name' && name != 'Type'&& name != 'DefaultValue')
+                return;
+
+            if((name != 'DefaultValue')&&(!item[name])){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if(name == "Name"){
+                var res = me.VueConfig.data.items.filter(function(i){ return i != item && i.Name == item.Name });
+                if(res.length > 0){
+                    return WorkflowDesignerConstants.FieldMustBeUnique;
+                }
+            }
+
+            if (name == 'DefaultValue' && item.Type == 'DateTime' && item.DefaultValue && !moment(item.DefaultValue, moment.ISO_8601).isValid())
+                return WorkflowDesignerConstants.EditParametersFormlabel.DateShouldBeInISOFormat;
+        };
+    
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;            
+            me.VueConfig.data.parametersform && me.VueConfig.data.parametersform.destroy();
+            delete me.parentItem;
+        }
+
+        me.VueConfig.methods.validate = function()
+        {
+
+            var validateFunc = me.VueConfig.methods.validateField;
+            var items = me.VueConfig.data.items;
+            for(var i=0; i < items.length; i++){
+                var item = items[i];
+
+                if (validateFunc('Name', item))
+                {
+                    if (items.length > 1)
+                    {
+                       return false;
+                    }
+                }
+
+                if(validateFunc('Type', item))
+                    return false;
+
+                if (validateFunc('DefaultValue', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(me.VueConfig.methods.validate && me.VueConfig.methods.validate()){
+                me.onSuccess(me.VueConfig.data.items);
+                me.onClose(true);
+            }
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            if(me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            if (WorkflowDesignerCommon.compareArray(
+                me.parentItem.ParameterDefinitions,
+                me.VueConfig.data.items, 
+                ["Name", "Title", "Type", "DefaultValue", "DropdownValues", "IsRequired"])) {
+                
+                me.onClose(true);
+            }
+            else{
+                me.VueConfig.data.confirmdialog.visible = true;
+            }
+        };
+
+        me.VueConfig.methods.showDropdownValuesWindow = function(item) {
+            me.VueConfig.data.editParametersItem = me.editParametersItem = item;
+
+            var windowId = me.id + "_dropdownValues";
+
+            var onSuccess = function(res){
+                if(me.editParametersItem){
+                    me.editParametersItem = WorkflowDesignerCommon.clone(res);
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            };
+
+            var onClose = function(){
+                if(me.editParametersItem){
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            }
+
+            if(!me.parametersform){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true, 
+                    class: "WorkflowDesignerDropdownValues",
+                    onSuccess: onSuccess,
+                    onClose: onClose,
+                    parameterDefinition: {}
+                };
+                me.parametersform = me.graph.CreateWindow(windowId, options);
+            }   
+
+            me.parametersform.show("dropdownValues", item);
+        };
+    };
+</script>

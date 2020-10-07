@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 namespace OptimaJet.Workflow.Oracle.Models
@@ -50,26 +51,26 @@ namespace OptimaJet.Workflow.Oracle.Models
                     Name = value as string;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
-        public static WorkflowSync GetByName(OracleConnection connection, string name)
+        public static async Task<WorkflowSync> GetByNameAsync(OracleConnection connection, string name)
         {
-            var selectText = String.Format("SELECT * FROM {0} WHERE NAME = :name", ObjectName);
-            var locks = Select(connection, selectText, new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input));
+            string selectText = $"SELECT * FROM {ObjectName} WHERE NAME = :name";
+            WorkflowSync[] locks = await SelectAsync(connection, selectText, new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input)).ConfigureAwait(false);
 
             return locks.FirstOrDefault();
         }
 
-        public static int UpdateLock(OracleConnection connection, string name, Guid oldLock, Guid newLock)
+        public static async Task<int> UpdateLockAsync(OracleConnection connection, string name, Guid oldLock, Guid newLock)
         {
-            var command = String.Format("UPDATE {0} SET LOCKFLAG = :newlock WHERE NAME = :name AND LOCKFLAG = :oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET LOCKFLAG = :newlock WHERE NAME = :name AND LOCKFLAG = :oldlock";
             var p1 = new OracleParameter("newlock", OracleDbType.Raw, newLock.ToByteArray(), ParameterDirection.Input);
             var p2 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2, p3);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3).ConfigureAwait(false);
         }
     }
 }

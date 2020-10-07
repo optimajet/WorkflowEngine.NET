@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 4.2
+Version: 5.0
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -33,6 +33,7 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstance" (
   "RootProcessId" uuid NOT NULL,
   "TenantId" character varying(1024) NULL,
   "StartingTransition" text NULL,
+  "SubprocessName" text NULL,
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
 

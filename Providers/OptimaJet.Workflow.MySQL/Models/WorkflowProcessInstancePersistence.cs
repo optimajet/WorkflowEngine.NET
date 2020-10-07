@@ -1,4 +1,7 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 
 // ReSharper disable once CheckNamespace
@@ -64,19 +67,40 @@ namespace OptimaJet.Workflow.MySQL
             }
         }
 
-        public static WorkflowProcessInstancePersistence[] SelectByProcessId(MySqlConnection connection, Guid processId)
+        public static async Task<WorkflowProcessInstancePersistence[]> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE `ProcessId` = @processid", DbTableName);
+            string selectText = $"SELECT * FROM {DbTableName}  WHERE `ProcessId` = @processid";
             var p = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
-            return Select(connection, selectText, p);
+            return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
         }
+        public static async Task<WorkflowProcessInstancePersistence> SelectByNameAsync(MySqlConnection connection, Guid processId, string parameterName)
+        {
+            string selectText = $"SELECT * FROM {DbTableName}  WHERE `ProcessId` = @processid AND `ParameterName` = @parameterName";
 
-        public static int DeleteByProcessId(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
+            var parameters = new List<MySqlParameter>
+            {
+                new MySqlParameter("processid", MySqlDbType.Binary) {Value = processId.ToByteArray()},
+                new MySqlParameter("parameterName", MySqlDbType.VarChar) {Value = parameterName}
+            };
+            return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
+        }
+        public static async Task<int> DeleteByProcessIdAsync(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
         {
             var p = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `ProcessId` = @processid", DbTableName), transaction, p);
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, p).ConfigureAwait(false);
+        }
+        public static async Task<int> DeleteByNameAsync(MySqlConnection connection, Guid processId, string parameterName, MySqlTransaction transaction = null)
+        {
+            var parameters = new List<MySqlParameter>
+            {
+                new MySqlParameter("processid", MySqlDbType.Binary) {Value = processId.ToByteArray()},
+                new MySqlParameter("parameterName", MySqlDbType.VarChar) {Value = parameterName}
+            };
+
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
     }
 }

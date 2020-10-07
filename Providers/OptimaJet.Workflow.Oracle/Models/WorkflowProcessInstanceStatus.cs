@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -78,9 +79,9 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static List<Guid> GetProcessesByStatus(OracleConnection connection, byte status, string runtimeId = null)
+        public static async Task<List<Guid>> GetProcessesByStatusAsync(OracleConnection connection, byte status, string runtimeId = null)
         {
-            string command = String.Format("SELECT ID FROM {0} WHERE STATUS = :status", ObjectName);
+            string command = $"SELECT ID FROM {ObjectName} WHERE STATUS = :status";
             var p = new List<OracleParameter>();
 
             if (!String.IsNullOrEmpty(runtimeId))
@@ -90,22 +91,12 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             p.Add(new OracleParameter("status", OracleDbType.Int16, status, ParameterDirection.Input));
-            return Select(connection, command, p.ToArray()).Select(s => s.Id).ToList();
+            return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static int MassChangeStatus(OracleConnection connection, byte stateFrom, byte stateTo, DateTime time)
+        public static async Task<int> ChangeStatusAsync(OracleConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            string command = string.Format("UPDATE {0} SET Status = :stateto, SetTime = :settime WHERE Status = :statefrom", ObjectName);
-            return ExecuteCommand(connection, command,
-                new OracleParameter("stateto", OracleDbType.Int16, stateTo, ParameterDirection.Input),
-                new OracleParameter("statefrom", OracleDbType.Int16, stateFrom, ParameterDirection.Input),
-                new OracleParameter("settime", OracleDbType.Date, time, ParameterDirection.Input)
-            );
-        }
-
-        public static int ChangeStatus(OracleConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
-        {
-            var command = string.Format("UPDATE {0} SET Status = :newstatus, LOCKFLAG = :newlock, SetTime = :settime, RUNTIMEID = :runtimeid WHERE Id = :id AND LOCKFLAG = :oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET Status = :newstatus, LOCKFLAG = :newlock, SetTime = :settime, RUNTIMEID = :runtimeid WHERE Id = :id AND LOCKFLAG = :oldlock";
             var p1 = new OracleParameter("newstatus", OracleDbType.Int16, status.Status, ParameterDirection.Input);
             var p2 = new OracleParameter("newlock", OracleDbType.Raw, status.LOCKFLAG.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("id", OracleDbType.Raw, status.Id.ToByteArray(), ParameterDirection.Input);
@@ -113,7 +104,7 @@ namespace OptimaJet.Workflow.Oracle
             var p5 = new OracleParameter("settime", OracleDbType.Date, status.SetTime, ParameterDirection.Input);
             var p6 = new OracleParameter("runtimeid", OracleDbType.NVarchar2, status.RuntimeId, ParameterDirection.Input);
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4, p5, p6);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
     }
 }

@@ -1,0 +1,79 @@
+<Process Name="LoopForeachFromParameter" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="StartLoopForeachFromParameter" State="StartLoopForeachFromParameter" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="StartLoopForeachFromParameter" OriginalSchemeCode="LoopForeachFromParameter">
+      <Implementation>
+        <ActionRef Order="1" NameRef="StartLoopForeachFromParameter">
+          <ActionParameter><![CDATA[{"LoopName":"Loop","LoopStateParameterName":"LoopState","LoopCounterValueParameterName":"LoopCounterValue","Separator":",","Values":"one, two, three, four, five","ValuesFromParameter":false,"ValuesParameterName":"","Reverse":false,"ParameterName":"ValuesForLoop"}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="1160" Y="480" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_1" State="ActivityInLoop_1" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_1" OriginalSchemeCode="LoopForeachFromParameter">
+      <Designer X="1480" Y="480" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityInLoop_2" State="ActivityInLoop_2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="ActivityInLoop_2" OriginalSchemeCode="LoopForeachFromParameter">
+      <Designer X="1480" Y="620" Hidden="false" />
+    </Activity>
+    <Activity Name="ActivityAfterLoop" State="ActivityAfterLoop" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Activity" OriginalSchemeCode="LoopForeachFromParameter">
+      <Designer X="1160" Y="620" Hidden="false" />
+    </Activity>
+    <Activity Name="SetParameter" State="SetParameter" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="SetParameter" OriginalSchemeCode="LoopForeachFromParameter">
+      <Implementation>
+        <ActionRef Order="1" NameRef="SetParameter">
+          <ActionParameter><![CDATA[{"ParameterName":"ValuesForLoop","Value":"one, two, three, four, five","ForRootProcess":false}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="860" Y="480" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_2_1" To="ActivityInLoop_1" From="StartLoopForeachFromParameter" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="LoopIsNotCompletedAndBroken" ConditionInversion="false">
+          <ActionParameter><![CDATA[{"LoopName":"Loop"}]]></ActionParameter>
+        </Condition>
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_2_Activity_1_1" To="ActivityInLoop_2" From="ActivityInLoop_1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1580" Y="573" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_1_Activity_1" To="StartLoopForeachFromParameter" From="ActivityInLoop_2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="StartLoopForeach_Activity_1" To="ActivityAfterLoop" From="StartLoopForeachFromParameter" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Otherwise" />
+      </Conditions>
+      <Designer X="1259" Y="574" Hidden="false" />
+    </Transition>
+    <Transition Name="SetParameter_StartLoopForeachFromParameter_1" To="StartLoopForeachFromParameter" From="SetParameter" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

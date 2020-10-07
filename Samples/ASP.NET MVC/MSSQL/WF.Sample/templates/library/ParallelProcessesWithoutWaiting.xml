@@ -1,0 +1,58 @@
+<Process Name="ParallelProcessesWithoutWaiting" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="SubprocessStart" State="SubprocessStart" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="State1" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="820" Y="420" Hidden="false" />
+    </Activity>
+    <Activity Name="SubprocessWork" State="SubprocessWork" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="SubState1" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1120" Y="520" Hidden="false" />
+    </Activity>
+    <Activity Name="SubprocessFinal" State="SubprocessFinal" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="BeforeMerge" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1420" Y="520" Hidden="false" />
+    </Activity>
+    <Activity Name="MainProcessWork" State="MainProcessWork" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Final" OriginalSchemeCode="ParallelProcessesWithoutWaitting">
+      <Designer X="1120" Y="420" Hidden="false" />
+    </Activity>
+    <Activity Name="RootProcessFinal" State="RootProcessFinal" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="RootProcessFinal" OriginalSchemeCode="ParallelProcessesWithoutWaiting">
+      <Designer X="1420" Y="420" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="State1_Activity_1" To="SubprocessWork" From="SubprocessStart" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false" IsFork="true" SubprocessInOutDefinition="Start" SubprocessStartupType="AnotherThread" SubprocessStartupParameterCopyStrategy="CopyAll">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1062" Y="497" Hidden="false" />
+    </Transition>
+    <Transition Name="SubState1_BeforeMerge_1" To="SubprocessFinal" From="SubprocessWork" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="SubprocessStart_Final_1" To="MainProcessWork" From="SubprocessStart" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1064.5" Y="451.5" Hidden="false" />
+    </Transition>
+    <Transition Name="Final_Activity_1" To="RootProcessFinal" From="MainProcessWork" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1363" Y="450" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

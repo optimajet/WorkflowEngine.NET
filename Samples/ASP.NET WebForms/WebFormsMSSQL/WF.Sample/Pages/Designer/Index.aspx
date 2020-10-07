@@ -4,13 +4,8 @@
 <asp:Content ID="BodyContent" ContentPlaceHolderID="MainContent" runat="server">
 
      <asp:PlaceHolder runat="server">
-        <%: Scripts.Render("~/Scripts/konva.min.js") %>
-        <%: Scripts.Render("~/Scripts/ace.js") %>
-        <%: Scripts.Render("~/Scripts/semantic.min.js") %>
         <%: Scripts.Render("~/Scripts/workflowdesigner.min.js") %>
-        <%: Scripts.Render("~/Scripts/json5.js") %>
-        <%: Scripts.Render("~/Scripts/jquery.auto-complete.min.js") %>
-    </asp:PlaceHolder>
+     </asp:PlaceHolder>
 
     <div style="padding-bottom: 8px;">
         <div>
@@ -54,31 +49,29 @@
         var graphwidth = 1200;
         var graphminheight = 600;
         var graphheight = graphminheight;
-
+    
         var wfdesigner = undefined;
         function wfdesignerRedraw() {
             var data;
-
+    
             if (wfdesigner != undefined) {
-                data = wfdesigner.data;
                 wfdesigner.destroy();
             }
-
-            WorkflowDesignerConstants.FormMaxHeight = 600;
+    
             wfdesigner = new WorkflowDesigner({
                 name: 'simpledesigner',
-                apiurl: '<%= Page.ResolveUrl("~/Designer/API") %>',
+                apiurl: '/Designer/API',
                 renderTo: 'wfdesigner',
-                imagefolder: '<%= Page.ResolveUrl("~/Images/") %>',
+                templatefolder: '/templates/',
                 graphwidth: graphwidth,
                 graphheight: graphheight
             });
-
+    
             if (data == undefined) {
                 var isreadonly = false;
                 if (processid != undefined && processid != '')
                     isreadonly = true;
-
+    
                 var p = { schemecode: schemecode, processid: processid, readonly: isreadonly };
                 if (wfdesigner.exists(p))
                     wfdesigner.load(p);
@@ -90,8 +83,10 @@
                 wfdesigner.render();
             }
         }
-
-       $(window).resize(function () {
+    
+        wfdesignerRedraw();
+    
+        $(window).resize(function () {
             if (window.wfResizeTimer) {
                 clearTimeout(window.wfResizeTimer);
                 window.wfResizeTimer = undefined;
@@ -99,70 +94,70 @@
             window.wfResizeTimer = setTimeout(function () {
                 var w = $(window).width();
                 var h = $(window).height();
-
+    
                 if (w > 300)
                     graphwidth = w - 40;
-
+    
                 if (h > 300)
                     graphheight = h - 250;
-
+    
                 if (graphheight < graphminheight)
                     graphheight = graphminheight;
-
-                wfdesignerRedraw();
+    
+                wfdesigner.resize(graphwidth, graphheight);
             }, 150);
-
+    
         });
-
+    
         $(window).resize();
-
-    function DownloadScheme(){
-        wfdesigner.downloadscheme();
-    }
-
-    function DownloadSchemeBPMN() {
-        wfdesigner.downloadschemeBPMN();
-    }
-
-    var selectSchemeType;
-    function SelectScheme(type) {
-        if (type)
-            selectSchemeType = type;
-
-        var file = $('#uploadFile');
-        file.trigger('click');
-    }
-
-    function UploadScheme() {
-
-        if (selectSchemeType == "bpmn") {
-            wfdesigner.uploadschemeBPMN($('form')[0], function () {
-                wfdesigner.autoarrangement();
-                alert('The file is uploaded!');
-            });
+    
+        function DownloadScheme() {
+            wfdesigner.downloadscheme();
         }
-        else {
-            wfdesigner.uploadscheme($('form')[0], function () {
-                alert('The file is uploaded!');
-            });
+    
+        function DownloadSchemeBPMN() {
+            wfdesigner.downloadschemeBPMN();
         }
-    }
-
-    function OnSave() {
-        wfdesigner.schemecode = schemecode;
-
-        var err = wfdesigner.validate();
-        if (err != undefined && err.length > 0) {
-            alert(err);
+    
+        var selectSchemeType;
+        function SelectScheme(type) {
+            if (type)
+                selectSchemeType = type;
+    
+            var file = $('#uploadFile');
+            file.trigger('click');
         }
-        else {
-            wfdesigner.save(function () {
-                alert('The scheme is saved!');
-            });
+    
+        function UploadScheme() {
+    
+            if (selectSchemeType == "bpmn") {
+                wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
+                    wfdesigner.autoarrangement();
+                    alert('The file is uploaded!');                
+                });
+            }
+            else {
+                wfdesigner.uploadscheme($('#uploadform')[0], function () {
+                    alert('The file is uploaded!');
+                });
+            }
         }
-    }
-    function OnNew() {
-        wfdesigner.create();
-    }
-    </script>
+    
+        function OnSave() {
+            wfdesigner.schemecode = schemecode;
+    
+            var err = wfdesigner.validate();
+            if (err != undefined && err.length > 0) {
+                alert(err);
+            }
+            else {
+                wfdesigner.save(function () {
+                    alert('The scheme is saved!');
+                });
+            }
+        }
+        function OnNew() {
+            wfdesigner.create();
+        }
+    </script>        
 </asp:Content>

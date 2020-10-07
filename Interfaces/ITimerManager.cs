@@ -1,8 +1,8 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Model;
-using OptimaJet.Workflow.Core.Persistence;
+using OptimaJet.Workflow.Core.Utils;
 
 namespace OptimaJet.Workflow.Core.Runtime
 {
@@ -24,14 +24,19 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// <summary>
         /// Raises when the timer value must be obtained 
         /// </summary>
-        event EventHandler<NeedTimerValueEventArgs> NeedTimerValue;
+        event EventHandler<NeedTimerValueEventArgs> OnNeedTimerValue;
+        
+        /// <summary>
+        /// Raises when the timer value must be obtained 
+        /// </summary>
+        event AsyncEventHandler<NeedTimerValueEventArgs> OnNeedTimerValueAsync;
 
         /// <summary>
         /// Sends request for timer value for all timer transitions that are outgoing from the CurrentActivity if timer value is equal 0 or -1
         /// </summary>
         /// <param name="activity">Activity to get outbound transition, if null the CurrentActivity will be used</param>
         /// <param name="processInstance">Process instance</param>
-        void RequestTimerValue(ProcessInstance processInstance, ActivityDefinition activity = null);
+        Task RequestTimerValueAsync(ProcessInstance processInstance, ActivityDefinition activity = null);
 
         /// <summary>
         /// Returns transitions triggered by a timer which value is equal to 0
@@ -76,30 +81,23 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// All timers registered before which are present in transitions will be rewrited except timers marked as NotOverrideIfExists <see cref="TimerDefinition"/>
         /// </summary>
         /// <param name="processInstance">Process instance whose timers need to be registered</param>
-        void RegisterTimers(ProcessInstance processInstance);
+        Task RegisterTimersAsync(ProcessInstance processInstance);
 
 
         List<TimerToRegister> GetTimersToRegister(ProcessDefinition processDefinition, string activityName);
         List<TimerToRegister> GetTimersToRegister(ProcessInstance processInstance, string activityName);
          
-        ///// <summary>
-        ///// Register all timers for all outgouing timer transitions for current actvity of the specified process.
-        ///// All timers registered before which are present in transitions will be rewrited except timers marked as NotOverrideIfExists <see cref="TimerDefinition"/>
-        ///// </summary>
-        ///// <param name="processInstances">List of Process instance whose timers need to be registered</param>
-        //void BulkRegisterTimers(List<ProcessInstance> processInstances);
-
         /// <summary>
         /// Clear timers <see cref="ClearTimers"/> and then register new timers <see cref="RegisterTimers"/>
         /// </summary>
         /// <param name="processInstance">Process instance whose timers need to be cleared an registered</param>
-        void ClearAndRegisterTimers(ProcessInstance processInstance);
+        Task ClearAndRegisterTimersAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Clear all registerd timers except present in outgouing timer transitions for current actvity of the specified process and marked as NotOverrideIfExists <see cref="TimerDefinition"/>
         /// </summary>
         /// <param name="processInstance">Process instance whose timers need to be cleared</param>
-        void ClearTimers(ProcessInstance processInstance);
+        Task ClearTimersAsync(ProcessInstance processInstance);
 
         void Init(WorkflowRuntime runtime);
 
@@ -107,7 +105,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// Starts the timer
         /// </summary>
         ///<param name="timeout">Wait timeout in milliseconds</param>
-        void Start(int? timeout = null);
+        Task StartAsync(int? timeout = null);
 
         /// <summary>
         /// Stops the timer
@@ -119,5 +117,7 @@ namespace OptimaJet.Workflow.Core.Runtime
         /// Refresh interval of the timer
         /// </summary>
         void Refresh();
+
+        bool IsSupportsMultiServer { get; }
     }
 }

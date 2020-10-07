@@ -1,0 +1,74 @@
+<Process Name="ParallelApprovalWithoutBranches" CanBeInlined="false" Tags="">
+  <Designer />
+  <Actors>
+    <Actor Name="Approver" Rule="Approver" WasInlined="true" OriginalName="Approver" OriginalSchemeCode="ParallelApprovalWithoutBranches" />
+  </Actors>
+  <Commands>
+    <Command Name="Approve" />
+  </Commands>
+  <Activities>
+    <Activity Name="Stage1" State="Stage1" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Stage1" OriginalSchemeCode="ParallelApprovalWithoutBranches">
+      <Implementation>
+        <ActionRef Order="1" NameRef="FillApproversUsers">
+          <ActionParameter><![CDATA[{"Separator":",","Users":"User1, User2"}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="1260" Y="440" Hidden="false" />
+    </Activity>
+    <Activity Name="Stage2" State="Stage2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Stage2" OriginalSchemeCode="ParallelApprovalWithoutBranches">
+      <Implementation>
+        <ActionRef Order="1" NameRef="FillApproversUsers">
+          <ActionParameter><![CDATA[{"Separator":",","Users":"User3, User4"}]]></ActionParameter>
+        </ActionRef>
+      </Implementation>
+      <Designer X="1570" Y="440" Hidden="false" />
+    </Activity>
+    <Activity Name="Final" State="Final" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Final" OriginalSchemeCode="ParallelApprovalWithoutBranches">
+      <Designer X="1880" Y="440" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_1" To="Stage1" From="Stage1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Restrictions>
+        <Restriction Type="Allow" NameRef="Approver" />
+      </Restrictions>
+      <Triggers>
+        <Trigger Type="Command" NameRef="Approve" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+    <Transition Name="Stage1_Activity_1_1" To="Stage2" From="Stage1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="IsApproveComplete" ConditionInversion="false" />
+      </Conditions>
+      <Designer X="1510" Y="470" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_1_Activity_1" To="Final" From="Stage2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Action" NameRef="IsApproveComplete" ConditionInversion="false" />
+      </Conditions>
+      <Designer X="1821" Y="469" Hidden="false" />
+    </Transition>
+    <Transition Name="Stage2_Stage2_1" To="Stage2" From="Stage2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Restrictions>
+        <Restriction Type="Allow" NameRef="Approver" />
+      </Restrictions>
+      <Triggers>
+        <Trigger Type="Command" NameRef="Approve" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

@@ -1,0 +1,68 @@
+<div v-if="!settings.hideInfoBlock" style="display: flex;" class="WorkflowDesignerToolbarBlock Horizontal">    
+    <div class="WorkflowDesignerToolbarInfoItem">
+        <span :style="info.activity > info.activityLimit ? 'color:red' : ''" style="margin-right: 10px;">
+            {{ info.activity }}
+            {{ info.activityLimit ? (" / " +  info.activityLimit) : "" }}
+        </span>
+        <div class="WorkflowDesignerToolbarIcon ActivityCount"></div>
+    </div>
+
+    <div class="WorkflowDesignerToolbarInfoItemDivider"></div>
+
+    <div class="WorkflowDesignerToolbarInfoItem">
+        <span :style="info.transition > info.transitionLimit ? 'color:red' : ''" style="margin-right: 10px;">
+            {{ info.transition }}
+            {{ info.transitionLimit ? (" / " +  info.transitionLimit) : "" }}
+        </span>
+        <div class="WorkflowDesignerToolbarIcon TransitionCount"></div>
+    </div>
+
+    <div class="WorkflowDesignerToolbarInfoItemDivider"></div>
+
+    <div class="WorkflowDesignerToolbarInfoItem">
+        <span :style="info.command > info.commandLimit ? 'color:red' : ''" style="margin-right: 10px;">
+            {{ info.command }}
+            {{ info.commandLimit ? (" / " +  info.commandLimit) : "" }}
+        </span>
+        <div class="WorkflowDesignerToolbarIcon CommandsCount"></div>
+    </div>
+</div>
+<script>
+    function toolbarinfo_Init(me){
+        var data = me.VueConfig.data;
+        data.labels = WorkflowDesignerConstants.ToolbarLabel;
+            
+        me.VueConfig.methods.onUpdate = function(){
+            data.settings = me.graph.Settings;
+            data.info = {
+                activity: 0,
+                transition: 0,
+                command: 0,            
+                activityLimit: undefined,
+                transitionLimit: undefined,
+                commandLimit: undefined,
+            }
+      
+            if (me.graph.data != undefined) {
+                data.info.activity = me.graph.data.Activities.length;
+                data.info.transition = me.graph.data.Transitions.length;
+                data.info.command = me.graph.data.Commands.length;
+
+                if(me.graph.data.AdditionalParams != undefined){
+                    var addparams = me.graph.data.AdditionalParams;
+                    if(addparams.MaxNumberOfActivities != undefined && addparams.MaxNumberOfActivities != -1){
+                        data.info.activityLimit = addparams.MaxNumberOfActivities;
+                    }
+
+                    if(addparams.MaxNumberOfTransitions != undefined && addparams.MaxNumberOfTransitions != -1){
+                        data.info.transitionLimit = addparams.MaxNumberOfTransitions;
+                    }
+
+                    if(addparams.MaxNumberOfCommands != undefined && addparams.MaxNumberOfCommands != -1){
+                        data.info.commandLimit = addparams.MaxNumberOfCommands;
+                    }
+                }
+            }
+        };
+    };
+</script>

@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -50,26 +51,26 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
                     Name = value as string;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
-        public static WorkflowSync GetByName(NpgsqlConnection connection, string name)
+        public static async Task<WorkflowSync> GetByNameAsync(NpgsqlConnection connection, string name)
         {
-            var selectText = String.Format("SELECT * FROM {0} WHERE \"Name\" = @name", ObjectName);
-            var locks = Select(connection, selectText, new NpgsqlParameter("name", NpgsqlDbType.Varchar) { Value = name });
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"Name\" = @name";
+            WorkflowSync[] locks = await SelectAsync(connection, selectText, new NpgsqlParameter("name", NpgsqlDbType.Varchar) { Value = name }).ConfigureAwait(false);
 
             return locks.FirstOrDefault();
         }
 
-        public static int UpdateLock(NpgsqlConnection connection, string name, Guid oldLock, Guid newLock, NpgsqlTransaction transaction = null)
+        public static async Task<int> UpdateLockAsync(NpgsqlConnection connection, string name, Guid oldLock, Guid newLock, NpgsqlTransaction transaction = null)
         {
-            var command = String.Format("UPDATE {0} SET \"Lock\" = @newlock WHERE \"Name\" = @name AND \"Lock\" = @oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET \"Lock\" = @newlock WHERE \"Name\" = @name AND \"Lock\" = @oldlock";
             var p1 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = newLock };
             var p2 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
             var p3 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) { Value = name };
 
-            return ExecuteCommand(connection, command, transaction, p1, p2, p3);
+            return await ExecuteCommandAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
         }
 
     }

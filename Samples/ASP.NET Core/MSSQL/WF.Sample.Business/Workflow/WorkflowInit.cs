@@ -62,7 +62,7 @@ namespace WF.Sample.Business.Workflow
                             .AsSingleServer() //.AsMultiServer()
                             .Start();
                        
-                        _runtime.ProcessStatusChanged += _runtime_ProcessStatusChanged;
+                        _runtime.OnProcessStatusChanged += _runtime_ProcessStatusChanged;
                     }
                 }
             }

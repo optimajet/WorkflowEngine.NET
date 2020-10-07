@@ -1,4 +1,5 @@
-﻿using OptimaJet.Workflow.Core.Model;
+﻿using OptimaJet.Workflow.Core.Builder;
+using OptimaJet.Workflow.Core.Model;
 
 namespace OptimaJet.Workflow.Core.Parser
 {
@@ -13,14 +14,16 @@ namespace OptimaJet.Workflow.Core.Parser
         /// Returns object model of the scheme of a process
         /// </summary>
         /// <param name="schemeMedium">Not parsed scheme</param>
+        /// <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
         /// <returns>ProcessDefinition object</returns>
-        ProcessDefinition Parse(TSchemeMedium schemeMedium);
+        ProcessDefinition Parse(TSchemeMedium schemeMedium, SchemeParsingType schemeParsingType = SchemeParsingType.Strict);
         /// <summary>
         /// Returns object model of the scheme of a process
         /// </summary>
         /// <param name="scheme">String representation of not parsed scheme</param>
+        ///  /// <param name="schemeParsingType">Type of parsing strict or soft. Uses only for upload operations where we need softer scheme check</param>
         /// <returns>ProcessDefinition object</returns>
-        ProcessDefinition Parse(string scheme);
+        ProcessDefinition Parse(string scheme, SchemeParsingType schemeParsingType = SchemeParsingType.Strict);
 
         /// <summary>
         /// Serializes object model of the scheme to not parsed scheme

@@ -1,0 +1,127 @@
+<h3>{{ labels.TitleForInline }}</h3>
+<el-form class="WorkflowDesignerWindowForm"
+    :model="FormData" 
+    ref="form" 
+    label-position="left" 
+    label-width="150px">
+    <el-form-item :label="labels.Name" :rules="getFieldRules('Name')" prop="Name" :readonly="readonly">
+        <el-input v-model="FormData.Name"></el-input>
+    </el-form-item>
+    <el-form-item :label="labels.Scheme" :rules="getFieldRules('SchemeCode')" prop="SchemeCode">
+        <el-select v-model="FormData.SchemeCode" filterable placeholder="" :disabled="readonly" style="width: 100%;">
+            <el-option
+              v-for="scheme in schemes"
+              :key="scheme"
+              :label="scheme"
+              :value="scheme">
+            </el-option>
+        </el-select>
+    </el-form-item>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function activityinline_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.ActivityFormLabel,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            schemes: [],
+            FormData: { }
+        });
+
+        me.VueConfig.methods.onUpdate = function(item){
+            me.VueConfig.data.originalItem = item;
+            me.VueConfig.data.FormData.Name = item.Name;
+            me.VueConfig.data.FormData.SchemeCode = item.SchemeCode;
+            me.VueConfig.data.schemes = me.graph.data.AdditionalParams.InlinedSchemeCodes;
+
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.getFieldRules = function(field){
+            var res = [{ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
+
+            if(field == "Name"){
+                var validator = function(rule, value, callback){ 
+                    var originalItem = me.VueConfig.data.originalItem;
+                    var isValid = true;
+                    me.graph.data.Activities.forEach(function (a) {
+                        if (a != originalItem && a.Name == value) {
+                            isValid = false;
+                        }
+                    });
+                    
+                    if(isValid){
+                        callback();
+                    }
+                    else{                    
+                        callback(new Error(rule.message));
+                    }
+                };
+                res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+            }
+            return res;
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(this.$refs && this.$refs.form){
+                this.$refs.form.validate(function(valid) {
+                    if (valid) {
+                        me.onSuccess(me.VueConfig.data.FormData);
+                        me.onClose(true);
+                    }
+                });
+                return;
+            }
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            if(me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            var originalItem = me.VueConfig.data.originalItem;
+            var item = me.VueConfig.data.FormData;
+
+            if (originalItem.Name === item.Name && originalItem.SchemeCode === item.SchemeCode) {
+                me.onClose(true);
+            }
+            else{
+                me.VueConfig.data.confirmdialog.visible = true;
+            }
+        };
+    };
+</script>

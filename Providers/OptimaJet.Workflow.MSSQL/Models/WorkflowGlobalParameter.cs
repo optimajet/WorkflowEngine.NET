@@ -1,6 +1,11 @@
 ﻿using System;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Data;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
@@ -69,38 +74,46 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static WorkflowGlobalParameter[] SelectByTypeAndName(SqlConnection connection, string type, string name = null)
+        public static async Task<WorkflowGlobalParameter[]> SelectByTypeAndNameAsync(SqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE [Type] = @type", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [Type] = @type";
 
-            if (!string.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
+            {
                 selectText = selectText + " AND [Name] = @name";
+            }
 
             var p = new SqlParameter("type", SqlDbType.NVarChar) {Value = type};
 
-            if (string.IsNullOrEmpty(name))
-                return Select(connection, selectText, p);
+            if (String.IsNullOrEmpty(name))
+            {
+                return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
+            }
 
             var p1 = new SqlParameter("name", SqlDbType.NVarChar) { Value = name };
 
-            return Select(connection, selectText, p, p1);
+            return await SelectAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
 
-        public static int DeleteByTypeAndName(SqlConnection connection, string type, string name = null)
+        public static async Task<int> DeleteByTypeAndNameAsync(SqlConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM {0}  WHERE [Type] = @type", ObjectName);
+            string selectText = $"DELETE FROM {ObjectName}  WHERE [Type] = @type";
 
-            if (!string.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
+            {
                 selectText = selectText + " AND [Name] = @name";
+            }
 
             var p = new SqlParameter("type", SqlDbType.NVarChar) { Value = type };
 
-            if (string.IsNullOrEmpty(name))
-                return ExecuteCommand(connection, selectText, p);
+            if (String.IsNullOrEmpty(name))
+            {
+                return await ExecuteCommandAsync(connection, selectText, p).ConfigureAwait(false);
+            }
 
             var p1 = new SqlParameter("name", SqlDbType.NVarChar) { Value = name };
 
-            return ExecuteCommand(connection, selectText, p, p1);
+            return await ExecuteCommandAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
     }
 }

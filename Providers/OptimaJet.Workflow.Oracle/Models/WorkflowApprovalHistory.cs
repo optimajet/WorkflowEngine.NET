@@ -1,5 +1,6 @@
 using System;
 using System.Data;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -115,15 +116,15 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static WorkflowApprovalHistory[] SelectByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
             string name = "ProcessId";
 
-            var selectText = string.Format("SELECT * FROM {0} WHERE  {1} = :processId", ObjectName, name.ToUpperInvariant());
+            string selectText = $"SELECT * FROM {ObjectName} WHERE  {name.ToUpperInvariant()} = :processId";
 
             var processIdParameter = new OracleParameter("processId", OracleDbType.Raw) { Value = processId.ToByteArray() };
 
-            return Select(connection, selectText, processIdParameter);
+            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
         }
     }
 }

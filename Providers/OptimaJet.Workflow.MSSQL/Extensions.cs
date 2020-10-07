@@ -1,5 +1,9 @@
 using System;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using OptimaJet.Workflow.Core.Fault;
 
 namespace OptimaJet.Workflow.DbPersistence

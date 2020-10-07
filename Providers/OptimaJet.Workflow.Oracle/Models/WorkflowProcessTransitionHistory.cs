@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -121,20 +122,20 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static int DeleteByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName),
-                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static WorkflowProcessTransitionHistory[] SelectByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<WorkflowProcessTransitionHistory[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid";
 
             var p1 = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

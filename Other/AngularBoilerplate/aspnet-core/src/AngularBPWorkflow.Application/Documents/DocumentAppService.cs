@@ -21,6 +21,7 @@ namespace AngularBPWorkflow.Documents
 {
     //WorkflowEngineSampleCode
     [AbpAuthorize]
+    
     public class DocumentAppService : AsyncCrudAppService<Document, DocumentDto, int, PagedDocumentResultRequestDto, CreateDocumentDto, DocumentDto>, IDocumentAppService
     {
         private readonly IRepository<Document> _documentRepository;

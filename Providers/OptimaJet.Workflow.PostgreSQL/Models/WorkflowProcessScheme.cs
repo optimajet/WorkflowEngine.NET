@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -114,9 +115,9 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static WorkflowProcessScheme[] Select(NpgsqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
+        public static async Task<WorkflowProcessScheme[]> SelectAsync(NpgsqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"SchemeCode\" = @schemecode AND \"DefiningParametersHash\" = @dphash", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"SchemeCode\" = @schemecode AND \"DefiningParametersHash\" = @dphash";
 
             if (isObsolete.HasValue)
             {
@@ -139,34 +140,30 @@ namespace OptimaJet.Workflow.PostgreSQL
                 selectText += " AND \"RootSchemeId\" = @rootschemeid";
                 var pRootSchemeId = new NpgsqlParameter("rootschemeid", NpgsqlDbType.Uuid) {Value = rootSchemeId.Value};
 
-                return Select(connection, selectText, pSchemecode, pDphash, pRootSchemeId);
+                return await SelectAsync(connection, selectText, pSchemecode, pDphash, pRootSchemeId).ConfigureAwait(false);
             }
-            else
-            {
-                selectText += " AND \"RootSchemeId\" IS NULL";
-                return Select(connection, selectText, pSchemecode, pDphash);
-            }
+
+            selectText += " AND \"RootSchemeId\" IS NULL";
+            return await SelectAsync(connection, selectText, pSchemecode, pDphash).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(NpgsqlConnection connection, string schemeCode)
+        public static async Task<int> SetObsoleteAsync(NpgsqlConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE {0} SET \"IsObsolete\" = TRUE WHERE \"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode", ObjectName);
+            string command = $"UPDATE {ObjectName} SET \"IsObsolete\" = TRUE WHERE \"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode";
             var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
 
-            return ExecuteCommand(connection, command, p);
+            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(NpgsqlConnection connection, string schemeCode, string definingParametersHash)
+        public static async Task<int> SetObsoleteAsync(NpgsqlConnection connection, string schemeCode, string definingParametersHash)
         {
             string command =
-                string.Format(
-                    "UPDATE {0} SET \"IsObsolete\" = TRUE WHERE (\"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode) AND \"DefiningParametersHash\" = @dphash",
-                    ObjectName);
+                $"UPDATE {ObjectName} SET \"IsObsolete\" = TRUE WHERE (\"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode) AND \"DefiningParametersHash\" = @dphash";
 
             var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
             var p2 = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
 
-            return ExecuteCommand(connection, command, p, p2);
+            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

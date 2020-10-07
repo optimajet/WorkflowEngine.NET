@@ -1,6 +1,13 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
+using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 
@@ -67,19 +74,42 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static WorkflowProcessInstancePersistence[] SelectByProcessId(SqlConnection connection, Guid processId)
+        public static async Task<WorkflowProcessInstancePersistence[]> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0}  WHERE [ProcessId] = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName}  WHERE [ProcessId] = @processid";
             var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
-            return Select(connection, selectText, p);
+            return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
         }
 
-        public static int DeleteByProcessId(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
+        public static async Task<WorkflowProcessInstancePersistence> SelectByNameAsync(SqlConnection connection, Guid processId, string parameterName)
+        {
+            string selectText = $"SELECT * FROM {ObjectName}  WHERE [ProcessId] = @processid AND [ParameterName] = @parameterName";
+
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId}, 
+                new SqlParameter("parameterName", SqlDbType.NVarChar) {Value = parameterName}
+            };
+
+            return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
+        }
+
+        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
             var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE [ProcessId] = @processid", ObjectName), transaction, p);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, p).ConfigureAwait(false);
+        }
+        public static async Task<int> DeleteByNameAsync(SqlConnection connection, Guid processId,string parameterName, SqlTransaction transaction = null)
+        {
+            var parameters = new List<SqlParameter>
+            {
+                new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId}, 
+                new SqlParameter("parameterName", SqlDbType.NVarChar) {Value = parameterName}
+            };
+
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName}  WHERE [ProcessId] = @processid AND [ParameterName] = @parameterName", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
 
 #if !NETCOREAPP || NETCORE2

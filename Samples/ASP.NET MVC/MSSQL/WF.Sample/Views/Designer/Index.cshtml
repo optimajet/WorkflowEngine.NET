@@ -1,15 +1,10 @@
-﻿
-@{
+﻿@{
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<script src="/Scripts/konva.min.js" type="text/javascript"></script>
-<script src="/Scripts/ace.js" type="text/javascript"></script>
-<script src="/Scripts/semantic.min.js" type="text/javascript"></script>
-<script src="/scripts/workflowdesigner.min.js" type="text/javascript"></script>
-<script src="/Scripts/json5.js" type="text/javascript"></script>
-<script src="/Scripts/jquery.auto-complete.min.js" type="text/javascript"></script>
+<link href="/Content/workflowdesigner.min.css" rel="stylesheet" type="text/css" />
+<script src="/Scripts/workflowdesigner.min.js" type="text/javascript"></script>
 
 <form action="" id="uploadform" method="post" enctype="multipart/form-data" onsubmit="tmp()" style="padding-bottom: 8px;">
     <div>
@@ -49,7 +44,7 @@
     }();
 
     var schemecode = 'SimpleWF';
-    var processid = QueryString.processid;
+     var processid = QueryString.processid;
     var graphwidth = 1200;
     var graphminheight = 600;
     var graphheight = graphminheight;
@@ -59,16 +54,14 @@
         var data;
 
         if (wfdesigner != undefined) {
-            data = wfdesigner.data;
             wfdesigner.destroy();
         }
 
-        WorkflowDesignerConstants.FormMaxHeight = 600;
         wfdesigner = new WorkflowDesigner({
             name: 'simpledesigner',
             apiurl: '/Designer/API',
             renderTo: 'wfdesigner',
-            imagefolder: '/Images/',
+            templatefolder: '/templates/',
             graphwidth: graphwidth,
             graphheight: graphheight
         });
@@ -90,6 +83,8 @@
         }
     }
 
+    wfdesignerRedraw();
+
     $(window).resize(function () {
         if (window.wfResizeTimer) {
             clearTimeout(window.wfResizeTimer);
@@ -108,7 +103,7 @@
             if (graphheight < graphminheight)
                 graphheight = graphminheight;
 
-            wfdesignerRedraw();
+            wfdesigner.resize(graphwidth, graphheight);
         }, 150);
 
     });
@@ -137,7 +132,7 @@
         if (selectSchemeType == "bpmn") {
             wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
                 wfdesigner.autoarrangement();
-                alert('The file is uploaded!');
+                alert('The file is uploaded!');                
             });
         }
         else {

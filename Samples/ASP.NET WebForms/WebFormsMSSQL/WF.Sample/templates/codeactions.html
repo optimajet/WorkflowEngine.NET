@@ -1,0 +1,362 @@
+<h3>{{ labels.Title }}  |  
+    <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+</h3>
+<div id="WorkflowDesignerCodeActionsList" class="WorkflowDesignerWindowForm">
+    <table class="WorkflowDesignerTable">
+        <th>
+            <td v-if="isIE"></td>
+            <td><b>{{labels.Name}}</b></td>
+            <td><b>{{labels.Type}}</b></td>
+            <td><b>{{labels.IsGlobal}}</b></td>
+            <td><b>{{labels.IsAsync}}</b></td>
+        </th>
+        <tr v-for="(item, index) in items"
+            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
+            @dragover="dragover(item, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+            <td>
+                <el-input
+                    v-model="item.Name" 
+                    :title="validateField('Name', item)" 
+                    :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+                    :readonly="readonly"
+                ></el-input>
+            </td>
+            <td>
+                <el-select 
+                    v-model="item.Type" 
+                    style="width: 100%;" 
+                    :disabled="readonly"
+                    filterable 
+                    placeholder="" 
+                    :title="validateField('Type', item)" 
+                    :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''">
+                    <el-option key="Action" label="Action" value="Action"></el-option>
+                    <el-option key="Condition" label="Condition" value="Condition"></el-option>
+                    <el-option key="RuleGet" label="RuleGet" value="RuleGet"></el-option>
+                    <el-option key="RuleCheck" label="RuleCheck" value="RuleCheck"></el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-checkbox v-model="item.IsGlobal" @change="isGlobalOnChange(item)" :readonly="readonly" ></el-checkbox>
+            </td>
+            <td>
+                <el-checkbox v-model="item.IsAsync" :readonly="readonly" ></el-checkbox>
+            </td>
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Triple">
+                <el-button-group>
+                    <el-button v-on:click="showcode(item)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editCodeItem == item ? 'is-active' : '')"></el-button>
+                    <el-button v-on:click="showparameters(item)" :class="'WorkflowDesignerTableCodeParametersButton ' + (editParametersItem == item ? 'is-active' : '')"></el-button>
+                    <el-button v-on:click="remove(index, item)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+
+        </tr>
+    </table>
+</div>
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function codeactions_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.CodeActionsFormLabel,
+            editItem: undefined,     
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
+            EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            editCodeItem: undefined,
+            editParametersItem: undefined
+        });
+
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+        
+        me.VueConfig.methods.onUpdate = function(){
+            me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.CodeActions);
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.add = function(){
+            me.VueConfig.data.items.push({Name: "", Type: "Action", ParameterDefinitions: [],  IsAsync:false, IsGlobal:false});
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerCodeActionsList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },10);
+        };
+
+        me.VueConfig.methods.remove = function(index, item)
+        {
+            if(item.IsGlobal)
+            {
+                me.graph.showConfirm({message: WorkflowDesignerConstants.CodeActionsFormLabel.GlobalDeleteMessage, onSuccess: function(){
+                    me.VueConfig.data.items.splice(index, 1);
+                return true;
+            }});
+            }
+            else
+            {
+                me.VueConfig.data.items.splice(index, 1);
+            }
+        };
+        me.VueConfig.methods.isGlobalOnChange = function(item){         
+            if(!item.IsGlobal)
+            {
+                me.graph.showConfirm({message: WorkflowDesignerConstants.CodeActionsFormLabel.UnGlobalMessage,
+                    isAlert: true,
+                    onSuccess: function(){
+                        return true;
+                    }}
+                );
+            } 
+        };
+        me.VueConfig.methods.showcode = function(item) {
+            me.VueConfig.data.editCodeItem = me.editCodeItem = item;
+
+            var windowId = me.id + "_codeform";
+
+            var onSuccess = function(res){
+                if(me.editCodeItem){
+                    me.editCodeItem["ActionCode"] = res.ActionCode;
+                    me.editCodeItem["Usings"] = res.Usings;
+                    me.VueConfig.data.editCodeItem = undefined;
+                    delete me.editCodeItem;
+                }
+            };
+
+            var onClose = function(){
+                if(me.editCodeItem){
+                    me.VueConfig.data.editCodeItem = undefined;
+                    delete me.editCodeItem;
+                }
+            }
+
+            if(!me.codeform){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true, 
+                    class: "WorkflowDesignerCodeForm",
+                    onSuccess: onSuccess,
+                    onClose: onClose,
+                    parameterDefinition: {}
+                };
+                me.codeform = me.graph.CreateWindow(windowId, options);
+            }   
+
+            me.codeform.show("codeform", item);
+        };
+
+        me.VueConfig.methods.showparameters = function(item) {
+            me.VueConfig.data.editParametersItem = me.editParametersItem = item;
+
+            var windowId = me.id + "_parametersform";
+
+            var onSuccess = function(res){
+                if(me.editParametersItem){
+                    me.editParametersItem.ParameterDefinitions = WorkflowDesignerCommon.clone(res);
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            };
+
+            var onClose = function(){
+                if(me.editParametersItem){
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            }
+
+            if(!me.parametersform){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true, 
+                    class: "WorkflowDesignerParametersForm",
+                    onSuccess: onSuccess,
+                    onClose: onClose,
+                    parameterDefinition: {}
+                };
+                me.parametersform = me.graph.CreateWindow(windowId, options);
+            }
+            me.parametersform.show("parametersform", item);
+        };
+
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name' && name != 'Type')
+                return;
+
+            if(!item[name]){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if(name == "Name"){
+                var res = me.VueConfig.data.items.filter(function(i){ return i != item && i.Name == item.Name && item.Type == i.Type });
+                if(res.length > 0){
+                    return WorkflowDesignerConstants.FieldMustBeUnique;
+                }
+            }
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+            me.VueConfig.data.jsonform && me.VueConfig.data.jsonform.destroy();
+
+            me.codeform && me.codeform.destroy();
+            delete me.codeform;
+            me.parametersform && me.parametersform.destroy();
+            delete me.parametersform;
+        }
+
+        me.VueConfig.methods.validate = function(){
+            var validateFunc = me.VueConfig.methods.validateField;
+            var items = me.VueConfig.data.items;
+            for(var i=0; i < items.length; i++){
+                var item = items[i];
+                if(validateFunc('Name', item) || validateFunc('Type', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.getGlobalCodeActionsForDelete = function(original, target) {
+            var names = [];
+            original.forEach(function(ca){         
+                if(ca.IsGlobal) 
+                {
+                    var isSameName = false;
+                    for(var i=0; i < original.length; i++)
+                    {
+                        if(ca.Name == original[i].Name && ca.IsGlobal != original[i].IsGlobal)
+                        {
+                            isSameName = true;
+                            break;
+                        }
+                    }
+
+                    var isFind = false;
+                    for(var i=0; i < target.length; i++)
+                    {
+                        if(isSameName) 
+                        {
+                            if(ca.Name == target[i].Name && target[i].IsGlobal) 
+                            {
+                                isFind = true;
+                                break;
+                            }
+                        }
+                        else
+                        {
+                            if(ca.Name == target[i].Name) 
+                            {
+                                isFind = true;
+                                break;
+                            }
+                        }
+                    }
+
+                    if(!isFind)
+                        names.push(ca.Name);
+                }
+            });
+        return names;
+    }
+        me.VueConfig.methods.onSave = function(){
+            if(!(me.VueConfig.methods.validate && me.VueConfig.methods.validate()))
+                return;
+    
+                for (var j = 0; j <me.VueConfig.data.items.length; j++)
+                {
+                    var dataItem = me.VueConfig.data.items[j];
+                    if (typeof dataItem.ActionCode === "undefined")
+                    {
+                        if (dataItem.Type === "Action")
+                        {
+                            dataItem.ActionCode = "return;"
+                        }
+                        else if (dataItem.Type === "Condition")
+                        {
+                            dataItem.ActionCode = "return false;"
+                        }
+                        else if (dataItem.Type === "RuleGet")
+                        {
+                            dataItem.ActionCode = "return new List<string>();"
+                        }
+                        else if (dataItem.Type === "RuleCheck")
+                        {
+                            dataItem.ActionCode = "return false;"
+                        } 
+                    }
+                    
+                    if (typeof dataItem.Usings === "undefined")
+                    {
+                        dataItem.Usings="";
+                    }
+                    
+                }
+               
+             var names = me.VueConfig.methods.getGlobalCodeActionsForDelete(me.graph.data.CodeActions, me.VueConfig.data.items);
+                if(names.length > 0)
+                {
+                    me.graph.designer.deleteGlobalCodeAction(names);
+                }
+
+                me.graph.UpdateData(me.graph.data.CodeActions, me.VueConfig.data.items);
+                me.onClose(true);
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+
+            if(me.VueConfig.data.readonly){
+                me.onClose(true);
+                return;
+            }
+
+            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
+                me.graph.data.CodeActions, 
+                me.VueConfig.data.items, 
+                ["Name", "Type", "IsAsync", "IsGlobal", "Usings", "ActionCode", "ParameterDefinitions"])) {
+                
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+            else{
+                me.onClose(true);
+            }
+        };
+    };
+</script>

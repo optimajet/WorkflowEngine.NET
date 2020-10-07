@@ -1,7 +1,11 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
@@ -26,7 +30,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "ParentProcessId", Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier}, 
-                new ColumnInfo {Name = "StartingTransition"}
+                new ColumnInfo {Name = "StartingTransition"},
+                new ColumnInfo {Name = nameof(SubprocessName)},
             });
         }
 
@@ -34,6 +39,7 @@ namespace OptimaJet.Workflow.DbPersistence
         public Guid? ParentProcessId { get; set; }
         public Guid RootProcessId { get; set; }
         public string StartingTransition { get; set; }
+        public string SubprocessName { get; set; }
 
         public override object GetValue(string key)
         {
@@ -47,6 +53,8 @@ namespace OptimaJet.Workflow.DbPersistence
                     return RootProcessId;
                 case "StartingTransition":
                     return StartingTransition;
+                case nameof(SubprocessName):
+                    return SubprocessName;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
@@ -68,17 +76,20 @@ namespace OptimaJet.Workflow.DbPersistence
                 case "StartingTransition":
                     StartingTransition = value as string;
                     break;
+                case nameof(SubprocessName):
+                    SubprocessName = value as string;
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
         }
 
 
-        public static async Task<List<IProcessInstanceTreeItem>> GetProcessTreeItemsByRootProcessId(SqlConnection connection, Guid rootProcessId)
+        public static async Task<List<IProcessInstanceTreeItem>> GetProcessTreeItemsByRootProcessIdAsync(SqlConnection connection, Guid rootProcessId)
         {
             var builder = new StringBuilder();
             builder.Append("SELECT ");
-            builder.Append($"[{nameof(Id)}], [{nameof(ParentProcessId)}], [{nameof(RootProcessId)}], [{nameof(StartingTransition)}] ");
+            builder.Append($"[{nameof(Id)}], [{nameof(ParentProcessId)}], [{nameof(RootProcessId)}], [{nameof(StartingTransition)}], [{nameof(SubprocessName)}] ");
             builder.Append($"FROM {WorkflowProcessInstance.ObjectName} ");
             builder.Append($"WHERE [{nameof(RootProcessId)}] = @rootProcessId");
 

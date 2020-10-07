@@ -17,7 +17,7 @@ namespace WF.Sample {
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
+        /// To modify, move the field declaration from the designer file to a code-behind file.
         /// </remarks>
         protected global::WF.Sample.Controls.FoldersControl Folders;
         
@@ -26,7 +26,7 @@ namespace WF.Sample {
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
+        /// To modify, move the field declaration from the designer file to a code-behind file.
         /// </remarks>
         protected global::WF.Sample.Controls.HeaderControl Header;
         
@@ -35,7 +35,7 @@ namespace WF.Sample {
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
+        /// To modify, move the field declaration from the designer file to a code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.ContentPlaceHolder MainContent;
     }

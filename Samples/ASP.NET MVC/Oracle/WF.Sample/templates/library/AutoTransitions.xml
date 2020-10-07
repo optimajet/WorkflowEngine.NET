@@ -1,0 +1,34 @@
+<Process Name="AutoTransitions" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="Activity_1" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Activity_1" OriginalSchemeCode="AutoTransitions">
+      <Designer X="980" Y="280" Hidden="false" />
+    </Activity>
+    <Activity Name="Activity_2" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Activity_2" OriginalSchemeCode="AutoTransitions">
+      <Designer X="1280" Y="280" Hidden="false" />
+    </Activity>
+    <Activity Name="Activity_3" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="Activity_3" OriginalSchemeCode="AutoTransitions">
+      <Designer X="1580" Y="280" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_1_Activity_2_1" To="Activity_2" From="Activity_1" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1222" Y="310" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_2_Activity_3_1" To="Activity_3" From="Activity_2" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Always" />
+      </Conditions>
+      <Designer X="1527" Y="310" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

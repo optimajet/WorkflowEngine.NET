@@ -3,7 +3,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 4.2
+Version: 5.0
 File: CreatePersistenceObjects.sql
 */
 
@@ -32,6 +32,7 @@ CREATE TABLE IF NOT EXISTS `workflowprocessinstance` (
   `RootProcessId` binary(16) NOT NULL,
   `TenantId` varchar(1024) NULL,
   `StartingTransition` longtext NULL,
+  `SubprocessName` longtext NULL,
   PRIMARY KEY  (`Id`),
   KEY `SchemeId` (`SchemeId`)
 );

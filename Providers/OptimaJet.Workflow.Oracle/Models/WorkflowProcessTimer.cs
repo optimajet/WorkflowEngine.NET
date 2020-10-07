@@ -2,6 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -77,18 +78,18 @@ namespace OptimaJet.Workflow.Oracle
                     RootProcessId = new Guid((byte[])value);
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
-        public static int DeleteInactiveByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<int> DeleteInactiveByProcessIdAsync(OracleConnection connection, Guid processId)
         {
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE PROCESSID = :processid AND IGNORE = 1", ObjectName), pProcessId);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 1", pProcessId).ConfigureAwait(false);
         }
 
-        public static int DeleteByProcessId(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
+        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
         {
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
@@ -96,120 +97,67 @@ namespace OptimaJet.Workflow.Oracle
             {
                 var parameters = new List<string>();
                 var sqlParameters = new List<OracleParameter>() {pProcessId};
-                var cnt = 0;
-                foreach (var timer in timersIgnoreList)
+                int cnt = 0;
+                foreach (string timer in timersIgnoreList)
                 {
-                    var parameterName = string.Format("ignore{0}", cnt);
-                    parameters.Add(string.Format(":{0}", parameterName));
+                    string parameterName = $"ignore{cnt}";
+                    parameters.Add($":{parameterName}");
                     sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.NVarchar2, timer, ParameterDirection.Input));
                     cnt++;
                 }
 
-                var commandText = string.Format("DELETE FROM {0} WHERE PROCESSID = :processid AND NAME NOT IN ({1})", ObjectName, string.Join(",", parameters));
+                string commandText = $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND NAME NOT IN ({String.Join(",", parameters)})";
 
-                return ExecuteCommand(connection, commandText, sqlParameters.ToArray());
+                return await ExecuteCommandAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
             }
 
-            return ExecuteCommand(connection, string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName), pProcessId);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid", pProcessId).ConfigureAwait(false);
 
         }
 
-        public static WorkflowProcessTimer SelectByProcessIdAndName(OracleConnection connection, Guid processId, string name)
+        public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(OracleConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid AND NAME = :name", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid AND NAME = :name";
     
-            return Select(connection, selectText,
+            return (await SelectAsync(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
-                new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input))
+                new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input)).ConfigureAwait(false))
                 .FirstOrDefault();
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid";
 
-            return Select(connection, selectText,
-                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
+            return await SelectAsync(connection, selectText,
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectActiveByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE PROCESSID = :processid AND IGNORE = 0", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 0";
 
-            return Select(connection, selectText,
-                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
+            return await SelectAsync(connection, selectText,
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static int ClearTimerIgnore(OracleConnection connection, Guid timerId)
+        public static async Task<int> SetTimerIgnoreAsync(OracleConnection connection, Guid timerId)
         {
-            var command = string.Format("UPDATE {0} SET IGNORE = 0 WHERE ID = :timerid", ObjectName);
+            string command = $"UPDATE {ObjectName} SET IGNORE = 1 WHERE ID = :timerid AND IGNORE = 0";
             var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
-            return ExecuteCommand(connection, command, p1);
+            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
         }
 
-        public static int SetTimerIgnore(OracleConnection connection, Guid timerId)
-        {
-            var command = string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID = :timerid AND IGNORE = 0", ObjectName);
-            var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
-            return ExecuteCommand(connection, command, p1);
-        }
-
-        public static WorkflowProcessTimer GetCloseExecutionTimer(OracleConnection connection)
-        {
-            string selectText = string.Format("SELECT * FROM ( SELECT * FROM {0}  WHERE IGNORE = 0 ORDER BY NextExecutionDateTime) WHERE ROWNUM = 1", ObjectName);
-            return Select(connection, selectText).FirstOrDefault();
-        }
-
-        public static WorkflowProcessTimer[] GetTimersToExecute(OracleConnection connection, DateTime now)
-        {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime", ObjectName);
-            return Select(connection, selectText,
-                new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input));
-        }
-
-        public static WorkflowProcessTimer[] GetTopTimersToExecute(OracleConnection connection, int top, DateTime now)
+        public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(OracleConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT * FROM (SELECT * FROM {ObjectName} " +
                                 "WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime " +
                                 "ORDER BY NextExecutionDateTime) WHERE ROWNUM <= :rowsCount";
 
-            return Select(connection, selectText,
+            return await SelectAsync(connection, selectText,
                 new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input),
                 new OracleParameter("rowsCount", OracleDbType.Int32, top, ParameterDirection.Input)
-            );
-        }
-
-        public static int SetIgnore(OracleConnection connection, WorkflowProcessTimer[] timers)
-        {
-            if (timers.Length == 0)
-                return 0;
-            var result = 0;
-            var skip = 0;
-            var take = 1000;
-
-            while (skip < timers.Length)
-            {
-
-                var parameters = new List<string>();
-                var sqlParameters = new List<OracleParameter>();
-                var cnt = 0;
-
-                foreach (var timer in timers.Skip(skip).Take(take))
-                {
-                    var parameterName = string.Format("timer{0}", cnt);
-                    parameters.Add(string.Format(":{0}", parameterName));
-                    sqlParameters.Add(new OracleParameter(parameterName, OracleDbType.Raw, timer.Id.ToByteArray(), ParameterDirection.Input));
-                    cnt++;
-                }
-
-                result = result + ExecuteCommand(connection,
-                             string.Format("UPDATE {0} SET IGNORE = 1 WHERE ID IN ({1})", ObjectName, string.Join(",", parameters)),
-                             sqlParameters.ToArray());
-
-                skip = skip + take;
-            }
-
-            return result;
+            ).ConfigureAwait(false);
         }
     }
 }

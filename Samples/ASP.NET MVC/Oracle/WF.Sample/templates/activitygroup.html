@@ -1,0 +1,67 @@
+<h3>{{ title }}</h3>
+<div :id="designer_container" style="width: 100%; height: calc(100% - 100px);"></div>
+
+<div class="WorkflowDesignerButtons">
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+
+<script>
+    function activitygroup_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            designer_container: me.id + "_designer",
+            labels: WorkflowDesignerConstants.EditExpressionLabel,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            title: me.options.title     
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+            setTimeout(function(){
+               me.VueConfig.methods.renderDesigner(value);
+            }, 1);
+        };
+
+        me.VueConfig.methods.renderDesigner = function(value){
+            if(me.designer != undefined)
+                me.designer.destroy();
+
+            var containerName = me.VueConfig.data.designer_container;
+            var container = $('#' + containerName);
+            
+            me.designer = new WorkflowDesigner({
+                name: containerName,
+                renderTo: containerName,
+                templatefolder: me.graph.Settings.templatefolder,
+                apiurl: me.graph.Settings.apiurl,
+                graphwidth: container.width(),
+                graphheight: container.height(),
+                readonly: true,
+                group: me.options.group,
+                hideElementsToolbar: true,
+                hideLegend: true,
+                hideInfoBlock: true,    
+            });
+            
+            me.designer.data = value;
+            me.designer.render();
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            if(me.designer){
+                me.designer.destroy();
+                delete me.designer;
+            }
+        }
+
+        me.VueConfig.methods.resize = function(){
+            var containerName = me.VueConfig.data.designer_container;
+            var container = $('#' + containerName);
+            if(me.designer && container.length > 0){
+                me.designer.resize(container.width(), container.height());
+            }
+        };
+    };
+</script>

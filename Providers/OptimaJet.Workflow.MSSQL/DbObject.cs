@@ -2,7 +2,11 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Linq;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Reflection;
 using System.Threading.Tasks;
 
@@ -52,27 +56,17 @@ namespace OptimaJet.Workflow.DbPersistence
       
         #region Command Insert/Update/Delete/Commit
         
-        public int Insert(SqlConnection connection)
-        {
-            return InsertAsync(connection).Result;
-        }
-        
-        public Task<int> InsertAsync(SqlConnection connection)
+        public Task<int> InsertAsync(SqlConnection connection, SqlTransaction transaction = null)
         {
             var commandText = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
                 ObjectName,
                 String.Join(",", DBColumns.Where(c=> !c.IsVirtual).Select(c => string.Format("[{0}]", c.Name))),
                 String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => "@" + c.Name)));
             var parameters = DBColumns.Select(CreateParameter).ToArray();
-            return ExecuteCommandAsync(connection, commandText, parameters);
-        }
-
-        public virtual int Update(SqlConnection connection)
-        {
-            return UpdateAsync(connection).Result;
+            return ExecuteCommandAsync(connection, commandText, transaction, parameters);
         }
         
-        public virtual Task<int> UpdateAsync(SqlConnection connection)
+        public Task<int> UpdateAsync(SqlConnection connection, SqlTransaction transaction = null)
         {
             string command = String.Format(@"UPDATE {0} SET {1} WHERE {2}",
                 ObjectName,
@@ -81,18 +75,14 @@ namespace OptimaJet.Workflow.DbPersistence
 
             var parameters = DBColumns.Select(CreateParameter).ToArray();
 
-            return ExecuteCommandAsync(connection, command, parameters);
+            return ExecuteCommandAsync(connection, command, transaction, parameters);
         }
 
-        public static T[] SelectAll(SqlConnection connection)
+        public static async Task<T[]> SelectAllAsync(SqlConnection connection)
         {
-            return Select(connection, string.Format("SELECT * FROM {0}", ObjectName));
+            return await SelectAsync(connection, $"SELECT * FROM {ObjectName}").ConfigureAwait(false);
         }
 
-        public static T SelectByKey(SqlConnection connection, object id)
-        {
-            return SelectByKeyAsync(connection, id).Result;
-        }
         
         public static async Task<T> SelectByKeyAsync(SqlConnection connection, object id)
         {
@@ -109,11 +99,6 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return (await SelectAsync(connection, selectText, pId).ConfigureAwait(false)).FirstOrDefault();
         }
-
-        public static int Delete(SqlConnection connection, object id, SqlTransaction transaction = null)
-        {
-            return DeleteAsync(connection, id, transaction).Result;
-        }
         
         public static Task<int> DeleteAsync(SqlConnection connection, object id, SqlTransaction transaction = null)
         {
@@ -128,22 +113,10 @@ namespace OptimaJet.Workflow.DbPersistence
                 string.Format("DELETE FROM {0} WHERE [{1}] = @p_id", ObjectName, key.Name), transaction, pId);
         }
 
-
-        public static int ExecuteCommand(SqlConnection connection, string commandText, 
-            params SqlParameter[] parameters)
-        {
-            return ExecuteCommand(connection, commandText, null, parameters);
-        }
-        
         public static Task<int> ExecuteCommandAsync(SqlConnection connection, string commandText, 
             params SqlParameter[] parameters)
         {
             return ExecuteCommandAsync(connection, commandText, null, parameters);
-        }
-
-        public static int ExecuteCommand(SqlConnection connection, string commandText, SqlTransaction transaction = null, params SqlParameter[] parameters)
-        {
-            return ExecuteCommandAsync(connection, commandText, transaction, parameters).Result;
         }
 
         public static async Task<int> ExecuteCommandAsync(SqlConnection connection, string commandText, SqlTransaction transaction = null,
@@ -180,12 +153,6 @@ namespace OptimaJet.Workflow.DbPersistence
                 var cnt = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
                 return cnt;
             }
-        }
-
-
-        public static T[] Select(SqlConnection connection, string commandText, params SqlParameter[] parameters)
-        {
-            return SelectAsync(connection, commandText, parameters).Result;
         }
 
         public static async Task<T[]> SelectAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
@@ -240,27 +207,29 @@ namespace OptimaJet.Workflow.DbPersistence
 
         #endregion Command Insert/Update/Delete/Commit
 
-        public async static Task<int> InsertAllAsync(SqlConnection connection, T[] values)
+        public static async Task<int> InsertAllAsync(SqlConnection connection, T[] values, SqlTransaction transaction = null)
         {
             if (values.Length < 1)
+            {
                 return 0;
+            }
 
             var parameters = new List<SqlParameter>();
             var names = new List<string>();
 
             for (int i = 0; i < values.Length; i++)
             {
-                names.Add("("+String.Join(",", values[i].DBColumns.Select(c => "@" + i.ToString() + c.Name))+")");
+                names.Add("("+String.Join(",", values[i].DBColumns.Select(c => "@" + i + c.Name))+")");
                 parameters.AddRange(values[i].DBColumns.Select(c => values[i].CreateParameter(c, i.ToString())).ToArray());
             }
 
-            string command = string.Format("INSERT INTO {0} ({1}) VALUES {2}",
+            string command = String.Format("INSERT INTO {0} ({1}) VALUES {2}",
                 ObjectName,
-                String.Join(",", values.First().DBColumns.Select(c => string.Format("[{0}]", c.Name))),
+                String.Join(",", values.First().DBColumns.Select(c => $"[{c.Name}]")),
                 String.Join(",", names));
 
 
-            return await ExecuteCommandAsync(connection, command, parameters.ToArray()).ConfigureAwait(false);
+            return await ExecuteCommandAsync(connection, command, transaction, parameters.ToArray()).ConfigureAwait(false);
         }
 
         public static object ConvertToDbCompatibilityType(object obj)
@@ -282,6 +251,7 @@ namespace OptimaJet.Workflow.DbPersistence
             var p = new SqlParameter(c.Name, c.Type) {Value = value, IsNullable = isNullable};
             return p;
         }
+        
         public virtual SqlParameter CreateParameter(ColumnInfo c, string namePrefix)
         {
             var value = GetValue(c.Name);
@@ -296,6 +266,7 @@ namespace OptimaJet.Workflow.DbPersistence
             var p = new SqlParameter(namePrefix + c.Name, c.Type) {Value = value, IsNullable = isNullable};
             return p;
         }
+        
         private static bool IsNullable<T1>(T1 obj)
         {
             if (obj == null) return true;  //-V3111

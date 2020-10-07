@@ -170,7 +170,7 @@ namespace WF.Sample.Redis.Implementation
 
             #region Insert scheme
 
-            Provider.SaveScheme("SimpleWF",false,new List<string>(), @"<Process Name=""SimpleWF"">
+            Provider.SaveSchemeAsync("SimpleWF",false,new List<string>(), @"<Process Name=""SimpleWF"">
   <Designer X=""-110"" Y=""-60"" />
   <Actors>
     <Actor Name=""Author"" Rule=""IsDocumentAuthor"" Value="""" />
@@ -465,7 +465,7 @@ return new List<string> { document.AuthorId.ToString() };]]></ActionCode>
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""VacationRequestCreated"" Value=""Vacation request created"" />
     <Localize Type=""State"" IsDefault=""True"" Culture=""en-US"" ObjectName=""RequestApproved"" Value=""Request approved"" />
   </Localization>
-</Process>", new List<string>());
+</Process>", new List<string>()).Wait();
             #endregion
 
             batch.Execute();

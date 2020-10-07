@@ -1,10 +1,11 @@
-﻿using System;
+using System;
 using System.Collections.Generic;
 using System.Threading;
 using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Runtime;
+using OptimaJet.Workflow.Core.Runtime.Timers;
 
 namespace OptimaJet.Workflow.Core.Persistence
 {
@@ -24,100 +25,121 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ProcessAlreadyExistsException"></exception>
-        void InitializeProcess(ProcessInstance processInstance);
+        Task InitializeProcessAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Fills system <see cref="ParameterPurpose.System"/>  and persisted <see cref="ParameterPurpose.Persistence"/> parameters of the process
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
-        void FillProcessParameters(ProcessInstance processInstance);
+        Task FillProcessParametersAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Fills persisted <see cref="ParameterPurpose.Persistence"/> parameters of the process
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
-        void FillPersistedProcessParameters(ProcessInstance processInstance);
+        Task FillPersistedProcessParametersAsync(ProcessInstance processInstance);
+
+        /// <summary>
+        /// Fills persisted <see cref="ParameterPurpose.Persistence"/> parameter of the process
+        /// </summary>
+        /// <param name="processInstance">Instance of the process</param>
+        Task FillPersistedProcessParameterAsync(ProcessInstance processInstance, string parameterName);
 
         /// <summary>
         /// Fills system <see cref="ParameterPurpose.System"/> parameters of the process
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
-        void FillSystemProcessParameters(ProcessInstance processInstance);
+        Task FillSystemProcessParametersAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Saves persisted <see cref="ParameterPurpose.Persistence"/> parameters of the process to store
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
-        void SavePersistenceParameters(ProcessInstance processInstance);
+        Task SavePersistenceParametersAsync(ProcessInstance processInstance);
+
+        /// <summary>
+        /// Save persisted <see cref="ParameterPurpose.Persistence"/> parameter of the process to store
+        /// </summary>
+        /// <param name="processInstance">Instance of the process</param>
+        /// <param name="parameterName">Name of parameter for save</param>
+        Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName);
+
+        /// <summary>
+        /// Remove persisted <see cref="ParameterPurpose.Persistence"/> parameter of the process from store
+        /// </summary>
+        /// <param name="processInstance">Instance of the process</param>
+        /// <param name="parameterName">Name of parameter for save</param>
+        Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName);
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Initialized"/>
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
-        void SetWorkflowIniialized(ProcessInstance processInstance);
+        Task SetWorkflowInitializedAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Idled"/>
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
-        void SetWorkflowIdled(ProcessInstance processInstance);
+        Task SetWorkflowIdledAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Running"/>
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
-        void SetWorkflowRunning(ProcessInstance processInstance);
+        Task SetWorkflowRunningAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Finalized"/>
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
-        void SetWorkflowFinalized(ProcessInstance processInstance);
+        Task SetWorkflowFinalizedAsync(ProcessInstance processInstance);
+
+        /// <summary>
+        /// Set process instance status to newStatus
+        /// </summary>
+        /// <param name="processId">Process id</param>
+        /// <param name="newStatus">New process status</param>
+        /// <exception cref="ImpossibleToSetStatusException"></exception>
+        Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus);
 
         /// <summary>
         /// Set process instance status to <see cref="ProcessStatus.Terminated"/>
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <exception cref="ImpossibleToSetStatusException"></exception>
-#pragma warning disable 612
-        void SetWorkflowTerminated(ProcessInstance processInstance, ErrorLevel level, string errorMessage);
-#pragma warning restore 612
-
-        /// <summary>
-        /// Resets all process to <see cref="ProcessStatus.Idled"/> status
-        /// </summary>
-        void ResetWorkflowRunning();
+        Task SetWorkflowTerminatedAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Updates system parameters of the process in the store
         /// </summary>
         /// <param name="processInstance">Instance of the process</param>
         /// <param name="transition">Last executed transition</param>
-        void UpdatePersistenceState(ProcessInstance processInstance, TransitionDefinition transition);
+        Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition);
 
         /// <summary>
         /// Checks existence of the process
         /// </summary>
         /// <param name="processId">Id of the process</param>
         /// <returns></returns>
-        bool IsProcessExists(Guid processId);
+        Task<bool> IsProcessExistsAsync(Guid processId);
 
         /// <summary>
         /// Returns status of the process <see cref="ProcessStatus"/>
         /// </summary>
         /// <param name="processId">Id of the process</param>
         /// <returns>Status of the process</returns>
-        ProcessStatus GetInstanceStatus(Guid processId);
+        Task<ProcessStatus> GetInstanceStatusAsync(Guid processId);
 
         /// <summary>
         /// Saves information about changed scheme to the store
         /// </summary>
         /// <param name="processInstance">Instance of the process whith changed scheme <see cref="ProcessInstance.ProcessScheme"/></param>
-        void BindProcessToNewScheme(ProcessInstance processInstance);
+        Task BindProcessToNewSchemeAsync(ProcessInstance processInstance);
 
         /// <summary>
         /// Saves information about changed scheme to the store
@@ -125,64 +147,43 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <param name="processInstance">Instance of the process whith changed scheme <see cref="ProcessInstance.ProcessScheme"/></param>
         /// <param name="resetIsDeterminingParametersChanged">True if required to reset IsDeterminingParametersChanged flag <see cref="ProcessInstance.IsDeterminingParametersChanged"/></param>
         /// <exception cref="ProcessNotFoundException"></exception>
-        void BindProcessToNewScheme(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged);
+        Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged);
 
         /// <summary>
         /// Register a new timer
         /// </summary>
         /// <param name="processId">Id of the process</param>
+        /// <param name="rootProcessId">Id of the root process</param>
         /// <param name="name">Timer name <see cref="TimerDefinition.Name"/></param>
         /// <param name="nextExecutionDateTime">Next date and time of timer's execution</param>
         /// <param name="notOverrideIfExists">If true specifies that the existing timer with same name will not be overriden <see cref="TimerDefinition.NotOverrideIfExists"/></param>
-        void RegisterTimer(Guid processId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists);
+        Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists);
 
         /// <summary>
         /// Removes all timers from the store, exlude listed in ignore list
         /// </summary>
         /// <param name="processId">Id of the process</param>
         /// <param name="timersIgnoreList">Ignore list</param>
-        void ClearTimers(Guid processId, List<string> timersIgnoreList);
+        Task ClearTimersAsync(Guid processId, List<string> timersIgnoreList);
 
         /// <summary>
-        /// Clears sign Ignore for all timers
+        /// Get all timers of a process
         /// </summary>
-        void ClearTimersIgnore();
-
-
-        /// <summary>
-        /// Clears sign Ignore for specific timers
-        /// </summary>
-        void ClearTimerIgnore(Guid timerId);
-
-        /// <summary>
-        /// Remove specific timer
-        /// </summary>
-        /// <param name="timerId">Id of the timer</param>
-        void ClearTimer(Guid timerId);
-
-        /// <summary>
-        /// Get closest execution date and time for all timers
-        /// </summary>
+        /// <param name="processId">Id of the process</param>
         /// <returns></returns>
-        DateTime? GetCloseExecutionDateTime();
-
-        /// <summary>
-        /// Get all timers which must be executed at this moment of time
-        /// </summary>
-        /// <returns>List of timers to execute</returns>
-        List<TimerToExecute> GetTimersToExecute();
+        Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId);
 
         /// <summary>
         /// Remove all information about the process from the store
         /// </summary>
         /// <param name="processId">Id of the process</param>
-        void DeleteProcess(Guid processId);
+        Task DeleteProcessAsync(Guid processId);
 
         /// <summary>
         /// Remove all information about the process from the store
         /// </summary>
         /// <param name="processIds">List of ids of the process</param>
-        void DeleteProcess(Guid[] processIds);
+        Task DeleteProcessAsync(Guid[] processIds);
 
         /// <summary>
         /// Saves a global parameter value
@@ -191,7 +192,7 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <param name="type">Logical type of the parameter</param>
         /// <param name="name">Name of the parameter</param>
         /// <param name="value">Value of the parameter</param>
-        void SaveGlobalParameter<T>(string type, string name, T value);
+        Task SaveGlobalParameterAsync<T>(string type, string name, T value);
 
         /// <summary>
         /// Returns a global parameter value
@@ -200,7 +201,7 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <param name="type">Logical type of the parameter</param>
         /// <param name="name">Name of the parameter</param>
         /// <returns>Value of the parameter</returns>
-        T LoadGlobalParameter<T>(string type, string name);
+        Task<T> LoadGlobalParameterAsync<T>(string type, string name);
 
         /// <summary>
         /// Returns a global parameter value
@@ -208,26 +209,63 @@ namespace OptimaJet.Workflow.Core.Persistence
         /// <typeparam name="T">System type of the parameter</typeparam>
         /// <param name="type">Logical type of the parameter</param>
         /// <returns>List of the values of the parameters</returns>
-        List<T> LoadGlobalParameters<T>(string type);
+        Task<List<T>> LoadGlobalParametersAsync<T>(string type);
 
         /// <summary>
         /// Deletes a global parameter
         /// </summary>
         /// <param name="type">Logical type of the parameter</param>
         /// <param name="name">Name of the parameter</param>
-        void DeleteGlobalParameters(string type, string name = null);
+        Task DeleteGlobalParametersAsync(string type, string name = null);
 
         /// <summary>
         /// Returns the history of process
         /// </summary>
         /// <param name="processId">Id of the process</param>
         /// <returns></returns>
-        List<ProcessHistoryItem> GetProcessHistory(Guid processId);
+        Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId);
 
         bool IsBulkOperationsSupported { get; }
 
-        Task BulkInitProcesses(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token);
+        Task BulkInitProcessesAsync(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token);
 
-        Task BulkInitProcesses(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token);
+        Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token);
+
+        Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId);
+
+        Task<bool> MultiServerRuntimesExistAsync();
+
+        Task<WorkflowRuntimeModel> CreateWorkflowRuntimeAsync(string runtimeId, RuntimeStatus status);
+
+        Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status);
+
+        Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(WorkflowRuntimeModel runtime, string restorerId);
+
+        Task<List<Guid>> GetRunningProcessesAsync(string runtimeId = null);
+
+        Task<List<ProcessTimer>> GetActiveTimersForProcessAsync(Guid processId);
+
+        Task DeleteInactiveTimersByProcessIdAsync(Guid processId);
+
+        Task DeleteTimerAsync(Guid timerId);
+
+        Task<List<Model.WorkflowTimer>> GetTopTimersToExecuteAsync(int top);
+
+        Task<int> SetTimerIgnoreAsync(Guid id);
+
+        Task<int> ActiveMultiServerRuntimesCountAsync(string currentRuntimeId);
+
+        Task<WorkflowRuntimeModel> GetWorkflowRuntimeModelAsync(string runtimeId);
+
+        Task<List<WorkflowRuntimeModel>> GetWorkflowRuntimesAsync();
+
+        Task<int> SendRuntimeLastAliveSignalAsync();
+
+        Task<DateTime?> GetNextTimerDateAsync(TimerCategory timerCategory, int timerInterval);
+
+        Task DeleteWorkflowRuntimeAsync(string name);
+
+        IApprovalProvider GetIApprovalProvider();
+
     }
 }

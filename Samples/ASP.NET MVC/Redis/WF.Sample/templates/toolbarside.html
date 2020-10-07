@@ -1,0 +1,105 @@
+<div class="WorkflowDesignerToolbarBlock Vertical">
+    <div>
+        <el-tooltip :content="labels.Move" placement="left">
+            <el-button :class="getButtonClass(move)" @click="moveClick()">
+                <div class="WorkflowDesignerToolbarIcon Move"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div><span class="WorkflowDesignerToolbarDividerVertical"></span></div>
+
+    <div>
+        <el-tooltip :content="labels.FullScreen" placement="left">
+            <el-button :class="getButtonClass(fullscreen)" @click="onFullScreenClick()">
+                <div class="WorkflowDesignerToolbarIcon FullScreen"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div>
+        <el-tooltip :content="labels.ZoomPositionDefault" placement="left">
+            <el-button :class="getButtonClass()" @click="onZoomPositionDefaultClick()">
+                <div class="WorkflowDesignerToolbarIcon ZoomPositionDefault"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div>
+        <el-tooltip :content="labels.ZoomIn" placement="left">
+            <el-button :class="getButtonClass()" @click="onZoomInClick()">
+                <div class="WorkflowDesignerToolbarIcon ZoomIn"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div>
+        <el-tooltip :content="labels.ZoomOut" placement="left">
+            <el-button :class="getButtonClass()" @click="onZoomOutClick()">
+                <div class="WorkflowDesignerToolbarIcon ZoomOut"></div>
+            </el-button>
+        </el-tooltip>
+    </div>
+
+    <div><span class="WorkflowDesignerToolbarDividerVertical"></span></div>
+
+    <div>
+        <el-button text :class="getButtonClass()" style="padding: 0;">{{ zoom }}</el-button>
+    </div>
+    <div>
+        <el-tooltip :content="labels.ResetSettings" placement="left">
+            <el-button text :class="getButtonClass()" @click="onResetSettingsClick()">R</el-button>
+        </el-tooltip>
+    </div>
+</div>
+<script>
+    function toolbarside_Init(me){
+        var data = me.VueConfig.data;
+        data.labels = WorkflowDesignerConstants.ToolbarLabel;
+        data.zoom = "100%";
+            
+        me.VueConfig.methods.onUpdate = function(){
+            data.move = me.graph.getParam("movemodeenabled");
+            data.fullscreen = me.graph.isFullScreen;
+            me.graph.backgroundSetMoveModeEnabled(data.move);
+        };
+
+        me.VueConfig.methods.setScale = function(value){
+            data.zoom = Math.round(value * 100) + "%";
+        }
+
+        me.VueConfig.methods.moveClick = function(){
+            data.move = !data.move;
+            me.graph.backgroundSetMoveModeEnabled(data.move);
+        };
+
+        me.VueConfig.methods.onFullScreenClick = function(){
+            me.graph.onFullScreenClick();
+        };
+
+        me.VueConfig.methods.onZoomPositionDefaultClick = function(){
+            me.graph.GraphLayerScaleNorm();
+        };
+
+        me.VueConfig.methods.onResetSettingsClick = function(){
+            me.graph.designer.resetLocalStorage();
+            location.reload();
+        };
+
+        me.VueConfig.methods.onZoomInClick = function(){
+            me.graph.GraphLayerScale(0.1);
+        };
+
+        me.VueConfig.methods.onZoomOutClick = function(){
+            me.graph.GraphLayerScale(-0.1);
+        };
+        
+        me.VueConfig.methods.getButtonClass = function(isActive){
+            var res = "WorkflowDesignerToolbarIconContainer"
+            if(isActive){
+                res += " " + "WorkflowDesignerToolbarButtonActive";
+            }
+            return res;
+        };
+    };
+</script>

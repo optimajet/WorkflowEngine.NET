@@ -1,6 +1,7 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
+using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
 
@@ -23,13 +24,11 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public WorkflowProcessTimer()
         {
-            DBColumns.AddRange(new[]{
-                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name="ProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name="Name"},
-                new ColumnInfo {Name="NextExecutionDateTime", Type = NpgsqlDbType.Timestamp },
-                new ColumnInfo {Name="Ignore", Type = NpgsqlDbType.Boolean },
-                new ColumnInfo {Name=nameof(RootProcessId), Type = NpgsqlDbType.Uuid},
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = "Id", IsKey = true, Type = NpgsqlDbType.Uuid}, new ColumnInfo {Name = "ProcessId", Type = NpgsqlDbType.Uuid}, new ColumnInfo {Name = "Name"},
+                new ColumnInfo {Name = "NextExecutionDateTime", Type = NpgsqlDbType.Timestamp}, new ColumnInfo {Name = "Ignore", Type = NpgsqlDbType.Boolean},
+                new ColumnInfo {Name = nameof(RootProcessId), Type = NpgsqlDbType.Uuid},
             });
         }
 
@@ -81,106 +80,75 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public static int DeleteInactiveByProcessId(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction = null)
+        public static async Task<int> DeleteInactiveByProcessIdAsync(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction = null)
         {
-            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid AND \"Ignore\" = TRUE", ObjectName), transaction, pProcessId);
+            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Ignore\" = TRUE", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static int DeleteByProcessId(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
+        public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
         {
-            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
 
             if (timersIgnoreList != null && timersIgnoreList.Any())
             {
                 // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
                 var pTimerIgnoreList = new NpgsqlParameter("timerIgnoreList", NpgsqlDbType.Array | NpgsqlDbType.Varchar) //-V3059
                 {
-                    Value =timersIgnoreList.ToArray()
+                    Value = timersIgnoreList.ToArray()
                 };
 
-                return ExecuteCommand(connection,
-                    string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid AND \"Name\" != ALL(@timerIgnoreList)", ObjectName), transaction, pProcessId, pTimerIgnoreList);
+                return await ExecuteCommandAsync(connection,
+                    $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Name\" != ALL(@timerIgnoreList)", transaction, pProcessId, pTimerIgnoreList).ConfigureAwait(false);
             }
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE \"ProcessId\" = @processid", ObjectName), transaction, pProcessId);
+
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static WorkflowProcessTimer SelectByProcessIdAndName(NpgsqlConnection connection, Guid processId, string name)
+        public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(NpgsqlConnection connection, Guid processId, string name)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid AND \"Name\" = @name", ObjectName);
-            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
-
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Name\" = @name";
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
             var p2 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) {Value = name};
-            return Select(connection, selectText, p1, p2).FirstOrDefault();
+            return (await SelectAsync(connection, selectText, p1, p2).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectByProcessId(NpgsqlConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid";
 
-            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static IEnumerable<WorkflowProcessTimer> SelectActiveByProcessId(NpgsqlConnection connection, Guid processId)
+        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectActiveByProcessIdAsync(NpgsqlConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"ProcessId\" = @processid AND \"Ignore\" = FALSE", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Ignore\" = FALSE";
 
-            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
+            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static int ClearTimerIgnore(NpgsqlConnection connection, Guid timerId)
+        public static async Task<int> SetTimerIgnoreAsync(NpgsqlConnection connection, Guid timerId)
         {
-            var command = string.Format("UPDATE {0} SET \"Ignore\" = FALSE WHERE \"Id\" = @timerid", ObjectName);
-            var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) { Value = timerId };
-            return ExecuteCommand(connection, command, p1);
+            string command = $"UPDATE {ObjectName} SET \"Ignore\" = TRUE WHERE \"Id\" = @timerid AND \"Ignore\" = FALSE";
+            var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) {Value = timerId};
+            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
         }
 
-        public static int SetTimerIgnore(NpgsqlConnection connection, Guid timerId)
-        {
-            var command = string.Format("UPDATE {0} SET \"Ignore\" = TRUE WHERE \"Id\" = @timerid AND \"Ignore\" = FALSE", ObjectName);
-            var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) { Value = timerId };
-            return ExecuteCommand(connection, command, p1);
-        }
-
-        public static WorkflowProcessTimer GetCloseExecutionTimer(NpgsqlConnection connection)
-        {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE ORDER BY \"NextExecutionDateTime\" LIMIT 1", ObjectName);
-            return Select(connection, selectText).FirstOrDefault();
-        }
-
-        public static WorkflowProcessTimer[] GetTimersToExecute(NpgsqlConnection connection, DateTime now)
-        {
-            string selectText = string.Format("SELECT * FROM {0} WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime", ObjectName);
-            var p = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) { Value = now };
-            return Select(connection, selectText, p);
-        }
-
-        public static WorkflowProcessTimer[] GetTopTimersToExecute(NpgsqlConnection connection, int top, DateTime now)
+        public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(NpgsqlConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
                                 "WHERE \"Ignore\" = FALSE AND \"NextExecutionDateTime\" <= @currentTime " +
                                 $"ORDER BY \"NextExecutionDateTime\" LIMIT {top}";
 
-            var p1 = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) { Value = now };
-           
-            return Select(connection, selectText, p1);
-        }
+            var p1 = new NpgsqlParameter("currentTime", NpgsqlDbType.Timestamp) {Value = now};
 
-        public static int SetIgnore(NpgsqlConnection connection, WorkflowProcessTimer[] timers)
-        {
-            if (timers.Length == 0)
-                return 0;
-
-            // ReSharper disable once BitwiseOperatorOnEnumWithoutFlags
-            var p = new NpgsqlParameter("timerListParam", NpgsqlDbType.Array | NpgsqlDbType.Uuid) {Value = timers.Select(c => c.Id).ToArray()}; //-V3059
-            return ExecuteCommand(connection, string.Format("UPDATE {0} SET \"Ignore\" = TRUE WHERE \"Id\" = ANY(@timerListParam)", ObjectName), p);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

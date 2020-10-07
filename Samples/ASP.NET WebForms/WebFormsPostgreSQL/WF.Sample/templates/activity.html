@@ -1,0 +1,360 @@
+<h3>{{ labels.Title }}</h3>
+<el-form class="WorkflowDesignerWindowForm"
+    :model="FormData" 
+    ref="form" 
+    label-position="top" 
+    label-width="150px">
+    <div class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item class="el-form-item" :label="labels.Name" :rules="getFieldRules('Name')" prop="Name" style="flex-grow: 1;">
+                <el-input v-model="FormData.Name" @input="nameOnChange" :readonly="readonly"></el-input>
+            </el-form-item>
+            <el-form-item class="el-form-item" :label="labels.State" prop="State" style="flex-grow: 1;">
+                <el-input v-model="FormData.State" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+        <el-form-item size="small">
+            <el-checkbox v-model="FormData.IsInitial" @change="onInitialChange" :label="labels.IsInitial" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-model="FormData.IsFinal" @change="onFinalChange":label="labels.IsFinal" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-model="FormData.IsForSetState" :label="labels.IsForSetState" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-model="FormData.IsAutoSchemeUpdate" :label="labels.IsAutoSchemeUpdate" name="type" :disabled="readonly"></el-checkbox>
+        </el-form-item>  
+    </div>
+    
+    <div style="margin-bottom: 10px;">
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Implementation }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Implementation)">{{ ButtonTextCreate }}</a>
+        </h4>
+        <table v-if="FormData.Implementation.length > 0" class="WorkflowDesignerTable">
+            <th>
+                <td v-if="isIE"></td>
+                <td>{{labels.ImpAction}}</td>
+                <td>{{labels.ImpActionParameter}}</td>
+            </th>
+            <tr v-for="(imp, index) in FormData.Implementation"
+                :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event, FormData.Implementation)" @dragend="dragend($event)"
+                @dragover="dragover(imp, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly"><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+                <td>
+                    <el-select 
+                        v-model="imp.ActionName" 
+                        :title="validateField('ActionName', imp)" 
+                        :class="validateField('ActionName', imp) ? 'WorkflowDesignerInputError' : ''"
+                        style="width: 100%;" 
+                        :disabled="readonly"
+                        filterable 
+                        placeholder="">
+                        <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;"  :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
+                </td>
+                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                    <el-button-group>
+                        <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
+                        <el-button @click="removeRow(FormData.Implementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div v-if="expertMode" style="margin-bottom: 10px;">
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.PreExecutionImplementation }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.PreExecutionImplementation)">{{ ButtonTextCreate }}</a>
+        </h4>
+        <table v-if="FormData.PreExecutionImplementation.length > 0" class="WorkflowDesignerTable">
+            <th>
+                <td v-if="isIE"></td>
+                <td>{{labels.ImpAction}}</td>
+                <td>{{labels.ImpActionParameter}}</td>
+            </th>
+            <tr v-for="(imp, index) in FormData.PreExecutionImplementation"
+                :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event, FormData.PreExecutionImplementation)" @dragend="dragend($event)"
+                @dragover="dragover(imp, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+                <td>
+                    <el-select 
+                        v-model="imp.ActionName" 
+                        :title="validateField('ActionName', imp)" 
+                        :class="validateField('ActionName', imp) ? 'WorkflowDesignerInputError' : ''"
+                        style="width: 100%;" 
+                        :disabled="readonly"
+                        filterable 
+                        placeholder="">
+                        <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;"  :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
+                </td>
+                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                    <el-button-group>
+                        <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
+                        <el-button @click="removeRow(FormData.PreExecutionImplementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+    </div>
+    <div v-if="expertMode" style="margin-bottom: 10px;">
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Annotations }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Annotations)">{{ ButtonTextCreate }}</a>
+        </h4>
+
+        <table v-if="FormData.Annotations.length > 0" class="WorkflowDesignerTable">
+            <th>
+                <td v-if="isIE"></td>
+                <td>{{labels.AnnotationName}}</td>
+                <td>{{labels.AnnotationValue}}</td>
+            </th>
+            <tr v-for="(annotation, index) in FormData.Annotations"
+                :class="dragOverIndex == index && dragOverBlock  == annotation ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event, FormData.Annotations)" @dragend="dragend($event)" 
+                @dragover="dragover(annotation, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+                <td>
+                    <el-input 
+                        v-model="annotation.Name" 
+                        :title="validateField('Name', annotation)" 
+                        :class="validateField('Name', annotation) ? 'WorkflowDesignerInputError' : ''">
+                    </el-input>
+                </td>
+                <td>
+                    <el-input 
+                        v-model="annotation.JsonValue" :readonly="readonly">
+                    </el-input>
+                </td>
+                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                    <el-button-group>
+                        <el-button @click="showjson('JsonValue', annotation)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == annotation ? 'is-active' : '')"></el-button>
+                        <el-button @click="removeRow(FormData.Annotations, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+    </div> 
+</el-form>
+<div class="WorkflowDesignerButtons">
+    <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function activity_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.ActivityFormLabel,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
+            SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            expertMode: false,
+            actions: [],
+            editItem: null,
+            FormData: { },
+        });
+        
+        me.VueConfig.methods.onUpdate = function(item){
+            var formdata = me.VueConfig.data.FormData;
+            formdata.Name = item.Name;
+            formdata.State = item.State;
+            formdata.IsInitial = item.IsInitial;
+            formdata.IsFinal = item.IsFinal;
+            formdata.IsForSetState = item.IsForSetState;
+            formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
+            formdata.Implementation = Array.isArray(item.Implementation) ?WorkflowDesignerCommon.clone(item.Implementation) : [];
+            formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
+            formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
+
+            me.linkItem = item;
+            me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
+            me.VueConfig.data.prevName = item.Name;
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+            me.VueConfig.data.actions = me.graph.getActionNames();
+
+            if(formdata.PreExecutionImplementation.length > 0 || formdata.Annotations.length > 0)
+                me.VueConfig.data.expertMode = true;
+        };
+
+        me.VueConfig.methods.nameOnChange = function(value){
+            var formdata = me.VueConfig.data.FormData;
+            if(formdata.State == me.VueConfig.data.prevName){
+                formdata.State = value;
+            }
+            me.VueConfig.data.prevName = value;
+        };
+
+        me.VueConfig.methods.onInitialChange = function(){
+            var formdata = me.VueConfig.data.FormData;
+            formdata.IsFinal = formdata.IsInitial ? false : formdata.IsFinal;
+        };
+        
+        me.VueConfig.methods.onFinalChange = function(){            
+            var formdata = me.VueConfig.data.FormData;
+            formdata.IsInitial = formdata.IsFinal ? false : formdata.IsInitial;
+        };
+
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+        me.VueConfig.methods.querySearch = function(queryString, cb) {
+            if(me.VueConfig.data.readonly)
+                return cb([]);
+                
+            var res = me.graph.getAutoCompleteSuggestions2("actionparameter", this.currentItem.ActionName, queryString);
+            cb(res);
+        };
+
+        me.VueConfig.methods.getFieldRules = function(field){
+            var res = [{ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
+
+            if(field == "Name"){
+                var validator = function(rule, value, callback){ 
+                    var isValid = true;
+                    me.graph.data.Activities.forEach(function (a) {
+                        if (a != me.linkItem && a.Name == value) {
+                            isValid = false;
+                        }
+                    });
+                    
+                    if(isValid){
+                        callback();
+                    }
+                    else{                    
+                        callback(new Error(rule.message));
+                    }
+                };
+                res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+            }
+            return res;
+        };
+
+
+        me.VueConfig.methods.addRow = function(items){
+            items.push({});
+        };
+
+        me.VueConfig.methods.removeRow = function(items, index){
+            items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.showjson = function(name, item) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function(value){
+                if(me.editItem){
+                    me.editItem[name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function(value){
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var params = {
+                name: item["ActionName"],
+                type: ['Action']
+            };
+            me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name' && name != "ActionName")
+                return;
+
+            if(!item[name]){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+        };
+
+        me.VueConfig.methods.validate = function(){
+            var validateFunc = me.VueConfig.methods.validateField;
+            var data = me.VueConfig.data.FormData;
+            for(var i=0; i < data.Implementation.length; i++){
+                var item = data.Implementation[i];
+                if(validateFunc('ActionName', item))
+                    return false;
+            }
+
+            for(var i=0; i < data.PreExecutionImplementation.length; i++){
+                var item = data.PreExecutionImplementation[i];
+                if(validateFunc('ActionName', item))
+                    return false;
+            }
+
+            for(var i=0; i < data.Annotations.length; i++){
+                var item = data.Annotations[i];
+                if(validateFunc('Name', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(this.$refs && this.$refs.form && me.VueConfig.methods.validate()){
+                this.$refs.form.validate(function(valid) {
+                    if (valid) {
+                        me.onSuccess(me.VueConfig.data.FormData);
+                        me.onClose(true);
+                    }
+                });
+                return;
+            }
+        };
+
+        me.VueConfig.methods.onClose = function(){
+;
+            if(me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            var originalItem = me.VueConfig.data.originalItem;
+            var item = me.VueConfig.data.FormData;
+
+            if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
+                me.onClose(true);
+            }
+            else{
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+        };
+    };
+</script>

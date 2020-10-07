@@ -1,5 +1,8 @@
-﻿using System;
+using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -66,19 +69,41 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static WorkflowProcessInstancePersistence[] SelectByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<WorkflowProcessInstancePersistence[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE ProcessId = :processid", ObjectName);
-            return Select(connection, selectText,
-                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
+            string selectText = $"SELECT * FROM {ObjectName}  WHERE ProcessId = :processid";
+            return await SelectAsync(connection, selectText,
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
+        }
+        public static async Task<WorkflowProcessInstancePersistence> SelectByNameAsync(OracleConnection connection, Guid processId, string parameterName)
+        {
+            string selectText = $"SELECT * FROM {ObjectName}  WHERE ProcessId = :processid AND ParameterName = :parameterName";
+
+            var parameters = new List<OracleParameter>
+            {
+                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
+                new OracleParameter("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input)
+            };
+            return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public static int DeleteByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE PROCESSID = :processid", ObjectName),
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)
-                );
+            ).ConfigureAwait(false);
+        }
+
+        public static async Task<int> DeleteByNameAsync(OracleConnection connection, Guid processId, string parameterName)
+        {
+            List<OracleParameter> parameters = new List<OracleParameter>();
+            parameters.Add(new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
+            parameters.Add(new OracleParameter("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input));
+
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
+                parameters.ToArray()).ConfigureAwait(false);
         }
     }
 }

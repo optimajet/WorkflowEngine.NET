@@ -1,9 +1,14 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
@@ -82,21 +87,21 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static List<string> GetInlinedSchemeCodes(SqlConnection connection)
+        public static async Task<List<string>> GetInlinedSchemeCodesAsync(SqlConnection connection)
         {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE [CanBeInlined] = 1";
-            var schemes = Select(connection, selectText);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [CanBeInlined] = 1";
+            WorkflowScheme[] schemes = await SelectAsync(connection, selectText).ConfigureAwait(false);
             return schemes.Select(sch => sch.Code).ToList();
         }
 
-        public static List<string> GetRelatedSchemeCodes(SqlConnection connection, string schemeCode)
+        public static async Task<List<string>> GetRelatedSchemeCodesAsync(SqlConnection connection, string schemeCode)
         {
-            var selectText = $"SELECT * FROM {ObjectName} WHERE [{nameof(InlinedSchemes)}] LIKE '%' + @search + '%'";
+            string selectText = $"SELECT * FROM {ObjectName} WHERE [{nameof(InlinedSchemes)}] LIKE '%' + @search + '%'";
             var p = new SqlParameter("search", SqlDbType.NVarChar) {Value = $"\"{schemeCode}\""};
-            return Select(connection, selectText, p).Select(sch => sch.Code).Distinct().ToList();
+            return (await SelectAsync(connection, selectText, p).ConfigureAwait(false)).Select(sch => sch.Code).Distinct().ToList();
         }
 
-        public static List<string> GetSchemeCodesByTags(SqlConnection connection, IEnumerable<string> tags)
+        public static async Task<List<string>> GetSchemeCodesByTagsAsync(SqlConnection connection, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
 
@@ -131,35 +136,35 @@ namespace OptimaJet.Workflow.DbPersistence
             }
 
 
-            return Select(connection, query, parameters.ToArray())
+            return (await SelectAsync(connection, query, parameters.ToArray()).ConfigureAwait(false))
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();
         }
 
-        public static void AddSchemeTags(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
+        public static async Task AddSchemeTagsAsync(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
             IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder).ConfigureAwait(false);
         }
 
-        public static void RemoveSchemeTags(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
+        public static async Task RemoveSchemeTagsAsync(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
             IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
-                builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
+                builder).ConfigureAwait(false);
         }
 
-        public static void SetSchemeTags(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
+        public static async Task SetSchemeTagsAsync(SqlConnection connection, string schemeCode, IEnumerable<string> tags,
             IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => tags.ToList(), builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => tags.ToList(), builder).ConfigureAwait(false);
         }
 
-        private static void UpdateSchemeTags(SqlConnection connection, string schemeCode,
+        private static async Task UpdateSchemeTagsAsync(SqlConnection connection, string schemeCode,
             Func<List<string>, List<string>> getNewTags, IWorkflowBuilder builder)
         {
-            WorkflowScheme scheme = SelectByKey(connection, schemeCode);
+            WorkflowScheme scheme = await SelectByKeyAsync(connection, schemeCode).ConfigureAwait(false);
 
             if (scheme == null)
             {
@@ -170,7 +175,7 @@ namespace OptimaJet.Workflow.DbPersistence
             scheme.Tags = TagHelper.ToTagStringForDatabase(newTags);
             scheme.Scheme = builder.ReplaceTagsInScheme(scheme.Scheme, newTags);
 
-            scheme.Update(connection);
+            await scheme.UpdateAsync(connection).ConfigureAwait(false);
         }
     }
 }

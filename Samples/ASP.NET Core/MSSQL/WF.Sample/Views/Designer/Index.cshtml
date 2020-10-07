@@ -4,12 +4,8 @@
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
 
-<script src="/js/konva.min.js" type="text/javascript"></script>
-<script src="/js/ace.js" type="text/javascript"></script>
-<script src="/js/semantic.min.js" type="text/javascript"></script>
+<link href="/css/workflowdesigner.min.css" rel="stylesheet" type="text/css" />
 <script src="/js/workflowdesigner.min.js" type="text/javascript"></script>
-<script src="/js/json5.js" type="text/javascript"></script>
-<script src="/js/jquery.auto-complete.min.js" type="text/javascript"></script>
 
 <form action="" id="uploadform" method="post" enctype="multipart/form-data" onsubmit="tmp()" style="padding-bottom: 8px;">
     <div>
@@ -49,7 +45,7 @@
     }();
 
     var schemecode = 'SimpleWF';
-    var processid = QueryString.processid;
+   var processid = QueryString.processid;
     var graphwidth = 1200;
     var graphminheight = 600;
     var graphheight = graphminheight;
@@ -59,16 +55,14 @@
         var data;
 
         if (wfdesigner != undefined) {
-            data = wfdesigner.data;
             wfdesigner.destroy();
         }
 
-        WorkflowDesignerConstants.FormMaxHeight = 600;
         wfdesigner = new WorkflowDesigner({
             name: 'simpledesigner',
             apiurl: '/Designer/API',
             renderTo: 'wfdesigner',
-            imagefolder: '/images/',
+            templatefolder: '/templates/',
             graphwidth: graphwidth,
             graphheight: graphheight
         });
@@ -90,6 +84,8 @@
         }
     }
 
+    wfdesignerRedraw();
+
     $(window).resize(function () {
         if (window.wfResizeTimer) {
             clearTimeout(window.wfResizeTimer);
@@ -108,59 +104,59 @@
             if (graphheight < graphminheight)
                 graphheight = graphminheight;
 
-            wfdesignerRedraw();
+            wfdesigner.resize(graphwidth, graphheight);
         }, 150);
 
     });
 
     $(window).resize();
 
-function DownloadScheme(){
-    wfdesigner.downloadscheme();
-}
-
-function DownloadSchemeBPMN() {
-    wfdesigner.downloadschemeBPMN();
-}
-
-var selectSchemeType;
-function SelectScheme(type) {
-    if (type)
-        selectSchemeType = type;
-
-    var file = $('#uploadFile');
-    file.trigger('click');
-}
-
-function UploadScheme() {
-
-    if (selectSchemeType == "bpmn") {
-        wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
-            wfdesigner.autoarrangement();
-            alert('The file is uploaded!');
-        });
+    function DownloadScheme() {
+        wfdesigner.downloadscheme();
     }
-    else {
-        wfdesigner.uploadscheme($('#uploadform')[0], function () {
-            alert('The file is uploaded!');
-        });
-    }
-}
 
-function OnSave() {
-    wfdesigner.schemecode = schemecode;
+    function DownloadSchemeBPMN() {
+        wfdesigner.downloadschemeBPMN();
+    }
 
-    var err = wfdesigner.validate();
-    if (err != undefined && err.length > 0) {
-        alert(err);
+    var selectSchemeType;
+    function SelectScheme(type) {
+        if (type)
+            selectSchemeType = type;
+
+        var file = $('#uploadFile');
+        file.trigger('click');
     }
-    else {
-        wfdesigner.save(function () {
-            alert('The scheme is saved!');
-        });
+
+    function UploadScheme() {
+
+        if (selectSchemeType == "bpmn") {
+            wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
+                wfdesigner.autoarrangement();
+                alert('The file is uploaded!');                
+            });
+        }
+        else {
+            wfdesigner.uploadscheme($('#uploadform')[0], function () {
+                alert('The file is uploaded!');
+            });
+        }
     }
-}
-function OnNew() {
-    wfdesigner.create();
-}
+
+    function OnSave() {
+        wfdesigner.schemecode = schemecode;
+
+        var err = wfdesigner.validate();
+        if (err != undefined && err.length > 0) {
+            alert(err);
+        }
+        else {
+            wfdesigner.save(function () {
+                alert('The scheme is saved!');
+            });
+        }
+    }
+    function OnNew() {
+        wfdesigner.create();
+    }
 </script>

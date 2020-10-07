@@ -1,8 +1,13 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
 using System.Linq;
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 
@@ -79,9 +84,9 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static List<Guid> GetProcessesByStatus(SqlConnection connection, byte status, string runtimeId)
+        public static async Task<List<Guid>> GetProcessesByStatusAsync(SqlConnection connection, byte status, string runtimeId)
         {
-            string command = String.Format("SELECT [Id] FROM {0} WHERE [Status] = @status", ObjectName);
+            string command = $"SELECT [Id] FROM {ObjectName} WHERE [Status] = @status";
             var p = new List<SqlParameter>(); 
 
             if (!String.IsNullOrEmpty(runtimeId))
@@ -91,22 +96,13 @@ namespace OptimaJet.Workflow.DbPersistence
             }
 
             p.Add(new SqlParameter("status", SqlDbType.TinyInt) { Value = status });
-            return Select(connection, command, p.ToArray()).Select(s => s.Id).ToList();
+            
+            return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static int MassChangeStatus(SqlConnection connection, byte stateFrom, byte stateTo, DateTime time)
+        public static async Task<int> ChangeStatusAsync(SqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
         {
-            var command = string.Format("UPDATE {0} SET [Status] = @stateto, [SetTime] = @settime WHERE [Status] = @statefrom", ObjectName);
-            var p1 = new SqlParameter("statefrom", SqlDbType.TinyInt) {Value = stateFrom};
-            var p2 = new SqlParameter("stateto", SqlDbType.TinyInt) {Value = stateTo};
-            var p3 = new SqlParameter("settime", SqlDbType.DateTime) { Value = time };
-
-            return ExecuteCommand(connection, command, p1, p2, p3);
-        }
-
-        public static int ChangeStatus(SqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
-        {
-            var command = string.Format("UPDATE {0} SET [Status] = @newstatus, [Lock] = @newlock, [SetTime] = @settime, [RuntimeId] = @runtimeid WHERE [Id] = @id AND [Lock] = @oldlock", ObjectName);
+            string command = $"UPDATE {ObjectName} SET [Status] = @newstatus, [Lock] = @newlock, [SetTime] = @settime, [RuntimeId] = @runtimeid WHERE [Id] = @id AND [Lock] = @oldlock";
             var p1 = new SqlParameter("newstatus", SqlDbType.TinyInt) {Value = status.Status};
             var p2 = new SqlParameter("newlock", SqlDbType.UniqueIdentifier) {Value = status.Lock};
             var p3 = new SqlParameter("id", SqlDbType.UniqueIdentifier) {Value = status.Id};
@@ -114,7 +110,7 @@ namespace OptimaJet.Workflow.DbPersistence
             var p5 = new SqlParameter("settime", SqlDbType.DateTime) { Value = status.SetTime };
             var p6 = new SqlParameter("runtimeid", SqlDbType.NVarChar) { Value = status.RuntimeId };
 
-            return ExecuteCommand(connection, command, p1, p2, p3, p4, p5, p6);
+            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
 #if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()

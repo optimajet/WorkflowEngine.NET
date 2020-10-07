@@ -1,0 +1,214 @@
+<h3>{{ labels.Title }}  |  
+    <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+</h3>
+<div id="WorkflowDesignerCommandsList" class="WorkflowDesignerWindowForm">
+    <table class="WorkflowDesignerTable">
+        <th>
+            <td v-if="isIE"></td>
+            <td><b>{{labels.Name}}</b></td>
+        </th>
+        <tr v-for="(item, index) in items"
+            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
+            @dragover="dragover(item, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+            <td>
+                <el-input
+                    v-model="item.Name" 
+                    :title="validateField('Name', item)" 
+                    :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+                    :readonly="readonly"
+                ></el-input>
+            </td>
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button v-on:click="showparameters(item)" :class="'WorkflowDesignerTableCodeParametersButton ' + (editParametersItem == item ? 'is-active' : '')"></el-button>
+                    <el-button @click="remove(index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+        </tr>
+    </table>
+</div>
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function commands_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.CommandFormLabel,
+            editItem: undefined,     
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            editParametersItem: undefined
+        });
+
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+
+        me.VueConfig.methods.onUpdate = function(){
+            var clonedItems = WorkflowDesignerCommon.clone(me.graph.data.Commands);
+            clonedItems.forEach(function(item) {
+                if(!Array.isArray(item.InputParameters)){
+                    item.InputParameters = [];
+                }
+                item.InputParameters.forEach(function (parameterItem){
+                    if (!parameterItem.Parameter) parameterItem.Parameter = {};
+                })
+            });
+            me.VueConfig.data.items = clonedItems;
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.add = function(){
+            me.VueConfig.data.items.push({Name:"", InputParameters: []});
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerCommandsList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },10);
+        };
+
+        me.VueConfig.methods.remove = function(index){
+            me.VueConfig.data.items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.showjson = function(name, item) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+            me.VueConfig.data.jsonform = me.showjson(item[name], {}, function(value){
+                if(me.editItem){
+                    me.editItem[name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            })
+        };
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name')
+                return;
+
+            if(!item[name]){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if(name == "Name"){
+                var res = me.VueConfig.data.items.filter(function(i){ return i != item && i.Name == item.Name });
+                if(res.length > 0){
+                    return WorkflowDesignerConstants.FieldMustBeUnique;
+                }
+            }
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+            me.VueConfig.data.jsonform && me.VueConfig.data.jsonform.destroy();
+            me.parametersform && me.parametersform.destroy();
+            delete me.parametersform;
+        }
+
+        me.VueConfig.methods.showparameters = function(item) {
+            me.VueConfig.data.editParametersItem = me.editParametersItem = item;
+
+            var windowId = me.id + "_commandParameters";
+
+            var onSuccess = function(res){
+                if(me.editParametersItem){
+                    me.editParametersItem.ParameterDefinitions = WorkflowDesignerCommon.clone(res);
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            };
+
+            var onClose = function(){
+                if(me.editParametersItem){
+                    me.VueConfig.data.editParametersItem = undefined;
+                    delete me.editParametersItem;
+                }
+            }
+
+            if(!me.parametersform){
+                var options = {       
+                    move: true,
+                    resize: true,  
+                    savePosition: true, 
+                    class: "WorkflowDesignerParametersForm",
+                    onSuccess: onSuccess,
+                    onClose: onClose,
+                    parameterDefinition: {}
+                };
+                me.parametersform = me.graph.CreateWindow(windowId, options);
+            }   
+
+            me.parametersform.show("commandParameters", item);
+        };
+
+        me.VueConfig.methods.validate = function(){
+            var validateFunc = me.VueConfig.methods.validateField;
+
+            var items = me.VueConfig.data.items;
+            for(var i=0; i < items.length; i++){
+                var item = items[i];
+                if(validateFunc('Name', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(me.VueConfig.methods.validate && me.VueConfig.methods.validate()){
+                me.graph.UpdateData(me.graph.data.Commands, me.VueConfig.data.items);
+                me.onClose(true);
+            }
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+
+            if(me.VueConfig.data.readonly){
+                me.onClose(true);
+                return;
+            }
+            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
+                me.graph.data.Commands, 
+                me.VueConfig.data.items, 
+                ["Name", "InputParameters"])) {
+                
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+            else{
+                me.onClose(true);
+            }
+        };
+    };
+</script>

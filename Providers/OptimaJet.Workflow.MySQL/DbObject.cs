@@ -2,6 +2,7 @@ using MySql.Data.MySqlClient;
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Data.Common;
 using System.Linq;
 using System.Threading.Tasks;
 
@@ -33,97 +34,86 @@ namespace OptimaJet.Workflow.MySQL
         }
       
         #region Command Insert/Update/Delete/Commit
-        public virtual int Insert(MySqlConnection connection)
+        public virtual async Task<int> InsertAsync(MySqlConnection connection, MySqlTransaction transaction = null)
         {
-            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    DbTableName,
-                    String.Join(",", DBColumns.Select(c => string.Format("`{0}`", c.Name))),
-                    String.Join(",", DBColumns.Select(c => "@" + c.Name)));
+            string command = $"INSERT INTO {DbTableName} ({String.Join(",", DBColumns.Select(c => $"`{c.Name}`"))}) VALUES ({String.Join(",", DBColumns.Select(c => "@" + c.Name))})";
 
-            var parameters = DBColumns.Select(c => CreateParameter(c)).ToArray();
-            return ExecuteCommand(connection, command, parameters);
+            MySqlParameter[] parameters = DBColumns.Select(c => CreateParameter(c)).ToArray();
+            return await ExecuteCommandAsync(connection, command, transaction, parameters).ConfigureAwait(false);
         }
 
-        public virtual int Update(MySqlConnection connection)
+        public virtual async Task<int> UpdateAsync(MySqlConnection connection, MySqlTransaction transaction = null)
         {
             string command = string.Format(@"UPDATE {0} SET {1} WHERE {2}",
                     DbTableName,
-                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => string.Format("`{0}` = @{0}", c.Name))),
-                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => string.Format("`{0}` = @{0}", c.Name))));
+                    String.Join(",", DBColumns.Where(c => !c.IsKey).Select(c => String.Format("`{0}` = @{0}", c.Name))),
+                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => String.Format("`{0}` = @{0}", c.Name))));
 
-            var parameters = DBColumns.Select(c =>
-                CreateParameter(c)).ToArray();
+            MySqlParameter[] parameters = DBColumns.Select(c => CreateParameter(c)).ToArray();
 
-            return ExecuteCommand(connection, command, parameters);
+            return await ExecuteCommandAsync(connection, command, transaction, parameters).ConfigureAwait(false);
             
         }
 
-        public static T[] SelectAll(MySqlConnection connection)
+        public static async Task<T[]> SelectAllAsync(MySqlConnection connection)
         {
-            return Select(connection, String.Format("SELECT * FROM {0}", DbTableName));
+            return await SelectAsync(connection, $"SELECT * FROM {DbTableName}").ConfigureAwait(false);
         }
 
-        public static T SelectByKey(MySqlConnection connection, object id)
+        public static async Task<T> SelectByKeyAsync(MySqlConnection connection, object id)
         {
             var t = new T();
 
-            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
+            ColumnInfo key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if(key == null)
             {
-                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
+                throw new Exception($"Key for table {DbTableName} isn't defined.");
             }
 
-            string selectText = string.Format("SELECT * FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name);
+            string selectText = $"SELECT * FROM {DbTableName} WHERE `{key.Name}` = @p_id";
             var pId = new MySqlParameter("p_id", key.Type) {Value = ConvertToDBCompatibilityType(id)};
 
-            return Select(connection, selectText, pId).FirstOrDefault();
+            return (await SelectAsync(connection, selectText, pId).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static int Delete(MySqlConnection connection, object id, MySqlTransaction transaction = null)
+        public static async Task<int> DeleteAsync(MySqlConnection connection, object id, MySqlTransaction transaction = null)
         {
             var t = new T();
-            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
+            ColumnInfo key = t.DBColumns.FirstOrDefault(c => c.IsKey);
             if (key == null)
-                throw new Exception(string.Format("Key for table {0} isn't defined.", DbTableName));
+            {
+                throw new Exception($"Key for table {DbTableName} isn't defined.");
+            }
 
             var pId = new MySqlParameter("p_id", key.Type) {Value = ConvertToDBCompatibilityType(id)};
 
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE `{1}` = @p_id", DbTableName, key.Name), transaction, pId);
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {DbTableName} WHERE `{key.Name}` = @p_id", transaction, pId).ConfigureAwait(false);
         }
 
-
-        public static int ExecuteCommand(MySqlConnection connection, string commandText,
-            params MySqlParameter[] parameters)
+        public static Task<int> ExecuteCommandAsync(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
         {
-            return ExecuteCommand(connection, commandText, null, parameters);
+            return ExecuteCommandAsync(connection, commandText, null, parameters);
         }
 
-        public static int ExecuteCommand(MySqlConnection connection, string commandText, MySqlTransaction transaction = null, params MySqlParameter[] parameters)
+        public static async Task<int> ExecuteCommandAsync(MySqlConnection connection, string commandText, MySqlTransaction transaction = null, params MySqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
-                connection.Open();
+                await connection.OpenAsync().ConfigureAwait(false);
             }
 
-            using (var command = connection.CreateCommand())
+            using MySqlCommand command = connection.CreateCommand();
+            command.Connection = connection;
+            if (transaction != null)
             {
-                command.Connection = connection;
-                if (transaction != null)
-                {
-                    command.Transaction = transaction;
-                }
-                command.CommandText = commandText;
-                command.CommandType = CommandType.Text;
-                command.Parameters.AddRange(parameters);
-                var cnt = command.ExecuteNonQuery();
-                return cnt;
+                command.Transaction = transaction;
             }
-        }
-
-        public static T[] Select(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
-        {
-            return SelectAsync(connection, commandText, parameters).Result;
+            command.CommandText = commandText;
+            command.CommandType = CommandType.Text;
+            command.Parameters.AddRange(parameters);
+            int cnt = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+            return cnt;
         }
 
         public static async Task<T[]> SelectAsync(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
@@ -133,64 +123,61 @@ namespace OptimaJet.Workflow.MySQL
                 await connection.OpenAsync().ConfigureAwait(false);
             }
 
-            using (var command = connection.CreateCommand())
+            using MySqlCommand command = connection.CreateCommand();
+            command.Connection = connection;
+            command.CommandText = commandText;
+            command.CommandType = CommandType.Text;
+            command.Parameters.AddRange(parameters);
+            var res = new List<T>();
+            using DbDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
+            while (await reader.ReadAsync().ConfigureAwait(false))
             {
-                command.Connection = connection;
-                command.CommandText = commandText;
-                command.CommandType = CommandType.Text;
-                command.Parameters.AddRange(parameters);
-                var res = new List<T>();
-                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
+                var item = new T();
+                for (int i = 0; i < reader.FieldCount; i++)
                 {
-                    while (await reader.ReadAsync().ConfigureAwait(false))
+                    string name = reader.GetName(i);
+                    ColumnInfo column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    if (column != null)
                     {
-                        T item = new T();
-                        for (int i = 0; i < reader.FieldCount; i++)
-                        {
-                            var name = reader.GetName(i);
-                            var column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
-                            if (column != null)
-                            {
-                                item.SetValue(column.Name, reader.IsDBNull(i) ? null : reader.GetValue(i));
-                            }
-                        }
-                        res.Add(item);
+                        item.SetValue(column.Name, await reader.IsDBNullAsync(i).ConfigureAwait(false) ? null : reader.GetValue(i));
                     }
                 }
-
-                return res.ToArray();
+                res.Add(item);
             }
+
+            return res.ToArray();
         }
         #endregion
 
 
-        public static int InsertAll(MySqlConnection connection, T[] values)
+        public static async Task<int> InsertAllAsync(MySqlConnection connection, T[] values, MySqlTransaction transaction = null)
         {
             if (values.Length < 1)
+            {
                 return 0;
+            }
 
             var parameters = new List<MySqlParameter>();
             var names = new List<string>();
 
             for (int i = 0; i < values.Length; i++)
             {
-                names.Add(String.Join(",", values[i].DBColumns.Select(c => "@" + i.ToString() + c.Name)));
+                names.Add(String.Join(",", values[i].DBColumns.Select(c => "@" + i + c.Name)));
                 parameters.AddRange(values[i].DBColumns.Select(c => values[i].CreateParameter(c, i.ToString())).ToArray());
             }
 
-            string command = string.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                DbTableName,
-                String.Join(",", values.First().DBColumns.Select(c => string.Format("`{0}`", c.Name))),
-                String.Join(",", names));
+            string command = $"INSERT INTO {DbTableName} ({String.Join(",", values.First().DBColumns.Select(c => $"`{c.Name}`"))}) VALUES ({String.Join(",", names)})";
 
-
-            return ExecuteCommand(connection, command, parameters.ToArray());
+            return await ExecuteCommandAsync(connection, command, transaction, parameters.ToArray()).ConfigureAwait(false);
         }
 
         public static object ConvertToDBCompatibilityType(object obj)
         {
-            if (obj is Guid)
-                return ((Guid)obj).ToByteArray();
+            if (obj is Guid guid)
+            {
+                return guid.ToByteArray();
+            }
+
             return obj;
         }
 

@@ -61,24 +61,24 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static int DeleteByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
         {
             string name = "ProcessId";
 
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw) { Value = processId.ToByteArray() };
-            return ExecuteCommand(connection,
-                string.Format("DELETE FROM {0} WHERE {1} = :processid", ObjectName, name.ToUpperInvariant()),pProcessId);
+            return await ExecuteCommandAsync(connection,
+                $"DELETE FROM {ObjectName} WHERE {name.ToUpperInvariant()} = :processid",pProcessId).ConfigureAwait(false);
         }
 
-        public static WorkflowInbox[] SelectByProcessId(OracleConnection connection, Guid processId)
+        public static async Task<WorkflowInbox[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
             string name = "ProcessId";
 
-            var selectText = string.Format("SELECT * FROM {0} WHERE {1} = :processid", ObjectName, name.ToUpperInvariant());
+            string selectText = $"SELECT * FROM {ObjectName} WHERE {name.ToUpperInvariant()} = :processid";
 
             var p1 = new OracleParameter("processid", OracleDbType.Raw) { Value = processId.ToByteArray() };
 
-            return Select(connection, selectText, p1);
+            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
     }
 }

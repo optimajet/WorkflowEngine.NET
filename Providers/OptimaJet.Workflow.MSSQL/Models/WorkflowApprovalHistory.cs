@@ -1,6 +1,11 @@
 using System;
 using System.Data;
+#if NETCOREAPP
+using Microsoft.Data.SqlClient;
+#else
 using System.Data.SqlClient;
+#endif
+using System.Threading.Tasks;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
@@ -116,13 +121,13 @@ namespace OptimaJet.Workflow.DbPersistence
         }
 
        
-        public static WorkflowApprovalHistory[] SelectByProcessId(SqlConnection connection, Guid processId)
+        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            var selectText = string.Format("SELECT * FROM {0} WHERE  [ProcessId] = @processId", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName} WHERE  [ProcessId] = @processId";
 
             var processIdParameter = new SqlParameter("processId", SqlDbType.UniqueIdentifier) { Value = processId };
 
-            return Select(connection, selectText, processIdParameter);
+            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
         }
     }
 }

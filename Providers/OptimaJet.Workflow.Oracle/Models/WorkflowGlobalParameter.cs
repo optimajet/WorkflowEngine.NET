@@ -1,4 +1,5 @@
 ﻿using System;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -69,38 +70,46 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static WorkflowGlobalParameter[] SelectByTypeAndName(OracleConnection connection, string type, string name = null)
+        public static async Task<WorkflowGlobalParameter[]> SelectByTypeAndNameAsync(OracleConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("SELECT * FROM {0}  WHERE Type = :type", ObjectName);
+            string selectText = $"SELECT * FROM {ObjectName}  WHERE Type = :type";
 
-            if (!string.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
+            {
                 selectText = selectText + " AND Name = :name";
+            }
 
             var p = new OracleParameter("type", OracleDbType.NVarchar2) { Value = type };
 
-            if (string.IsNullOrEmpty(name))
-                return Select(connection, selectText, p);
+            if (String.IsNullOrEmpty(name))
+            {
+                return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
+            }
 
             var p1 = new OracleParameter("name", OracleDbType.NVarchar2) { Value = name };
 
-            return Select(connection, selectText, p, p1);
+            return await SelectAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
 
-        public static int DeleteByTypeAndName(OracleConnection connection, string type, string name = null)
+        public static async Task<int> DeleteByTypeAndNameAsync(OracleConnection connection, string type, string name = null)
         {
-            string selectText = string.Format("DELETE FROM {0}  WHERE Type = :type", ObjectName);
+            string selectText = $"DELETE FROM {ObjectName}  WHERE Type = :type";
 
-            if (!string.IsNullOrEmpty(name))
+            if (!String.IsNullOrEmpty(name))
+            {
                 selectText = selectText + " AND Name = :name";
+            }
 
             var p = new OracleParameter("type", OracleDbType.NVarchar2) { Value = type };
 
-            if (string.IsNullOrEmpty(name))
-                return ExecuteCommand(connection, selectText, p);
+            if (String.IsNullOrEmpty(name))
+            {
+                return await ExecuteCommandAsync(connection, selectText, p).ConfigureAwait(false);
+            }
 
             var p1 = new OracleParameter("name", OracleDbType.NVarchar2) { Value = name };
 
-            return ExecuteCommand(connection, selectText, p, p1);
+            return await ExecuteCommandAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
 
    

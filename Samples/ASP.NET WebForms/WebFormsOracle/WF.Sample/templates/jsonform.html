@@ -1,0 +1,402 @@
+<h3>{{ customTitle ? customTitle : (formMode ? labels2.Title : labels.Title) }}</h3>
+<div v-if="!formMode" :id="editor_container" class="WorkflowDesignerJsonEditor"></div>
+<el-form 
+    class="WorkflowDesignerWindowForm"
+    v-if="formMode" 
+    :model="FormData" 
+    ref="form" 
+    label-position="top" 
+    label-width="150px">
+    <el-form-item :label="field.Label" v-for="field in fields" :rules="getFieldRules(field)" :prop="field.Name">
+        <el-input v-if="field.Type == 'Text'" v-model="FormData[field.Name]" :title="field.Comment" :readonly="readonly"></el-input>
+        <el-input-number v-if="field.Type == 'Number'" controls-position="right" v-model="FormData[field.Name]" :disabled="readonly"></el-input-number>
+        <el-checkbox v-if="field.Type == 'Checkbox'" v-model="FormData[field.Name]" :title="field.Comment" :disabled="readonly"></el-checkbox>
+        <el-input v-if="field.Type == 'TextArea'" v-model="FormData[field.Name]" :title="field.Comment" type="textarea" rows="6" :readonly="readonly"></el-input>
+        <el-input v-if="field.Type == 'DateTime'" v-model="FormData[field.Name]" :title="field.Comment" :readonly="readonly"
+            :title="validateFieldDD('DateTime', FormData[field.Name])"
+            :class="validateFieldDD('DateTime', FormData[field.Name]) ? 'WorkflowDesignerInputError' : ''"></el-input>
+        <el-select v-if="field.Type == 'Dropdown'" v-model="FormData[field.Name]" :title="field.Comment" placeholder="" :disabled="readonly">
+            <el-option
+              v-for="item in field.DropdownValues"
+              :key="item.Value"
+              :label="item.Name"
+              :value="item.Value">
+            </el-option>
+        </el-select>
+        <el-select v-if="field.Type == 'MultiSelect'" v-model="FormData[field.Name]" :title="field.Comment" multiple placeholder="" :disabled="readonly">
+            <el-option
+              v-for="item in field.DropdownValues"
+              :key="item.Value"
+              :label="item.Name"
+              :value="item.Value">
+            </el-option>
+        </el-select>
+            <el-input v-if="field.Type == 'Json'" v-model="FormData[field.Name]" :title="field.Comment" :readonly="readonly"></el-input>
+            <el-button v-if="field.Type == 'Json'"  @click="showjson('DefaultValue', field)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == field ? 'is-active' : '')"></el-button>
+    </el-form-item>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly && !formMode" @click="onFormat">{{ labels.Format }}</el-button>
+    <el-button v-if="fields" @click="onChangeFormMode" type="text">{{ formMode ? labels2.SwitchToJson : labels2.SwitchToConstructor }}</el-button>
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<script>
+    function jsonform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            editor_container: me.id + "_editor",
+            customTitle: undefined,
+            readonly: false,
+            editItem: undefined,
+            labels: WorkflowDesignerConstants.EditJSONLabel,
+            labels2: WorkflowDesignerConstants.EditParametersFormlabel,                 
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            FormData: {},
+            fields: null,
+            formMode: false
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+           
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+            if(parameterDefinition && parameterDefinition.name){
+                if(Array.isArray(parameterDefinition.type)){
+                    for(var i=0; i <= parameterDefinition.type.length; i++){
+                        fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                        if(fields && fields.length > 0)
+                            break;
+                    }
+                }
+                else{
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type);
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function(field){ //
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '')
+                    {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+                });
+
+                me.VueConfig.data.formMode = true;
+                me.VueConfig.data.fields = fields;
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox")
+                        {
+                            field.DefaultValue=field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined")
+                        {                         
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else 
+                        {
+                            tmp[field.Name] = null;
+                        }
+                    });
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+         
+            if(me.VueConfig.data.formMode){
+                if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
+                    if (me.VueConfig.data.fields[0].Type === 'Text' || me.VueConfig.data.fields[0].Type === 'TextArea') {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' + value + '"}');
+                    } else 
+                    {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+                    }
+                }
+                else {
+                    me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+                }
+                if(!me.VueConfig.data.FormData)
+                    me.VueConfig.data.FormData = {};
+
+                for (key in me.VueConfig.data.FormData) {
+                    if (me.VueConfig.data.FormData.hasOwnProperty(key)) {
+                        if (key !== "__customtype" && !me.VueConfig.data.fields.find(function (item) {
+                            return item.Name === key;
+                        })) {
+                            delete me.VueConfig.data.FormData[key];
+                        }
+                    }
+                }
+                me.VueConfig.data.fields.forEach(function(field){
+              
+                    if (me.VueConfig.data.FormData[field.Name] === undefined) 
+                    {
+                        if(field.Type === "Checkbox")
+                        {
+                            field.DefaultValue=field.DefaultValue.toString() === "true";
+                        }
+                       
+                        if(typeof field.DefaultValue != "undefined")
+                        {
+                            me.VueConfig.data.FormData[field.Name] = field.DefaultValue;
+                        } 
+                        else 
+                        {
+                            me.VueConfig.data.FormData[field.Name] = null;
+                        }
+                    }
+                });
+
+
+                // setTimeout(function(){
+                //     me.VueConfig.methods.renderJSONFields();
+                // }, 1);
+            }
+            else{
+                setTimeout(function(){
+                    me.VueConfig.methods.renderEditor(value);
+                }, 1);
+            }
+        };
+
+        me.VueConfig.methods.getFieldRules = function(field){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            return rules;
+        };
+
+        me.VueConfig.methods.showjson = function(name, field) {
+            me.VueConfig.data.editItem = field;
+            me.editItem = field;
+            var onSuccess = function(value)
+            {
+                if(me.editItem)
+                {
+                    me.VueConfig.data.FormData[field.Name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function(value){
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var params = {
+
+            };
+            me.VueConfig.data.jsonform = me.showjson(me.VueConfig.data.FormData[field.Name], params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.renderEditor = function(value){
+            if(!me.editor){
+                me.editor = ace.edit(me.VueConfig.data.editor_container);
+                var session = me.editor.getSession();
+                session.setMode("ace/mode/json5");
+                session.setOption("useWorker", false);
+            }
+
+            me.editor.setOptions({ readOnly: me.graph.Settings.readonly });
+
+            var formattedValue = value ? WorkflowDesignerCommon.toPrettyJSON(value) : "";
+            me.editor.setValue(formattedValue ? formattedValue : "");
+            me.editor.clearSelection();
+        };
+
+        me.VueConfig.methods.validateFieldDD = function(name, value){
+            if(name != 'Name' && name != 'Value' && name != 'DateTime')
+                return;
+
+            if (name == 'DateTime' && value && !moment(value, moment.ISO_8601).isValid())
+                return WorkflowDesignerConstants.EditParametersFormlabel.DateShouldBeInISOFormat;
+        };
+
+        me.VueConfig.methods.renderJSONFields = function(){
+            me.VueConfig.data.fields.forEach(function(field)
+            {
+                if(field.Type == "Json")
+                {
+                    if(!me.editors) me.editors = {};
+
+                    var editor = me.editors[field.Name];
+                    if(!editor)
+                    {
+                        editor = me.editors[field.Name] = ace.edit(field.Name + "_editor");                        
+                        var session = editor.getSession();
+                        session.setMode("ace/mode/json5");
+                        session.setOption("useWorker", false);
+                    }
+
+                    editor.setOptions({ readOnly: me.graph.Settings.readonly });
+                    var value = me.VueConfig.data.FormData[field.Name];
+
+                    if(typeof value == "object"){
+                        var formattedValue = WorkflowDesignerCommon.toString(value);
+                        editor.setValue(formattedValue ? formattedValue : "");
+                    }
+                    else{
+                        var formattedValue = WorkflowDesignerCommon.toPrettyJSON(value);
+                        editor.setValue(formattedValue ? formattedValue : "");
+                    }
+                    
+                    editor.clearSelection();
+                }
+            });
+        }
+
+        me.VueConfig.methods.updateFormData = function(){
+            var data = me.VueConfig.data.FormData;
+            me.VueConfig.data.fields.forEach(function(field){
+                if(field.Type === "Json"){
+                    if(me.editors && me.editors[field.Name]){
+                        var value = me.editors[field.Name].getValue();
+                        data[field.Name] = WorkflowDesignerCommon.toJSON(value);
+                    }
+                }
+            });
+        }
+
+        me.VueConfig.methods.onChangeFormMode = function(){
+            me.VueConfig.data.formMode = !me.VueConfig.data.formMode;
+            if(me.VueConfig.data.formMode){
+                var value = me.editor.getValue();
+                if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
+                    if (me.VueConfig.data.fields[0].Type === 'Text' || me.VueConfig.data.fields[0].Type === 'TextArea') {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' + value + '"}');
+                    } else {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+                    }
+                }
+                else {
+                    me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+                }
+
+                if(me.editor){
+                    me.editor.destroy();
+                    delete me.editor;
+                }
+
+                // setTimeout(function(){
+                //     me.VueConfig.methods.renderJSONFields();
+                // });
+            }
+            else{
+
+                me.VueConfig.methods.updateFormData();
+                var value;
+
+                var singleValue = me.VueConfig.data.FormData[""];
+
+                if (singleValue !== null && singleValue !== undefined)
+                {
+                    value = me.VueConfig.methods.extractSingleValue(singleValue);
+                }
+                else{
+                    value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+                }
+
+                if(me.editors){
+                    for(var editor in me.editors){
+                        me.editors[editor].destroy();
+                        delete me.editors[editor];
+                    }
+                    delete me.editors;
+                }
+
+                setTimeout(function(){
+                    me.VueConfig.methods.renderEditor(value);
+                }, 1);
+            }
+        }
+
+        me.VueConfig.methods.extractSingleValue = function (singleValue) {
+            var value = undefined;
+            if (typeof singleValue == 'string') {
+                value = WorkflowDesignerCommon.toString(singleValue);
+
+                value = value.indexOf("\"") === 0 ? value.substring(1) : value;
+
+                value = value.lastIndexOf("\"") === value.length - 1 ? value.substring(0, value.length - 1) : value;
+
+            } else {
+                value = WorkflowDesignerCommon.toString(singleValue);
+            }
+            return value;
+        }
+
+        me.VueConfig.methods.onSave = function(){
+            var value = undefined;
+            if(me.VueConfig.data.formMode){
+                me.VueConfig.methods.updateFormData();
+
+                var singleValue = me.VueConfig.data.FormData[""];
+
+                if (singleValue !== null && singleValue !== undefined)
+                {
+                    value = me.VueConfig.methods.extractSingleValue(singleValue);
+                }
+                else {
+                    value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+                }
+
+                if(this.$refs && this.$refs.form){
+                    this.$refs.form.validate(function(valid) {
+                        if (valid) {
+                            me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                            me.onClose(true);
+                        }
+                    });
+                    return;
+                }
+            }
+            else{
+                value = WorkflowDesignerCommon.toCompactJSON(me.editor.getValue());
+            }
+            
+            me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onFormat = function(){
+            var value = me.editor.getValue();
+            me.editor.setValue(WorkflowDesignerCommon.toPrettyJSON(value));
+            me.editor.clearSelection();
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            if(me.editor){
+                me.editor.destroy();
+                delete me.editor;
+            }
+
+            if(me.editors){
+                for(var editor in me.editors){
+                    me.editors[editor].destroy();
+                    delete me.editors[editor];
+                }
+                delete me.editors;
+            }
+        }
+    };
+</script>

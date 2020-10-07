@@ -1,0 +1,172 @@
+<h3>{{ labels.Header }}</h3>
+
+<el-input v-if="items.length > 5 || search"
+    v-model="search"
+    prefix-icon="el-icon-search"
+    @input="onSearch"
+    style="margin-bottom: 10px;"
+></el-input>
+<el-form v-if="items.length > 0" class="mx-auto" class="WorkflowDesignerWindowForm" style="height: calc(100% - 90px);" @drop="drop($event)">
+    <div v-for="(item, index) in items" draggable="true" style="cursor:grab;" @dblclick="createActivity(item)" @dragstart="dragstart(item, $event)" @dragend="dragend($event)"   >
+        <el-card body-style="padding:15px">
+            <div class="ActivityTitle" style="display: flex;">
+                <div :class="'Icon ' + item.Class"></div>
+                <b> {{item.Title}}</b>
+            </div>
+            <div v-if="item.Description" style="margin-top:10px;">{{ item.Description }}</div>
+        </el-card>
+    </div>
+</el-form>
+<script>
+    function elements_Init(me){
+        var data = me.VueConfig.data;
+        data.labels = WorkflowDesignerConstants.Elements;
+        data.items = [];
+
+        me.VueConfig.methods.onUpdate = function(){
+            data.search = "";
+
+            data.items = [];
+            data.items.push({
+                Title: data.labels.BasicActivity,
+                Description: data.labels.BasicActivityDesc,
+                DefaultValues: {
+                    Name: "Activity",
+                    State: "Activity",
+                    Annotations: []
+                },
+                Class: "Basic"
+            });
+            
+            data.items.push({
+                Title: data.labels.InitialActivity,
+                Description: data.labels.InitialActivityDesc,
+                IsInitial: true,
+                IsFinal: false,
+                DefaultValues: {
+                    Name: "InitialActivity",
+                    State: "InitialActivity",
+                    Annotations: []
+                },
+                Class: "Initial"
+            });
+
+            data.items.push({
+                Title: data.labels.FinalActivity,
+                Description: data.labels.FinalActivityDesc,
+                IsInitial: false,
+                IsFinal: true,
+                DefaultValues: {
+                    Name: "FinalActivity",
+                    State: "FinalActivity",
+                    Annotations: []
+                },
+                Class: "Final"
+            });
+
+            if(me.graph.data.AdditionalParams && Array.isArray(me.graph.data.AdditionalParams.CustomActivities)){
+                var tmp = me.graph.data.AdditionalParams.CustomActivities.sort(function(a,b){ a.Title > b.Title });   
+                tmp.forEach(function(item){
+                    item.Class = "Custom";
+                    data.items.push(item);
+                });         
+            }
+
+            if(me.graph.data.AdditionalParams.InlinedSchemeCodes && Array.isArray(me.graph.data.AdditionalParams.InlinedSchemeCodes)){
+                me.graph.data.AdditionalParams.InlinedSchemeCodes.forEach(function(item){
+                    data.items.push({
+                        Title: item,
+                        Type: item,
+                        DefaultValues: {
+                            ActivityType: "Inline",
+                            State: undefined,
+                            SchemeCode: item,
+                            Annotations: []
+                        },
+                        Class: "Inline"
+                    });
+                });
+            }
+            data.originalItems = data.items;
+        };
+
+        me.VueConfig.methods.onSearch = function(){ 
+            me.VueConfig.watch.options.handler();
+        };
+
+        me.VueConfig.methods.createActivity = function(item, pos){
+            var activity = {
+                Name: item.Type,
+                IsInitial:item.IsInitial==true,
+                IsFinal:item.IsFinal==true,
+                State: item.Title,
+                ActivityType: item.ActivityType,
+                Annotations: [
+                    {JsonValue: item.Type, Name: "__customtype"}
+                ]
+            };
+
+            if(item.DefaultValues){
+                for(p in item.DefaultValues){
+                    if(item.DefaultValues[p]){
+                        activity[p] = item.DefaultValues[p];
+                    }
+                }
+            }
+
+            me.graph.CreateActivity(pos, activity);
+        }
+
+        me.dragover = function(e) {
+            me.pageX =  e.pageX;
+            me.pageY =  e.pageY;
+        }
+
+        me.VueConfig.methods.dragstart = function(item, e) {
+            this.draggingItem = item;
+            e.target.style.opacity = 0.6;
+
+            try {
+                e.originalEvent.dataTransfer.setData('text/plain', 'anything'); //hack for drag&drop in FF
+            } catch (e) {}
+            
+            window.addEventListener("dragover", me.dragover);
+            me.parentContainer.on("dragover.elementsbar", function(e){ e.preventDefault(); });
+        };
+        
+        me.VueConfig.methods.dragend = function(e) 
+        {        
+            e.target.style.opacity = 1;
+            me.parentContainer.off("dragover.elementsbar");
+                       
+           if(this.draggingItem !== undefined)
+           {
+                var offset = me.parentContainer.offset();
+                var pos = {
+                    x: (e.pageX || me.pageX) - offset.left, 
+                    y: (e.pageY || me.pageY) - offset.top
+                };
+                this.createActivity(this.draggingItem, pos);
+                this.draggingItem = undefined;
+                window.removeEventListener("dragover", me.dragover);
+            }
+        };
+
+        me.VueConfig.methods.drop = function(e) 
+        {
+            this.draggingItem = undefined;
+        };
+
+        me.VueConfig.watch = {
+          options: {
+              handler: function() {
+                  var search = data.search;                  
+                  data.items = WorkflowDesignerCommon.filter(data.originalItems, function(el){
+                    var tmp = search.toLowerCase();
+                    return (el.Title && el.Title.toLowerCase().indexOf(tmp) !== -1) || (el.Description && el.Description.toLowerCase().indexOf(tmp) !== -1);
+                  }).sort(function(a,b){ a.Title > b.Title });      
+              }
+          },
+      };
+    };
+</script>

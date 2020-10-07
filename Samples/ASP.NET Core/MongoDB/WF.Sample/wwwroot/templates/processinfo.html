@@ -1,0 +1,306 @@
+<h3>{{ labels.Title }}</h3>
+<div class="WorkflowDesignerWindowForm">
+    <h4>{{Name}}</h4>
+    <el-tabs tab-position="top">
+        <el-tab-pane :label="labels.GeneralTabLabel">
+            <el-form ref="form" 
+            :model="FormData"
+            label-position="top" 
+            label-width="150px">
+                <el-form-item v-if="Id" :label="labels.ProcessIdLabel">
+                    <el-input v-model="Id" readonly="true"></el-input>
+                </el-form-item>
+                <el-form-item :label="labels.TagsLabel">
+                    <el-select v-model="Tags" multiple filterable allow-create :placeholder="labels.TagsInputPlaceholder" style="width: 100%;" :disabled="readonly"></el-select>
+                </el-form-item>
+                <el-form-item>
+                    <el-switch :active-text="InlineLabel" v-model="CanBeInlined" :disabled="readonly"></el-switch>
+                </el-form-item>
+                <el-form-item v-if="Id">
+                    <el-switch :active-text="labels.IsObsolete" v-model="IsObsolete" :disabled="readonly"></el-switch>
+                </el-form-item>
+                <el-form-item v-if="Id" :label="labels.DefiningParameters">
+                    <el-input v-model="DefiningParameters" type="textarea" rows="4" :readonly="readonly"></el-input>
+                </el-form-item>
+            </el-form>
+        </el-tab-pane>
+        <el-tab-pane v-if="Id" :label="labels.ProcessParametersTabName">
+            <el-collapse v-model="activeProcesses">
+                <el-collapse-item title="Root" name="Root">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.ParametersNameLabel}}</b></td>
+                            <td><b>{{labels.ParametersValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in ProcessParameters">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>
+                                <el-input v-model="item.Name" readonly="true" ></el-input>
+                            </td>
+                            <td>
+                                <el-input v-model="item.Value" readonly="true" ></el-input>
+                            </td>
+                            <td v-if="!readonly"><a v-on:click="showjson('Value', item)" :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"></a></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+                <el-collapse-item v-if="SubprocessInfo" :title="SubprocessIndex" :name="SubprocessIndex" v-for="(SubprocessItem, SubprocessIndex) in SubprocessInfo">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.ParametersNameLabel}}</b></td>
+                            <td><b>{{labels.ParametersValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in SubprocessItem.ProcessParameters.filter(function(p){ return p.Purpose != 'System'; })">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>
+                                <el-input v-model="item.Name" readonly="true" ></el-input>
+                            </td>
+                            <td>
+                                <el-input v-model="item.Value" readonly="true" ></el-input>
+                            </td>
+                            <td><a v-on:click="showjson('Value', item)" :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"></a></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+            </el-collapse>
+        </el-tab-pane>
+        <el-tab-pane v-if="Id" :label="labels.SystemParametersTabName">
+            <el-collapse v-model="activeProcesses">
+                <el-collapse-item title="Root" name="Root">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.ParametersNameLabel}}</b></td>
+                            <td><b>{{labels.ParametersValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in SystemProcessParameters">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>
+                                <el-input v-model="item.Name" readonly="true" ></el-input>
+                            </td>
+                            <td>
+                                <el-input v-model="item.Value" readonly="true" ></el-input>
+                            </td>
+                            <td><a v-on:click="showjson('Value', item)" :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"></a></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+                <el-collapse-item v-if="SubprocessInfo" :title="SubprocessIndex" :name="SubprocessIndex" v-for="(SubprocessItem, SubprocessIndex) in SubprocessInfo">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.ParametersNameLabel}}</b></td>
+                            <td><b>{{labels.ParametersValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in SubprocessItem.ProcessParameters.filter(function(p){ return p.Purpose == 'System'; })">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>
+                                <el-input v-model="item.Name" readonly="true" ></el-input>
+                            </td>
+                            <td>
+                                <el-input v-model="item.Value" readonly="true" ></el-input>
+                            </td>
+                            <td><a v-on:click="showjson('Value', item)" :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"></a></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+            </el-collapse>
+        </el-tab-pane>
+        <el-tab-pane v-if="Id" :label="labels.TimersTabName">
+            <el-collapse v-model="activeProcesses">
+                <el-collapse-item title="Root" name="Root">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.TimersTabNameLabel}}</b></td>
+                            <td><b>{{labels.TimersTabValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in ProcessTimers">
+                            <td><el-input v-model="item.Name" readonly="true" ></el-input></td>
+                            <td><el-input v-model="item.NextExecutionDateTime" readonly="true" ></el-input></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+                <el-collapse-item v-if="SubprocessInfo" :title="SubprocessIndex" :name="SubprocessIndex" v-for="(SubprocessItem, SubprocessIndex) in SubprocessInfo">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td><b>{{labels.TimersTabNameLabel}}</b></td>
+                            <td><b>{{labels.TimersTabValueLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in SubprocessItem.ProcessTimers">
+                            <td><el-input v-model="item.Name" readonly="true" ></el-input></td>
+                            <td><el-input v-model="item.NextExecutionDateTime" readonly="true" ></el-input></td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+            </el-collapse>
+        </el-tab-pane>
+        <el-tab-pane v-if="Id" :label="labels.HistoryTabName">
+            <el-collapse v-model="activeProcesses">
+                <el-collapse-item title="Root" name="Root">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td v-if="isIE"></td>
+                            <td><b>{{labels.HistoryTabTimeLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabTriggerNameLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabFromLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabToLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabExecutorIdLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabActorIdLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabTransitionClassifierNameLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in ProcessHistory">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>{{ item.TransitionTime }}</td>
+                            <td>{{ item.TriggerName }}</td>
+                            <td>{{ item.FromActivityName }} <span style="white-space: nowrap;" v-if="item.FromStateName">({{ item.FromStateName }})</span></td>
+                            <td>{{ item.ToActivityName }} <span style="white-space: nowrap;" v-if="item.ToStateName">({{ item.ToStateName }})</span></td>
+                            <td>{{ item.ExecutorIdentityId }}</td>
+                            <td>{{ item.ActorIdentityId }}</td>
+                            <td>{{ item.TransitionClassifier == 0 ? 'Not Specified' : ( item.TransitionClassifier == 1 ? 'Direct' : 'Reverse') }}</td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+                <el-collapse-item v-if="SubprocessInfo" :title="SubprocessIndex" :name="SubprocessIndex" v-for="(SubprocessItem, SubprocessIndex) in SubprocessInfo">
+                    <table class="WorkflowDesignerTable">
+                        <th>
+                            <td v-if="isIE"></td>
+                            <td><b>{{labels.HistoryTabTimeLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabTriggerNameLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabFromLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabToLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabExecutorIdLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabActorIdLabel}}</b></td>
+                            <td><b>{{labels.HistoryTabTransitionClassifierNameLabel}}</b></td>
+                        </th>
+                        <tr v-for="(item, index) in SubprocessItem.ProcessHistory">
+                            <td class='WorkflowDesignerTableMoveCol'></td>
+                            <td>{{ item.TransitionTime }}</td>
+                            <td>{{ item.TriggerName }}</td>
+                            <td>{{ item.FromActivityName }} <span style="white-space: nowrap;" v-if="item.FromStateName">({{ item.FromStateName }})</span></td>
+                            <td>{{ item.ToActivityName }} <span style="white-space: nowrap;" v-if="item.ToStateName">({{ item.ToStateName }})</span></td>
+                            <td>{{ item.ExecutorIdentityId }}</td>
+                            <td>{{ item.ActorIdentityId }}</td>
+                            <td>{{ item.TransitionClassifier == 0 ? 'Not Specified' : ( item.TransitionClassifier == 1 ? 'Direct' : 'Reverse') }}</td>
+                        </tr>
+                    </table>
+                </el-collapse-item>
+            </el-collapse>
+        </el-tab-pane>
+    </el-tabs>
+    <div class="WorkflowDesignerButtons">
+        <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+        <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+    </div>
+    <el-dialog
+        :title="confirmdialog.title"
+        :before-close="function() {confirmdialog.visible = false}"
+        :visible="confirmdialog.visible"
+        :modal-append-to-body="false"
+        width="30%">
+        <span>{{ confirmdialog.message }}</span>
+        <span slot="footer" class="dialog-footer">
+            <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+            <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+        </span>
+    </el-dialog>
+</div>
+<script>
+    function processinfo_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
+            InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
+            editItem: undefined,     
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }
+            },
+            activeProcesses: ["Root"],
+            FormData: {},
+            Tags: [],
+            CanBeInlined: null,
+            IsObsolete: false,
+            DefiningParameters: undefined,
+            ProcessTimers: [],
+            ProcessParameters: [],
+            SystemProcessParameters: [],
+            ProcessHistory: [],
+            Name: "",
+            Id: undefined,
+            SubprocessInfo: undefined
+        });
+        
+        me.VueConfig.methods.onUpdate = function(){
+            var data = me.VueConfig.data;
+            data.Tags = WorkflowDesignerCommon.clone(me.graph.data.Tags);
+            data.CanBeInlined = me.graph.data.CanBeInlined;
+            data.Name = me.graph.data.Name;
+            if(me.graph.data.Id && me.graph.data.Id != "00000000-0000-0000-0000-000000000000"){
+                data.Id = me.graph.data.Id
+            }
+            else{
+                data.Id = undefined;
+            }
+
+            var additionalParams = me.graph.data.AdditionalParams;
+
+            data.IsObsolete = additionalParams.IsObsolete;
+            data.DefiningParameters = additionalParams.DefiningParameters;
+            data.ProcessTimers = WorkflowDesignerCommon.clone(additionalParams.ProcessTimers);
+
+            if(Array.isArray(additionalParams.ProcessParameters)){
+                data.ProcessParameters = WorkflowDesignerCommon.clone(additionalParams.ProcessParameters.filter(function(p){ return p.Purpose != "System"; }));
+                data.SystemProcessParameters = WorkflowDesignerCommon.clone(additionalParams.ProcessParameters.filter(function(p){ return p.Purpose == "System"; }));
+            }
+
+            data.SubprocessInfo = WorkflowDesignerCommon.clone(additionalParams.SubprocessInfo);
+            data.ProcessHistory = WorkflowDesignerCommon.clone(additionalParams.ProcessHistory);
+            data.readonly = me.graph.Settings.readonly;
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+        }
+
+        me.VueConfig.methods.onSave = function(){
+            var data = me.graph.data;
+            data.Tags = WorkflowDesignerCommon.clone(me.VueConfig.data.Tags);
+            data.CanBeInlined = me.VueConfig.data.CanBeInlined;
+            me.graph.setInlinedFlag(data.CanBeInlined);
+            me.onClose(true);
+        };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+            me.onClose(true);
+        };
+        
+        me.VueConfig.methods.onClose = function(){
+
+            me.VueConfig.data.confirmdialog.visible = false;
+
+            if(me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            if (!me.VueConfig.data.readonly && (!WorkflowDesignerCommon.compareArray(
+                me.graph.data.Tags, 
+                me.VueConfig.data.Tags) ||
+                me.graph.data.CanBeInlined !== me.VueConfig.data.CanBeInlined)) {
+                
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+            else {
+                me.onClose(true);
+            }
+        };
+    };
+</script>

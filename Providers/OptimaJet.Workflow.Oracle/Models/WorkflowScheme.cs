@@ -21,25 +21,24 @@ namespace OptimaJet.Workflow.Oracle
         public string InlinedSchemes { get; set; }
         public string Tags { get; set; }
 
-        static WorkflowScheme ()
+        static WorkflowScheme()
         {
             DbTableName = "WorkflowScheme";
         }
 
         public WorkflowScheme()
         {
-            DBColumns.AddRange(new[]{
-                new ColumnInfo {Name = nameof(Code), IsKey = true},
-                new ColumnInfo {Name = nameof(Scheme), Type = OracleDbType.Clob},
-                new ColumnInfo {Name = nameof(CanBeInlined), Type = OracleDbType.Byte},
-                new ColumnInfo {Name = nameof(InlinedSchemes)},
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = nameof(Code), IsKey = true}, new ColumnInfo {Name = nameof(Scheme), Type = OracleDbType.Clob},
+                new ColumnInfo {Name = nameof(CanBeInlined), Type = OracleDbType.Byte}, new ColumnInfo {Name = nameof(InlinedSchemes)},
                 new ColumnInfo {Name = nameof(Tags), Type = OracleDbType.Clob}
             });
         }
 
         public override object GetValue(string key)
         {
-            switch(key)
+            switch (key)
             {
                 case nameof(Code):
                     return Code;
@@ -79,27 +78,27 @@ namespace OptimaJet.Workflow.Oracle
                     throw new Exception($"Column {key} is not exists");
             }
         }
-        
-        public static List<string> GetInlinedSchemeCodes(OracleConnection connection)
+
+        public static async Task<List<string>> GetInlinedSchemeCodesAsync(OracleConnection connection)
         {
-            var selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(CanBeInlined).ToUpper()} = 1";
-            var schemes = Select(connection, selectText).ToList();
+            string selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(CanBeInlined).ToUpper()} = 1";
+            var schemes = (await SelectAsync(connection, selectText).ConfigureAwait(false)).ToList();
             return schemes.Select(sch => sch.Code).ToList();
         }
 
-        public static List<string> GetRelatedSchemeCodes(OracleConnection connection, string schemeCode)
+        public static async Task<List<string>> GetRelatedSchemeCodesAsync(OracleConnection connection, string schemeCode)
         {
-            var selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(InlinedSchemes).ToUpper()} LIKE '%' || :search || '%'";
+            string selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(InlinedSchemes).ToUpper()} LIKE '%' || :search || '%'";
             var p = new OracleParameter("search", OracleDbType.NVarchar2, $"\"{schemeCode}\"", ParameterDirection.Input);
-            return Select(connection, selectText, p).Select(sch => sch.Code).ToList();
+            return (await SelectAsync(connection, selectText, p).ConfigureAwait(false)).Select(sch => sch.Code).ToList();
         }
 
-        public static List<string> GetSchemeCodesByTags(OracleConnection connection, IEnumerable<string> tags)
+        public static async Task<List<string>> GetSchemeCodesByTagsAsync(OracleConnection connection, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
 
             bool isEmpty = tagsList == null || !tagsList.Any();
-            
+
             string query;
             var parameters = new List<OracleParameter>();
 
@@ -125,37 +124,37 @@ namespace OptimaJet.Workflow.Oracle
                 query = $"SELECT * FROM {DbTableName}";
             }
 
-            return Select(connection, query, parameters.ToArray())
+            return (await SelectAsync(connection, query, parameters.ToArray()).ConfigureAwait(false))
                 .Select(sch => sch.Code)
                 .Distinct()
                 .ToList();
         }
 
-        public static void AddSchemeTags(OracleConnection connection, string schemeCode, IEnumerable<string> tags,
+        public static async Task AddSchemeTagsAsync(OracleConnection connection, string schemeCode, IEnumerable<string> tags,
             IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => schemeTags.Concat(tags).ToList(), builder).ConfigureAwait(false);
         }
 
-        public static void RemoveSchemeTags(OracleConnection connection, string schemeCode,
+        public static async Task RemoveSchemeTagsAsync(OracleConnection connection, string schemeCode,
             IEnumerable<string> tags, IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
-                builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => schemeTags.Where(t => !tags.Contains(t)).ToList(),
+                builder).ConfigureAwait(false);
         }
 
-        public static void SetSchemeTags(OracleConnection connection,
+        public static async Task SetSchemeTagsAsync(OracleConnection connection,
             string schemeCode,
             IEnumerable<string> tags,
             IWorkflowBuilder builder)
         {
-            UpdateSchemeTags(connection, schemeCode, schemeTags => tags.ToList(), builder);
+            await UpdateSchemeTagsAsync(connection, schemeCode, schemeTags => tags.ToList(), builder).ConfigureAwait(false);
         }
 
-        private static void UpdateSchemeTags(OracleConnection connection, string schemeCode,
-            Func<List<string>,List<string>> getNewTags, IWorkflowBuilder builder)
+        private static async Task UpdateSchemeTagsAsync(OracleConnection connection, string schemeCode,
+            Func<List<string>, List<string>> getNewTags, IWorkflowBuilder builder)
         {
-            WorkflowScheme scheme = SelectByKey(connection, schemeCode);
+            WorkflowScheme scheme = await SelectByKeyAsync(connection, schemeCode).ConfigureAwait(false);
 
             if (scheme == null)
             {
@@ -167,8 +166,8 @@ namespace OptimaJet.Workflow.Oracle
             scheme.Tags = TagHelper.ToTagStringForDatabase(newTags);
             scheme.Scheme = builder.ReplaceTagsInScheme(scheme.Scheme, newTags);
 
-            scheme.Update(connection);
-            Commit(connection);
+            await scheme.UpdateAsync(connection).ConfigureAwait(false);
+            await CommitAsync(connection).ConfigureAwait(false);
         }
     }
 }

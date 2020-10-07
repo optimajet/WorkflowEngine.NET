@@ -1,0 +1,36 @@
+<Process Name="ExpressionOtherwise" CanBeInlined="false" Tags="">
+  <Designer />
+  <Activities>
+    <Activity Name="BeforeBranches" State="BeforeBranches" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="BeforeBranches" OriginalSchemeCode="ExpressionOtherwise">
+      <Designer X="880" Y="380" Hidden="false" />
+    </Activity>
+    <Activity Name="AfterOtherwise" State="AfterOtherwise" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="AfterOtherwise" OriginalSchemeCode="ExpressionOtherwise">
+      <Designer X="1100" Y="440" Hidden="false" />
+    </Activity>
+    <Activity Name="AfterExpression" State="AfterExpression" IsInitial="False" IsFinal="True" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="AfterExpression" OriginalSchemeCode="ExpressionOtherwise">
+      <Designer X="1100" Y="320" Hidden="false" />
+    </Activity>
+  </Activities>
+  <Transitions>
+    <Transition Name="Activity_Activity_2_1" To="AfterExpression" From="BeforeBranches" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Expression" ConditionInversion="false">
+          <Expression><![CDATA[true]]></Expression>
+        </Condition>
+      </Conditions>
+      <Designer X="1028" Y="350" Hidden="false" />
+    </Transition>
+    <Transition Name="Activity_Activity_1_1" To="AfterOtherwise" From="BeforeBranches" Classifier="NotSpecified" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
+      <Triggers>
+        <Trigger Type="Auto" />
+      </Triggers>
+      <Conditions>
+        <Condition Type="Otherwise" />
+      </Conditions>
+      <Designer X="1023.5" Y="470.5" Hidden="false" />
+    </Transition>
+  </Transitions>
+</Process>

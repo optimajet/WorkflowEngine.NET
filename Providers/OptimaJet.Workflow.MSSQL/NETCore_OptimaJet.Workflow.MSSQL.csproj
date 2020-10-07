@@ -7,9 +7,9 @@
     <AssemblyName>OptimaJet.Workflow.MSSQL</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>4.2.0.0</AssemblyVersion>
-    <FileVersion>4.2.0.0</FileVersion>
-    <Version>4.2.0</Version>
+    <AssemblyVersion>5.0.0.0</AssemblyVersion>
+    <FileVersion>5.0.0.0</FileVersion>
+    <Version>5.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>
@@ -44,14 +44,12 @@ Create WorkflowRuntime section.</Description>
     <Compile Remove="Properties\Settings.Designer.cs" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="MSSQLProvider.cs~RF16c5d437.TMP" />
     <None Remove="Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="System.Data.SqlClient" Condition="'$(TargetFramework)' == 'netstandard1.6'" Version="4.3.0" />
-    <PackageReference Include="System.Data.SqlClient" Condition="'$(TargetFramework)' == 'netstandard2.0'" Version="4.4.3" />
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.0.1" />
   </ItemGroup>
 </Project>

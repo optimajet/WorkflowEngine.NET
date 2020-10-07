@@ -1,0 +1,793 @@
+<h3>{{ labels.Title }}</h3>
+<el-form class="WorkflowDesignerWindowForm"
+         :model="FormData"
+         ref="form"
+         label-position="top"
+         label-width="150px">
+    <div class="el-form--inline el-form--label-top SettingsWithPadding" style="display: flex;">
+        <el-form-item v-if="expertMode" :label="labels.Name" :rules="getFieldRules('Name')" prop="Name" :readonly="readonly" style="flex-grow: 1;">
+            <el-input v-model="FormData.Name"></el-input>
+        </el-form-item>
+        <el-form-item v-if="expertMode" :label="labels.From" :rules="getFieldRules('From')" prop="From" :readonly="readonly">
+            <el-select
+                    v-model="FormData.From"
+                    style="width: 100%;"
+                    :disabled="readonly"
+                    filterable
+                    placeholder="">
+                <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item v-if="expertMode && isFromInline()" :label="labels.InlinedFinalActivityName" prop="InlinedFinalActivityName" :readonly="readonly">
+            <el-input v-model="FormData.InlinedFinalActivityName"></el-input>
+        </el-form-item>
+
+        <el-form-item v-if="expertMode" :label="labels.To" :rules="getFieldRules('To')" prop="To" :readonly="readonly">
+            <el-select
+                    v-model="FormData.To"
+                    style="width: 100%;"
+                    :disabled="readonly"
+                    filterable
+                    placeholder="">
+                <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+            </el-select>
+        </el-form-item>   
+        
+        <el-form-item :label="labels.Classifier" prop="Classifier" :readonly="readonly">
+            <el-button-group>
+                <el-button :style=" (FormData.Classifier, 'NotSpecified')" :disabled="readonly" @click="FormData.Classifier = 'NotSpecified'">NotSpecified</el-button>
+                <el-button :style="getClassifierStyle(FormData.Classifier, 'Direct')" :disabled="readonly" @click="FormData.Classifier = 'Direct'">Direct</el-button>
+                <el-button :style="getClassifierStyle(FormData.Classifier, 'Reverse')" :disabled="readonly" @click="FormData.Classifier = 'Reverse'">Reverse</el-button>
+            </el-button-group>
+        </el-form-item>
+    </div>
+
+    <h4 class="SettingsHeader">{{ labels.Trigger }}</h4>
+    <div class="SettingsWithPadding SpacedRow">
+        <el-form-item :label="labels.TriggerType" style="flex-grow: 0;">
+            <el-button-group>
+                <el-button :type="FormData.Trigger.Type == 'Auto' ? 'info' : ''" @click="triggerClick('Auto')" :disabled="readonly">{{ labels.TriggerAuto }}</el-button>
+                <el-button :type="FormData.Trigger.Type == 'Command' ? 'info' : ''" @click="triggerClick('Command')" :disabled="readonly">{{ labels.TriggerCommand }}</el-button>
+                <el-button :type="FormData.Trigger.Type == 'Timer' ? 'info' : ''" @click="triggerClick('Timer')" :disabled="readonly">{{ labels.TriggerTimer}}</el-button>
+            </el-button-group>
+        </el-form-item>
+        <el-form-item v-if="FormData.Trigger.Type == 'Command'" :rules="getFieldRules('Trigger.Command.Name')" :label="labels.TriggerCommand" prop="Trigger.Command.Name">
+            <el-select
+                    v-model="FormData.Trigger.Command.Name"
+                    style="width: 100%;"
+                    :disabled="readonly"
+                    filterable
+                    clearable
+                    placeholder="">
+                <el-option v-for="item in commands" :key="item" :label="item" :value="item"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item v-if="FormData.Trigger.Type == 'Timer'" :rules="getFieldRules('Trigger.Timer.Name')" :label="labels.TriggerTimer" prop="Trigger.Timer.Name">
+            <el-select
+                    v-model="FormData.Trigger.Timer.Name"
+                    style="width: 100%;"
+                    :disabled="readonly"
+                    filterable
+                    clearable
+                    placeholder="">
+                <el-option v-for="item in timers" :key="item" :label="item" :value="item"></el-option>
+            </el-select>
+        </el-form-item>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <h4 class="SettingsHeader">
+            <span :style="showconditionerror ? 'color:red' : ''" :title="showconditionerror">{{ labels.Condition }}</span>
+            <a v-if="!readonly && FormData.conditionType == 'Conditional'" style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{}})">  |  {{ ButtonTextCreate }}</a>
+        </h4>
+
+        <el-form-item class="SettingsWithPadding" style="width: 380px;">
+            <el-button-group>
+                <el-button :type="FormData.conditionType == 'Always' ? 'info' : ''" @click="conditionClick('Always')" :disabled="readonly">{{ labels.AlwaysLabel }}</el-button>
+                <el-button :type="FormData.conditionType == 'Conditional' ? 'info' : ''" @click="conditionClick('Conditional')" :disabled="readonly">{{ labels.ConditionalLabel }} <img
+                        style="height: 10px;" :src="ConditionalImage"/></el-button>
+                <el-button :type="FormData.conditionType == 'Otherwise' ? 'info' : ''" @click="conditionClick('Otherwise')" :disabled="readonly">{{ labels.OtherwiseLabel}} <img style="height: 10px;"
+                                                                                                                                                                                 :src="OtherwiseImage"/>
+                </el-button>
+            </el-button-group>
+        </el-form-item>
+        <div v-if="FormData.conditionType == 'Conditional'">
+            <table v-if="FormData.Conditions.length > 0" class="WorkflowDesignerTable">
+                <th>
+                    <td v-if="isIE"></td>
+                    <td>{{labels.ConditionType}}</td>
+                    <td>{{labels.ConditionAction}}</td>
+                    <td>{{labels.ConditionActionParameter}}</td>
+                    <td>{{labels.ConditionInversion}}</td>
+                    <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
+                </th>
+                <tr v-for="(сondition, index) in FormData.Conditions" 
+                    :class="dragOverIndex == index && dragOverBlock  == сondition ? 'dragOver' : ''"
+                    @dragstart="dragstart(index, $event, FormData.Conditions)" @dragend="dragend($event)"
+                    @dragover="dragover(сondition, index, $event)">
+                    <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" >
+                        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+                    </td>
+                    <td>
+                        <el-select
+                                v-model="сondition.Type"
+                                :title="validateField('Type', сondition)"
+                                :class="validateField('Type', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option key="Action" :label="labels.ActionLabel" value="Action"></el-option>
+                            <el-option key="Expression" :label="labels.ExpressionLabel" value="Expression"></el-option>
+                        </el-select>
+                    </td>
+                    <td v-if="сondition.Type == 'Action'">
+                        <el-select
+                                v-model="сondition.Action.ActionName"
+                                :title="validateField('Action.ActionName', сondition)"
+                                :class="validateField('Action.ActionName', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option v-for="item in conditions" :key="item" :label="item" :value="item"></el-option>
+                        </el-select>
+                    </td>
+                    <td v-if="сondition.Type == 'Action'">
+                        <div style="flex-flow: nowrap; display: flex;align-items: center;">
+                            <el-autocomplete style="margin-right: 5px;" v-model="сondition.Action.ActionParameter" :disabled="readonly" :fetch-suggestions="querySearch"
+                                             @focus="setCurrentItem(сondition)"></el-autocomplete>
+                        </div>
+                    </td>
+                    <td v-if="сondition.Type == 'Expression'" colspan="2">
+                        <div style="flex-flow: nowrap; display: flex;align-items: center;">
+                            <el-input
+                                    v-model="сondition.Expression"
+                                    :title="validateField('Expression', сondition)"
+                                    :class="validateField('Expression', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                    :readonly="readonly"
+                                    style="margin-right: 5px;">
+                            </el-input>
+                        </div>
+                    </td>
+                    <td v-if="сondition.Type == 'Action' || сondition.Type == 'Expression'">
+                        <el-checkbox v-model="сondition.ConditionInversion" :disabled="readonly"></el-checkbox>
+                    </td>
+                    <td v-if="expertMode && (сondition.Type == 'Action' || сondition.Type == 'Expression')">
+                        <el-select
+                                v-model="сondition.ResultOnPreExecution"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option key="True" label="True" :value="true"></el-option>
+                            <el-option key="False" label="False" :value="false"></el-option>
+                        </el-select>
+                    </td>
+                    <td :style="!readonly ? 'width: 94px;' : 'width: 42px;'">
+                        <el-button-group>
+                            <el-button @click="сondition.Type == 'Action' ? showjson('Action.ActionParameter', сondition, {name: сondition.Action.ActionName ,type: ['Condition']}) : showjson('Expression', сondition, {expression: true})" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == сondition ? 'is-active' : '')"></el-button>
+                            <el-button v-if="!readonly" @click="removeRow(FormData.Conditions, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                        </el-button-group>
+                    </td>
+                </tr>
+            </table>
+
+            <el-button v-if="FormData.Conditions.length > 1" @click="conditionDetails = !conditionDetails" type="text">{{ conditionDetails ? labels.HideConcatParameters : labels.ShowConcatParameters
+                }}
+            </el-button>
+
+            <div v-if="conditionDetails" class="el-form--inline el-form--label-top">
+                <el-form-item :label="labels.ConditionsConcatenationType" :readonly="readonly">
+                    <el-select v-model="FormData.ConditionsConcatenationType">
+                        <el-option key="And" label="And" value="And"></el-option>
+                        <el-option key="Or" label="Or" value="Or"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 10px;">
+        <h4 class="SettingsHeader">{{ labels.Subprocess }}</h4>
+        <el-form-item style="width: 380px;" class="SettingsWithPadding">
+            <el-button-group>
+                <el-button :style="!FormData.IsFork  ? getSubprocessStyle('None') : ''" @click="subprocessClick('None')" :disabled="readonly">{{ labels.SubprocessNone }}</el-button>
+                <el-button :style="FormData.IsFork && FormData.SubprocessInOutDefinition === 'Start'  ? getSubprocessStyle('Start') : ''" @click="subprocessClick('Start')" :disabled="readonly">{{
+                    labels.SubprocessStart }}
+                </el-button>
+                <el-button :style="FormData.IsFork && FormData.SubprocessInOutDefinition === 'Finalize'  ? getSubprocessStyle('Finalize') : ''" @click="subprocessClick('Finalize')" :disabled="readonly">{{
+                    labels.SubprocessFinalize }}
+                </el-button>
+                <el-button v-if="expertMode" :style="FormData.IsFork && (!FormData.SubprocessInOutDefinition || FormData.SubprocessInOutDefinition === 'Auto')   ? getSubprocessStyle('Auto') : ''" @click="subprocessClick('Auto')" :disabled="readonly">{{ labels.SubprocessAuto }}
+                </el-button>
+            </el-button-group>            
+        </el-form-item>
+    </div>
+<!--Subprocess start settings-->
+    <h4 v-if="FormData.IsFork && FormData.SubprocessInOutDefinition == 'Auto'" class="SettingsHeader">{{ labels.SubprocessStartSettings }}</h4>
+    <div class="SettingsWithPadding" v-if="FormData.IsFork && FormData.SubprocessInOutDefinition !== 'Finalize'" style="margin-bottom: 10px;">
+        <div class="SpacedRow" >
+            <el-form-item v-if="expertMode" :label="labels.SubprocessName" prop="SubprocessName" :readonly="readonly">
+                <el-input v-model="FormData.SubprocessName" :placeholder="labels.SubprocessNamePlaceholder"></el-input>
+            </el-form-item>
+            <el-form-item v-if="expertMode" :label="labels.SubprocessId" prop="SubprocessId" :readonly="readonly">
+                <el-input v-model="FormData.SubprocessId" :placeholder="labels.SubprocessIdPlaceholder"></el-input>
+            </el-form-item>
+        </div>
+        <div class="SpacedRow" >
+            <el-form-item v-if="FormData.Trigger.Type === 'Auto' || FormData.Trigger.Type === 'Command'" :label="labels.SubprocessStartupType"  :readonly="readonly">
+                <el-select
+                        v-model="FormData.SubprocessStartupType"
+                        :disabled="readonly"
+                        filterable clearable
+                        :placeholder="labels.SubprocessStartupTypeSameThread">
+                    <el-option key="SameThread" :label="labels.SubprocessStartupTypeSameThread" value="SameThread"></el-option>
+                    <el-option key="AnotherThread" :label="labels.SubprocessStartupTypeAnotherThread" value="AnotherThread"></el-option>
+                    <el-option key="TimerQueue" :label="labels.SubprocessStartupTypeTimerQueue" value="TimerQueue"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item v-if="expertMode" :label="labels.SubprocessStartupParameterCopyStrategy"  :readonly="readonly">
+                <el-select
+                        v-model="FormData.SubprocessStartupParameterCopyStrategy"
+                        :disabled="readonly"
+                        filterable clearable
+                        :placeholder="labels.SubprocessStartupParameterCopyStrategyCopyAll">
+                    <el-option key="CopyAll" :label="labels.SubprocessStartupParameterCopyStrategyCopyAll" value="CopyAll"></el-option>
+                    <el-option key="IgnoreAll" :label="labels.SubprocessStartupParameterCopyStrategyIgnoreAll" value="IgnoreAll"></el-option>
+                    <el-option key="CopySpecified" :label="labels.SubprocessStartupParameterCopyStrategyCopySpecified" value="CopySpecified"></el-option>
+                    <el-option key="IgnoreSpecified" :label="labels.SubprocessStartupParameterCopyStrategyIgnoreSpecified" value="IgnoreSpecified"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item v-if="(FormData.SubprocessStartupParameterCopyStrategy === 'CopySpecified' || FormData.SubprocessStartupParameterCopyStrategy === 'IgnoreSpecified') && expertMode"
+                          :label="labels.SubprocessSpecifiedParameters" :readonly="readonly">
+                <el-input v-model="FormData.SubprocessSpecifiedParameters"></el-input>
+            </el-form-item>
+        </div>
+        
+        <el-form-item v-if="expertMode" :label="labels.SubprocessSpecifiedParameters" :readonly="readonly">
+            <el-checkbox v-model="FormData.DisableParentStateControl" :label="labels.DisableParentStateControl" name="type" :disabled="readonly"></el-checkbox>
+        </el-form-item>
+    </div>
+<!--Subprocess finalize settings-->
+    <h4  v-if="FormData.IsFork && FormData.SubprocessInOutDefinition == 'Auto'" class="SettingsHeader">{{ labels.SubprocessFinalizeSettings }}</h4>
+    <div class="SettingsWithPadding" v-if="FormData.IsFork && FormData.SubprocessInOutDefinition !== 'Start'" style="margin-bottom: 10px;">
+        <el-form-item v-if="expertMode" :label="labels.SubprocessFinalizeParameterMergeStrategy" :readonly="readonly">
+            <el-select
+                    v-model="FormData.SubprocessFinalizeParameterMergeStrategy"  dddd
+                    style="width: 100%;"
+                    :disabled="readonly"
+                    filterable clearable
+                    :placeholder="labels.SubprocessFinalizeParameterMergeStrategyOverwriteAllNulls">
+                <el-option key="OverwriteAllNulls" :label="labels.SubprocessFinalizeParameterMergeStrategyOverwriteAllNulls" value="OverwriteAllNulls"></el-option>
+                <el-option key="OverwriteAll" :label="labels.SubprocessFinalizeParameterMergeStrategyOverwriteAll" value="OverwriteAll"></el-option>
+                <el-option key="OverwriteSpecified" :label="labels.SubprocessFinalizeParameterMergeStrategyOverwriteSpecified" value="OverwriteSpecified"></el-option>
+                <el-option key="DontOverwriteSpecified" :label="labels.SubprocessFinalizeParameterMergeStrategyDontOverwriteSpecified" value="DontOverwriteSpecified"></el-option>
+            </el-select>
+        </el-form-item>
+        <el-form-item v-if="(FormData.SubprocessFinalizeParameterMergeStrategy === 'OverwriteSpecified' || FormData.SubprocessFinalizeParameterMergeStrategy === 'DontOverwriteSpecified') && expertMode"
+                      :label="labels.SubprocessSpecifiedParameters" :readonly="readonly">
+            <el-input v-model="FormData.SubprocessSpecifiedParameters"></el-input>
+        </el-form-item>
+        <el-checkbox v-model="FormData.MergeViaSetState" :label="labels.MergeViaSetState" name="type" :disabled="readonly"></el-checkbox>
+    </div>
+    
+    <div v-if="FormData.Trigger.Type == 'Command'" style="margin-bottom: 10px;">
+        <h4 class="SettingsHeader">{{ labels.Restrictions }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Restrictions, { Actor: {}, Type: 'Allow'})">{{ ButtonTextCreate }}</a>
+        </h4>
+        <table v-if="FormData.Restrictions.length > 0" class="WorkflowDesignerTable">
+            <th>
+                <td v-if="isIE"></td>
+                <td>{{labels.RestrictionsActor}}</td>
+                <td>{{labels.RestrictionsType}}</td>
+            </th>
+            <tr v-for="(restriction, index) in FormData.Restrictions"
+                :class="dragOverIndex == index && dragOverBlock  == restriction ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event, FormData.Restrictions)"
+                @dragend="dragend($event)" @dragover="dragover(restriction, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" >
+                    <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+                </td>
+                <td>
+                    <el-select
+                            v-model="restriction.Actor.Name"
+                            :title="validateField('Actor.Name', restriction)"
+                            :class="validateField('Actor.Name', restriction) ? 'WorkflowDesignerInputError' : ''"
+                            style="width: 100%;"
+                            :disabled="readonly"
+                            filterable
+                            clearable
+                            placeholder="">
+                        <el-option v-for="item in actors" :key="item" :label="item" :value="item"></el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <el-select 
+                    v-model="restriction.Type" 
+                    :disabled="readonly"
+                    filterable 
+                    placeholder="">
+                    <el-option key="Allow" :label="labels.Allow" value="Allow"></el-option>
+                    <el-option key="Restrict" :label="labels.Restrict" value="Restrict"></el-option>
+                    </el-select>
+                </td>
+                <td v-if="!readonly" style="width: 42px;">
+                    <el-button-group><el-button @click="removeRow(FormData.Restrictions, index)" class="WorkflowDesignerTableDeleteButton"></el-button></el-button-group>
+            </tr>
+        </table>
+
+        <el-button v-if="FormData.Restrictions.length > 1" @click="restrictionDetails = !restrictionDetails" type="text">{{ restrictionDetails ? labels.HideConcatParameters :
+            labels.ShowConcatParameters }}
+        </el-button>
+
+        <div v-if="restrictionDetails" class="el-form--inline el-form--label-top">
+            <el-form-item :label="labels.AllowConcatenationType" :readonly="readonly">
+                <el-select v-model="FormData.AllowConcatenationType">
+                    <el-option key="And" label="And" value="And"></el-option>
+                    <el-option key="Or" label="Or" value="Or"></el-option>
+                </el-select>
+            </el-form-item>
+            <el-form-item :label="labels.RestrictConcatenationType" :readonly="readonly">
+                <el-select v-model="FormData.RestrictConcatenationType">
+                    <el-option key="And" label="And" value="And"></el-option>
+                    <el-option key="Or" label="Or" value="Or"></el-option>
+                </el-select>
+            </el-form-item>
+        </div>
+    </div>
+
+    <div v-if="expertMode" style="margin-bottom: 10px;">
+        <h4 class="SettingsHeader">{{ labels.Annotations }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Annotations)">{{ ButtonTextCreate }}</a>
+        </h4>
+
+        <table v-if="FormData.Annotations.length > 0" class="WorkflowDesignerTable">
+            <th>
+                <td v-if="isIE"></td>
+                <td>{{labels.AnnotationName}}</td>
+                <td>{{labels.AnnotationValue}}</td>
+            </th>
+            <tr v-for="(annotation, index) in FormData.Annotations"
+                :class="dragOverIndex == index && dragOverBlock  == annotation ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event, FormData.Annotations)" @dragend="dragend($event)"
+                @dragover="dragover(annotation, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" >
+                    <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+                </td>
+                <td>
+                    <el-input
+                            v-model="annotation.Name"
+                            :title="validateField('Name', annotation)"
+                            :class="validateField('Name', annotation) ? 'WorkflowDesignerInputError' : ''">
+                    </el-input>
+                </td>
+                <td>
+                    <el-input
+                            v-model="annotation.JsonValue">
+                    </el-input>
+                </td>
+                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                    <el-button-group>
+                        <el-button @click="showjson('DefaultValue', annotation)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == annotation ? 'is-active' : '')"></el-button>
+                        <el-button @click="removeRow(FormData.Annotations, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+    </div>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+        :title="confirmdialog.title"
+        :before-close="function() {confirmdialog.visible = false}"
+        :visible="confirmdialog.visible"
+        :modal-append-to-body="false"
+        width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog>
+<script>
+    function transition_Init(me) {
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.TransitionFormLabel,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
+            SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function () {
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            showconditionerror: undefined,
+            expertMode: false,
+            restrictionDetails: false,
+            conditionDetails: false,
+            editItem: null,
+            FormData: {},
+            conditions: [],
+            commands: [],
+            timers: [],
+            actors: [],
+            activities: [],
+            ConditionalImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTcuNTg1NjMgMTQuNDAzOEw3LjU5MzA4IDEzLjg5NjVDNy42MDE3MyAxMy4zMDcxIDcuNjI3NzQgMTIuODEzIDcuNjcyOTcgMTIuNDE5QzcuNjcyOTkgMTIuNDE4OCA3LjY3MzAxIDEyLjQxODYgNy42NzMwMyAxMi40MTg0TDguMTY5NzcgMTIuNDc1NUM4LjIxMjQgMTIuMDk2MiA4LjMwMTk0IDExLjc1NzIgOC40MzgzNyAxMS40NTg2TDcuNTg1NjMgMTQuNDAzOFpNNy41ODU2MyAxNC40MDM4SDguMDkzMDJIMTAuNDU5M0gxMC45NTkzVjEzLjkwMzhDMTAuOTU5MyAxMy41OTc2IDEwLjk2NzYgMTMuMzMxMyAxMC45ODM2IDEzLjEwMzdMMTAuOTgzNyAxMy4xMDI2QzEwLjk5ODQgMTIuODg3OCAxMS4wMzQ2IDEyLjY5MjggMTEuMDkgMTIuNTE1OUMxMS4xNDI3IDEyLjM0NzQgMTEuMjIzMiAxMi4xNzY3IDExLjMzNTEgMTIuMDAzNE03LjU4NTYzIDE0LjQwMzhMMTEuMzM1MSAxMi4wMDM0TTExLjMzNTEgMTIuMDAzNEMxMS40NTE0IDExLjgzNjQgMTEuNjIwNCAxMS42NDY2IDExLjg1MTQgMTEuNDM0NUMxMi4yNTgyIDExLjA5MDIgMTIuNjY4MiAxMC43MTgzIDEzLjA4MTYgMTAuMzE5QzEzLjUyMDUgOS45MDM0MiAxMy45MTUzIDkuNDUzNDMgMTQuMjY1NiA4Ljk2OTE4QzE0LjYyMDYgOC40ODY0MiAxNC45MTI4IDcuOTcyMzIgMTUuMTQxMyA3LjQyNzM4TDE1LjE0MjQgNy40MjQ3OUMxNS4zODE2IDYuODQ1NDEgMTUuNSA2LjIzMTU5IDE1LjUgNS41ODc3NkMxNS41IDQuODA0NTYgMTUuMzY2NSA0LjA4ODgxIDE1LjA4NzEgMy40NTA0N0MxNC44MDkzIDIuODE1NzcgMTQuNDA0OCAyLjI3MzMxIDEzLjg3NyAxLjgyODIzQzEzLjM0ODIgMS4zODI0MyAxMi43MDk2IDEuMDU0NTEgMTEuOTczMiAwLjgzNjI3N0MxMS4yNDMgMC42MDkzMTEgMTAuNDI1MSAwLjUgOS41MjU1OCAwLjVDOC43MDY2OSAwLjUgNy45MzM3NCAwLjYwNjQxNyA3LjIwOTU0IDAuODIzMDk1QzYuNDkzNzcgMS4wMzE3MyA1Ljg2MTU4IDEuMzM5NjkgNS4zMjA5MyAxLjc1MjZMNS4zMjA5MyAxLjc1MjZMNS4zMjAxNSAxLjc1MzIxQzQuNzcwMTYgMi4xNzQ5OSA0LjMzMTA0IDIuNjg5MzcgNC4wMDcwMyAzLjI5MzY0QzMuNjc1MjkgMy45MTIzMSAzLjUwOTQ3IDQuNjAxODcgMy41MDAwNCA1LjM1MTQ4TDMuNDkzNjcgNS44NTc3N0g0SDYuMzY2MjhINi44NjYyOFY1LjM1Nzc3QzYuODY2MjggNS4wMTAwNyA2LjkzOTk0IDQuNzQzOTIgNy4wNjM2OCA0LjUzNzU5TDcuMDYzNzEgNC41Mzc2MUw3LjA2NjY2IDQuNTMyNTZDNy4yMDcxNSA0LjI5MTk3IDcuMzkzMzEgNC4wOTMwOSA3LjYzMDA1IDMuOTMyODJDNy44NjUyIDMuNzc1OTUgOC4xNDExNiAzLjY1NzA5IDguNDYzOTYgMy41ODA3Mkw4LjQ2Mzk3IDMuNTgwNzdMOC40NzExOSAzLjU3ODk1QzguODE0NCAzLjQ5MjMzIDkuMTY1NTMgMy40NDg4OSA5LjUyNTU4IDMuNDQ4ODlDMTAuMDA1NCAzLjQ0ODg5IDEwLjQxMjUgMy41MDg1NiAxMC43NTM3IDMuNjE4NDhDMTEuMDk0NSAzLjcyODI5IDExLjM1ODggMy44ODMyOSAxMS41NjEgNC4wNzQ2NUMxMS43MzkgNC4yNDMxOSAxMS44NzY4IDQuNDUzNzkgMTEuOTcxNSA0LjcxNjQzTDExLjk3NDIgNC43MjM3MkwxMS45NzcgNC43MzA5M0MxMi4wNzc0IDQuOTg0MjYgMTIuMTMzNyA1LjI5MTAxIDEyLjEzMzcgNS42NjAzOUMxMi4xMzM3IDUuOTk0NzUgMTIuMDY3MSA2LjMwODU2IDExLjkzNDEgNi42MDY2NEMxMS43ODg1IDYuOTMyOTggMTEuNjA0MyA3LjI0MjA2IDExLjM4MDUgNy41MzQyOEMxMS4xMzk2IDcuODQ1NzkgMTAuODc0MiA4LjE0MjcyIDEwLjU4MzkgOC40MjUwNEwxMC41ODM5IDguNDI1TDEwLjU3ODkgOC40Mjk5OUMxMC4yODU0IDguNzIzNjYgOS45OTYxIDkuMDA5MzggOS43MTEwNCA5LjI4NzE3QzkuMjgzNTkgOS42NTk3NyA4LjkzMjkyIDkuOTkxMDkgOC42NjM1MyAxMC4yNzk4TDExLjMzNTEgMTIuMDAzNFpNNy44MjA4NSAxOC45N0w3LjgyMDggMTguOTdMNy44MjY5NiAxOC45NzYyQzguMTk5MzggMTkuMzUzIDguNzE1MDEgMTkuNSA5LjI4MjU2IDE5LjVDOS44NDg1NCAxOS41IDEwLjM2MjkgMTkuMzUzOCAxMC43MzUxIDE4Ljk3OTRDMTEuMDg5MSAxOC42MzE3IDExLjI2NjMgMTguMTkxNCAxMS4yNjYzIDE3LjY5MjdDMTEuMjY2MyAxNy4xODQ1IDExLjA5MzggMTYuNzMzMyAxMC43NDA3IDE2LjM3NTNDMTAuMzY5MiAxNS45ODk1IDkuODUyODEgMTUuODM2OSA5LjI4MjU2IDE1LjgzNjlDOC43MTA3NyAxNS44MzY5IDguMTkzMDkgMTUuOTkwMyA3LjgyMTQzIDE2LjM3ODVMNy44MjEzNyAxNi4zNzg0TDcuODE1NDMgMTYuMzg0OEM3LjQ4MjI5IDE2Ljc0NTIgNy4zMjQ0MiAxNy4xOTMzIDcuMzI0NDIgMTcuNjkyN0M3LjMyNDQyIDE4LjE4MjEgNy40ODY0MiAxOC42MTk1IDcuODIwODUgMTguOTdaIiBmaWxsPSJ3aGl0ZSIgc3Ryb2tlPSJ3aGl0ZSIvPgo8L3N2Zz4K',
+            OtherwiseImage: 'data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZD0iTTE0LjI2OTEgMTEuNzI1NUw1LjM3MDQ5IDEuMjA5MTgiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIvPgo8bGluZSB5MT0iLTEuNSIgeDI9IjIwIiB5Mj0iLTEuNSIgdHJhbnNmb3JtPSJtYXRyaXgoLTEuMTUwNDdlLTA2IDEgLTEgLTMuMDY3MTFlLTA2IDEyLjE4OTQgMCkiIHN0cm9rZT0id2hpdGUiIHN0cm9rZS13aWR0aD0iMyIvPgo8L3N2Zz4K'
+        });
+
+        me.VueConfig.methods.onUpdate = function (item) {
+            var formdata = me.VueConfig.data.FormData;
+
+            formdata.Name = item.Name;
+            formdata.InlinedFinalActivityName = item.InlinedFinalActivityName;
+            formdata.From = item.From.Name;
+            formdata.To = item.To.Name;
+            formdata.Classifier = item.Classifier;
+            formdata.IsFork = item.IsFork;
+            formdata.SubprocessInOutDefinition = item.SubprocessInOutDefinition;
+            formdata.SubprocessName = item.SubprocessName;
+            formdata.SubprocessId = item.SubprocessId;
+            formdata.SubprocessStartupType = item.SubprocessStartupType;
+            formdata.SubprocessStartupParameterCopyStrategy = item.SubprocessStartupParameterCopyStrategy;
+            formdata.SubprocessFinalizeParameterMergeStrategy = item.SubprocessFinalizeParameterMergeStrategy;
+            formdata.SubprocessSpecifiedParameters = item.SubprocessSpecifiedParameters;
+            formdata.MergeViaSetState = item.MergeViaSetState;
+            formdata.DisableParentStateControl = item.DisableParentStateControl;
+            formdata.ConditionsConcatenationType = item.ConditionsConcatenationType;
+            me.VueConfig.data.conditionDetails = formdata.ConditionsConcatenationType == "Or";
+
+            formdata.AllowConcatenationType = item.AllowConcatenationType;
+            formdata.RestrictConcatenationType = item.RestrictConcatenationType;
+            me.VueConfig.data.restrictionDetails = formdata.AllowConcatenationType == "Or" || formdata.RestrictConcatenationType == "Or";
+
+            formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
+            formdata.Conditions = Array.isArray(item.Conditions) ? WorkflowDesignerCommon.clone(item.Conditions) : [];
+            formdata.Conditions.forEach(function (condition) {
+                if (!condition.Action)
+                    condition.Action = {};
+            });
+            formdata.Restrictions = Array.isArray(item.Restrictions) ? WorkflowDesignerCommon.clone(item.Restrictions) : [];
+            formdata.Trigger = WorkflowDesignerCommon.clone(item.Trigger);
+
+            if (!formdata.Trigger.Timer) formdata.Trigger.Timer = {};
+            if (!formdata.Trigger.Command) formdata.Trigger.Command = {};
+
+            formdata.Restrictions.forEach(function (item){
+                if (!item.Actor) item.Actor = {};
+            });
+
+            me.linkItem = item;
+            me.VueConfig.data.prevName = item.Name;
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            me.VueConfig.data.conditions = me.graph.getConditionNames();
+            me.VueConfig.data.timers = me.graph.getTimerNames();
+            me.VueConfig.data.commands = me.graph.getCommandNames();
+            me.VueConfig.data.actors = me.graph.getActorNames();
+
+            me.VueConfig.data.activities = me.graph.data.Activities;
+
+            if (formdata.Annotations.length > 0)
+                me.VueConfig.data.expertMode = true;
+
+            if (formdata.IsFork && (!formdata.SubprocessInOutDefinition || formdata.SubprocessInOutDefinition === 'Auto'))
+                me.VueConfig.data.expertMode = true;
+
+            if (formdata.SubprocessId !== null && formdata.SubprocessId !== undefined && formdata.SubprocessId !== '')
+            {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.SubprocessName !== null && formdata.SubprocessName !== undefined && formdata.SubprocessName !== '' && formdata.SubprocessName !== formdata.Name)
+            {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.SubprocessStartupParameterCopyStrategy !== null && formdata.SubprocessStartupParameterCopyStrategy !== undefined
+                    && formdata.SubprocessStartupParameterCopyStrategy !== '' && formdata.SubprocessStartupParameterCopyStrategy !== 'CopyAll') {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.SubprocessFinalizeParameterMergeStrategy !== null && formdata.SubprocessFinalizeParameterMergeStrategy !== undefined
+                    && formdata.SubprocessFinalizeParameterMergeStrategy !== '' && formdata.SubprocessFinalizeParameterMergeStrategy !== 'OverwriteAllNulls') {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.DisableParentStateControl)
+            {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            function findInObj(obj, func) {
+                for (var i=0; i < obj.length; ++i)
+                    if (func(obj[i])) return true;
+                
+                return false
+            }
+
+            if (findInObj(formdata.Conditions, function (item){
+                return item.ResultOnPreExecution !== undefined && item.ResultOnPreExecution !== null;
+            }))
+            {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.InlinedFinalActivityName)
+            {
+                me.VueConfig.data.expertMode = true;
+            }
+
+            if (formdata.Conditions.length === 1 && formdata.Conditions[0].Type === "Always") {
+                formdata.conditionType = "Always";
+            } else if (formdata.Conditions.length === 1 && formdata.Conditions[0].Type === "Otherwise") {
+                formdata.conditionType = "Otherwise";
+            } else {
+                formdata.conditionType = "Conditional";
+            }
+
+            me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
+        };
+
+        me.VueConfig.methods.isFromInline = function () {
+            var from = me.VueConfig.data.FormData.From;
+            var activities = me.VueConfig.data.activities;
+            return activities.filter(function (a) {
+                return a.Name == from && a.ActivityType === "Inline";
+            }).length > 0;
+        }
+
+        me.VueConfig.methods.triggerClick = function (type) {
+            var formdata = me.VueConfig.data.FormData;
+            formdata.Trigger.Type = type;
+            formdata.Timer = {};
+            formdata.Command = {};
+            formdata.Restrictions = [];
+            if (type === 'Timer')
+            {
+                formdata.SubprocessStartupType = undefined;
+            }
+        };
+
+        me.VueConfig.methods.subprocessClick = function (type) {
+            var formdata = me.VueConfig.data.FormData;
+            switch (type) {
+                case 'None':
+                    formdata.IsFork = false;
+                    formdata.SubprocessInOutDefinition = undefined;
+                    break;
+                case 'Start':
+                    formdata.IsFork = true;
+                    formdata.SubprocessInOutDefinition = 'Start';
+                    break;
+                case 'Finalize':
+                    formdata.IsFork = true;
+                    formdata.SubprocessInOutDefinition = 'Finalize';
+                    break;
+                case 'Auto':
+                    formdata.IsFork = true;
+                    formdata.SubprocessInOutDefinition = 'Auto';
+                    break;
+                default:
+                    formdata.IsFork = false;
+                    formdata.SubprocessInOutDefinition = undefined;
+                    break;
+            }
+        }
+
+        me.VueConfig.methods.getSubprocessStyle = function (type) {
+            switch (type) {
+                case 'None':
+                    return 'background-color:#CCCCCC;color:white;';
+                case 'Start':
+                    return 'background-color:#27AE60;color:white;';
+                case 'Finalize':
+                    return 'background-color:#2980B9;color:white;';
+                case 'Auto':
+                    return 'background-color:#7F8C8D;color:white;';
+                default:
+                    return 'background-color:#CCCCCC;color:white;';
+            }
+        };
+
+        me.VueConfig.methods.conditionClick = function (type) {
+            var formdata = me.VueConfig.data.FormData;
+            formdata.conditionType = type;
+
+            var conditions = formdata.Conditions;
+            conditions.splice(0, conditions.length);
+            if (type == "Always") {
+                conditions.push({Type: "Always", Action: {}});
+            } else if (type == "Otherwise") {
+                conditions.push({Type: "Otherwise", Action: {}});
+            } else if (type == "Conditional") {
+                conditions.push({Type: "Expression", Action: {}});
+            }
+        }
+
+
+        me.VueConfig.methods.getClassifierStyle = function (classifier, type) {
+            if (classifier != type) {
+                return "";
+            }
+            if (classifier == "NotSpecified") {
+                return "background-color:#7F8C8D;color:white;";
+            } else if (classifier == "Direct") {
+                return "background-color:#27AE60;color:white;";
+            } else if (classifier == "Reverse") {
+                return "background-color:#2980B9;color:white;";
+            }
+        };
+
+        me.VueConfig.methods.setCurrentItem = function (item) {
+            this.currentItem = item;
+        };
+        me.VueConfig.methods.querySearch = function (queryString, cb) {
+            if (me.VueConfig.data.readonly)
+                return cb([]);
+
+            var res = me.graph.getAutoCompleteSuggestions2("conditionparameter", this.currentItem.Action.ActionName, queryString);
+            cb(res);
+        };
+
+        me.VueConfig.methods.getFieldRules = function (field) {
+            var res = [{required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
+
+            if (field == "Name") {
+                var validator = function (rule, value, callback) {
+                    var isValid = true;
+                    me.graph.data.Transitions.forEach(function (a) {
+                        if (a != me.linkItem && a.Name == value) {
+                            isValid = false;
+                        }
+                    });
+
+                    if (isValid) {
+                        callback();
+                    } else {
+                        callback(new Error(rule.message));
+                    }
+                };
+                res.push({validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+            }
+            return res;
+        };
+
+        me.VueConfig.methods.showjson = function (name, item, params) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function (value) {
+                if (me.editItem) {
+                    WorkflowDesignerCommon.setValueByPropertyName(me.editItem, name, value);
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function (value) {
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var value = WorkflowDesignerCommon.getValueByPropertyName(item, name);
+            me.VueConfig.data.jsonform = me.showjson(value, params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.addRow = function (items, def) {
+            items.push(def ? def : {});
+        };
+
+        me.VueConfig.methods.removeRow = function (items, index) {
+            items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.validateField = function (name, item) {
+            if (name != 'Name' && name != "Actor.Name" && name != "Type" && name != "Action.ActionName" && name != "Expression")
+                return;
+
+            if (!WorkflowDesignerCommon.getValueByPropertyName(item, name)) {
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if (name == "Type") {
+                var conditions = me.VueConfig.data.FormData.Conditions;
+                var labels = me.VueConfig.data.labels;
+                if (item.Type == "Always" && conditions.filter(function (c) {
+                    return c.Type == item.Type
+                }).length > 1) {
+                    return labels.AlwaysConditionShouldBeSingle;
+                }
+
+                if (item.Type == "Otherwise" && conditions.filter(function (c) {
+                    return c.Type == item.Type
+                }).length > 1) {
+                    return labels.OtherwiseConditionShouldBeSingle;
+                }
+            }
+        };
+
+        me.VueConfig.methods.validate = function () {
+            var validateFunc = me.VueConfig.methods.validateField;
+            var data = me.VueConfig.data.FormData;
+
+            for (var i = 0; i < data.Restrictions.length; i++) {
+                var item = data.Restrictions[i];
+                if (validateFunc('Actor.Name', item))
+                    return false;
+            }
+
+            if (Array.isArray(data.Conditions) && data.Conditions.length == 0) {
+                me.VueConfig.data.showconditionerror = WorkflowDesignerConstants.TransitionFormLabel.ConditionsListShouldNotBeEmpty;
+                return false;
+            }
+
+            for (var i = 0; i < data.Conditions.length; i++) {
+                var item = data.Conditions[i];
+                if (validateFunc('Type', item) ||
+                        (item.Type == 'Action' && validateFunc('Action.ActionName', item)) ||
+                        (item.Type == 'Expression' && validateFunc('Expression', item)))
+                    return false;
+            }
+
+            for (var i = 0; i < data.Annotations.length; i++) {
+                var item = data.Annotations[i];
+                if (validateFunc('Name', item))
+                    return false;
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.onHideEvent = function () {
+            me.VueConfig.data.confirmdialog.visible = false;
+        }
+
+        me.VueConfig.methods.onSave = function () {
+            if (this.$refs && this.$refs.form && me.VueConfig.methods.validate()) {
+                this.$refs.form.validate(function (valid) {
+                    if (valid) {
+                        me.onSuccess(me.VueConfig.data.FormData);
+                        me.onClose(true);
+                    }
+                });
+                return;
+            }
+        };
+
+        me.VueConfig.methods.onClose = function () {
+            if (me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            var originalItem = me.VueConfig.data.originalItem;
+            var item =  me.VueConfig.data.FormData;
+
+            if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
+                me.onClose(true);
+            } else {
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+        };
+    };
+</script>

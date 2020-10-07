@@ -1,5 +1,6 @@
 ﻿using System;
 using System.Data;
+using System.Threading.Tasks;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -112,12 +113,11 @@ namespace OptimaJet.Workflow.Oracle
             }
         }
 
-        public static WorkflowProcessScheme[] Select(OracleConnection connection, string schemeCode,
+        public static async Task<WorkflowProcessScheme[]> SelectAsync(OracleConnection connection, string schemeCode,
             string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
         {
             string selectText =
-                string.Format("SELECT * FROM {0}  WHERE SchemeCode = :schemecode AND DefiningParametersHash = :dphash",
-                    ObjectName);
+                $"SELECT * FROM {ObjectName}  WHERE SchemeCode = :schemecode AND DefiningParametersHash = :dphash";
 
             if (isObsolete.HasValue)
             {
@@ -134,38 +134,36 @@ namespace OptimaJet.Workflow.Oracle
             if (rootSchemeId.HasValue)
             {
                 selectText += " AND ROOTSCHEMEID = :rootschemeid";
-                return Select(connection, selectText,
-                    new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                    new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
-                        ParameterDirection.Input),
-                    new OracleParameter("rootschemeid", OracleDbType.Raw, rootSchemeId.Value.ToByteArray(), ParameterDirection.Input));
-            }
-            else
-            {
-                selectText += " AND ROOTSCHEMEID IS NULL";
-                return Select(connection, selectText,
-                    new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                    new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
-                        ParameterDirection.Input));
+                return await SelectAsync(connection, selectText,
+                        new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
+                        new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
+                            ParameterDirection.Input),
+                        new OracleParameter("rootschemeid", OracleDbType.Raw, rootSchemeId.Value.ToByteArray(), ParameterDirection.Input))
+                    .ConfigureAwait(false);
             }
 
+            selectText += " AND ROOTSCHEMEID IS NULL";
+            return await SelectAsync(connection, selectText,
+                    new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
+                    new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
+                        ParameterDirection.Input))
+                .ConfigureAwait(false);
         }
 
-        public static int SetObsolete(OracleConnection connection, string schemeCode)
+        public static async Task<int> SetObsoleteAsync(OracleConnection connection, string schemeCode)
         {
-            string command = string.Format("UPDATE {0} SET IsObsolete = 1 WHERE SchemeCode = :schemecode OR RootSchemeCode = :schemecode", ObjectName);
-            return ExecuteCommand(connection, command,
-                new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input));
+            string command = $"UPDATE {ObjectName} SET IsObsolete = 1 WHERE SchemeCode = :schemecode OR RootSchemeCode = :schemecode";
+            return await ExecuteCommandAsync(connection, command,
+                new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static int SetObsolete(OracleConnection connection, string schemeCode, string definingParametersHash)
+        public static async Task<int> SetObsoleteAsync(OracleConnection connection, string schemeCode, string definingParametersHash)
         {
-            string command = string.Format(
-                "UPDATE {0} SET IsObsolete = 1 WHERE (SchemeCode = :schemecode OR OR RootSchemeCode = :schemecode) AND DefiningParametersHash = :dphash", ObjectName);
+            string command = $"UPDATE {ObjectName} SET IsObsolete = 1 WHERE (SchemeCode = :schemecode OR OR RootSchemeCode = :schemecode) AND DefiningParametersHash = :dphash";
 
-            return ExecuteCommand(connection, command,
+            return await ExecuteCommandAsync(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input));
+                new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input)).ConfigureAwait(false);
         }
     }
 }

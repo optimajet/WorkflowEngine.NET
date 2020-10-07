@@ -7,10 +7,10 @@ import { Component } from '@angular/core';
 })
 export class AppComponent {
   title = 'AngularTest';
-  schemecode = 'SimpleWF';
+  schemecode = 'RoleBasedWorkflow';
   processid = undefined;
   //TODO REPLACE THIS URL TO YOURS BACKEND (!!!)
-  apiurl = 'https://workflowengine.io/demo/Designer/API'; //'/Designer/API'
+  apiurl = 'https://server.workflowengine.io/designerapi'; //'/Designer/API'
   offsetX = 0;
   offsetY = 120;
   wfdesigner: any; 
