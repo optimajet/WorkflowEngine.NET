@@ -32,7 +32,7 @@
       </Triggers>
       <Conditions>
         <Condition Type="Action" NameRef="CheckParameter" ConditionInversion="false">
-          <ActionParameter><![CDATA[{"CompareType":"Equal","Separator":",","Parameter":"TestParameter","Value":"25","ForRootProcess":false}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"CompareType":"Equal","Separator":",","ParameterName":"TestParameter","Value":"25","ForRootProcess":false}]]></ActionParameter>
         </Condition>
       </Conditions>
       <Designer X="1135" Y="530" Hidden="false" />

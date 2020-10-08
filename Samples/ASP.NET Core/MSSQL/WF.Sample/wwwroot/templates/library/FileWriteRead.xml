@@ -23,7 +23,7 @@
           <ActionParameter><![CDATA[{"Path":"Test.txt"}]]></ActionParameter>
         </ActionRef>
         <ActionRef Order="2" NameRef="RemoveParameter">
-          <ActionParameter><![CDATA[{"Parameter":"TestParameter","ForRootProcess":false}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"ParameterName":"TestParameter","ForRootProcess":false}]]></ActionParameter>
         </ActionRef>
       </Implementation>
       <Designer X="1540" Y="380" Hidden="false" />

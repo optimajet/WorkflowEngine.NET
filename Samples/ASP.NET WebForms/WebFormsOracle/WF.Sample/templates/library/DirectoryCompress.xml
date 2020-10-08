@@ -51,7 +51,7 @@
           <ActionParameter><![CDATA[{"Path":"Test.zip"}]]></ActionParameter>
         </ActionRef>
         <ActionRef Order="4" NameRef="RemoveParameter">
-          <ActionParameter><![CDATA[{"Parameter":"Parameter","ForRootProcess":false}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"ParameterName":"Parameter","ForRootProcess":false}]]></ActionParameter>
         </ActionRef>
       </Implementation>
       <Designer X="2020" Y="440" Hidden="false" />
@@ -91,7 +91,7 @@
       </Triggers>
       <Conditions>
         <Condition Type="Action" NameRef="CheckParameter" ConditionInversion="false">
-          <ActionParameter><![CDATA[{"CompareType":"Equal","Separator":",","Parameter":"Parameter","Value":"Some text 1|Some text 2","ForRootProcess":false}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"CompareType":"Equal","Separator":",","ParameterName":"Parameter","Value":"Some text 1|Some text 2","ForRootProcess":false}]]></ActionParameter>
         </Condition>
       </Conditions>
       <Designer X="1955" Y="471" Hidden="false" />

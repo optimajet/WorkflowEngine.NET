@@ -4,7 +4,7 @@
     <Activity Name="SetParameter" State="SetParameter" IsInitial="True" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="SetParameter" OriginalSchemeCode="ParameterExpressionOtherwise">
       <Implementation>
         <ActionRef Order="1" NameRef="SetParameter">
-          <ActionParameter><![CDATA[{"Parameter":"TestParameter","Value":"25","ForRootProcess":false}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"ParameterName":"TestParameter","Value":"25","ForRootProcess":false}]]></ActionParameter>
         </ActionRef>
       </Implementation>
       <Designer X="800" Y="380" Hidden="false" />
