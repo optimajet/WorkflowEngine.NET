@@ -1,16 +1,14 @@
-﻿END-USER LICENSE AGREEMENT
+END-USER LICENSE AGREEMENT
 SUMMARY
-1. Workflow Engine & Workflow Server Enterprise and Ultimate editions come with source code, letting you customize its UI and introduce necessary changes to its functionality. However, this does not let you resell Workflow Engine or Workflow Server as a component for further development.
+1. We do not limit redistribution of the final product built with Workflow Engine or Workflow Server's Ultimate license and we do not impose any loyalty fees. However, we strongly recommend you to purchase one of our support plans. Otherwise, we will not be able to respond to your questions in a timely manner and solve arising issues. Subscribe to a custom support plan for mission-critical and SaaS applications.
 
-2. We do not limit redistribution of the final product built with Workflow Engine or Workflow Server's Ultimate license and we do not impose any loyalty fees. However, we strongly recommend you to purchase one of our support plans. Otherwise, we will not be able to respond to your questions in a timely manner and solve arising issues. Subscribe to a custom support plan for mission-critical and SaaS applications.
+2. One Workflow Engine or Workflow Server license allows you to build one product with Workflow Engine or Workflow Server. Our Enterprise license allows you to use such a product only internally, i.e. within your company.
 
-3. One Workflow Engine or Workflow Server license allows you to build one product with Workflow Engine or Workflow Server. Our Enterprise license allows you to use such a product only internally, i.e. within your company.
+3. We do not limit the use of the final product. However, we do not grant any intellectual property rights to Workflow Engine or Workflow Server to our customers.
 
-4. We do not limit the use of the final product. However, we do not grant any intellectual property rights to Workflow Engine or Workflow Server to our customers.
+4. Trial license can be used only for development purposes.
 
-5. Trial license can be used only for development purposes.
-
-6. Support plans include support only for officially published versions of Workflow Engine or Workflow Server. To get support for modified versions of Workflow Engine or Workflow Server, please, get a quote.
+5. Support plans include support only for officially published versions of Workflow Engine or Workflow Server. To get support for modified versions of Workflow Engine or Workflow Server, please, get a quote.
 
 EULA
 IMPORTANT — READ CAREFULLY: This OPTIMAJET LLC (“OPTIMAJET”) End-User License Agreement (“EULA”) is a legal agreement between you, a developer of software applications, (“Developer End User”) and OPTIMAJET for all OPTIMAJET products, frameworks, components, source code, demos, intermediate files, media, printed materials, and online or electronic documentation (“SOFTWARE DEVELOPMENT PRODUCT(S)”) contained in this distribution.
@@ -197,14 +195,12 @@ You hereby agree to indemnify OPTIMAJET and its officers, directors, employees, 
 Without prejudice to any other rights or remedies, OPTIMAJET will terminate this EULA upon your failure to comply with all the terms and conditions of this EULA. In such events, Developer End User must destroy all copies of the SOFTWARE DEVELOPMENT PRODUCT(S) and all of its component parts including any related documentation, and must remove ANY and ALL use of OPTIMAJET intellectual property from any applications distributed by Developer End User, whether in native, altered or compiled states.
 
 15. MISCELLANEOUS
-This EULA may only be modified in writing signed by you and an authorized officer of OPTIMAJET INC. If any provision of this EULA is found void or unenforceable, the remainder will remain valid and enforceable according to its terms. If any remedy provided is determined to have failed for its essential purpose, all limitations of liability and exclusions of damages set forth in the Limited Warranty shall remain in effect.
+This EULA may only be modified in writing signed by you and an authorized officer of OPTIMAJET LLC. If any provision of this EULA is found void or unenforceable, the remainder will remain valid and enforceable according to its terms. If any remedy provided is determined to have failed for its essential purpose, all limitations of liability and exclusions of damages set forth in the Limited Warranty shall remain in effect.
 
 OPTIMAJET reserves all rights not specifically granted in this EULA.
 
 YOU ACKNOWLEDGE THAT YOU HAVE READ AND UNDERSTAND THIS AGREEMENT AND YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT UPON INSTALLATION AND/OR USE of ALL SOFTWARE DEVELOPMENT PRODUCT(S) INCLUDED IN THIS DISTRIBUTION.
 
-© 2011- 2018 OPTIMAJET LLC
+© 2011- 2020 OPTIMAJET LLC
 
 All trademarks and registered trademarks are property of their respective owners.
-
-Should you have any questions concerning this EULA, contact us directly at +1 (857) 301-8034.

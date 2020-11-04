@@ -1,8 +1,5 @@
 <Process Name="DirectAndReverseTransitionsWithApprovalAndDeny" CanBeInlined="false" Tags="">
   <Designer />
-  <Actors>
-    <Actor Name="Boss" Rule="Approver" WasInlined="true" OriginalName="Boss" OriginalSchemeCode="DirectAndReverseTransitionsWithApprovalAndDeny" />
-  </Actors>
   <Commands>
     <Command Name="Approve" />
     <Command Name="Deny" />
@@ -21,9 +18,6 @@
   </Activities>
   <Transitions>
     <Transition Name="Activity_1_Activity_2_1" To="Created" From="PendingApproval" Classifier="Reverse" AllowConcatenationType="And" RestrictConcatenationType="And" ConditionsConcatenationType="And" DisableParentStateControl="false">
-      <Restrictions>
-        <Restriction Type="Allow" NameRef="Boss" />
-      </Restrictions>
       <Triggers>
         <Trigger Type="Command" NameRef="Deny" />
       </Triggers>

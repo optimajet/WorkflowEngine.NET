@@ -1,16 +1,14 @@
-﻿END-USER LICENSE AGREEMENT
+END-USER LICENSE AGREEMENT
 SUMMARY
-1. Workflow Engine & Workflow Server Enterprise and Ultimate editions come with source code, letting you customize its UI and introduce necessary changes to its functionality. However, this does not let you resell Workflow Engine or Workflow Server as a component for further development.
+1. We do not limit redistribution of the final product built with Workflow Engine or Workflow Server's Ultimate license and we do not impose any loyalty fees. However, we strongly recommend you to purchase one of our support plans. Otherwise, we will not be able to respond to your questions in a timely manner and solve arising issues. Subscribe to a custom support plan for mission-critical and SaaS applications.
 
-2. We do not limit redistribution of the final product built with Workflow Engine or Workflow Server's Ultimate license and we do not impose any loyalty fees. However, we strongly recommend you to purchase one of our support plans. Otherwise, we will not be able to respond to your questions in a timely manner and solve arising issues. Subscribe to a custom support plan for mission-critical and SaaS applications.
+2. One Workflow Engine or Workflow Server license allows you to build one product with Workflow Engine or Workflow Server. Our Enterprise license allows you to use such a product only internally, i.e. within your company.
 
-3. One Workflow Engine or Workflow Server license allows you to build one product with Workflow Engine or Workflow Server. Our Enterprise license allows you to use such a product only internally, i.e. within your company.
+3. We do not limit the use of the final product. However, we do not grant any intellectual property rights to Workflow Engine or Workflow Server to our customers.
 
-4. We do not limit the use of the final product. However, we do not grant any intellectual property rights to Workflow Engine or Workflow Server to our customers.
+4. Trial license can be used only for development purposes.
 
-5. Trial license can be used only for development purposes.
-
-6. Support plans include support only for officially published versions of Workflow Engine or Workflow Server. To get support for modified versions of Workflow Engine or Workflow Server, please, get a quote.
+5. Support plans include support only for officially published versions of Workflow Engine or Workflow Server. To get support for modified versions of Workflow Engine or Workflow Server, please, get a quote.
 
 EULA
 IMPORTANT — READ CAREFULLY: This OPTIMAJET LLC (“OPTIMAJET”) End-User License Agreement (“EULA”) is a legal agreement between you, a developer of software applications, (“Developer End User”) and OPTIMAJET for all OPTIMAJET products, frameworks, components, source code, demos, intermediate files, media, printed materials, and online or electronic documentation (“SOFTWARE DEVELOPMENT PRODUCT(S)”) contained in this distribution.

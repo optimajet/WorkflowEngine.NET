@@ -5,7 +5,7 @@
         <div v-if="item.Header" style="margin-top: 20px;margin-bottom: 5px;">
             <b>{{ item.Header }}</b>
         </div>
-        <div v-if="item.Title" :draggable="item.IsEnable" style="cursor:grab;" @dragstart="dragstart(item, $event)" @dragend="dragend($event)">      
+        <div v-if="item.Title" :draggable="item.IsEnable" style="cursor:grab;" @dragstart="dragstart(item, $event)" @dragend="dragend($event)" @drop="drop($event)">      
             <el-card body-style="padding:15px;">
                 <el-tooltip :disabled="item.IsEnable" :content="WorkflowDesignerConstants.LibraryLabel.PluginRequired + ' ' + item.Plugins">
                 <div v-bind:class="{disabledCard: !item.IsEnable }">
@@ -75,7 +75,8 @@
 
         me.VueConfig.methods.dragstart = function(item, e) {
             this.draggingItem = item;
-            e.target.style.opacity = 0.6;
+            this.targetStyle = e.target.style;
+            this.targetStyle.opacity = 0.6;
 
             try {
                 e.originalEvent.dataTransfer.setData('text/plain', 'anything'); //hack for drag&drop in FF
@@ -85,7 +86,7 @@
 
         me.VueConfig.methods.dragend = function(e) 
         {
-            e.target.style.opacity = 1;
+            this.targetStyle.opacity = 1;
             me.parentContainer.off("dragover.library");
             
             if(this.draggingItem !== undefined)
@@ -102,6 +103,8 @@
 
         me.VueConfig.methods.drop = function(e) {
             this.draggingItem = undefined;
+            this.targetStyle.opacity = 1;
+            me.parentContainer.off("dragover.library");
         };
 
         me.VueConfig.watch = {

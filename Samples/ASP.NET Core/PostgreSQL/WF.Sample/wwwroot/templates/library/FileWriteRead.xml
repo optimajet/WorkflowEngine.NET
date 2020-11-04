@@ -12,7 +12,7 @@
     <Activity Name="FileRead" State="FileRead" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="FileRead" OriginalSchemeCode="FileWriteRead">
       <Implementation>
         <ActionRef Order="1" NameRef="FileRead">
-          <ActionParameter><![CDATA[{"ParameterPurpose":"Temporary","ParameterType":"String","FileMode":"Open","FileAccess":"Read","FileShare":"None","BufferSize":1024,"Path":"Test.txt","ParameterName":"TestParameter"}]]></ActionParameter>
+          <ActionParameter><![CDATA[{"ParameterPurpose":"Persistence","ParameterType":"String","FileMode":"Open","FileAccess":"Read","FileShare":"None","BufferSize":1024,"Path":"Test.txt","ParameterName":"TestParameter"}]]></ActionParameter>
         </ActionRef>
       </Implementation>
       <Designer X="1220" Y="380" Hidden="false" />

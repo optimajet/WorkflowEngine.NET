@@ -7,7 +7,7 @@
     style="margin-bottom: 10px;"
 ></el-input>
 <el-form v-if="items.length > 0" class="mx-auto" class="WorkflowDesignerWindowForm" style="height: calc(100% - 90px);" @drop="drop($event)">
-    <div v-for="(item, index) in items" draggable="true" style="cursor:grab;" @dblclick="createActivity(item)" @dragstart="dragstart(item, $event)" @dragend="dragend($event)"   >
+    <div v-for="(item, index) in items" draggable="true" style="cursor:grab;" @dblclick="createActivity(item)" @dragstart="dragstart(item, $event)" @dragend="dragend($event)" @drop="drop($event)">
         <el-card body-style="padding:15px">
             <div class="ActivityTitle" style="display: flex;">
                 <div :class="'Icon ' + item.Class"></div>
@@ -124,7 +124,8 @@
 
         me.VueConfig.methods.dragstart = function(item, e) {
             this.draggingItem = item;
-            e.target.style.opacity = 0.6;
+            this.targetStyle = e.target.style;
+            this.targetStyle.opacity = 0.6;
 
             try {
                 e.originalEvent.dataTransfer.setData('text/plain', 'anything'); //hack for drag&drop in FF
@@ -136,7 +137,7 @@
         
         me.VueConfig.methods.dragend = function(e) 
         {        
-            e.target.style.opacity = 1;
+            this.targetStyle.opacity = 1;
             me.parentContainer.off("dragover.elementsbar");
                        
            if(this.draggingItem !== undefined)
@@ -155,6 +156,8 @@
         me.VueConfig.methods.drop = function(e) 
         {
             this.draggingItem = undefined;
+            this.targetStyle.opacity = 1;
+            me.parentContainer.off("dragover.elementsbar");
         };
 
         me.VueConfig.watch = {
