@@ -101,7 +101,7 @@
                     {
                         if(field.Type === "Checkbox")
                         {
-                            field.DefaultValue=field.DefaultValue.toString() === "true";
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
                         }
 
                         if(typeof field.DefaultValue != "undefined")
