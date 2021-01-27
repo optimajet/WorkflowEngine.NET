@@ -107,7 +107,7 @@
     
         me.VueConfig.watch = {
             ParentItem : {
-                handler(val){
+                handle: function(val){
                     updateDataFromParent();
                 },
                 deep: true

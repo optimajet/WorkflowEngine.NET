@@ -78,7 +78,7 @@
     <div style="margin-bottom: 10px;">
         <h4 class="SettingsHeader">
             <span :style="showconditionerror ? 'color:red' : ''" :title="showconditionerror">{{ labels.Condition }}</span>
-            <a v-if="!readonly && FormData.conditionType == 'Conditional'" style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{}})">  |  {{ ButtonTextCreate }}</a>
+            <a v-if="!readonly && FormData.conditionType == 'Conditional'" style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{ActionParameter:''}})">  |  {{ ButtonTextCreate }}</a>
         </h4>
 
         <el-form-item class="SettingsWithPadding" style="width: 380px;">

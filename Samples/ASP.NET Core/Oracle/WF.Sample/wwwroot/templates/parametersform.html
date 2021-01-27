@@ -142,6 +142,18 @@
         me.VueConfig.methods.onUpdate = function(parentItem){
             me.parentItem = parentItem;
             me.VueConfig.data.items = WorkflowDesignerCommon.clone(parentItem.ParameterDefinitions);
+
+            me.VueConfig.data.items.forEach(function (item){
+                if (item.Type === 'MultiSelect' && typeof item.DefaultValue === 'string')
+                {
+                    item.DefaultValue = WorkflowDesignerCommon.toJSON(item.DefaultValue);
+                }
+                else if (item.Type === 'Dropdown' && item.DefaultValue !== null && typeof item.DefaultValue !== 'string')
+                {
+                    item.DefaultValue = WorkflowDesignerCommon.toString(item.DefaultValue);
+                }
+            });
+
             me.VueConfig.data.name = parentItem.Name;
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
         };

@@ -58,8 +58,9 @@
             formMode: false
         });
 
+        me.failsCount = 0;
+
         me.VueConfig.methods.onUpdate = function(value){
-           
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
 
             if(me.options && me.options.customTitle){
@@ -97,31 +98,93 @@
 
                 if(!value && !me.VueConfig.data.readonly){
                     var tmp = {};
-                    fields.forEach(function(field)
-                    {
-                        if(field.Type === "Checkbox")
-                        {
-                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
-                        }
 
-                        if(typeof field.DefaultValue != "undefined")
-                        {                         
-                            tmp[field.Name] = field.DefaultValue;
-                        }
-                        else 
+                    if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
+                        if(typeof  me.VueConfig.data.fields[0].DefaultValue != "undefined")
                         {
-                            tmp[field.Name] = null;
+                            if (me.VueConfig.data.fields[0].Type === 'Checkbox')
+                            {
+                                value = me.VueConfig.data.fields[0].DefaultValue !== null &&  me.VueConfig.data.fields[0].DefaultValue !== undefined && me.VueConfig.data.fields[0].DefaultValue.toString() === "true";
+                            }
+                            else if (me.VueConfig.data.fields[0].Type === 'MultiSelect' && typeof me.VueConfig.data.fields[0].DefaultValue === 'object')
+                            {
+                                value = WorkflowDesignerCommon.toString(me.VueConfig.data.fields[0].DefaultValue);
+                            }
+                            else if (me.VueConfig.data.fields[0].Type === 'Json' && typeof me.VueConfig.data.fields[0].DefaultValue === 'object')
+                            {
+                                value = WorkflowDesignerCommon.toString(me.VueConfig.data.fields[0].DefaultValue);
+                            }
+                            else
+                            {
+                                value = me.VueConfig.data.fields[0].DefaultValue;
+                            }
                         }
-                    });
-                    value = WorkflowDesignerCommon.toString(tmp);
+                        else
+                        {
+                            if (me.VueConfig.data.fields[0].Type === 'Checkbox')
+                            {
+                                value = false;
+                            }
+                            else if (me.VueConfig.data.fields[0].Type === 'Multiselect')
+                            {
+                                value = [];
+                            }
+                            else
+                            {
+                                value = null;
+                            }
+                        }
+                    }
+                    else {
+                        fields.forEach(function(field)
+                        {
+                            if(field.Type === "Checkbox")
+                            {
+                                field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                            }
+
+                            if(typeof field.DefaultValue != "undefined")
+                            {
+                                if (field.Type === 'Json' && typeof field.DefaultValue === 'string')
+                                {
+                                    tmp[field.Name] =  WorkflowDesignerCommon.toJSON(field.DefaultValue);
+                                }
+                                else if (field.Type === 'MultiSelect' && typeof field.DefaultValue === 'string')
+                                {
+                                    tmp[field.Name] = WorkflowDesignerCommon.toJSON(field.DefaultValue);
+                                }
+                                else
+                                {
+                                    tmp[field.Name] = field.DefaultValue;
+                                }
+                            }
+                            else
+                            {
+                                tmp[field.Name] = null;
+                            }
+                        });
+                        value = WorkflowDesignerCommon.toString(tmp);
+                    }
                 }
             }
-         
+
             if(me.VueConfig.data.formMode){
                 if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
-                    if (me.VueConfig.data.fields[0].Type === 'Text' || me.VueConfig.data.fields[0].Type === 'TextArea') {
-                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' + value + '"}');
-                    } else 
+                    if (me.VueConfig.data.fields[0].Type === 'Text'
+                            || me.VueConfig.data.fields[0].Type === 'TextArea'
+                            || me.VueConfig.data.fields[0].Type === 'Dropdown'
+                            || me.VueConfig.data.fields[0].Type === 'DateTime'
+                    ) {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' +  (value === null ? "" : value) + '"}');
+                    }
+                    else if (me.VueConfig.data.fields[0].Type === 'Json'
+                            || me.VueConfig.data.fields[0].Type === 'Checkbox'
+                            || me.VueConfig.data.fields[0].Type === 'MultiSelect'
+                            || me.VueConfig.data.fields[0].Type === 'Number'
+                            ){
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":' + value + '}');
+                    }
+                    else
                     {
                         me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
                     }
@@ -129,34 +192,64 @@
                 else {
                     me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
                 }
+
                 if(!me.VueConfig.data.FormData)
                     me.VueConfig.data.FormData = {};
 
                 for (key in me.VueConfig.data.FormData) {
                     if (me.VueConfig.data.FormData.hasOwnProperty(key)) {
-                        if (key !== "__customtype" && !me.VueConfig.data.fields.find(function (item) {
-                            return item.Name === key;
-                        })) {
-                            delete me.VueConfig.data.FormData[key];
+                        if (key !== "__customtype")
+                        {
+                            var found = false;
+
+                            for (var j = 0; j < me.VueConfig.data.fields.length; j++)
+                            {
+                                if (me.VueConfig.data.fields[j] && me.VueConfig.data.fields[j].Name === key)
+                                {
+                                    found = true;
+                                    break;
+                                }
+
+                            }
+
+                            if (!found)
+                            {
+                                delete me.VueConfig.data.FormData[key];
+                            }
                         }
                     }
                 }
                 me.VueConfig.data.fields.forEach(function(field){
-              
-                    if (me.VueConfig.data.FormData[field.Name] === undefined) 
+                    if (me.VueConfig.data.FormData[field.Name] === undefined)
                     {
                         if(field.Type === "Checkbox")
                         {
-                            field.DefaultValue=field.DefaultValue.toString() === "true";
+                            field.DefaultValue= field.DefaultValue !== null && field.DefaultValue !== undefined &&  field.DefaultValue.toString() === "true";
                         }
                        
                         if(typeof field.DefaultValue != "undefined")
                         {
-                            me.VueConfig.data.FormData[field.Name] = field.DefaultValue;
+                           me.VueConfig.data.FormData[field.Name] = field.DefaultValue;
                         } 
                         else 
                         {
                             me.VueConfig.data.FormData[field.Name] = null;
+                        }
+                    }
+                    else
+                    {
+                        if(field.Type === "Json") {
+                            me.VueConfig.data.FormData[field.Name] = me.VueConfig.data.FormData[field.Name] != undefined
+                                    ? WorkflowDesignerCommon.toCompactJSON(WorkflowDesignerCommon.toString(me.VueConfig.data.FormData[field.Name]))
+                                    : null;
+                        }
+                        else if (field.Type === "Dropdown" && me.VueConfig.data.FormData[field.Name] !== null && typeof me.VueConfig.data.FormData[field.Name] !== 'string')
+                        {
+                            me.VueConfig.data.FormData[field.Name] = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData[field.Name]);
+                        }
+                        else if (field.Type === "Checkbox" && typeof me.VueConfig.data.FormData[field.Name] !== "boolean")
+                        {
+                            me.VueConfig.data.FormData[field.Name] = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData[field.Name]);
                         }
                     }
                 });
@@ -206,18 +299,30 @@
         };
 
         me.VueConfig.methods.renderEditor = function(value){
-            if(!me.editor){
-                me.editor = ace.edit(me.VueConfig.data.editor_container);
-                var session = me.editor.getSession();
-                session.setMode("ace/mode/json5");
-                session.setOption("useWorker", false);
-            }
+            try {
+                if(!me.editor){
+                    me.editor = ace.edit(me.VueConfig.data.editor_container);
+                    var session = me.editor.getSession();
+                    session.setMode("ace/mode/json5");
+                    session.setOption("useWorker", false);
+                }
 
-            me.editor.setOptions({ readOnly: me.graph.Settings.readonly });
+                me.editor.setOptions({ readOnly: me.graph.Settings.readonly });
 
-            var formattedValue = value ? WorkflowDesignerCommon.toPrettyJSON(value) : "";
-            me.editor.setValue(formattedValue ? formattedValue : "");
-            me.editor.clearSelection();
+                var formattedValue = value ? WorkflowDesignerCommon.toPrettyJSON(value) : "";
+                me.editor.setValue(formattedValue ? formattedValue : "");
+                me.editor.clearSelection();
+                me.failsCount = 0;
+            } catch (err) {                
+                me.failsCount += 1;
+                if (me.failsCount > 10) {
+                    console.log("Editor can't render");
+                    return;
+                }
+                setTimeout(function(){
+                    me.VueConfig.methods.renderEditor(value);
+                }, 1);
+            }            
         };
 
         me.VueConfig.methods.validateFieldDD = function(name, value){
@@ -269,6 +374,10 @@
                         var value = me.editors[field.Name].getValue();
                         data[field.Name] = WorkflowDesignerCommon.toJSON(value);
                     }
+                    else
+                    {
+                        data[field.Name] = data[field.Name] === '' ? null : WorkflowDesignerCommon.toJSON(data[field.Name]);
+                    }
                 }
             });
         }
@@ -278,15 +387,38 @@
             if(me.VueConfig.data.formMode){
                 var value = me.editor.getValue();
                 if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
-                    if (me.VueConfig.data.fields[0].Type === 'Text' || me.VueConfig.data.fields[0].Type === 'TextArea') {
-                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' + value + '"}');
-                    } else {
+                    if (me.VueConfig.data.fields[0].Type === 'Text'
+                            || me.VueConfig.data.fields[0].Type === 'TextArea'
+                            || me.VueConfig.data.fields[0].Type === 'Dropdown'
+                            || me.VueConfig.data.fields[0].Type === 'DateTime')
+                    {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":"' + (value === null ? "" : value) + '"}');
+                    }
+                    else if (me.VueConfig.data.fields[0].Type === 'Json'
+                            || me.VueConfig.data.fields[0].Type === 'Checkbox'
+                            || me.VueConfig.data.fields[0].Type === 'MultiSelect'
+                            || me.VueConfig.data.fields[0].Type === 'Number'
+                            )
+                    {
+                        me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON('{ "":' + value + '}');
+                    }
+                    else {
                         me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
                     }
                 }
                 else {
                     me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
                 }
+
+                me.VueConfig.data.fields.forEach(function(field){
+                    if(field.Type === "Json") {
+                        me.VueConfig.data.FormData[field.Name] = me.VueConfig.data.FormData[field.Name] != undefined ? WorkflowDesignerCommon.toCompactJSON(WorkflowDesignerCommon.toString(me.VueConfig.data.FormData[field.Name])) : null;
+                    }
+                    else if (field.Type === "Dropdown" && me.VueConfig.data.FormData[field.Name] !== null && typeof me.VueConfig.data.FormData[field.Name] !== 'string')
+                    {
+                        me.VueConfig.data.FormData[field.Name] = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData[field.Name]);
+                    }
+                });
 
                 if(me.editor){
                     me.editor.destroy();
@@ -302,10 +434,9 @@
                 me.VueConfig.methods.updateFormData();
                 var value;
 
-                var singleValue = me.VueConfig.data.FormData[""];
-
-                if (singleValue !== null && singleValue !== undefined)
+                if (me.VueConfig.data.FormData.hasOwnProperty(""))
                 {
+                    var singleValue = me.VueConfig.data.FormData[""];
                     value = me.VueConfig.methods.extractSingleValue(singleValue);
                 }
                 else{
@@ -346,10 +477,9 @@
             if(me.VueConfig.data.formMode){
                 me.VueConfig.methods.updateFormData();
 
-                var singleValue = me.VueConfig.data.FormData[""];
-
-                if (singleValue !== null && singleValue !== undefined)
+                if (me.VueConfig.data.FormData.hasOwnProperty(""))
                 {
+                    var singleValue = me.VueConfig.data.FormData[""];
                     value = me.VueConfig.methods.extractSingleValue(singleValue);
                 }
                 else {
