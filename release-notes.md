@@ -1,5 +1,59 @@
 # Workflow Engine: Release Notes
 
+## 5.1 {#5.1}
+
+### Designer
+
+- Improved designer’s usability.
+- Added creation of commands from the transition’s edit form.
+- It is possible to customize displayed activities and transitions, their templates are located in the *templates/elements* folder and are .svg files that can be changed.
+- It became possible to choose a color for displaying activity and transition.
+- For custom activities added on the server, it is now possible to specify the template for the edit form and .svg to be displayed on graph.
+- A new type of activity *Decision* has been added to the elements panel – it is used for convenience and to improve the visual perception of processes with conditional branches. It allows you to make a branch with one condition.
+- A new type of activity *Decision Table* has been added to the elements panel – it is used for convenience and to improve the visual perception of processes with conditional branches. It allows you to make a branch with any number of conditions.
+- The design of editing usings in Code Actions has been changed.
+
+### Plugins
+
+- Extended the functionality of the *Approval Plugin*, now it fully allows you to implement the functionality of Inbox, Outbox, and the history of document changes. All [examples](/downloads/net-core/) implement this functionality using the *Approval Plugin*.
+- Methods for manipulating Inbox, Outbox and the history of document changes are added to *Persistence Providers*. The history of document changes, Inbox and Outbox are only filled when *Approved Plugin* is connected.
+- The ability to register Actors predefined on the server is added in the Basic Plugin. The `basicPlugin.WithActors` method and two delegates: `basicPlugin.CheckPredefinedActorAsync` and `basicPlugin.GetPredefinedIdentitiesAsync` are used for this.
+- You can now specify a delegate to update the status(state) of the document - `basicPlugin.UpdateDocumentStateAsync` in the *Basic Plugin*.
+- A *DeleteSubprocesess* action is added to the *Basic Plugin*, this action deletes all subprocesses.
+- Added the ability to customize HTTP requests headers in the *Basic Plugin’s* *CheckHTTPRequest and HTTPRequest* methods.
+- The ability to specify a username and password for all the methods that make HTTP requests has been added to the *Basic Plugin*.  
+- The ability to download files by HTTP has been added to the *File Plugin*.
+- It is now possible to specify the ID of the created process in the *CreateProcess* method in the *Basic Plugin*.
+
+### Core
+
+- You can now set common usings for all *Code Actions* of the scheme, at the same time you can configure usings individually for each *Code Action*. This makes usings managing easier.
+- Added process log. The sequence of actions that occurs during the execution of the process is now added to a process log. The log can be enabled for all processes created for a specific scheme or for a specific process. **Attention: The Workflow Engine package includes a logger that stores the log in the memory. This is enough for debugging processes but if you want to make the log persistent, you have to implement the `IProcessLogProvider` and connect it to the Workflow Runtime by calling the `runtime.WithProcessLogger(…)` method**.
+- `GetProcessInstancesAsync(...)` and `GetSchemesAsync(...)` methods that accept sorting and paging are added  to the Persistence Provider. With their help you can access the list of schemes and processes.
+- The *Activity* in *Expert mode* in the *Designer* now has the ability to set the *Execution Timeout*, meaning it limits the execution time of all *Actions of this Activity*. **Attention: This timeout with only work for asynchronous Actions that process the Cancellation Token passed to them.** The timeout value is the same as the [interval timer value](/documentation/scheme/timers/#general). Possible reactions to timeout: *Set Activity*, *Set State*, *Retry*.
+- The *Activity* in *Expert mode* in the *Designer* now has the ability to set *Idle Timeout*, meaning it limits the time a process can be in this *Activity* without doing anything (i.e Idled or Finalized status of the process). The timeout value is the same as the [interval timer value](/documentation/scheme/timers/#general). Possible reactions to timeout: *Set Activity*, *Set State*.
+- The *Activity* in *Expert mode* in the *Designer* now has the ability to set *Error handling* by listing the names of the exceptions that need to be handled. Possible reactions to the exception: *Set Activity*, *Set State*, *Retry*, *Ignore*.
+- The *Activity* in *Expert mode* in the *Designer* now has the ability to disable saving process state. This setting is called *Disable persist*.
+- Process Instance is passed to the `HasExternalParameter`,` IsGetExternalParameterAsync`, `IsSetExternalParameterAsync` of `IWorkflowExternalParametersProvider` methods.
+- Two time-stamps were added to Process Instance: *CreationDate* – date and time of process creation and *LastTransitionDate* – date and time of the last change of the process state.
+- *StartTransitionTime* – date and time of the beginning of the transition and *TransitionDuration* – the duration of the transition in milliseconds - were added to the Process Transition History.
+- An additional parameter `NamesSearchType.All` or `NamesSearchType.NotExcluded` is passed in the `IWorkflowActionProvider.GetActions`,` IWorkflowActionProvider.GetConditions` and `IWorkflowRuleProvider.GetRules` methods, this allows adding *Actions, Conditions or Rules* that are not seen the Designer but that are executed in the process.
+
+### Update instruction {#5.1_update}
+
+**The following additional actions must be taken to upgrade to Workflow Engine 5.1:**
+
+- **Warning. If using Redis, please, contact our support for update instructions.**
+- Run the SQL script update_5_0_to_5_1 for all relative databases and MongoDB.
+  - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MSSQL/Scripts/update_5_0_to_5_1.sql)
+  - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.PostgreSQL/Scripts/update_5_0_to_5_1.sql)
+  - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.Oracle/Scripts/update_5_0_to_5_1.sql)
+  - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MySQL/Scripts/update_5_0_to_5_1.sql)
+  - [MongoDB](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MongoDB/Scripts/update_5_0_to_5_1.js)
+- Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer). Be mindful, that thу *elements* subfolder must be added to the *templates* folder.
+- If you are using *Action or Rule Providers* in the `IWorkflowActionProvider.GetActions`,` IWorkflowActionProvider.GetConditions` and `IWorkflowRuleProvider.GetRules` methods add the last `NamesSearchType namesSearchType` parameter. You don't need to change the code of these methods.
+- If you are using *External Parameters Provider* in the `HasExternalParameter`, `IsGetExternalParameterAsync` and `IsSetExternalParameterAsync` methods add the last `ProcessInstance processInstance` parameter. You don't need to change the code of these methods.
+
 ## 5.0 {#5.0}
 
 ### Designer
