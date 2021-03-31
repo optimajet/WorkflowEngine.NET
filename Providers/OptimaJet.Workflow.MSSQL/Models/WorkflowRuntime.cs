@@ -120,7 +120,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             var p3 = new SqlParameter("id", SqlDbType.NVarChar) { Value = status.RuntimeId };
             var p4 = new SqlParameter("oldlock", SqlDbType.UniqueIdentifier) { Value = oldLock };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateRestorerAsync(SqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
@@ -131,7 +131,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             var p3 = new SqlParameter("id", SqlDbType.NVarChar) { Value = status.RuntimeId };
             var p4 = new SqlParameter("oldlock", SqlDbType.UniqueIdentifier) { Value = oldLock };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowRuntimeModel> GetWorkflowRuntimeStatusAsync(SqlConnection connection, string runtimeId)
@@ -153,7 +153,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             var p1 = new SqlParameter("time", SqlDbType.DateTime) { Value = time };
             var p2 = new SqlParameter("id", SqlDbType.NVarChar) { Value = runtimeId };
            
-            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateNextTimeAsync(SqlConnection connection, string runtimeId, string nextTimeColumnName, DateTime time, 
@@ -163,7 +163,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             var p1 = new SqlParameter("time", SqlDbType.DateTime) { Value = time };
             var p2 = new SqlParameter("id", SqlDbType.NVarChar) { Value = runtimeId };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<DateTime?> GetMaxNextTimeAsync(SqlConnection connection, string runtimeId, string nextTimeColumnName)

@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using Npgsql;
 using NpgsqlTypes;
 using OptimaJet.Workflow.Core.Builder;
@@ -77,6 +78,11 @@ namespace OptimaJet.Workflow.PostgreSQL
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
+        }
+        
+        public List<string> GetInlinedSchemes()
+        {
+            return JsonConvert.DeserializeObject<List<string>>(InlinedSchemes);
         }
         
         public static async Task<List<string>> GetInlinedSchemeCodesAsync(NpgsqlConnection connection)

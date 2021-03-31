@@ -101,7 +101,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
             var p4 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateRestorerAsync(NpgsqlConnection connection, WorkflowRuntimeModel status, Guid oldLock)
@@ -112,7 +112,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
             var p4 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<bool> MultiServerRuntimesExistAsync(NpgsqlConnection connection)
@@ -150,7 +150,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             var p1 = new NpgsqlParameter("time", NpgsqlDbType.Timestamp) { Value = time };
             var p2 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateNextTimeAsync(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName, DateTime time,
@@ -160,7 +160,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             var p1 = new NpgsqlParameter("time", NpgsqlDbType.Timestamp) { Value = time };
             var p2 = new NpgsqlParameter("id", NpgsqlDbType.Varchar) { Value = runtimeId };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<DateTime?> GetMaxNextTimeAsync(NpgsqlConnection connection, string runtimeId, string nextTimeColumnName)

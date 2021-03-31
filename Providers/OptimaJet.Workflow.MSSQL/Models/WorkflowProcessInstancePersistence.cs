@@ -98,7 +98,7 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             var p = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, p).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, p).ConfigureAwait(false);
         }
         public static async Task<int> DeleteByNameAsync(SqlConnection connection, Guid processId,string parameterName, SqlTransaction transaction = null)
         {
@@ -108,7 +108,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 new SqlParameter("parameterName", SqlDbType.NVarChar) {Value = parameterName}
             };
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName}  WHERE [ProcessId] = @processid AND [ParameterName] = @parameterName", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
 

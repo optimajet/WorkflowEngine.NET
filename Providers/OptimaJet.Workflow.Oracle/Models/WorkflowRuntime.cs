@@ -100,7 +100,7 @@ namespace OptimaJet.Workflow.Oracle.Models
             var p3 = new OracleParameter("id", OracleDbType.NVarchar2, runtime.RuntimeId, ParameterDirection.Input);
             var p4 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateRestorerAsync(OracleConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
@@ -111,7 +111,7 @@ namespace OptimaJet.Workflow.Oracle.Models
             var p3 = new OracleParameter("id", OracleDbType.NVarchar2, runtime.RuntimeId, ParameterDirection.Input);
             var p4 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<bool> MultiServerRuntimesExistAsync(OracleConnection connection)
@@ -150,7 +150,7 @@ namespace OptimaJet.Workflow.Oracle.Models
             var p1 = new OracleParameter("time", OracleDbType.TimeStamp, time, ParameterDirection.Input);
             var p2 = new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateNextTimeAsync(OracleConnection connection, string runtimeId, string nextTimeColumnName, DateTime time)
@@ -159,7 +159,7 @@ namespace OptimaJet.Workflow.Oracle.Models
             var p1 = new OracleParameter("time", OracleDbType.TimeStamp, time, ParameterDirection.Input);
             var p2 = new OracleParameter("id", OracleDbType.NVarchar2, runtimeId, ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<DateTime?> GetMaxNextTimeAsync(OracleConnection connection, string runtimeId, string nextTimeColumnName)

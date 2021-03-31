@@ -84,7 +84,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) {Value = processId};
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Ignore\" = TRUE", transaction, pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Ignore\" = TRUE", transaction, pProcessId).ConfigureAwait(false);
         }
 
         public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId, List<string> timersIgnoreList = null, NpgsqlTransaction transaction = null)
@@ -99,11 +99,11 @@ namespace OptimaJet.Workflow.PostgreSQL
                     Value = timersIgnoreList.ToArray()
                 };
 
-                return await ExecuteCommandAsync(connection,
+                return await ExecuteCommandNonQueryAsync(connection,
                     $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"Name\" != ALL(@timerIgnoreList)", transaction, pProcessId, pTimerIgnoreList).ConfigureAwait(false);
             }
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, pProcessId).ConfigureAwait(false);
         }
 
@@ -137,7 +137,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             string command = $"UPDATE {ObjectName} SET \"Ignore\" = TRUE WHERE \"Id\" = @timerid AND \"Ignore\" = FALSE";
             var p1 = new NpgsqlParameter("timerid", NpgsqlDbType.Uuid) {Value = timerId};
-            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(NpgsqlConnection connection, int top, DateTime now)

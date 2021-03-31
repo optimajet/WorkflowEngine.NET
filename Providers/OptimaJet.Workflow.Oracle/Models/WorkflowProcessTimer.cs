@@ -86,7 +86,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 1", pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 1", pProcessId).ConfigureAwait(false);
         }
 
         public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
@@ -108,10 +108,10 @@ namespace OptimaJet.Workflow.Oracle
 
                 string commandText = $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND NAME NOT IN ({String.Join(",", parameters)})";
 
-                return await ExecuteCommandAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
             }
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid", pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid", pProcessId).ConfigureAwait(false);
 
         }
 
@@ -145,7 +145,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = $"UPDATE {ObjectName} SET IGNORE = 1 WHERE ID = :timerid AND IGNORE = 0";
             var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
-            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(OracleConnection connection, int top, DateTime now)

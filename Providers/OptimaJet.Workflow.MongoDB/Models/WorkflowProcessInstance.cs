@@ -25,6 +25,10 @@ namespace OptimaJet.Workflow.MongoDB
         
         public string SubprocessName { get; set; }
 
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastTransitionDate { get; set; }
+
         public WorkflowProcessInstanceStatus Status { get; set; }
+        
     }
 }

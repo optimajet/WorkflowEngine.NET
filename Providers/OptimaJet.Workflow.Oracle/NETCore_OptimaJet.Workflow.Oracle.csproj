@@ -3,9 +3,9 @@
     <LangVersion>8</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
-    <Version>5.0.0</Version>
-    <AssemblyVersion>5.0.0.0</AssemblyVersion>
-    <FileVersion>5.0.0.0</FileVersion>
+    <Version>5.1.0</Version>
+    <AssemblyVersion>5.1.0.0</AssemblyVersion>
+    <FileVersion>5.1.0.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Company>OptimaJet, LLC</Company>
     <Product>WorkflowEngine .NET</Product>
@@ -32,9 +32,6 @@ Create WorkflowRuntime section.</Description>
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
-  </ItemGroup>
-  <ItemGroup>
     <PackageReference Include="Oracle.ManagedDataAccess.Core">
       <Version>2.18.3</Version>
     </PackageReference>
@@ -45,4 +42,7 @@ Create WorkflowRuntime section.</Description>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <OutputPath>..\DLL\NETCORE\</OutputPath>
   </PropertyGroup>
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
 </Project>

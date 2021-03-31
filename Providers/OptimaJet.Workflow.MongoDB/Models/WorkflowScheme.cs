@@ -1,7 +1,6 @@
 // ReSharper disable once CheckNamespace
 
 using System.Collections.Generic;
-using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.MongoDB
 {

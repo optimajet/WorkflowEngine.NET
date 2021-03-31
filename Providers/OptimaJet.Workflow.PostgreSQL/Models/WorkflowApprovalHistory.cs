@@ -1,8 +1,12 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
+using OptimaJet.Workflow.Core.Helpers;
+using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.PostgreSQL
 {
@@ -32,7 +36,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo {Name="ProcessId", Type = NpgsqlDbType.Uuid},
                 new ColumnInfo {Name="IdentityId"},
                 new ColumnInfo {Name="AllowedTo"},
-                new ColumnInfo {Name="TransitionTime", Type = NpgsqlDbType.Date},
+                new ColumnInfo {Name="TransitionTime", Type = NpgsqlDbType.Timestamp},
                 new ColumnInfo {Name="Sort", Type = NpgsqlDbType.Bigint},
                 new ColumnInfo {Name="InitialState"},
                 new ColumnInfo {Name="DestinationState"},
@@ -40,34 +44,23 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new ColumnInfo {Name="Commentary"},
             });
         }
-
+       
         public override object GetValue(string key)
         {
-            switch (key)
+            return key switch
             {
-                case "Id":
-                    return Id;
-                case "ProcessId":
-                    return ProcessId;
-                case "IdentityId":
-                    return IdentityId;
-                case "AllowedTo":
-                    return AllowedTo;
-                case "TransitionTime":
-                    return TransitionTime;
-                case "Sort":
-                    return Sort;
-                case "InitialState":
-                    return InitialState;
-                case "DestinationState":
-                    return DestinationState;
-                case "TriggerName":
-                    return TriggerName;
-                case "Commentary":
-                    return Commentary;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
+                "Id" => Id,
+                "ProcessId" => ProcessId,
+                "IdentityId" => IdentityId,
+                "AllowedTo" => AllowedTo,
+                "TransitionTime" => TransitionTime,
+                "Sort" => Sort,
+                "InitialState" => InitialState,
+                "DestinationState" => DestinationState,
+                "TriggerName" => TriggerName,
+                "Commentary" => Commentary,
+                _ => throw new Exception($"Column {key} is not exists")
+            };
         }
 
         public override void SetValue(string key, object value)
@@ -112,17 +105,127 @@ namespace OptimaJet.Workflow.PostgreSQL
                     Commentary = value as string;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
-
-        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
+        
+        
+        public static WorkflowApprovalHistory ToDB(ApprovalHistoryItem historyItem)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE  \"ProcessId\" = @processId";
+            return new WorkflowApprovalHistory()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo = HelperParser.Join(",", historyItem.AllowedTo),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
+        public static ApprovalHistoryItem FromDB(WorkflowApprovalHistory historyItem)
+        {
+            return new ApprovalHistoryItem()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo = HelperParser.SplitWithTrim(historyItem.AllowedTo, ","),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
+        
+        public static async Task<List<OutboxItem>> SelectOutboxByIdentityIdAsync(NpgsqlConnection connection, string identityId, Paging paging = null)
+        {
+            string paramName = "_"+nameof(identityId);
+            string selectText = $"SELECT  a.\"ProcessId\", a.\"ApprovalCount\", a.\"FirstApprovalTime\", a.\"LastApprovalTime\"," +
 
-            var processIdParameter = new NpgsqlParameter("processId", NpgsqlDbType.Uuid) { Value = processId };
+                                        $" (SELECT \"TriggerName\" FROM {ObjectName} c" +
+                                        $" WHERE c.\"ProcessId\" = a.\"ProcessId\" " +
+                                        $" and c.\"IdentityId\" =  @{paramName}" +
+                                        $" ORDER BY c.\"TransitionTime\" DESC limit 1) as \"LastApproval\"" +
 
-            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
+                                $" FROM " +
+                                        $" (SELECT \"ProcessId\"," +
+                                        $" Count(\"Id\") as \"ApprovalCount\"," +
+                                        $" MIN(\"TransitionTime\") as \"FirstApprovalTime\"," +
+                                        $" MAX(\"TransitionTime\") as \"LastApprovalTime\"" +
+                                        $" FROM {ObjectName}" +
+                                        $" WHERE \"IdentityId\" =  @{paramName}" +
+                                        $" Group by \"ProcessId\") a" +
+
+                                $" Order By \"LastApprovalTime\" Desc ";
+            
+            if (paging != null)
+            {
+                selectText += $" LIMIT {paging.PageSize} OFFSET {paging.SkipCount()}";
+            }
+            
+            var param = new NpgsqlParameter(paramName, NpgsqlDbType.Text) { Value = identityId };
+           return (await SelectAsDictionaryAsync(connection, selectText, param).ConfigureAwait(false))
+                .Select(OutboxItemFromDictionary).ToList();
+        }
+
+        public static async Task<int> GetOutboxCountByIdentityIdAsync(NpgsqlConnection connection, string identityId)
+        {
+            string paramName = "_"+nameof(identityId);
+            string selectText = $"SELECT  COUNT(a.\"ProcessId\")" +
+                                $" FROM " +
+                                $" (SELECT \"ProcessId\"" +
+                                $" FROM {ObjectName}" +
+                                $" WHERE \"IdentityId\" =  @{paramName}" +
+                                $" Group by \"ProcessId\") a";
+            
+            var param = new NpgsqlParameter(paramName, NpgsqlDbType.Text) { Value = identityId };
+            
+            object result = await ExecuteCommandScalarAsync(connection, selectText, param).ConfigureAwait(false);
+            
+            result = (result == DBNull.Value) ? null : result;
+            return Convert.ToInt32(result);
+        }
+        
+        private static OutboxItem OutboxItemFromDictionary(Dictionary<string, object> fields)
+        {
+            var item = new OutboxItem();
+            foreach (KeyValuePair<string, object> field in fields)
+            {
+                switch (field.Key)
+                {
+                    case nameof(item.ProcessId): item.ProcessId = (Guid)field.Value; break;
+                    case nameof(item.ApprovalCount): item.ApprovalCount = Convert.ToInt32(field.Value); break;
+                    case nameof(item.FirstApprovalTime): item.FirstApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApprovalTime): item.LastApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApproval): item.LastApproval = field.Value as string; break;
+                }
+            }
+
+            return item;
+        }
+
+        public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId, NpgsqlTransaction transaction = null)
+        {
+            return await DeleteByAsync(connection, x => x.ProcessId, processId, transaction)
+                .ConfigureAwait(false);
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
+        {
+            return (await SelectByAsync(connection, x => x.ProcessId, processId)
+                .ConfigureAwait(false)).ToList();
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByIdentityIdAsync(NpgsqlConnection connection, string identityId)
+        {
+            return (await SelectByAsync(connection, x => x.IdentityId, identityId)
+                .ConfigureAwait(false)).ToList();
         }
     }
 }

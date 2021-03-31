@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Persistence;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
@@ -20,6 +23,8 @@ namespace OptimaJet.Workflow.Oracle
         public string TransitionClassifier { get; set; }
         public DateTime TransitionTime { get; set; }
         public string TriggerName { get; set; }
+        public DateTime? StartTransitionTime { get; set; }
+        public long? TransitionDuration { get; set; }
 
         static WorkflowProcessTransitionHistory()
         {
@@ -40,41 +45,32 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name="ToStateName"},
                 new ColumnInfo {Name="TransitionClassifier"},
                 new ColumnInfo {Name="TransitionTime", Type = OracleDbType.Date },
-                new ColumnInfo {Name="TriggerName"}
+                new ColumnInfo {Name="TriggerName"},
+                new ColumnInfo {Name = "StartTransitionTime", Type = OracleDbType.Date},
+                new ColumnInfo {Name = "TransitionDuration", Type = OracleDbType.Int64},
             });
         }
 
         public override object GetValue(string key)
         {
-            switch (key)
+            return key switch
             {
-                case "Id":
-                    return Id.ToByteArray();
-                case "ActorIdentityId":
-                    return ActorIdentityId;
-                case "ExecutorIdentityId":
-                    return ExecutorIdentityId;
-                case "FromActivityName":
-                    return FromActivityName;
-                case "FromStateName":
-                    return FromStateName;
-                case "IsFinalised":
-                    return IsFinalised ? "1": "0";
-                case "ProcessId":
-                    return ProcessId.ToByteArray();
-                case "ToActivityName":
-                    return ToActivityName;
-                case "ToStateName":
-                    return ToStateName;
-                case "TransitionClassifier":
-                    return TransitionClassifier;
-                case "TransitionTime":
-                    return TransitionTime;
-                case "TriggerName":
-                    return TriggerName;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
+                "Id" => Id.ToByteArray(),
+                "ActorIdentityId" => ActorIdentityId,
+                "ExecutorIdentityId" => ExecutorIdentityId,
+                "FromActivityName" => FromActivityName,
+                "FromStateName" => FromStateName,
+                "IsFinalised" => IsFinalised ? "1" : "0",
+                "ProcessId" => ProcessId.ToByteArray(),
+                "ToActivityName" => ToActivityName,
+                "ToStateName" => ToStateName,
+                "TransitionClassifier" => TransitionClassifier,
+                "TransitionTime" => TransitionTime,
+                "TriggerName" => TriggerName,
+                "StartTransitionTime" => StartTransitionTime,
+                "TransitionDuration" => TransitionDuration,
+                _ => throw new Exception($"Column {key} is not exists")
+            };
         }
 
         public override void SetValue(string key, object value)
@@ -117,25 +113,42 @@ namespace OptimaJet.Workflow.Oracle
                 case "TriggerName":
                     TriggerName = value as string;
                     break;
+                case "StartTransitionTime":
+                    StartTransitionTime = value as DateTime?;
+                    break;
+                case "TransitionDuration":
+                    TransitionDuration = value as long?;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
         public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowProcessTransitionHistory[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
+        public static async Task<List<WorkflowProcessTransitionHistory>> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid";
 
             var p1 = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
+            return (await SelectAsync(connection, selectText, p1).ConfigureAwait(false)).ToList();
         }
+        
+        public static async Task<List<WorkflowProcessTransitionHistory>> SelectByIdentityIdAsync(OracleConnection connection, string identityId)
+        {
+            string key = "ExecutorIdentityId";
+            string selectText = $"SELECT * FROM {ObjectName} WHERE {key.ToUpperInvariant()} = :executorIdentityId";
+
+            var p1 = new OracleParameter("executorIdentityId", OracleDbType.NVarchar2, identityId, ParameterDirection.Input);
+
+            return (await SelectAsync(connection, selectText, p1).ConfigureAwait(false)).ToList();
+        }
+        
     }
 }

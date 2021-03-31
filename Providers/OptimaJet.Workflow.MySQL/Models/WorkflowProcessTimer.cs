@@ -86,7 +86,7 @@ namespace OptimaJet.Workflow.MySQL
         {
             var pProcessId = new MySqlParameter("processid", MySqlDbType.Binary) {Value = processId.ToByteArray()};
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid AND `Ignore` = 1", transaction, pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid AND `Ignore` = 1", transaction, pProcessId).ConfigureAwait(false);
         }
 
         public static async Task<int> DeleteByProcessIdAsync(MySqlConnection connection, Guid processId,
@@ -109,10 +109,10 @@ namespace OptimaJet.Workflow.MySQL
 
                 string commandText = $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid AND `Name` not in ({string.Join(",", parameters)})";
 
-                return await ExecuteCommandAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
             }
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", pProcessId).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(MySqlConnection connection, Guid processId, string name)
@@ -146,7 +146,7 @@ namespace OptimaJet.Workflow.MySQL
         {
             string command = $"UPDATE {DbTableName} SET `Ignore` = 1 WHERE `Id` = @timerid AND `Ignore` = 0";
             var p1 = new MySqlParameter("timerid", MySqlDbType.Binary) { Value = timerId.ToByteArray() };
-            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(MySqlConnection connection, int top, DateTime now)

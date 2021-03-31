@@ -6,9 +6,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>WorkflowEngine.NETCore-ProviderForMongoDB</PackageId>
-    <Version>5.0.0</Version>
-    <AssemblyVersion>5.0.0.0</AssemblyVersion>
-    <FileVersion>5.0.0.0</FileVersion>
+    <Version>5.1.0</Version>
+    <AssemblyVersion>5.1.0.0</AssemblyVersion>
+    <FileVersion>5.1.0.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Product>WorkflowEngine .NET</Product>
     <Description>Contains dlls for MongoDB Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
@@ -25,6 +25,7 @@ Create WorkflowRuntime section.</Description>
     <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
     <RootNamespace>OptimaJet.Workflow.MongoDB</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MongoDB</AssemblyName>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\DLL\NETCORE\</OutputPath>
@@ -36,9 +37,10 @@ Create WorkflowRuntime section.</Description>
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
+    <PackageReference Include="MongoDB.Driver.signed" Version="2.10.4" />
+    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.0.6.8" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver.signed" Version="2.10.4" />
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\NETCore_OptimaJet.Workflow.Core.csproj" />
   </ItemGroup>
 </Project>

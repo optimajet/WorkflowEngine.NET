@@ -1,9 +1,5 @@
 using System;
-using System.Collections.Generic;
-using System.Text;
 using OptimaJet.Workflow.Core.Model;
-using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.MongoDB;
 
 namespace OptimaJet.Workflow.MongoDB.Models
 {

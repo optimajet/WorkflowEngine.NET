@@ -155,7 +155,7 @@ namespace OptimaJet.Workflow.DbPersistence
             string command = $"UPDATE {ObjectName} SET [IsObsolete] = 1 WHERE [SchemeCode] = @schemecode OR [RootSchemeCode] = @schemecode";
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
-            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
         }
 
         public static async Task<int> SetObsoleteAsync(SqlConnection connection, string schemeCode, string definingParametersHash)
@@ -166,7 +166,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             var p2 = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
 
-            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

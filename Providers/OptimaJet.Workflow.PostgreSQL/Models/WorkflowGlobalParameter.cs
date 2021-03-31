@@ -105,12 +105,12 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             if (String.IsNullOrEmpty(name))
             {
-                return await ExecuteCommandAsync(connection, selectText, p).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, selectText, p).ConfigureAwait(false);
             }
 
             var p1 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) { Value = name };
 
-            return await ExecuteCommandAsync(connection, selectText, p, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
     }
 }

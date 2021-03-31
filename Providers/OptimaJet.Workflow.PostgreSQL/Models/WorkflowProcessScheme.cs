@@ -152,7 +152,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             string command = $"UPDATE {ObjectName} SET \"IsObsolete\" = TRUE WHERE \"SchemeCode\" = @schemecode OR \"RootSchemeCode\" = @schemecode";
             var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
 
-            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
         }
 
         public static async Task<int> SetObsoleteAsync(NpgsqlConnection connection, string schemeCode, string definingParametersHash)
@@ -163,7 +163,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
             var p2 = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
 
-            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

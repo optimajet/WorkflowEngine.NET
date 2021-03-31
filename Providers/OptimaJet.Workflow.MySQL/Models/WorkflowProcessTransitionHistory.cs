@@ -1,6 +1,9 @@
 ﻿using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using OptimaJet.Workflow.Core.Persistence;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
@@ -18,8 +21,9 @@ namespace OptimaJet.Workflow.MySQL
         public string ToStateName { get; set; }
         public string TransitionClassifier { get; set; }
         public DateTime TransitionTime { get; set; }
-
         public string TriggerName { get; set; }
+        public DateTime? StartTransitionTime { get; set; }
+        public long? TransitionDuration { get; set; }
 
         static WorkflowProcessTransitionHistory()
         {
@@ -40,41 +44,32 @@ namespace OptimaJet.Workflow.MySQL
                 new ColumnInfo {Name="ToStateName"},
                 new ColumnInfo {Name="TransitionClassifier"},
                 new ColumnInfo {Name="TransitionTime", Type = MySqlDbType.DateTime },
-                new ColumnInfo {Name="TriggerName"}
+                new ColumnInfo {Name="TriggerName"},
+                new ColumnInfo {Name = "StartTransitionTime", Type = MySqlDbType.DateTime},
+                new ColumnInfo {Name = "TransitionDuration", Type = MySqlDbType.Int64},
             });
         }
 
         public override object GetValue(string key)
         {
-            switch (key)
+            return key switch
             {
-                case "Id":
-                    return Id.ToByteArray();
-                case "ActorIdentityId":
-                    return ActorIdentityId;
-                case "ExecutorIdentityId":
-                    return ExecutorIdentityId;
-                case "FromActivityName":
-                    return FromActivityName;
-                case "FromStateName":
-                    return FromStateName;
-                case "IsFinalised":
-                    return IsFinalised;
-                case "ProcessId":
-                    return ProcessId.ToByteArray();
-                case "ToActivityName":
-                    return ToActivityName;
-                case "ToStateName":
-                    return ToStateName;
-                case "TransitionClassifier":
-                    return TransitionClassifier;
-                case "TransitionTime":
-                    return TransitionTime;
-                case "TriggerName":
-                    return TriggerName;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
+                "Id" => Id.ToByteArray(),
+                "ActorIdentityId" => ActorIdentityId,
+                "ExecutorIdentityId" => ExecutorIdentityId,
+                "FromActivityName" => FromActivityName,
+                "FromStateName" => FromStateName,
+                "IsFinalised" => IsFinalised,
+                "ProcessId" => ProcessId.ToByteArray(),
+                "ToActivityName" => ToActivityName,
+                "ToStateName" => ToStateName,
+                "TransitionClassifier" => TransitionClassifier,
+                "TransitionTime" => TransitionTime,
+                "TriggerName" => TriggerName,
+                "StartTransitionTime" => StartTransitionTime,
+                "TransitionDuration" => TransitionDuration,
+                _ => throw new Exception($"Column {key} is not exists")
+            };
         }
 
         public override void SetValue(string key, object value)
@@ -117,8 +112,14 @@ namespace OptimaJet.Workflow.MySQL
                 case "TriggerName":
                     TriggerName = value as string;
                     break;
+                case "StartTransitionTime":
+                    StartTransitionTime = value as DateTime?;
+                    break;
+                case "TransitionDuration":
+                    TransitionDuration = value as long?;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
@@ -126,17 +127,27 @@ namespace OptimaJet.Workflow.MySQL
             MySqlTransaction transaction = null)
         {
             var pProcessId = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, pProcessId).ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowProcessTransitionHistory[]> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
+        public static async Task<List<WorkflowProcessTransitionHistory>> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
         {
             string selectText = $"SELECT * FROM {DbTableName} WHERE `ProcessId` = @processid";
 
             var p1 = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
-            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
+            return (await SelectAsync(connection, selectText, p1).ConfigureAwait(false)).ToList();
         }
+        
+        public static async Task<List<WorkflowProcessTransitionHistory>> SelectByIdentityIdAsync(MySqlConnection connection, string identityId)
+        {
+            string selectText = $"SELECT * FROM {DbTableName} WHERE `ExecutorIdentityId` = @executorIdentityId";
+        
+            var p1 = new MySqlParameter("executorIdentityId", MySqlDbType.VarString) { Value = identityId };
+
+            return (await SelectAsync(connection, selectText, p1).ConfigureAwait(false)).ToList();
+        }
+        
     }
 }

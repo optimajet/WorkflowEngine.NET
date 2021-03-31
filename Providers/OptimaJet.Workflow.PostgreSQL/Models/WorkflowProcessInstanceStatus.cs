@@ -105,7 +105,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             var p5 = new NpgsqlParameter("settime", NpgsqlDbType.Timestamp) { Value = status.SetTime };
             var p6 = new NpgsqlParameter("runtimeid", NpgsqlDbType.Varchar) { Value = status.RuntimeId };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
     }
 }

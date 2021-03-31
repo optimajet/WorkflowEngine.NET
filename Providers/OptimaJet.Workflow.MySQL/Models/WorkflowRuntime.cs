@@ -100,7 +100,7 @@ namespace OptimaJet.Workflow.MySQL.Models
             var p3 = new MySqlParameter("id", MySqlDbType.VarString) { Value = runtime.RuntimeId };
             var p4 = new MySqlParameter("oldlock", MySqlDbType.Binary) { Value = oldLock.ToByteArray() };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateRestorerAsync(MySqlConnection connection, WorkflowRuntimeModel runtime, Guid oldLock)
@@ -111,7 +111,7 @@ namespace OptimaJet.Workflow.MySQL.Models
             var p3 = new MySqlParameter("id", MySqlDbType.VarString) { Value = runtime.RuntimeId };
             var p4 = new MySqlParameter("oldlock", MySqlDbType.Binary) { Value = oldLock.ToByteArray() };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
         public static async Task<bool> MultiServerRuntimesExistAsync(MySqlConnection connection)
@@ -149,7 +149,7 @@ namespace OptimaJet.Workflow.MySQL.Models
             var p1 = new MySqlParameter("time", MySqlDbType.DateTime) { Value = time };
             var p2 = new MySqlParameter("id", MySqlDbType.VarString) { Value = runtimeId };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<int> UpdateNextTimeAsync(MySqlConnection connection, string runtimeId, string nextTimeColumnName, DateTime time,
@@ -159,7 +159,7 @@ namespace OptimaJet.Workflow.MySQL.Models
             var p1 = new MySqlParameter("time", MySqlDbType.DateTime) { Value = time };
             var p2 = new MySqlParameter("id", MySqlDbType.VarString) { Value = runtimeId };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
         }
 
         public static async Task<DateTime?> GetMaxNextTimeAsync(MySqlConnection connection, string runtimeId, string nextTimeColumnName)

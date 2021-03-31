@@ -73,7 +73,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             var p2 = new SqlParameter("oldlock", SqlDbType.UniqueIdentifier) { Value = oldLock };
             var p3 = new SqlParameter("name", SqlDbType.NVarChar) { Value = name };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
         }
     }
 }

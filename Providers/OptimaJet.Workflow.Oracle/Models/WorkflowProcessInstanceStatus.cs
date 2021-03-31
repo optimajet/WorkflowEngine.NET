@@ -104,7 +104,7 @@ namespace OptimaJet.Workflow.Oracle
             var p5 = new OracleParameter("settime", OracleDbType.Date, status.SetTime, ParameterDirection.Input);
             var p6 = new OracleParameter("runtimeid", OracleDbType.NVarchar2, status.RuntimeId, ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
     }
 }

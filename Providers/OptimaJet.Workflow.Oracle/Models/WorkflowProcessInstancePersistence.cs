@@ -89,7 +89,7 @@ namespace OptimaJet.Workflow.Oracle
 
         public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)
             ).ConfigureAwait(false);
@@ -101,7 +101,7 @@ namespace OptimaJet.Workflow.Oracle
             parameters.Add(new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
             parameters.Add(new OracleParameter("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input));
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
                 parameters.ToArray()).ConfigureAwait(false);
         }

@@ -39,7 +39,9 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name = "RootProcessId", Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = "TenantId", Type = SqlDbType.NVarChar, Size=1024},
                 new ColumnInfo {Name = "StartingTransition", Type = SqlDbType.NVarChar},
-                new ColumnInfo {Name = nameof(SubprocessName), Type = SqlDbType.NVarChar}
+                new ColumnInfo {Name = nameof(SubprocessName), Type = SqlDbType.NVarChar},
+                new ColumnInfo {Name = "CreationDate", Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = "LastTransitionDate", Type = SqlDbType.DateTime}
             });
         }
 
@@ -59,6 +61,8 @@ namespace OptimaJet.Workflow.DbPersistence
         public string TenantId { get; set; }
         public string StartingTransition { get; set; }
         public string SubprocessName { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastTransitionDate { get; set; }
 
         public override object GetValue(string key)
         {
@@ -96,6 +100,10 @@ namespace OptimaJet.Workflow.DbPersistence
                     return StartingTransition;
                 case nameof(SubprocessName):
                     return SubprocessName;
+                case "CreationDate":
+                    return CreationDate;
+                case "LastTransitionDate":
+                    return LastTransitionDate;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -153,6 +161,12 @@ namespace OptimaJet.Workflow.DbPersistence
                 case nameof(SubprocessName):
                     SubprocessName = value as string;
                     break;
+                case "CreationDate":
+                    CreationDate = (DateTime)value;
+                    break;
+                case "LastTransitionDate":
+                    LastTransitionDate = value as DateTime?;
+                    break;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -185,6 +199,8 @@ namespace OptimaJet.Workflow.DbPersistence
             dt.Columns.Add("TenantId", typeof(string));
             dt.Columns.Add("StartingTransition", typeof(string));
             dt.Columns.Add(nameof(SubprocessName), typeof(string));
+            dt.Columns.Add("CreationDate", typeof(string));
+            dt.Columns.Add("LastTransitionDate", typeof(string));
             return dt;
         }
 #endif

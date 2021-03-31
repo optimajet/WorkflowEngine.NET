@@ -150,7 +150,7 @@ namespace OptimaJet.Workflow.MySQL
             string command = $"UPDATE {DbTableName} SET `IsObsolete` = 1 WHERE `SchemeCode` = @schemecode OR `RootSchemeCode` = @schemecode";
             var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
 
-            return await ExecuteCommandAsync(connection, command, p).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
         }
 
         public static async Task<int> SetObsoleteAsync(MySqlConnection connection, string schemeCode, string definingParametersHash)
@@ -162,7 +162,7 @@ namespace OptimaJet.Workflow.MySQL
 
             var p2 = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
-            return await ExecuteCommandAsync(connection, command, p, p2).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
     }
 }

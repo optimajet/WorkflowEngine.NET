@@ -26,6 +26,8 @@ namespace OptimaJet.Workflow.MySQL
         public string StartingTransition { get; set; }
         
         public string SubprocessName { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastTransitionDate { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -46,6 +48,8 @@ namespace OptimaJet.Workflow.MySQL
                 new ColumnInfo {Name = "TenantId", Type = MySqlDbType.VarChar, Size = 1024}, 
                 new ColumnInfo {Name = nameof(StartingTransition)},
                 new ColumnInfo {Name = nameof(SubprocessName)},
+                new ColumnInfo {Name = "CreationDate", Type = MySqlDbType.DateTime},
+                new ColumnInfo {Name = "LastTransitionDate", Type = MySqlDbType.DateTime}
             });
         }
 
@@ -85,6 +89,10 @@ namespace OptimaJet.Workflow.MySQL
                     return StartingTransition;
                 case nameof(SubprocessName):
                     return SubprocessName;
+                case "CreationDate":
+                    return CreationDate;
+                case "LastTransitionDate":
+                    return LastTransitionDate;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -150,12 +158,18 @@ namespace OptimaJet.Workflow.MySQL
                 case nameof(SubprocessName):
                     SubprocessName = value as string;
                     break;
+                case "CreationDate":
+                    CreationDate = (DateTime)value;
+                    break;
+                case "LastTransitionDate":
+                    LastTransitionDate = value as DateTime?;
+                    break;
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
         }
-
-        public static async Task<WorkflowProcessInstance[]> GetInstancesAsync(MySqlConnection connection, IEnumerable<Guid> ids)
+        
+        public static async Task<WorkflowProcessInstance[]> GetProcessInstancesAsync(MySqlConnection connection, IEnumerable<Guid> ids)
         {
             string selectText =
                 $"SELECT * FROM {DbTableName} WHERE `Id` IN ({String.Join(",", ids.Select(x => $"UUID_TO_BIN('{BitConverter.ToString(x.ToByteArray()).Replace("-", String.Empty)}')"))})";

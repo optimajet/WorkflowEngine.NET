@@ -3,9 +3,9 @@
     <LangVersion>8</LangVersion>
     <TargetFrameworks>netstandard2.0;</TargetFrameworks>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Version>5.0.0</Version>
-    <AssemblyVersion>5.0.0.0</AssemblyVersion>
-    <FileVersion>5.0.0.0</FileVersion>
+    <Version>5.1.0</Version>
+    <AssemblyVersion>5.1.0.0</AssemblyVersion>
+    <FileVersion>5.1.0.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Product>WorkflowEngine .NET</Product>
     <Description>Contains dlls for MySQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,

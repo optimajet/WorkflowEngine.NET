@@ -91,7 +91,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             var p = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
 
-            return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, p).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, p).ConfigureAwait(false);
         }
 
         public static async Task<int> DeleteByNameAsync(NpgsqlConnection connection, Guid processId, string parameterName, NpgsqlTransaction transaction = null)
@@ -102,7 +102,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 new NpgsqlParameter("parameterName", NpgsqlDbType.Text) {Value = parameterName}
             };
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid AND \"ParameterName\" = @parameterName", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
     }

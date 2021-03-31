@@ -153,7 +153,7 @@ namespace OptimaJet.Workflow.Oracle
         public static async Task<int> SetObsoleteAsync(OracleConnection connection, string schemeCode)
         {
             string command = $"UPDATE {ObjectName} SET IsObsolete = 1 WHERE SchemeCode = :schemecode OR RootSchemeCode = :schemecode";
-            return await ExecuteCommandAsync(connection, command,
+            return await ExecuteCommandNonQueryAsync(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input)).ConfigureAwait(false);
         }
 
@@ -161,7 +161,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = $"UPDATE {ObjectName} SET IsObsolete = 1 WHERE (SchemeCode = :schemecode OR OR RootSchemeCode = :schemecode) AND DefiningParametersHash = :dphash";
 
-            return await ExecuteCommandAsync(connection, command,
+            return await ExecuteCommandNonQueryAsync(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
                 new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input)).ConfigureAwait(false);
         }

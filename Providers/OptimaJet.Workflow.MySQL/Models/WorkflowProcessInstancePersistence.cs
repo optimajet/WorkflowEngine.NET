@@ -88,7 +88,7 @@ namespace OptimaJet.Workflow.MySQL
         {
             var p = new MySqlParameter("processid", MySqlDbType.Binary) { Value = processId.ToByteArray() };
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, p).ConfigureAwait(false);
         }
         public static async Task<int> DeleteByNameAsync(MySqlConnection connection, Guid processId, string parameterName, MySqlTransaction transaction = null)
@@ -99,7 +99,7 @@ namespace OptimaJet.Workflow.MySQL
                 new MySqlParameter("parameterName", MySqlDbType.VarChar) {Value = parameterName}
             };
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {DbTableName} WHERE `ProcessId` = @processid", transaction, parameters.ToArray()).ConfigureAwait(false);
         }
     }

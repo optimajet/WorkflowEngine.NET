@@ -4,6 +4,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
@@ -77,6 +78,11 @@ namespace OptimaJet.Workflow.MySQL
                 default:
                     throw new Exception($"Column {key} is not exists");
             }
+        }
+        
+        public List<string> GetInlinedSchemes()
+        {
+            return JsonConvert.DeserializeObject<List<string>>(InlinedSchemes);
         }
         
         public static async Task<List<string>> GetInlinedSchemeCodesAsync(MySqlConnection connection)

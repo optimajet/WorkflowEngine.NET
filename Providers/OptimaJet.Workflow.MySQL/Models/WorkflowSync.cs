@@ -69,7 +69,7 @@ namespace OptimaJet.Workflow.MySQL.Models
             var p2 = new MySqlParameter("oldlock", MySqlDbType.Binary) { Value = oldLock.ToByteArray() };
             var p3 = new MySqlParameter("name", MySqlDbType.VarString) { Value = name };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
         }
 
     }

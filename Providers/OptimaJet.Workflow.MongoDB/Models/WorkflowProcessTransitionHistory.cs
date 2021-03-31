@@ -16,7 +16,8 @@ namespace OptimaJet.Workflow.MongoDB
         public string ToStateName { get; set; }
         public string TransitionClassifier { get; set; }
         public DateTime TransitionTime { get; set; }
-
         public string TriggerName { get; set; }
+        public DateTime? StartTransitionTime { get; set; }
+        public long? TransitionDuration { get; set; }
     }
 }

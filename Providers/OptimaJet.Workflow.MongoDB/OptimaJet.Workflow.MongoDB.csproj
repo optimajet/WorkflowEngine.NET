@@ -2,6 +2,7 @@
 <Project ToolsVersion="12.0" DefaultTargets="Build" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
   <PropertyGroup>
     <BaseIntermediateOutputPath>obj/dotnet</BaseIntermediateOutputPath>
+    <LangVersion>8</LangVersion>
   </PropertyGroup>
   <Import Project="$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props" Condition="Exists('$(MSBuildExtensionsPath)\$(MSBuildToolsVersion)\Microsoft.Common.props')" />
   <PropertyGroup>
@@ -57,6 +58,10 @@
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
+    <Reference Include="System.Linq.Dynamic.Core, Version=1.2.8.0, Culture=neutral, PublicKeyToken=0f07ec44de6ac832">
+      <HintPath>..\packages\System.Linq.Dynamic.Core.1.2.8\lib\net45\System.Linq.Dynamic.Core.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="System.ValueTuple, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51">
       <HintPath>..\packages\System.ValueTuple.4.5.0\lib\netstandard1.0\System.ValueTuple.dll</HintPath>
       <Private>True</Private>
@@ -98,14 +103,14 @@
     <None Include="Workflow.snk" />
   </ItemGroup>
   <ItemGroup>
+    <Content Include="Scripts\update_1_4_to_1_5.js" />
+    <Content Include="Scripts\update_3_2_to_3_3.js" />
+  </ItemGroup>
+  <ItemGroup>
     <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj">
       <Project>{d92ef824-b99d-4955-8078-aa8ece917187}</Project>
       <Name>OptimaJet.Workflow.Core</Name>
     </ProjectReference>
-  </ItemGroup>
-  <ItemGroup>
-    <Content Include="Scripts\update_1_4_to_1_5.js" />
-    <Content Include="Scripts\update_3_2_to_3_3.js" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.CSharp.targets" />
   <Import Project="$(SolutionDir)\.nuget\NuGet.targets" Condition="Exists('$(SolutionDir)\.nuget\NuGet.targets')" />

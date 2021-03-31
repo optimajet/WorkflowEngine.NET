@@ -70,7 +70,7 @@ namespace OptimaJet.Workflow.Oracle.Models
             var p2 = new OracleParameter("oldlock", OracleDbType.Raw, oldLock.ToByteArray(), ParameterDirection.Input);
             var p3 = new OracleParameter("name", OracleDbType.NVarchar2, name, ParameterDirection.Input);
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3).ConfigureAwait(false);
         }
     }
 }

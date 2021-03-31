@@ -1,23 +1,25 @@
 using System;
 using System.Collections.Generic;
-using System.IO;
+using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
+using System.Linq.Dynamic.Core;
 using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
-using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Runtime.Timers;
+using OptimaJet.Workflow.Core.Helpers;
+using SortDirection = OptimaJet.Workflow.Core.Persistence.SortDirection;
 
 namespace OptimaJet.Workflow.MongoDB
 {
@@ -36,7 +38,7 @@ namespace OptimaJet.Workflow.MongoDB
         public const string WorkflowInboxCollectionName = "WorkflowInbox";
     }
 
-    public class MongoDBProvider : IWorkflowProvider, IApprovalProvider
+    public class MongoDBProvider : IWorkflowProvider
     {
         private WorkflowRuntime _runtime;
         private readonly bool _writeToHistory;
@@ -128,7 +130,124 @@ namespace OptimaJet.Workflow.MongoDB
                  Store.GetCollection<Models.WorkflowRuntime>(MongoDBConstants.WorkflowRuntimeCollectionName);
             await dbcoll.DeleteOneAsync(x => x.RuntimeId == name).ConfigureAwait(false);
         }
-        
+
+       public virtual async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+       {
+           IMongoCollection<WorkflowProcessInstance> workflowProcessInstanceCollection =
+               Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+
+           
+           List<WorkflowProcessInstance> processInstances;
+           
+           if (paging is null || orderParameters is null)
+           {
+               processInstances =
+                   await workflowProcessInstanceCollection.AsQueryable().ToListAsync().ConfigureAwait(false);
+           }
+           else
+           {
+               processInstances = workflowProcessInstanceCollection.AsQueryable()
+                   .OrderBy(GetOrderParameters(orderParameters))
+                   .Skip(paging.SkipCount())
+                   .Take(paging.PageSize)
+                   .ToList();
+           }
+           
+           IEnumerable<Guid?> schemeIds = processInstances.Select(x => x.SchemeId);
+           IMongoCollection<WorkflowProcessScheme> workflowProcessSchemeCollection =
+               Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
+           ProjectionDefinition<WorkflowProcessScheme> workflowProcessSchemeProjection = Builders<WorkflowProcessScheme>.Projection
+               .Include(ps => ps.Id)
+               .Include(ps => ps.StartingTransition);
+
+           var workflowProcessSchemeOptions = new FindOptions<WorkflowProcessScheme, BsonDocument> {Projection = workflowProcessSchemeProjection};
+
+           FilterDefinition<WorkflowProcessScheme> workflowProcessSchemeFilter = Builders<WorkflowProcessScheme>.Filter.In(ps => ps.Id, schemeIds);
+           
+           List<BsonDocument> schemes =
+               await (await workflowProcessSchemeCollection.FindAsync(workflowProcessSchemeFilter, workflowProcessSchemeOptions).ConfigureAwait(false))
+                   .ToListAsync().ConfigureAwait(false);
+
+           return processInstances.Join(
+               schemes,
+               pi => pi.SchemeId,
+               s => s["_id"].AsGuid,
+               (pi, s) => new ProcessInstanceItem()
+               {
+                   ActivityName  = pi.ActivityName,
+                   Id  = pi.Id,
+                   IsDeterminingParametersChanged  = pi.IsDeterminingParametersChanged,
+                   PreviousActivity  = pi.PreviousActivity,
+                   PreviousActivityForDirect  = pi.PreviousActivityForDirect,
+                   PreviousActivityForReverse  = pi.PreviousActivityForReverse,
+                   PreviousState  = pi.PreviousState,
+                   PreviousStateForDirect  = pi.PreviousStateForDirect,
+                   PreviousStateForReverse  = pi.PreviousStateForReverse,
+                   SchemeId  = pi.SchemeId,
+                   StateName  = pi.StateName,
+                   ParentProcessId  = pi.ParentProcessId,
+                   RootProcessId  = pi.RootProcessId,
+                   TenantId  = pi.TenantId,
+                   SubprocessName  = pi.SubprocessName,
+                   CreationDate  = pi.CreationDate,
+                   LastTransitionDate  = pi.LastTransitionDate,
+                   StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString
+               }).ToList();
+           
+ 
+       }
+
+       public virtual async Task<int> GetProcessInstancesCountAsync()
+       {
+           IMongoCollection<WorkflowProcessInstance> workflowProcessInstanceCollection =
+               Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
+           ConfiguredTaskAwaitable<long> count = workflowProcessInstanceCollection.CountDocumentsAsync(_ => true).ConfigureAwait(false);
+           return Convert.ToInt32(count);
+       }
+
+       public virtual async Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+       {
+           IMongoCollection<WorkflowScheme> dbcoll =
+               Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+           
+           orderParameters ??= new List<(string parameterName, SortDirection sortDirection)>();
+           IQueryable<WorkflowScheme> schemes = dbcoll.AsQueryable();
+
+           //default sort for paging
+           if ((paging != null)&&(orderParameters.Count<1))
+           {
+               orderParameters.Add((nameof(WorkflowScheme.Id),SortDirection.Asc));
+           }
+
+           if (orderParameters.Any())
+           {
+               schemes = schemes.OrderBy(GetOrderParameters(orderParameters));
+           }
+           
+           if (paging != null)
+           {
+               schemes = schemes.Skip(paging.SkipCount()).Take(paging.PageSize);
+           }
+           
+           
+           return schemes.ToList().Select(sc => new SchemeItem()
+           {
+               Code = sc.Code,
+               Scheme = sc.Scheme,
+               CanBeInlined = sc.CanBeInlined,
+               InlinedSchemes = sc.InlinedSchemes,
+               Tags = sc.Tags,
+           }).ToList();
+       }
+
+       public virtual async Task<int> GetSchemesCountAsync()
+       {
+           IMongoCollection<WorkflowScheme> dbcoll =
+               Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
+           ConfiguredTaskAwaitable<long> count = dbcoll.CountDocumentsAsync(_ => true).ConfigureAwait(false);
+           return Convert.ToInt32(count);
+       }
+       
        public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
             Tuple<long, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.Status = status, Builders<Models.WorkflowRuntime>.Update.Set(x => x.Status, status)).ConfigureAwait(false);
@@ -198,7 +317,8 @@ namespace OptimaJet.Workflow.MongoDB
                 ParentProcessId = processInstance.ParentProcessId,
                 Persistence = new List<WorkflowProcessInstancePersistence>(),
                 TenantId = processInstance.TenantId,
-                SubprocessName = processInstance.SubprocessName
+                SubprocessName = processInstance.SubprocessName,
+                CreationDate = processInstance.CreationDate
             };
             await dbcoll.InsertOneAsync(newProcess).ConfigureAwait(false);
         }
@@ -310,7 +430,6 @@ namespace OptimaJet.Workflow.MongoDB
             string serializedValue = ptp.Type == typeof(UnknownParameterType) ? (string)ptp.Value : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
             return new { Parameter = ptp, SerializedValue = serializedValue };
         }
-
         private void InsertOrUpdateParameter(dynamic parameter, WorkflowProcessInstance process, WorkflowProcessInstancePersistence workflowProcessInstancePersistence)
         {
             if (workflowProcessInstancePersistence == null)
@@ -349,7 +468,6 @@ namespace OptimaJet.Workflow.MongoDB
                 await SaveAsync(dbcoll, process, doc => doc.Id == process.Id).ConfigureAwait(false);
             }
         }
-        
        public virtual async Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus)
         {
             if (newStatus == ProcessStatus.Running)
@@ -361,7 +479,6 @@ namespace OptimaJet.Workflow.MongoDB
                 await SetCustomStatusAsync(processId,newStatus).ConfigureAwait(false);
             }
         }
-
        public virtual async Task SetWorkflowInitializedAsync(ProcessInstance processInstance)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
@@ -392,29 +509,51 @@ namespace OptimaJet.Workflow.MongoDB
                 }
             }
         }
-
        public virtual async Task SetWorkflowIdledAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Idled).ConfigureAwait(false);
         }
-
        public virtual async Task SetWorkflowRunningAsync(ProcessInstance processInstance)
         {
             Guid processId = processInstance.ProcessId;
             await SetRunningStatusAsync(processId).ConfigureAwait(false);
         }
-
        public virtual async Task SetWorkflowFinalizedAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Finalized).ConfigureAwait(false);
         }
-
        public virtual async Task SetWorkflowTerminatedAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Terminated).ConfigureAwait(false);
         }
+       public async Task WriteInitialRecordToHistoryAsync(ProcessInstance processInstance)
+       {
+           if (!_writeToHistory) { return; }
+
+           var history = new WorkflowProcessTransitionHistory
+           {
+               Id = Guid.NewGuid(),
+               ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess
+                   ? processInstance.RootProcessId
+                   : processInstance.ProcessId,
+               FromActivityName = String.Empty,
+               FromStateName = String.Empty,
+               ToActivityName = processInstance.CurrentActivityName,
+               ToStateName = processInstance.CurrentState,
+               TransitionClassifier = nameof(TransitionClassifier.NotSpecified),
+               TransitionTime = _runtime.RuntimeDateTimeNow,
+               TriggerName = "Initializing",
+               StartTransitionTime = _runtime.RuntimeDateTimeNow,
+               TransitionDuration = 0
+           };
+
+           IMongoCollection<WorkflowProcessTransitionHistory> dbcollTransition = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
+           await dbcollTransition.InsertOneAsync(history).ConfigureAwait(false);
+       }
        public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
         {
+            DateTime startTransitionTime = processInstance.StartTransitionTime ?? _runtime.RuntimeDateTimeNow;
+            
             ParameterDefinitionWithValue paramIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterIdentityId.Name).ConfigureAwait(false);
             ParameterDefinitionWithValue paramImpIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterImpersonatedIdentityId.Name).ConfigureAwait(false);
 
@@ -458,6 +597,7 @@ namespace OptimaJet.Workflow.MongoDB
 
                 inst.ParentProcessId = processInstance.ParentProcessId;
                 inst.RootProcessId = processInstance.RootProcessId;
+                inst.LastTransitionDate = processInstance.LastTransitionDate;
 
                 await SaveAsync(dbcoll, inst, doc => doc.Id == inst.Id).ConfigureAwait(false);
             }
@@ -478,22 +618,21 @@ namespace OptimaJet.Workflow.MongoDB
                 FromStateName = transition.From.State,
                 ToActivityName = transition.To.Name,
                 ToStateName = transition.To.State,
-                TransitionClassifier =
-                    transition.Classifier.ToString(),
+                TransitionClassifier = transition.Classifier.ToString(),
                 TransitionTime = _runtime.RuntimeDateTimeNow,
-                TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer,
+                StartTransitionTime = startTransitionTime,
+                TransitionDuration = (int)(_runtime.RuntimeDateTimeNow - startTransitionTime).TotalMilliseconds
             };
 
             IMongoCollection<WorkflowProcessTransitionHistory> dbcollTransition = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
             await dbcollTransition.InsertOneAsync(history).ConfigureAwait(false);
         }
-
        public virtual async Task<bool> IsProcessExistsAsync(Guid processId)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             return await dbcoll.CountDocumentsAsync(x => x.Id == processId).ConfigureAwait(false) != 0;
         }
-
        public virtual async Task<ProcessStatus> GetInstanceStatusAsync(Guid processId)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
@@ -511,8 +650,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             return status;
         }
-        
-        private async Task SetCustomStatusAsync(Guid processId, ProcessStatus status)
+       private async Task SetCustomStatusAsync(Guid processId, ProcessStatus status)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             WorkflowProcessInstance instance = await (await dbcoll.FindAsync(x => x.Id == processId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
@@ -555,8 +693,7 @@ namespace OptimaJet.Workflow.MongoDB
                 }
             }
         }
-        
-        private async Task SetRunningStatusAsync(Guid processId)
+       private async Task SetRunningStatusAsync(Guid processId)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             WorkflowProcessInstance instance = await (await dbcoll.FindAsync(x => x.Id == processId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
@@ -598,16 +735,14 @@ namespace OptimaJet.Workflow.MongoDB
                 throw new ImpossibleToSetStatusException();
             }
         }
-
-        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
+       private async Task<IEnumerable<ParameterDefinitionWithValue>> GetProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
         {
             var parameters = new List<ParameterDefinitionWithValue>(processDefinition.Parameters.Count);
             parameters.AddRange(await GetPersistedProcessParametersAsync(processId, processDefinition).ConfigureAwait(false));
             parameters.AddRange(await GetSystemProcessParametersAsync(processId, processDefinition).ConfigureAwait(false));
             return parameters;
         }
-
-        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId,
+       private async Task<IEnumerable<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId,
             ProcessDefinition processDefinition)
         {
             WorkflowProcessInstance processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
@@ -663,7 +798,13 @@ namespace OptimaJet.Workflow.MongoDB
                     processInstance.TenantId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSubprocessName.Name),
-                    processInstance.SubprocessName)
+                    processInstance.SubprocessName),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCreationDate.Name),
+                    _runtime.ToRuntimeTime(processInstance.CreationDate)),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterLastTransitionDate.Name),
+                     _runtime.ToRuntimeTime(processInstance.LastTransitionDate))
             };
             return parameters;
         }
@@ -826,6 +967,12 @@ namespace OptimaJet.Workflow.MongoDB
 
             IMongoCollection<WorkflowProcessTimer> dbcollTimer = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
             await dbcollTimer.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
+            
+            IMongoCollection<WorkflowInbox> dbcollInbox = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            await dbcollInbox.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
+            
+            IMongoCollection<WorkflowApprovalHistory> dbcollApprovalHisory = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            await dbcollApprovalHisory.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
         }
 
        public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
@@ -902,7 +1049,9 @@ namespace OptimaJet.Workflow.MongoDB
                     ToStateName = hi.ToStateName,
                     TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
                     TransitionTime = _runtime.ToRuntimeTime(hi.TransitionTime),
-                    TriggerName = hi.TriggerName
+                    TriggerName = hi.TriggerName,
+                    StartTransitionTime = hi.StartTransitionTime,
+                    TransitionDuration = hi.TransitionDuration
                 })
                 .ToList();
         }
@@ -1069,11 +1218,7 @@ namespace OptimaJet.Workflow.MongoDB
                 NextTimerTime = _runtime.ToRuntimeTime(result.NextTimerTime)
             };
         }
-
-        public IApprovalProvider GetIApprovalProvider()
-        {
-            return this;
-        }
+        
 
         #endregion
 
@@ -1451,75 +1596,254 @@ namespace OptimaJet.Workflow.MongoDB
 
         public  async Task DropWorkflowInboxAsync(Guid processId)
         {
-            IMongoCollection<WorkflowInbox> dbcoll = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
-            await dbcoll.DeleteOneAsync(c => c.ProcessId == processId).ConfigureAwait(false);
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            
+            await dCollection.DeleteManyAsync(c => c.ProcessId == processId)
+                .ConfigureAwait(false);
         }
 
-        public  async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        public  async Task InsertInboxAsync(List<InboxItem> newActors)
         {
-            IMongoCollection<WorkflowInbox> dbcoll = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
-            WorkflowInbox[] inboxItems = newActors.Select(newActor => new WorkflowInbox() { Id = Guid.NewGuid(), IdentityId = newActor, ProcessId = processId }).ToArray();
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            WorkflowInbox[] inboxItems = newActors.Select(WorkflowInbox.ToDB).ToArray();
             if (inboxItems.Any())
             {
-                await dbcoll.InsertManyAsync(inboxItems).ConfigureAwait(false);
+                await dCollection.InsertManyAsync(inboxItems).ConfigureAwait(false);
             }
         }
 
-        public  async Task WriteApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string allowedToEmployeeNames, long order)
+        public async Task<int> GetInboxCountByProcessIdAsync(Guid processId)
         {
-            IMongoCollection<WorkflowApprovalHistory> dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
-            var historyItem = new WorkflowApprovalHistory
-            {
-                Id = Guid.NewGuid(),
-                AllowedTo = allowedToEmployeeNames,
-                DestinationState = nextState,
-                ProcessId = id,
-                InitialState = currentState,
-                TriggerName = triggerName,
-                Sort = order
-            };
-            await dbcoll.InsertOneAsync(historyItem).ConfigureAwait(false);
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            return (int)await dCollection.CountDocumentsAsync(x => x.ProcessId == processId).ConfigureAwait(false);
         }
 
-        public  async Task UpdateApprovalHistoryAsync(Guid id, string currentState, string nextState, string triggerName, string identityId, long order, string comment)
+        public async Task<int> GetInboxCountByIdentityIdAsync(string identityId)
         {
-            IMongoCollection<WorkflowApprovalHistory> dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
-            WorkflowApprovalHistory historyItem = await (await dbcoll.FindAsync(h => h.ProcessId == id && !h.TransitionTime.HasValue &&
-                                                                   h.InitialState == currentState && h.DestinationState == nextState).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            return (int)await dCollection.CountDocumentsAsync(x => x.IdentityId == identityId).ConfigureAwait(false);
+        }
+
+        public async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging = null, CultureInfo culture = null)
+        {
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+            IMongoQueryable<WorkflowInbox> query = dCollection.AsQueryable()
+                .Where(x => x.ProcessId == processId)
+                .OrderByDescending(x => x.AddingDate);
+            
+            if (paging != null)
+            {
+                query = query.Skip(paging.SkipCount())
+                    .Take(paging.PageSize);
+            }
+            
+            List<WorkflowInbox> inboxItems = await query.ToListAsync().ConfigureAwait(false);
+            
+            return await WorkflowInbox.FromDB(_runtime, inboxItems.ToArray(), culture ?? CultureInfo.CurrentCulture)
+                .ConfigureAwait(false);
+        }
+
+        public async Task<List<InboxItem>> GetInboxByIdentityIdAsync(string identityId, Paging paging = null, CultureInfo culture = null)
+        {
+            IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
+
+            IMongoQueryable<WorkflowInbox> query = dCollection.AsQueryable()
+                .Where(x => x.IdentityId == identityId)
+                .OrderByDescending(x => x.AddingDate);
+            
+            if (paging != null)
+            {
+                query = query.Skip(paging.SkipCount())
+                    .Take(paging.PageSize);
+            }
+
+            List<WorkflowInbox> inboxItems = await query.ToListAsync().ConfigureAwait(false);
+            
+            return await WorkflowInbox.FromDB(_runtime, inboxItems.ToArray(), culture ?? CultureInfo.CurrentCulture)
+                .ConfigureAwait(false);
+        }
+
+        public async Task FillApprovalHistoryAsync(ApprovalHistoryItem approvalHistoryItem)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            WorkflowApprovalHistory historyItem = await (await dCollection.FindAsync(h => h.ProcessId == approvalHistoryItem.ProcessId 
+                        && !h.TransitionTime.HasValue 
+                        && h.InitialState == approvalHistoryItem.InitialState
+                        && h.DestinationState == approvalHistoryItem.DestinationState)
+                        .ConfigureAwait(false))
+                        .FirstOrDefaultAsync()
+                        .ConfigureAwait(false);
 
             if (historyItem == null)
             {
-                historyItem = new WorkflowApprovalHistory
-                {
-                    Id = Guid.NewGuid(),
-                    AllowedTo = String.Empty,
-                    DestinationState = nextState,
-                    ProcessId = id,
-                    InitialState = currentState,
-                    Sort = order,
-                    TriggerName = triggerName,
-                    Commentary = comment,
-                    TransitionTime =_runtime.RuntimeDateTimeNow,
-                    IdentityId = identityId
-                };
-
-                await dbcoll.InsertOneAsync(historyItem).ConfigureAwait(false);
+                historyItem = WorkflowApprovalHistory.ToDB(approvalHistoryItem);
+                
+                await dCollection.InsertOneAsync(historyItem).ConfigureAwait(false);
             }
             else
             {
-               await dbcoll.UpdateOneAsync(x => x.Id == historyItem.Id,
-                   Builders<WorkflowApprovalHistory>.Update.Set(x => x.TriggerName, triggerName).Set(x => x.TransitionTime, _runtime.RuntimeDateTimeNow)
-                       .Set(x => x.IdentityId, identityId).Set(x => x.Commentary, comment)).ConfigureAwait(false);
+                await dCollection.UpdateOneAsync(x => x.Id == historyItem.Id,
+                    Builders<WorkflowApprovalHistory>.Update
+                        .Set(x => x.TriggerName, approvalHistoryItem.TriggerName)
+                        .Set(x => x.TransitionTime, _runtime.RuntimeDateTimeNow)
+                        .Set(x => x.IdentityId, approvalHistoryItem.IdentityId)
+                        .Set(x => x.Commentary, approvalHistoryItem.Commentary))
+                        .ConfigureAwait(false);
+            }
+        }
+
+        public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            await dCollection.DeleteManyAsync(h => h.ProcessId == processId && !h.TransitionTime.HasValue).ConfigureAwait(false);
+        }
+
+        public async Task DropApprovalHistoryByProcessIdAsync(Guid processId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            await dCollection.DeleteManyAsync(h => h.ProcessId == processId).ConfigureAwait(false);
+        }
+
+        public async Task DropApprovalHistoryByIdentityIdAsync(string identityId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            await dCollection.DeleteManyAsync(h => h.IdentityId == identityId).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetApprovalHistoryCountByProcessIdAsync(Guid processId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            return (int)await dCollection.CountDocumentsAsync(x => x.ProcessId == processId).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetApprovalHistoryCountByIdentityIdAsync(string identityId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            return (int)await dCollection.CountDocumentsAsync(x => x.IdentityId == identityId).ConfigureAwait(false);
+        }
+
+        public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByProcessIdAsync(Guid processId, Paging paging = null)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            
+            IMongoQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
+                .Where(x => x.ProcessId == processId)
+                .OrderBy(x => x.Sort);
+            
+            if (paging != null)
+            {
+                query = query.Skip(paging.SkipCount())
+                    .Take(paging.PageSize);
+            }
+            
+            List<WorkflowApprovalHistory> approvalHistory = await query.ToListAsync().ConfigureAwait(false);
+
+            return approvalHistory.Select(x=>WorkflowApprovalHistory.FromDB(_runtime, x)).ToList();
+        }
+
+        public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByIdentityIdAsync(string identityId, Paging paging = null)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+
+            IMongoQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
+                .Where(x => x.IdentityId == identityId)
+                .OrderBy(x => x.Sort);
+            
+            if (paging != null)
+            {
+                query = query.Skip(paging.SkipCount())
+                    .Take(paging.PageSize);
+            }
+            
+            List<WorkflowApprovalHistory> approvalHistory = await query.ToListAsync().ConfigureAwait(false);
+            
+            return approvalHistory.Select(x=>WorkflowApprovalHistory.FromDB(_runtime, x)).ToList();
+        }
+
+        public async Task<int> GetOutboxCountByIdentityIdAsync(string identityId)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            
+            return dCollection.Aggregate().Match(x=>x.IdentityId == identityId).Group(
+                x => x.ProcessId,y=>new
+                {
+                    id = y.Key
+                }).ToList().Count();
+        }
+
+        public async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging = null)
+        {
+            IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
+            List<OutboxItem> outboxItems;
+
+            if (paging == null)
+            {
+                 outboxItems = await dCollection.Aggregate().Match(x=>x.IdentityId == identityId)
+                     .Group(
+                    x => x.ProcessId
+                    , g =>
+                        new OutboxItem()
+                        {
+                            ProcessId = g.Key,
+                            FirstApprovalTime = g.Min(x => x.TransitionTime),
+                            LastApprovalTime = g.Max(x => x.TransitionTime),
+                            ApprovalCount = g.Count()
+                        }).SortByDescending(x => x.LastApprovalTime)
+                     .ToListAsync()
+                     .ConfigureAwait(false);
+            }
+            else
+            {
+                outboxItems = await dCollection.Aggregate().Match(x=>x.IdentityId == identityId)
+                    .Group(
+                        x => x.ProcessId
+                        , g =>
+                            new OutboxItem()
+                            {
+                                ProcessId = g.Key,
+                                FirstApprovalTime = g.Min(x => x.TransitionTime),
+                                LastApprovalTime = g.Max(x => x.TransitionTime),
+                                ApprovalCount = g.Count(),
+                            }).SortByDescending(x => x.LastApprovalTime)
+                    .Skip(paging.SkipCount())
+                    .Limit(paging.PageSize)
+                    .ToListAsync().ConfigureAwait(false);
+            }
+            IEnumerable<Guid> processIds = outboxItems.Select(x => x.ProcessId).Distinct();
+
+
+            var history = new Dictionary<Guid, string>();
+            
+            foreach (OutboxItem item in outboxItems)
+            {
+                WorkflowApprovalHistory historyItem = (await dCollection
+                    .Find(x => x.ProcessId == item.ProcessId)
+                    .SortByDescending(x => x.TransitionTime)
+                    .Limit(1)
+                    .ToListAsync()
+                    .ConfigureAwait(false)).FirstOrDefault();
+
+                if (historyItem!=null)
+                {
+                    history.Add(historyItem.ProcessId, historyItem.TriggerName);
+                }
             }
 
-        }
+            foreach (OutboxItem outbox in outboxItems)
+            {
+                if (history.TryGetValue(outbox.ProcessId, out string command))
+                {
+                    outbox.LastApproval = command;
+                }
 
-       public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
-        {
-            IMongoCollection<WorkflowApprovalHistory> dbcoll = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
-            await dbcoll.DeleteManyAsync(h => h.ProcessId == processId && !h.TransitionTime.HasValue).ConfigureAwait(false);
-        }
+                outbox.FirstApprovalTime = _runtime.ToRuntimeTime(outbox.FirstApprovalTime);
+                outbox.LastApprovalTime = _runtime.ToRuntimeTime(outbox.LastApprovalTime);
+            }
 
+            return outboxItems;
+        }
+        
+        
         #endregion IApprovalProvider
 
         private void CheckInitialData()
@@ -1534,6 +1858,13 @@ namespace OptimaJet.Workflow.MongoDB
             lockColl.UpdateOne(x => x.Name == "ServiceTimer", Builders<Models.WorkflowSync>.Update
               .SetOnInsert(x => x.Name, "ServiceTimer")
               .SetOnInsert(x => x.Lock, Guid.NewGuid()), new UpdateOptions { IsUpsert = true });
+        }
+
+        private static string GetOrderParameters(List<(string parameterName,SortDirection sortDirection)> orderParameters)
+        {
+            string result = String.Join(", ",
+                orderParameters.Select(x => $"{x.parameterName} {x.sortDirection.UpperName()}"));
+            return result;
         }
     }
 }

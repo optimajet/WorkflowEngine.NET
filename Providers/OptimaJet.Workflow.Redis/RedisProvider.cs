@@ -1,5 +1,6 @@
 using System;
 using System.Collections.Generic;
+using System.Globalization;
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -15,7 +16,7 @@ using StackExchange.Redis;
 
 namespace OptimaJet.Workflow.Redis
 {
-    public class RedisProvider : IWorkflowProvider, IApprovalProvider
+    public class RedisProvider : IWorkflowProvider
     {
         private readonly ConnectionMultiplexer _connector;
         private readonly string _providerNamespace;
@@ -66,10 +67,14 @@ namespace OptimaJet.Workflow.Redis
         {
             return $"{_providerNamespace}:processinstance:{processId:N}";
         }
-
+        
         public string GetKeyForProcessHistory(Guid processId)
         {
             return $"{_providerNamespace}:processhistory:{processId:N}";
+        }        
+        public string GetKeyForProcessHistory()
+        {
+            return $"{_providerNamespace}:processhistory";
         }
 
         public string GetKeyForProcessPersistence(Guid processId)
@@ -226,17 +231,42 @@ namespace OptimaJet.Workflow.Redis
         {
             return $"{_providerNamespace}:workflowruntimetimers:{timerName}";
         }
-
-        public string GetKeyInbox(Guid processId)
+        
+        /// HashSet off <see cref="Guid"/> and <see cref="WorkflowInbox"/>
+        public string GetKeyInbox()
         {
-            return $"{_providerNamespace}:inbox:{processId:N}";
+            return $"{_providerNamespace}:inbox"; //List
         }
-
-        public string GetKeyApprovalHistory(Guid documentId)
+        
+        /// HashSet off <see cref="Guid"/> and <see cref="string"/>
+        public string GetKeyInboxByProcessId(Guid processId)
         {
-            return $"{_providerNamespace}:approvalhistory:{documentId:N}";
+            return $"{_providerNamespace}:inbox:processid:{processId:N}";
         }
-
+        
+        /// HashSet off <see cref="Guid"/> and <see cref="Guid"/>
+        public string GetKeyInboxByIdentityId(string identityId)
+        {
+            return $"{_providerNamespace}:inbox:identityid:{identityId:N}";
+        }
+        
+        /// HashSet off <see cref="Guid"/> and <see cref="WorkflowApprovalHistory"/>
+        public string GetKeyApprovalHistory()
+        {
+            return $"{_providerNamespace}:approvalhistory";
+        }
+        
+        /// HashSet off <see cref="Guid"/> and <see cref="string"/>
+        public string GetKeyApprovalHistoryByProcessId(Guid processId)
+        {
+            return $"{_providerNamespace}:approvalhistory:processid:{processId:N}";
+        }
+        /// HashSet off <see cref="Guid"/> and <see cref="Guid"/>
+        public string GetKeyApprovalHistoryByIdentityId(string identityId)
+        {
+            return $"{_providerNamespace}:approvalhistory:identityid:{identityId:N}";
+        }
+        
         #endregion
 
         #region Private
@@ -290,7 +320,7 @@ namespace OptimaJet.Workflow.Redis
             {
                 RedisValue status = await db.StringGetAsync(GetKeyProcessStatus(processId)).ConfigureAwait(false);
 
-                _runtime.LogError("Failed to SetRunningStatus", new Dictionary<string, string>()
+                _runtime.LogErrorIfLoggerExists("Failed to SetRunningStatus", new Dictionary<string, string>()
                 {
                     { "Status",status.HasValue ? status.ToString() : ProcessStatus.NotFound.Name },
                     { "processId", processId.ToString()},
@@ -980,6 +1010,77 @@ namespace OptimaJet.Workflow.Redis
             await tran.ExecuteAsync().ConfigureAwait(false);
         }
 
+       public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+       {
+            // IDatabase db = _connector.GetDatabase();
+            //
+            // var processIdsLists = (await db.ListRangeAsync(GetKeyForSubprocesses(rootProcessId)).
+            //     ConfigureAwait(false)).
+            //     Where(v => v.HasValue).Select(v => new Guid(v.ToString())).ToList();
+            //
+            //
+            //
+            // var documentCollectionKey = GetKeyForSortedDocuments();
+            //
+            // var count = (int)db.SortedSetLength(documentCollectionKey);
+            //
+            // var keys = db.SortedSetRangeByRank(documentCollectionKey, page * pageSize, (page + 1) * pageSize - 1, Order.Descending);
+            //
+            // var docs = db.StringGet(keys.Select(k => (RedisKey)GetKeyForDocument(new Guid((string)k))).ToArray());
+            //
+            //
+            // RedisValue[] redisProcesses = await Task.WhenAll(processIdsLists.Select(processId => db.StringGetAsync(GetKeyForProcessInstance(processId)))).ConfigureAwait(false);
+            //
+            // List<WorkflowProcessInstance> instances =
+            //     redisProcesses
+            //         .Where(v => v.HasValue)
+            //         .Select(v =>
+            //         {
+            //             WorkflowProcessInstance processInstance = JsonConvert.DeserializeObject<WorkflowProcessInstance>(v);
+            //
+            //             if (!processInstance.SchemeId.HasValue)
+            //             {
+            //                 throw SchemeNotFoundException.Create(processInstance.Id, SchemeLocation.WorkflowProcessInstance);
+            //             }
+            //
+            //             return processInstance;
+            //         }).ToList();
+            //
+            //
+            // var startingTransitions = (await Task.WhenAll(instances.Select(i => i.SchemeId.Value).Distinct().Select(async schemeId =>
+            // {
+            //     RedisValue s = await db.StringGetAsync(GetKeyForProcessScheme(schemeId)).ConfigureAwait(false);
+            //     if (!s.HasValue)
+            //     {
+            //         throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
+            //     }
+            //
+            //     WorkflowProcessScheme processScheme = JsonConvert.DeserializeObject<WorkflowProcessScheme>(s);
+            //
+            //     return (schemeId, startingTransition: processScheme.StartingTransition);
+            // })).ConfigureAwait(false)).ToDictionary(t => t.schemeId, t => t.startingTransition);
+            //
+
+            // return ProcessInstanceTreeItem.Create(rootProcessId, processInfo, startingTransitions);
+            
+            throw new NotSupportedException("Select all doesn't support in Redis");
+       }
+
+       public Task<int> GetProcessInstancesCountAsync()
+       {
+           throw new NotSupportedException("Getting count of items doesn't  support in Redis");
+       }
+
+       public Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+       {
+           throw new NotSupportedException("Getting count of items doesn't  support in Redis");
+       }
+       
+       public Task<int> GetSchemesCountAsync()
+       {
+           throw new NotSupportedException("Getting count of items doesn't  support in Redis");
+       }
+
        public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
             IDatabase db = _connector.GetDatabase();
@@ -1144,7 +1245,8 @@ namespace OptimaJet.Workflow.Redis
                 RootProcessId = processInstance.RootProcessId,
                 ParentProcessId = processInstance.ParentProcessId,
                 TenantId = processInstance.TenantId,
-                SubprocessName = processInstance.SubprocessName
+                SubprocessName = processInstance.SubprocessName,
+                CreationDate = processInstance.CreationDate
             };
 
             string processKey = GetKeyForProcessInstance(processInstance.ProcessId);
@@ -1302,7 +1404,13 @@ namespace OptimaJet.Workflow.Redis
                     workflowProcessInstance.TenantId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSubprocessName.Name),
-                    processInstance.SubprocessName)
+                    workflowProcessInstance.SubprocessName),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCreationDate.Name),
+                    workflowProcessInstance.CreationDate),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterLastTransitionDate.Name),
+                    workflowProcessInstance.LastTransitionDate)
             };
 
             processInstance.AddParameters(parameters);
@@ -1516,6 +1624,38 @@ namespace OptimaJet.Workflow.Redis
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Terminated).ConfigureAwait(false);
         }
 
+        public async Task WriteInitialRecordToHistoryAsync(ProcessInstance processInstance)
+        {
+            if (!_writeToHistory) { return; }
+
+            IDatabase db = _connector.GetDatabase();
+            ITransaction tran = db.CreateTransaction();
+
+            var history = new WorkflowProcessTransitionHistory
+            {
+                Id = Guid.NewGuid(),
+                ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess
+                    ? processInstance.RootProcessId
+                    : processInstance.ProcessId,
+                FromActivityName = String.Empty,
+                FromStateName = String.Empty,
+                ToActivityName = processInstance.CurrentActivityName,
+                ToStateName = processInstance.CurrentState,
+                TransitionClassifier = nameof(TransitionClassifier.NotSpecified),
+                TransitionTime = _runtime.RuntimeDateTimeNow,
+                TriggerName = "Initializing",
+                StartTransitionTime = _runtime.RuntimeDateTimeNow,
+                TransitionDuration = 0
+            };
+
+            string key = GetKeyForProcessHistory(_writeSubProcessToRoot && processInstance.IsSubprocess
+                ? processInstance.RootProcessId
+                : processInstance.ProcessId);
+            string json = JsonConvert.SerializeObject(history);
+
+            await db.ListRightPushAsync(key, json).ConfigureAwait(false);
+        }
+
         /// <summary>
         /// Updates system parameters of the process in the store
         /// </summary>
@@ -1523,6 +1663,8 @@ namespace OptimaJet.Workflow.Redis
         /// <param name="transition">Last executed transition</param>
        public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
         {
+            DateTime startTransitionTime = processInstance.StartTransitionTime ?? _runtime.RuntimeDateTimeNow;
+            
             IDatabase db = _connector.GetDatabase();
             string key = GetKeyForProcessInstance(processInstance.ProcessId);
             RedisValue processInstanceValue = await db.StringGetAsync(key).ConfigureAwait(false);
@@ -1573,6 +1715,7 @@ namespace OptimaJet.Workflow.Redis
 
             inst.ParentProcessId = processInstance.ParentProcessId;
             inst.RootProcessId = processInstance.RootProcessId;
+            inst.LastTransitionDate = processInstance.LastTransitionDate;
 
             var batchTasks = new List<Task>();
             
@@ -1591,10 +1734,13 @@ namespace OptimaJet.Workflow.Redis
                     FromStateName = transition.From.State,
                     ToActivityName = transition.To.Name,
                     ToStateName = transition.To.State,
-                    TransitionClassifier =
-                        transition.Classifier.ToString(),
+                    Id = new Guid(),
+                    ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
+                    TransitionClassifier = transition.Classifier.ToString(),
                     TransitionTime = _runtime.RuntimeDateTimeNow,
-                    TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer
+                    TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer,
+                    StartTransitionTime = startTransitionTime,
+                    TransitionDuration = (int)(_runtime.RuntimeDateTimeNow - startTransitionTime).TotalMilliseconds
                 };
 
                 batchTasks.Add(batch.ListRightPushAsync(
@@ -1839,8 +1985,12 @@ namespace OptimaJet.Workflow.Redis
                 tran.KeyDeleteAsync(GetKeyForRootProcess(processId));
 #pragma warning restore 4014
             }
-
+            
+            await DropWorkflowInboxInternalAsync(processId, tran).ConfigureAwait(false);
+            await DropApprovalHistoryByProcessIdInternalAsync(processId, tran).ConfigureAwait(false);
+          
             await tran.ExecuteAsync().ConfigureAwait(false);
+            
         }
 
         /// <summary>
@@ -1936,7 +2086,9 @@ namespace OptimaJet.Workflow.Redis
                     ToStateName = hi.ToStateName,
                     TransitionClassifier = (TransitionClassifier)Enum.Parse(typeof(TransitionClassifier), hi.TransitionClassifier),
                     TransitionTime = hi.TransitionTime,
-                    TriggerName = hi.TriggerName
+                    TriggerName = hi.TriggerName,
+                    StartTransitionTime = hi.StartTransitionTime,
+                    TransitionDuration = hi.TransitionDuration
                 })
                 .ToList();
         }
@@ -2058,29 +2210,30 @@ namespace OptimaJet.Workflow.Redis
 
        public virtual async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
         {
+       
             IDatabase db = _connector.GetDatabase();
-
+            
             var processIdsLists = (await db.ListRangeAsync(GetKeyForSubprocesses(rootProcessId)).ConfigureAwait(false)).Where(v => v.HasValue).Select(v => new Guid(v.ToString())).ToList();
             
             RedisValue[] redisProcesses = await Task.WhenAll(processIdsLists.Select(processId => db.StringGetAsync(GetKeyForProcessInstance(processId)))).ConfigureAwait(false);
-
+            
             var processInfo =
                 redisProcesses
                     .Where(v => v.HasValue)
                     .Select(v =>
                     {
                         WorkflowProcessInstance processInstance = JsonConvert.DeserializeObject<WorkflowProcessInstance>(v);
-
+            
                         if (!processInstance.SchemeId.HasValue)
                         {
                             throw SchemeNotFoundException.Create(processInstance.Id, SchemeLocation.WorkflowProcessInstance);
                         }
-
+            
                         return (processId: processInstance.Id, schemeId: processInstance.SchemeId.Value, parentProcessId: processInstance.ParentProcessId,
                             rootProcessId: processInstance.RootProcessId, subprocessName: processInstance.SubprocessName);
                     }).ToList();
-
-
+            
+            
             var startingTransitions = (await Task.WhenAll(processInfo.Select(i => i.schemeId).Distinct().Select(async schemeId =>
             {
                 RedisValue s = await db.StringGetAsync(GetKeyForProcessScheme(schemeId)).ConfigureAwait(false);
@@ -2088,20 +2241,16 @@ namespace OptimaJet.Workflow.Redis
                 {
                     throw SchemeNotFoundException.Create(schemeId, SchemeLocation.WorkflowProcessScheme);
                 }
-
+            
                 WorkflowProcessScheme processScheme = JsonConvert.DeserializeObject<WorkflowProcessScheme>(s);
-
+            
                 return (schemeId, startingTransition: processScheme.StartingTransition);
             })).ConfigureAwait(false)).ToDictionary(t => t.schemeId, t => t.startingTransition);
-
-
+            
+            
             return ProcessInstanceTreeItem.Create(rootProcessId, processInfo, startingTransitions);
         }
-
-        public IApprovalProvider GetIApprovalProvider()
-        {
-            return this;
-        }
+       
 
         #endregion
 
@@ -2127,128 +2276,438 @@ namespace OptimaJet.Workflow.Redis
 
         #region IApprovalProvider
 
-       public virtual async Task DropWorkflowInboxAsync(Guid processId)
+        public async Task InsertInboxAsync(List<InboxItem> inboxItems)
         {
             IDatabase db = _connector.GetDatabase();
-            await db.KeyDeleteAsync(GetKeyInbox(processId)).ConfigureAwait(false);
+            ITransaction tran = db.CreateTransaction();
+            IEnumerable<HashEntry> fields = inboxItems.Select(x => new HashEntry(x.Id.ToString(), JsonConvert.SerializeObject(WorkflowInbox.ToDB(x))));
+            foreach (InboxItem item in inboxItems)
+            {
+
+#pragma warning disable 4014
+                tran.HashSetAsync(GetKeyInboxByProcessId(item.ProcessId),
+                    item.Id.ToString(),
+                    item.IdentityId??String.Empty);
+#pragma warning restore 4014
+
+#pragma warning disable 4014
+                tran.HashSetAsync(GetKeyInboxByIdentityId(item.IdentityId),
+                    item.Id.ToString(),
+                    item.ProcessId.ToString());
+#pragma warning restore 4014
+            }
+
+            //add to Inbox HashSet 
+#pragma warning disable 4014
+            tran.HashSetAsync(GetKeyInbox(), fields.ToArray());
+#pragma warning restore 4014
+            
+            await tran.ExecuteAsync().ConfigureAwait(false);
         }
 
-       public virtual async Task InsertInboxAsync(Guid processId, List<string> newActors)
+        public async Task DropWorkflowInboxAsync(Guid processId)
         {
-            IDatabase db = _connector.GetDatabase();
-            WorkflowInbox[] inboxItems = newActors.Select(newActor => new WorkflowInbox() {IdentityId = newActor, ProcessId = processId}).ToArray();
-            
-            var batchTasks = new List<Task>();
-            
-            IBatch batch = db.CreateBatch();
-            foreach (WorkflowInbox inboxItem in inboxItems)
-            {
-                batchTasks.Add(batch.ListRightPushAsync(GetKeyInbox(processId), JsonConvert.SerializeObject(inboxItem)));
-            }
-
-            batch.Execute();
-
-            await Task.WhenAll(batchTasks).ConfigureAwait(false);
+           await DropWorkflowInboxInternalAsync(processId).ConfigureAwait(false);
         }
 
-       public virtual async Task WriteApprovalHistoryAsync(Guid documentId, string currentState, string nextState, string triggerName, string allowedToEmployeeNames,
-            long order)
-        {
-            IDatabase db = _connector.GetDatabase();
+        private async Task DropWorkflowInboxInternalAsync(Guid processId, ITransaction transaction = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           ITransaction tran = transaction ?? db.CreateTransaction();
             
-            var batchTasks = new List<Task>();
-            
-            IBatch batch = db.CreateBatch();
-            
-            var historyItem = new WorkflowApprovalHistory
-            {
-                AllowedTo = allowedToEmployeeNames,
-                DestinationState = nextState,
-                ProcessId = documentId,
-                InitialState = currentState,
-                TriggerName = triggerName,
-                Sort = order
-            };
+           string keyByProcessId = GetKeyInboxByProcessId(processId);
+           //Get ids By ProcessId
+           List<Guid> ids = await GetIdsAsync(db, keyByProcessId).ConfigureAwait(false);
+           RedisValue[] idsRedisValues = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+           
+           //Get inbox
+           List<WorkflowInbox> inbox  = await GetInboxAsync(db, idsRedisValues).ConfigureAwait(false);
+           foreach (WorkflowInbox item in inbox)
+           {
+               string id = item.Id.ToString();
+               string keyByIdentityId = GetKeyInboxByIdentityId(item.IdentityId);
 
-            batchTasks.Add(batch.ListRightPushAsync(GetKeyApprovalHistory(documentId), JsonConvert.SerializeObject(historyItem)));
-            
-            batch.Execute();
+               //Delete from ProcessId HashSet 
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByProcessId, id);
+#pragma warning restore 4014
 
-            await Task.WhenAll(batchTasks).ConfigureAwait(false);
-        }
+               //Delete from IdentityId HashSet
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByIdentityId, id);
+#pragma warning restore 4014
+           }
 
-       public virtual async Task UpdateApprovalHistoryAsync(Guid documentId, string currentState, string nextState, string triggerName, string identityId, long order,
-            string comment)
-        {
-            IDatabase db = _connector.GetDatabase();
-            string key = GetKeyApprovalHistory(documentId);
-            var items = (await db.ListRangeAsync(key).ConfigureAwait(false)).Select(x => JsonConvert.DeserializeObject<WorkflowApprovalHistory>(x)).ToList();
-            WorkflowApprovalHistory historyItem = items.FirstOrDefault(h => h.ProcessId == documentId && !h.TransitionTime.HasValue &&
-                                                                            h.InitialState == currentState && h.DestinationState == nextState);
-            
-            var batchTasks = new List<Task>();
-            
-            IBatch batch = db.CreateBatch();
+           //Delete from Inbox HashSet 
+#pragma warning disable 4014
+           tran.HashDeleteAsync(GetKeyInbox(), idsRedisValues);
+#pragma warning restore 4014
 
-            if (historyItem == null)
-            {
-                historyItem = new WorkflowApprovalHistory
-                {
-                    AllowedTo = String.Empty,
-                    DestinationState = nextState,
-                    ProcessId = documentId,
-                    InitialState = currentState,
-                    Sort = order,
-                    TriggerName = triggerName,
-                    Commentary = comment,
-                    TransitionTime = _runtime.RuntimeDateTimeNow,
-                    IdentityId = identityId
-                };
-                items.Add(historyItem);
-            }
-            else
-            {
-                historyItem.TriggerName = triggerName;
-                historyItem.TransitionTime = _runtime.RuntimeDateTimeNow;
-                historyItem.IdentityId = identityId;
-                historyItem.Commentary = comment;
-            }
+           if (transaction == null)
+           {
+               await tran.ExecuteAsync().ConfigureAwait(false);
+           }
+       }
+        
+       public async Task<int> GetInboxCountByProcessIdAsync(Guid processId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyInboxByProcessId(processId);
+           return (await GetIdsAsync(db, key).ConfigureAwait(false)).Count();
+       }
+       public async Task<int> GetInboxCountByIdentityIdAsync(string identityId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyInboxByIdentityId(identityId);
+           return (await GetIdsAsync(db, key).ConfigureAwait(false)).Count();
+       }
+       public async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging = null, CultureInfo culture = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyInboxByProcessId(processId);
+           List<Guid> ids = await GetIdsAsync(db, key, paging, true).ConfigureAwait(false);
+           List<WorkflowInbox> inboxItems = await GetInboxAsync(db, ids).ConfigureAwait(false);
+           
+           return await WorkflowInbox.FromDB(_runtime, inboxItems.OrderByDescending(x=>x.AddingDate).ToArray(), culture ?? CultureInfo.CurrentCulture)
+               .ConfigureAwait(false);
+       }
+       public async Task<List<InboxItem>> GetInboxByIdentityIdAsync(string identityId, Paging paging = null, CultureInfo culture = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyInboxByIdentityId(identityId);
+           List<Guid> ids = await GetIdsAsync(db, key, paging, true).ConfigureAwait(false);
+           List<WorkflowInbox> inboxItems = await GetInboxAsync(db, ids).ConfigureAwait(false);
+           
+           return await WorkflowInbox.FromDB(_runtime, inboxItems.OrderByDescending(x=>x.AddingDate).ToArray(), culture ?? CultureInfo.CurrentCulture)
+               .ConfigureAwait(false);
+       }
+       public async Task FillApprovalHistoryAsync(ApprovalHistoryItem approvalHistoryItem)
+       {
+           IDatabase db = _connector.GetDatabase();
+           ITransaction tran = db.CreateTransaction();
+           string processId = approvalHistoryItem.ProcessId.ToString();
+           string identityId = approvalHistoryItem.IdentityId;
+           string keyByProcessId = GetKeyApprovalHistoryByProcessId(approvalHistoryItem.ProcessId);
+           string keyByIdentityId = GetKeyApprovalHistoryByIdentityId(approvalHistoryItem.IdentityId);
+           
+           List<Guid> ids = await GetIdsAsync(db, keyByProcessId).ConfigureAwait(false);
+           List<WorkflowApprovalHistory> approvalHistories = await GetApprovalHistoryAsync(db, ids).ConfigureAwait(false);
 
-            await db.KeyDeleteAsync(key).ConfigureAwait(false);
-
-            foreach (WorkflowApprovalHistory record in items)
-            {
-                batchTasks.Add(batch.ListRightPushAsync(key, JsonConvert.SerializeObject(record)));
-            }
-
-            batch.Execute();
-
-            await Task.WhenAll(batchTasks).ConfigureAwait(false);
-        }
-
+           WorkflowApprovalHistory historyItem = approvalHistories.FirstOrDefault(h => !h.TransitionTime.HasValue &&
+           h.InitialState == approvalHistoryItem.InitialState &&
+           h.DestinationState == approvalHistoryItem.DestinationState);
+           
+           if (historyItem is null)
+           {
+               historyItem = WorkflowApprovalHistory.ToDB(approvalHistoryItem);
+               
+           }
+           else
+           {
+               historyItem.TriggerName = approvalHistoryItem.TriggerName;
+               historyItem.TransitionTime = approvalHistoryItem.TransitionTime;
+               historyItem.IdentityId = approvalHistoryItem.IdentityId;
+               historyItem.Commentary = approvalHistoryItem.Commentary;
+           }
+           
+           string id = historyItem.Id.ToString();
+           
+           //add to ProcessId HashSet  
+#pragma warning disable 4014
+           tran.HashSetAsync(keyByProcessId, id, identityId??String.Empty);
+#pragma warning restore 4014              
+               
+           //add to IdentityId HashSet 
+#pragma warning disable 4014
+           tran.HashSetAsync(keyByIdentityId, id, processId);
+#pragma warning restore 4014
+           
+           string json = JsonConvert.SerializeObject(historyItem);
+            //add to Inbox HashSet 
+#pragma warning disable 4014
+            tran.HashSetAsync(GetKeyApprovalHistory(), id,json);
+#pragma warning restore 4014
+            await tran.ExecuteAsync().ConfigureAwait(false);
+       }
        public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
         {
             IDatabase db = _connector.GetDatabase();
-            string key = GetKeyApprovalHistory(processId);
-            var items = (await db.ListRangeAsync(key).ConfigureAwait(false)).Select(x => JsonConvert.DeserializeObject<WorkflowApprovalHistory>(x)).ToList();
-            IEnumerable<WorkflowApprovalHistory> notEmpty = items.Where(x => x.TransitionTime.HasValue);
-            
-            var batchTasks = new List<Task>();
-            
-            IBatch batch = db.CreateBatch();
-            
-            await db.KeyDeleteAsync(key).ConfigureAwait(false);
-
-            foreach (WorkflowApprovalHistory record in notEmpty)
+            ITransaction tran = db.CreateTransaction();
+            string keyByProcessId = GetKeyApprovalHistoryByProcessId(processId);
+            List<Guid> ids = await GetIdsAsync(db, keyByProcessId).ConfigureAwait(false);
+            RedisValue[] idsRedisValues = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+           
+            //Get ApprovalHistory
+            List<WorkflowApprovalHistory> approvalHistories  = await GetApprovalHistoryAsync(db, idsRedisValues).ConfigureAwait(false);
+            var empty = approvalHistories.Where(x => !x.TransitionTime.HasValue);
+            RedisValue[] emptyIds = empty.Select(x => (RedisValue)x.Id.ToString()).ToArray();
+            foreach (WorkflowApprovalHistory item in empty)
             {
-                batchTasks.Add(batch.ListRightPushAsync(key, JsonConvert.SerializeObject(record)));
+                string id = item.Id.ToString();
+                string keyByIdentityId = GetKeyApprovalHistoryByIdentityId(item.IdentityId);
+               
+                //Delete from ProcessId HashSet 
+#pragma warning disable 4014
+                tran.HashDeleteAsync(keyByProcessId, id);
+#pragma warning restore 4014
+               
+                //Delete from IdentityId HashSet
+#pragma warning disable 4014
+                tran.HashDeleteAsync(keyByIdentityId, id);
+#pragma warning restore 4014
             }
-
-            batch.Execute();
-
-            await Task.WhenAll(batchTasks).ConfigureAwait(false);
+           
+            //Delete empty from ApprovalHistory HashSet 
+#pragma warning disable 4014
+            tran.HashDeleteAsync(GetKeyApprovalHistory(), emptyIds);
+#pragma warning restore 4014
+            await tran.ExecuteAsync().ConfigureAwait(false);
         }
 
-        #endregion IApprovalProvider
+       public async Task DropApprovalHistoryByProcessIdAsync(Guid processId)
+       {
+           await DropApprovalHistoryByProcessIdInternalAsync(processId).ConfigureAwait(false);
+       }
+
+       private async Task DropApprovalHistoryByProcessIdInternalAsync(Guid processId, ITransaction transaction = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           ITransaction tran = transaction ?? db.CreateTransaction();
+           
+           string keyByProcessId = GetKeyApprovalHistoryByProcessId(processId);
+           //Get ids By ProcessId
+           List<Guid> ids = await GetIdsAsync(db, keyByProcessId).ConfigureAwait(false);
+           RedisValue[] idsRedisValues = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+           
+           //Get ApprovalHistory
+           List<WorkflowApprovalHistory> approvalHistories  = await GetApprovalHistoryAsync(db, idsRedisValues).ConfigureAwait(false);
+           foreach (WorkflowApprovalHistory item in approvalHistories)
+           {
+               string id = item.Id.ToString();
+               string keyByIdentityId = GetKeyApprovalHistoryByIdentityId(item.IdentityId);
+               
+               //Delete from ProcessId HashSet 
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByProcessId, id);
+#pragma warning restore 4014
+               
+               //Delete from IdentityId HashSet
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByIdentityId, id);
+#pragma warning restore 4014
+           }
+           
+#pragma warning disable 4014
+           //Delete from ApprovalHistory HashSet 
+           tran.HashDeleteAsync(GetKeyApprovalHistory(), idsRedisValues);
+#pragma warning restore 4014
+
+           if ((transaction == null))
+           {
+               await tran.ExecuteAsync().ConfigureAwait(false);
+           }
+       }
+       public async Task DropApprovalHistoryByIdentityIdAsync(string identityId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           ITransaction tran = db.CreateTransaction();
+           
+           string keyByIdentityId = GetKeyApprovalHistoryByIdentityId(identityId);
+           //Get ids By identityId
+           List<Guid> ids = await GetIdsAsync(db, keyByIdentityId).ConfigureAwait(false);
+           RedisValue[] idsRedisValues = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+           
+           //Get ApprovalHistory
+           List<WorkflowApprovalHistory> approvalHistories  = await GetApprovalHistoryAsync(db, idsRedisValues).ConfigureAwait(false);
+           foreach (WorkflowApprovalHistory item in approvalHistories)
+           {
+               string id = item.Id.ToString();
+               string keyByProcessId = GetKeyApprovalHistoryByProcessId(item.ProcessId);
+               
+               //Delete from ProcessId HashSet 
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByProcessId, id);
+#pragma warning restore 4014
+               
+               //Delete from IdentityId HashSet
+#pragma warning disable 4014
+               tran.HashDeleteAsync(keyByIdentityId, id);
+#pragma warning restore 4014
+           }
+           
+           //Delete from ApprovalHistory HashSet 
+           await tran.HashDeleteAsync(GetKeyApprovalHistory(), idsRedisValues).ConfigureAwait(false);
+           await tran.ExecuteAsync().ConfigureAwait(false);
+       }
+       public async Task<int> GetApprovalHistoryCountByProcessIdAsync(Guid processId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key =  GetKeyApprovalHistoryByProcessId(processId);
+           return (await GetIdsAsync(db, key).ConfigureAwait(false)).Count();
+       }
+       public async Task<int> GetApprovalHistoryCountByIdentityIdAsync(string identityId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key =  GetKeyApprovalHistoryByIdentityId(identityId);
+           return (await GetIdsAsync(db, key).ConfigureAwait(false)).Count();
+       }
+       public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByProcessIdAsync(Guid processId, Paging paging = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyApprovalHistoryByProcessId(processId);
+           List<Guid> ids = await GetIdsAsync(db, key, paging).ConfigureAwait(false);
+           List<WorkflowApprovalHistory> approvalHistories =
+               await GetApprovalHistoryAsync(db, ids).ConfigureAwait(false);
+           
+           return approvalHistories.OrderBy(x=>x.Sort).Select(x=>WorkflowApprovalHistory.FromDB(_runtime, x)).ToList();
+       }
+       public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByIdentityIdAsync(string identityId, Paging paging = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyApprovalHistoryByIdentityId(identityId);
+           List<Guid> ids = await GetIdsAsync(db, key, paging).ConfigureAwait(false);
+           List<WorkflowApprovalHistory> approvalHistories = await GetApprovalHistoryAsync(db, ids).ConfigureAwait(false);
+           return approvalHistories.OrderBy(x=>x.Sort).Select(x=>WorkflowApprovalHistory.FromDB(_runtime, x)).ToList();
+       }
+       public async Task<int> GetOutboxCountByIdentityIdAsync(string identityId)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyApprovalHistoryByIdentityId(identityId);
+           Dictionary<Guid, Guid> pairs = await GetPairsByIdentityIdAsync(db, key).ConfigureAwait(false);
+           IEnumerable<IGrouping<Guid, KeyValuePair<Guid, Guid>>> groups = pairs.GroupBy(x => x.Value);
+           return groups.Count();
+       }
+       public async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging = null)
+       {
+           IDatabase db = _connector.GetDatabase();
+           string key = GetKeyApprovalHistoryByIdentityId(identityId);
+           Dictionary<Guid, Guid> pairs = await GetPairsByIdentityIdAsync(db, key).ConfigureAwait(false);
+           var groups = new List<IGrouping<Guid, KeyValuePair<Guid, Guid>>>();
+           
+           if (paging == null)
+           {
+               groups.AddRange(pairs.GroupBy(x => x.Value));
+           }
+           else
+           {
+               groups.AddRange(pairs.GroupBy(x => x.Value)
+                   .Skip(paging.SkipCount())
+                   .Take(paging.PageSize));
+           }
+           
+           var outboxItems = new List<OutboxItem>();
+           
+           foreach (IGrouping<Guid, KeyValuePair<Guid, Guid>> group in groups)
+           {
+               string keyByProcessId = GetKeyApprovalHistoryByProcessId(group.Key);
+               
+               Dictionary<Guid, string>  idsByProcessId = await GetPairsByProcessIdAsync(db, keyByProcessId)
+                   .ConfigureAwait(false);
+
+               var idsOutbox = idsByProcessId
+                   .Where(x => x.Value == identityId)
+                   .Select(x => x.Key).ToList();
+
+               var outboxItem = new OutboxItem() {ApprovalCount = group.Count(), ProcessId = group.Key, LastApprovalTime = DateTime.MinValue, FirstApprovalTime = DateTime.MaxValue};
+               
+               List<WorkflowApprovalHistory> histories =  await GetApprovalHistoryAsync(db, idsOutbox).ConfigureAwait(false);
+               
+               foreach (WorkflowApprovalHistory item in histories)
+               {
+                   item.TransitionTime = _runtime.ToRuntimeTime(item.TransitionTime);
+
+                   if (item.TransitionTime > outboxItem.LastApprovalTime)
+                   {
+                       outboxItem.LastApprovalTime = item.TransitionTime;
+                       outboxItem.LastApproval = item.TriggerName;
+                   }
+                   
+                   if (item.TransitionTime < outboxItem.FirstApprovalTime)
+                   {
+                       outboxItem.FirstApprovalTime = item.TransitionTime;
+                   }
+               }
+               if(histories.Any())
+               {
+                   outboxItems.Add(outboxItem);
+               }
+           }
+
+           return outboxItems.OrderByDescending(x => x.LastApprovalTime).ToList();
+       }
+       
+       #region Internal
+
+           private async Task<List<HashEntry>> HashGetWitPagingAsync(IDatabase db, string key, Paging paging = null, bool reverse = false)
+           {
+               var hashAll = new List<HashEntry>();
+ 
+               if (paging == null)
+               {
+                   HashEntry[] result = await db.HashGetAllAsync(key).ConfigureAwait(false);
+                   hashAll.AddRange(result);
+               }
+               else
+               {
+                   if (reverse)
+                   {
+                       hashAll.AddRange((await db.HashGetAllAsync(key)
+                               .ConfigureAwait(false))
+                           .Reverse()
+                           .Skip(paging.SkipCount())
+                           .Take(paging.PageSize));
+                   }
+                   else
+                   {
+                       hashAll.AddRange((await db.HashGetAllAsync(key)
+                               .ConfigureAwait(false))
+                           .Skip(paging.SkipCount())
+                           .Take(paging.PageSize));
+                   }
+               }
+               return hashAll;
+           }
+           private async Task<List<Guid>> GetIdsAsync(IDatabase db, string key, Paging paging = null, bool reverse = false)
+           {
+               var hashAll = await HashGetWitPagingAsync(db, key, paging, reverse).ConfigureAwait(false);
+               return hashAll.Select(x =>  new Guid(x.Name.ToString())).ToList();
+           }
+           private async Task<Dictionary<Guid, string>> GetPairsByProcessIdAsync(IDatabase db, string key, Paging paging = null, bool reverse = false)
+           {
+               var hashAll = await HashGetWitPagingAsync(db, key, paging, reverse).ConfigureAwait(false);
+                return hashAll.ToDictionary(x =>  new Guid(x.Name.ToString()), x => x.Value.ToString());
+           }
+           private async Task<Dictionary<Guid, Guid>> GetPairsByIdentityIdAsync(IDatabase db, string key, Paging paging = null, bool reverse = false)
+           {
+               var hashAll = await HashGetWitPagingAsync(db, key, paging, reverse).ConfigureAwait(false);
+               return hashAll.ToDictionary(x =>  new Guid(x.Name.ToString()), x => new Guid(x.Value.ToString()));
+           }
+           private async Task<List<WorkflowInbox>> GetInboxAsync(IDatabase db,List<Guid> ids)
+           {
+               RedisValue[] keysInbox = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+               return await GetInboxAsync(db, keysInbox).ConfigureAwait(false);
+           }
+           private async Task<List<WorkflowInbox>> GetInboxAsync(IDatabase db, RedisValue [] ids)
+           {
+               string key = GetKeyInbox();
+               RedisValue[] values = await db.HashGetAsync(key, ids).ConfigureAwait(false);
+               return values.Select(x=>JsonConvert.DeserializeObject<WorkflowInbox>(x)).ToList();
+           }
+           private async Task<List<WorkflowApprovalHistory>> GetApprovalHistoryAsync(IDatabase db,List<Guid> ids)
+           {
+               RedisValue[] keysInbox = ids.Select(x => (RedisValue)x.ToString()).ToArray();
+               return await GetApprovalHistoryAsync(db, keysInbox).ConfigureAwait(false);
+           }
+           private async Task<List<WorkflowApprovalHistory>> GetApprovalHistoryAsync(IDatabase db, RedisValue [] ids)
+           {
+               string key = GetKeyApprovalHistory();
+               RedisValue[] values = await db.HashGetAsync(key, ids).ConfigureAwait(false);
+               return values.Select(x => JsonConvert.DeserializeObject<WorkflowApprovalHistory>(x)).ToList();
+           }
+
+       #endregion Internal
+
+       
+       #endregion IApprovalProvider
     }
 }

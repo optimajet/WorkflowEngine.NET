@@ -1,6 +1,10 @@
 using System;
+using System.Collections.Generic;
+using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using OptimaJet.Workflow.Core.Helpers;
+using OptimaJet.Workflow.Core.Persistence;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
@@ -40,34 +44,23 @@ namespace OptimaJet.Workflow.MySQL
             });
         }
 
-        public override object GetValue(string key)
-        {
-            switch (key)
-            {
-                case "Id":
-                    return Id.ToByteArray();
-                case "ProcessId":
-                    return ProcessId.ToByteArray();
-                case "IdentityId":
-                    return IdentityId;
-                case "AllowedTo":
-                    return AllowedTo;
-                case "TransitionTime":
-                    return TransitionTime;
-                case "Sort":
-                    return Sort;
-                case "InitialState":
-                    return InitialState;
-                case "DestinationState":
-                    return DestinationState;
-                case "TriggerName":
-                    return TriggerName;
-                case "Commentary":
-                    return Commentary;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
+       public override object GetValue(string key)
+       {
+           return key switch
+           {
+               "Id" => Id.ToByteArray(),
+               "ProcessId" => ProcessId.ToByteArray(),
+               "IdentityId" => IdentityId,
+               "AllowedTo" => AllowedTo,
+               "TransitionTime" => TransitionTime,
+               "Sort" => Sort,
+               "InitialState" => InitialState,
+               "DestinationState" => DestinationState,
+               "TriggerName" => TriggerName,
+               "Commentary" => Commentary,
+               _ => throw new Exception($"Column {key} is not exists")
+           };
+       }
 
         public override void SetValue(string key, object value)
         {
@@ -111,17 +104,137 @@ namespace OptimaJet.Workflow.MySQL
                     Commentary = value as string;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
-
-        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
+        
+        public static WorkflowApprovalHistory ToDB(ApprovalHistoryItem historyItem)
         {
-            string selectText = $"SELECT * FROM {DbTableName} WHERE `ProcessId` = @processId";
+            return new WorkflowApprovalHistory()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo = HelperParser.Join(",", historyItem.AllowedTo),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
+        public static ApprovalHistoryItem FromDB(WorkflowApprovalHistory historyItem)
+        {
+            return new ApprovalHistoryItem()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo = HelperParser.SplitWithTrim(historyItem.AllowedTo, ","),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
 
-            var processIdParameter = new MySqlParameter("processId", MySqlDbType.Binary) { Value = processId.ToByteArray() };
+        public static async Task<List<OutboxItem>> SelectOutboxByIdentityIdAsync(MySqlConnection connection, string identityId, Paging paging = null)
+        {
+            string paramName = "_"+nameof(identityId);
+            string selectText = $"SELECT  a.ProcessId, a.ApprovalCount, a.FirstApprovalTime, a.LastApprovalTime," +
 
-            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
+                                        $" (SELECT `TriggerName` FROM {DbTableName} c" +
+                                        $" WHERE c.ProcessId = a.ProcessId " +
+                                        $" and c.IdentityId =  @{paramName}" +
+                                        $" ORDER BY c.TransitionTime DESC LIMIT 1) as LastApproval " +
+
+                                $" FROM " +
+                                        $" (SELECT `ProcessId`," +
+                                        $" Count(`Id`) as ApprovalCount," +
+                                        $" MIN(`TransitionTime`) as FirstApprovalTime," +
+                                        $" MAX(`TransitionTime`) as LastApprovalTime" +
+                                        $" FROM {DbTableName}" +
+                                        $" WHERE `IdentityId` =  @{paramName}" +
+                                        $" Group by `ProcessId`) a" +
+
+                                $" Order By LastApprovalTime Desc ";
+            
+            if (paging != null)
+            {
+                selectText += $" LIMIT {paging.PageSize} OFFSET {paging.SkipCount()}";
+            }
+            
+            var param = new MySqlParameter(paramName, MySqlDbType.VarString) { Value = ValueForDb(identityId) };
+           return (await SelectAsDictionaryAsync(connection, selectText, param).ConfigureAwait(false))
+                .Select(OutboxItemFromDictionary).ToList();
+        }
+               
+       public static async Task<int> GetOutboxCountByIdentityIdAsync(MySqlConnection connection, string identityId)
+       {
+           string paramName = "_"+nameof(identityId);
+           string selectText = $"SELECT  COUNT(a.ProcessId)" +
+                               $" FROM " +
+                               $" (SELECT `ProcessId`" +
+                               $" FROM {DbTableName}" +
+                               $" WHERE `IdentityId` =  @{paramName}" +
+                               $" Group by `ProcessId`) a";
+            
+           var param = new MySqlParameter(paramName, MySqlDbType.VarString) { Value = ValueForDb(identityId)  };
+           var result = await ExecuteCommandScalarAsync(connection, selectText, param).ConfigureAwait(false);
+           
+           result = (result == DBNull.Value) ? null : result;
+           return Convert.ToInt32(result);
+       }      
+
+        private static OutboxItem OutboxItemFromDictionary(Dictionary<string, object> fields)
+        {
+            var item = new OutboxItem();
+            foreach (KeyValuePair<string, object> field in fields)
+            {
+                switch (field.Key)
+                {
+                    case nameof(item.ProcessId):
+                    {
+                        if(field.Value is byte[] bytes)
+                        {
+                            item.ProcessId = new Guid(bytes);
+                        }
+                        else
+                        {
+                            item.ProcessId = (Guid)field.Value;
+                        }
+                        break;
+
+                    }
+                    case nameof(item.ApprovalCount): item.ApprovalCount = Convert.ToInt32(field.Value); break;
+                    case nameof(item.FirstApprovalTime): item.FirstApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApprovalTime): item.LastApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApproval): item.LastApproval = field.Value as string; break;
+                }
+            }
+
+            return item;
+        }
+
+        public static async Task<int> DeleteByProcessIdAsync(MySqlConnection connection, Guid processId, MySqlTransaction transaction = null)
+        {
+            return await DeleteByAsync(connection, x => x.ProcessId, processId, transaction)
+                .ConfigureAwait(false);
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByProcessIdAsync(MySqlConnection connection, Guid processId)
+        {
+            return (await SelectByAsync(connection, x => x.ProcessId, processId)
+                .ConfigureAwait(false)).ToList();
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByIdentityIdAsync(MySqlConnection connection, string identityId)
+        {
+            return (await SelectByAsync(connection, x => x.IdentityId, identityId)
+                .ConfigureAwait(false)).ToList();
         }
     }
 }

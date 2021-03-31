@@ -26,6 +26,8 @@ namespace OptimaJet.Workflow.Oracle
         public string TenantId { get; set; }
         public string StartingTransition { get; set; }
         public string SubprocessName { get; set; }
+        public DateTime CreationDate { get; set; }
+        public DateTime? LastTransitionDate { get; set; }
 
         static WorkflowProcessInstance()
         {
@@ -50,7 +52,9 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name = "RootProcessId", Type = OracleDbType.Raw},
                 new ColumnInfo {Name = "TenantId", Size=1024},
                 new ColumnInfo {Name=nameof(StartingTransition)},
-                new ColumnInfo {Name=nameof(SubprocessName)}
+                new ColumnInfo {Name=nameof(SubprocessName)},
+                new ColumnInfo {Name = "CreationDate", Type = OracleDbType.TimeStamp},
+                new ColumnInfo {Name = "LastTransitionDate", Type = OracleDbType.TimeStamp}
             });
         }
 
@@ -90,6 +94,10 @@ namespace OptimaJet.Workflow.Oracle
                     return StartingTransition;
                 case nameof(SubprocessName):
                     return SubprocessName;
+                case "CreationDate":
+                    return CreationDate;
+                case "LastTransitionDate":
+                    return LastTransitionDate;
                 default:
                     throw new Exception(string.Format("Column {0} is not exists", key));
             }
@@ -153,6 +161,12 @@ namespace OptimaJet.Workflow.Oracle
                     break;
                 case nameof(SubprocessName):
                     SubprocessName = value as string;
+                    break;
+                case "CreationDate":
+                    CreationDate = (DateTime)value;
+                    break;
+                case "LastTransitionDate":
+                    LastTransitionDate = value as DateTime?;
                     break;
                 default:
                     throw new Exception($"Column {key} is not exists");

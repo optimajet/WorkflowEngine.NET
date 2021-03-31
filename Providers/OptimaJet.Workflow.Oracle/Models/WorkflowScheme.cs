@@ -4,6 +4,7 @@ using System.Data;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
@@ -78,7 +79,12 @@ namespace OptimaJet.Workflow.Oracle
                     throw new Exception($"Column {key} is not exists");
             }
         }
-
+        
+        public List<string> GetInlinedSchemes()
+        {
+            return JsonConvert.DeserializeObject<List<string>>(InlinedSchemes);
+        }
+        
         public static async Task<List<string>> GetInlinedSchemeCodesAsync(OracleConnection connection)
         {
             string selectText = $"SELECT * FROM {DbTableName} WHERE {nameof(CanBeInlined).ToUpper()} = 1";

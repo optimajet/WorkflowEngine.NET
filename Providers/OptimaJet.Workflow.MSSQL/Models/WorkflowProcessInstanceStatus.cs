@@ -110,7 +110,7 @@ namespace OptimaJet.Workflow.DbPersistence
             var p5 = new SqlParameter("settime", SqlDbType.DateTime) { Value = status.SetTime };
             var p6 = new SqlParameter("runtimeid", SqlDbType.NVarChar) { Value = status.RuntimeId };
 
-            return await ExecuteCommandAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4, p5, p6).ConfigureAwait(false);
         }
 #if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()

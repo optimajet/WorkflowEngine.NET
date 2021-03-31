@@ -1,11 +1,16 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
+using System.Globalization;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
+using OptimaJet.Workflow.Core.Helpers;
+using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Core.Persistence;
+using OptimaJet.Workflow.Core.Runtime;
 
 namespace OptimaJet.Workflow.PostgreSQL
 {
@@ -14,6 +19,8 @@ namespace OptimaJet.Workflow.PostgreSQL
         public Guid Id { get; set; }
         public Guid ProcessId { get; set; }
         public string IdentityId { get; set; }
+        public DateTime AddingDate { get; set; }
+        public string AvailableCommands { get; set; }
 
         static WorkflowInbox()
         {
@@ -25,23 +32,23 @@ namespace OptimaJet.Workflow.PostgreSQL
             DBColumns.AddRange(new[]{
                 new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
                 new ColumnInfo {Name="ProcessId", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name="IdentityId"}
+                new ColumnInfo {Name="IdentityId"},
+                new ColumnInfo {Name="AddingDate", Type = NpgsqlDbType.Timestamp},
+                new ColumnInfo {Name="AvailableCommands"}
             });
         }
-
+        
         public override object GetValue(string key)
         {
-            switch (key)
+            return key switch
             {
-                case "Id":
-                    return Id;
-                case "ProcessId":
-                    return ProcessId;
-                case "IdentityId":
-                    return IdentityId;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
+                "Id" => Id,
+                "ProcessId" => ProcessId,
+                "IdentityId" => IdentityId,
+                "AddingDate" => AddingDate,
+                "AvailableCommands" => AvailableCommands,
+                _ => throw new Exception($"Column {key} is not exists")
+            };
         }
 
         public override void SetValue(string key, object value)
@@ -57,27 +64,79 @@ namespace OptimaJet.Workflow.PostgreSQL
                 case "IdentityId":
                     IdentityId = value as string;
                     break;
+                case "AddingDate":
+                    AddingDate = (DateTime)value;
+                    break;
+                case "AvailableCommands":
+                    AvailableCommands = value as string;
+                    break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
 
+                public static WorkflowInbox ToDB(InboxItem inboxItem)
+        {
+            return new WorkflowInbox()
+            {
+                Id = inboxItem.Id,
+                ProcessId = inboxItem.ProcessId,
+                IdentityId = inboxItem.IdentityId,
+                AddingDate = inboxItem.AddingDate,
+                AvailableCommands = HelperParser.Join(",", inboxItem.AvailableCommands?.Select(x=>x.Name))
+            };
+        }
+        public static async Task<List<InboxItem>> FromDB(WorkflowRuntime runtime, WorkflowInbox [] inboxItems, CultureInfo culture)
+        { 
+            var result = new List<InboxItem>();
+            IEnumerable<IGrouping<Guid, WorkflowInbox>> groups =  inboxItems.GroupBy(x => x.ProcessId);
+            ProcessInstance processInstance;
+            foreach (IGrouping<Guid, WorkflowInbox> group in groups)
+            {
+                try
+                {
+                    processInstance = await runtime.Builder.GetProcessInstanceAsync(group.Key).ConfigureAwait(false);
+                }
+                catch(Exception ex)
+                {
+                    processInstance = null;
+                }
+
+                foreach (var inboxItem in group)
+                {
+                    List<string> availableCommands = HelperParser.SplitWithTrim(inboxItem.AvailableCommands, ",");
+                    result.Add(new InboxItem()
+                    {
+                        Id = inboxItem.Id,
+                        ProcessId = inboxItem.ProcessId,
+                        IdentityId = inboxItem.IdentityId,
+                        AddingDate = inboxItem.AddingDate,
+                        AvailableCommands = availableCommands.Select(x=>
+                            new CommandName()
+                            {
+                                Name = x, 
+                                LocalizedName = processInstance?.GetLocalizedCommandName(x, culture)
+                            }).ToList()
+                    });
+                }
+            }
+
+            return result;
+        }
+        
         public static async Task<int> DeleteByProcessIdAsync(NpgsqlConnection connection, Guid processId,
             NpgsqlTransaction transaction = null)
         {
-            var pProcessId = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
-            return await ExecuteCommandAsync(connection,
-                    $"DELETE FROM {ObjectName} WHERE \"ProcessId\" = @processid", transaction, pProcessId)
+            return await DeleteByAsync(connection, x=>x.ProcessId, processId, transaction)
+                .ConfigureAwait(false);
+        }
+        
+        public static async Task<WorkflowInbox[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
+        {
+            return await SelectByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowInbox[]> SelectByProcessIdAsync(NpgsqlConnection connection, Guid processId)
-        {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE \"ProcessId\" = @processid";
 
-            var p1 = new NpgsqlParameter("processid", NpgsqlDbType.Uuid) { Value = processId };
-
-            return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
-        }
     }
 }

@@ -9,6 +9,7 @@ using System.Data.SqlClient;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
@@ -87,6 +88,11 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
+        public List<string> GetInlinedSchemes()
+        {
+            return JsonConvert.DeserializeObject<List<string>>(InlinedSchemes);
+        }
+        
         public static async Task<List<string>> GetInlinedSchemeCodesAsync(SqlConnection connection)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE [CanBeInlined] = 1";

@@ -93,7 +93,7 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
 
-            return await ExecuteCommandAsync(connection,
+            return await ExecuteCommandNonQueryAsync(connection,
                 $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid AND [Ignore] = 1", transaction, pProcessId).ConfigureAwait(false);
         }
 
@@ -118,7 +118,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
                 try
                 {
-                    return await ExecuteCommandAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
+                    return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +128,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             try
             {
-                return await ExecuteCommandAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, pProcessId).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, pProcessId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -171,7 +171,7 @@ namespace OptimaJet.Workflow.DbPersistence
             
             var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) { Value = timerId };
             
-            return await ExecuteCommandAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
         public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(SqlConnection connection, int top, DateTime now)

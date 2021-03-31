@@ -70,7 +70,7 @@ namespace OptimaJet.Workflow.PostgreSQL.Models
             var p2 = new NpgsqlParameter("oldlock", NpgsqlDbType.Uuid) { Value = oldLock };
             var p3 = new NpgsqlParameter("name", NpgsqlDbType.Varchar) { Value = name };
 
-            return await ExecuteCommandAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2, p3).ConfigureAwait(false);
         }
 
     }

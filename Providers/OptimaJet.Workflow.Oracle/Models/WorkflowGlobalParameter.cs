@@ -104,12 +104,12 @@ namespace OptimaJet.Workflow.Oracle
 
             if (String.IsNullOrEmpty(name))
             {
-                return await ExecuteCommandAsync(connection, selectText, p).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, selectText, p).ConfigureAwait(false);
             }
 
             var p1 = new OracleParameter("name", OracleDbType.NVarchar2) { Value = name };
 
-            return await ExecuteCommandAsync(connection, selectText, p, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, selectText, p, p1).ConfigureAwait(false);
         }
 
    

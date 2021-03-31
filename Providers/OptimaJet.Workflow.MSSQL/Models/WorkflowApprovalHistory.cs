@@ -1,11 +1,16 @@
 using System;
+using System.Collections.Generic;
 using System.Data;
+using System.Linq;
 #if NETCOREAPP
 using Microsoft.Data.SqlClient;
 #else
 using System.Data.SqlClient;
 #endif
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Helpers;
+using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Core.Persistence;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
@@ -44,35 +49,24 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name="Commentary"},
             });
         }
-
-        public override object GetValue(string key)
-        {
-            switch (key)
-            {
-                case "Id":
-                    return Id;
-                case "ProcessId":
-                    return ProcessId;
-                case "IdentityId":
-                    return IdentityId;
-                case "AllowedTo":
-                    return AllowedTo;
-                case "TransitionTime":
-                    return TransitionTime;
-                case "Sort":
-                    return Sort;
-                case "InitialState":
-                    return InitialState;
-                case "DestinationState":
-                    return DestinationState;
-                case "TriggerName":
-                    return TriggerName;
-                case "Commentary":
-                    return Commentary;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
+       
+       public override object GetValue(string key)
+       {
+           return key switch
+           {
+               "Id" => Id,
+               "ProcessId" => ProcessId,
+               "IdentityId" => IdentityId,
+               "AllowedTo" => AllowedTo,
+               "TransitionTime" => TransitionTime,
+               "Sort" => Sort,
+               "InitialState" => InitialState,
+               "DestinationState" => DestinationState,
+               "TriggerName" => TriggerName,
+               "Commentary" => Commentary,
+               _ => throw new Exception($"Column {key} is not exists")
+           };
+       }
 
         public override void SetValue(string key, object value)
         {
@@ -116,18 +110,124 @@ namespace OptimaJet.Workflow.DbPersistence
                     Commentary = value as string;
                     break;
                 default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
+                    throw new Exception($"Column {key} is not exists");
             }
         }
-
-       
-        public static async Task<WorkflowApprovalHistory[]> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
+        
+        public static WorkflowApprovalHistory ToDB(ApprovalHistoryItem historyItem)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE  [ProcessId] = @processId";
+            return new WorkflowApprovalHistory()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo =  HelperParser.Join(",", historyItem.AllowedTo),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
+        public static ApprovalHistoryItem FromDB(WorkflowApprovalHistory historyItem)
+        {
+            return new ApprovalHistoryItem()
+            {
+                Id = historyItem.Id,
+                ProcessId = historyItem.ProcessId,
+                IdentityId = historyItem.IdentityId,
+                AllowedTo = HelperParser.SplitWithTrim(historyItem.AllowedTo, ","),
+                TransitionTime = historyItem.TransitionTime,
+                Sort = historyItem.Sort,
+                InitialState = historyItem.InitialState,
+                DestinationState = historyItem.DestinationState,
+                TriggerName = historyItem.TriggerName,
+                Commentary = historyItem.Commentary,
+            };
+        }
 
-            var processIdParameter = new SqlParameter("processId", SqlDbType.UniqueIdentifier) { Value = processId };
+        public static async Task<List<OutboxItem>> SelectOutboxByIdentityIdAsync(SqlConnection connection, string identityId, Paging paging = null)
+        {
+            string paramName = "_"+nameof(identityId);
+            string selectText = $"SELECT  a.ProcessId, a.ApprovalCount, a.FirstApprovalTime, a.LastApprovalTime," +
 
-            return await SelectAsync(connection, selectText, processIdParameter).ConfigureAwait(false);
+                                        $" (SELECT TOP 1 [TriggerName] FROM {ObjectName} c" +
+                                        $" WHERE c.ProcessId = a.ProcessId " +
+                                        $" and c.IdentityId =  @{paramName}" +
+                                        $" ORDER BY c.TransitionTime DESC) as LastApproval" +
+
+                                $" FROM " +
+                                        $" (SELECT [ProcessId]," +
+                                        $" Count(Id) as ApprovalCount," +
+                                        $" MIN(TransitionTime) as FirstApprovalTime," +
+                                        $" MAX(TransitionTime) as LastApprovalTime" +
+                                        $" FROM {ObjectName}" +
+                                        $" WHERE IdentityId =  @{paramName}" +
+                                        $" Group by [ProcessId]) a" +
+
+                                $" Order By LastApprovalTime Desc ";
+            
+            if (paging != null)
+            {
+                selectText += $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
+            }
+            
+            var param = new SqlParameter(paramName, SqlDbType.NVarChar) { Value = identityId };
+           return (await SelectAsDictionaryAsync(connection, selectText, param).ConfigureAwait(false))
+                .Select(OutboxItemFromDictionary).ToList();
+        }
+
+        private static OutboxItem OutboxItemFromDictionary(Dictionary<string, object> fields)
+        {
+            var item = new OutboxItem();
+            foreach (KeyValuePair<string, object> field in fields)
+            {
+                switch (field.Key)
+                {
+                    case nameof(item.ProcessId): item.ProcessId = (Guid)field.Value; break;
+                    case nameof(item.ApprovalCount): item.ApprovalCount = Convert.ToInt32(field.Value); break;
+                    case nameof(item.FirstApprovalTime): item.FirstApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApprovalTime): item.LastApprovalTime = (DateTime?)field.Value; break;
+                    case nameof(item.LastApproval): item.LastApproval = field.Value as string; break;
+                }
+            }
+
+            return item;
+        }
+        public static async Task<int> GetOutboxCountByIdentityIdAsync(SqlConnection connection, string identityId)
+        {
+            string paramName = "_"+nameof(identityId);
+            string selectText = $"SELECT  COUNT(a.ProcessId)" +
+                                $" FROM " +
+                                $" (SELECT [ProcessId] " +
+                                $" FROM {ObjectName}" +
+                                $" WHERE IdentityId =  @{paramName}" +
+                                $" Group by [ProcessId]) a";
+            
+            var param = new SqlParameter(paramName, SqlDbType.NVarChar) { Value = identityId };
+            object result = await ExecuteCommandScalarAsync(connection, selectText, param).ConfigureAwait(false);
+            
+            result = (result == DBNull.Value) ? null : result;
+            return Convert.ToInt32(result);
+        }
+        
+        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
+        {
+            return await DeleteByAsync(connection, x => x.ProcessId, processId, transaction)
+                .ConfigureAwait(false);
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
+        {
+            return (await SelectByAsync(connection, x => x.ProcessId, processId)
+                .ConfigureAwait(false)).ToList();
+        }
+        
+        public static async Task<List<WorkflowApprovalHistory>> SelectByIdentityIdAsync(SqlConnection connection, string identityId)
+        {
+            return (await SelectByAsync(connection, x => x.IdentityId, identityId)
+                .ConfigureAwait(false)).ToList();
         }
     }
 }
