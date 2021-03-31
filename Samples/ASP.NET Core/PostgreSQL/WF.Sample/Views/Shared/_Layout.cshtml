@@ -21,17 +21,17 @@
     <script>
         $(document).ajaxStart(function () { Pace.restart(); });
     </script>
-    @Html.Partial("Partial/MainMenu")
+    @(await Html.PartialAsync("Partial/MainMenu"))
     <div id="content" class="wfe-application">
         <div class="wfe-application-topmenu">
-            @Html.Partial("Partial/Folders")
-            @Html.Partial("Partial/Header")
+            @(await Html.PartialAsync("Partial/Folders"))
+            @(await Html.PartialAsync("Partial/Header"))
         </div>
         <div style="clear: both;"></div>
         <div class="wfe-application-content">
             @RenderBody()
         </div>
-        @Html.Partial("Partial/Footer")
+        @(await Html.PartialAsync("Partial/Footer"))
     </div>
 </body>
 </html>

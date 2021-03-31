@@ -7,6 +7,7 @@ using WF.Sample.Business.DataAccess;
 using System.Threading.Tasks;
 using System.Threading;
 
+
 namespace WF.Sample.Business.Workflow
 {
     public class RuleProvider : IWorkflowRuleProvider
@@ -53,10 +54,15 @@ namespace WF.Sample.Business.Workflow
             return false;
         }
         #region Implementation of IWorkflowRuleProvider
-
-        public List<string> GetRules(string schemeCode)
+        
+        public List<string> GetRules(string schemeCode, NamesSearchType namesSearchType)
         {
             return _rules.Keys.Union(_asyncRules.Keys).ToList();
+        }
+
+        public List<string> GetActors(string schemeCode)
+        {
+            return new List<string>();
         }
 
         public bool Check(ProcessInstance processInstance, WorkflowRuntime runtime, string identityId, string ruleName, string parameter)

@@ -63,21 +63,6 @@ CREATE TABLE IF NOT EXISTS `Document` (
       FOREIGN KEY (`ManagerId`) REFERENCES `Employee`(`Id`)
 	);
 
-CREATE TABLE IF NOT EXISTS `DocumentTransitionHistory` (
-	  `Id` binary(16) NOT NULL,
-	  `DocumentId` binary(16) NOT NULL,
-	  `EmployeeId` binary(16) NULL,
-	  `AllowedToEmployeeNames` longtext NOT NULL,
-	  `TransitionTime` datetime NULL,
-	  `Order` SERIAL,
-	  `InitialState` varchar(1024) NOT NULL,
-	  `DestinationState` varchar(1024) NOT NULL,
-	  `Command` varchar(1024) NOT NULL,
-	  CONSTRAINT `PK_DocumentTransitionHistory` PRIMARY KEY (`Id`),
-      FOREIGN KEY (`DocumentId`) REFERENCES `Document`(`Id`) ON DELETE CASCADE,
-      FOREIGN KEY (`EmployeeId`) REFERENCES `Employee`(`Id`)
-	);
-
 CREATE TABLE IF NOT EXISTS `Roles` (
 	  `Id` binary(16) NOT NULL,
 	  `Name` varchar(256) NOT NULL,

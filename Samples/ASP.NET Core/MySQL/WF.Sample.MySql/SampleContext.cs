@@ -17,12 +17,10 @@ namespace WF.Sample.MySql
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 
@@ -91,23 +89,10 @@ namespace WF.Sample.MySql
             modelBuilder.Entity<EmployeeRole>()
                 .Property(x => x.RoleId).HasConversion(new GuidToBytesConverter());
 
-            modelBuilder.Entity<WorkflowInbox>()
-                .Property(x => x.Id).HasConversion(new GuidToBytesConverter());
-
-            modelBuilder.Entity<WorkflowInbox>()
-                .Property(x => x.ProcessId).HasConversion(new GuidToBytesConverter());
-
             modelBuilder.Entity<Head>()
                 .Property(x => x.Id).HasConversion(new GuidToBytesConverter());
             modelBuilder.Entity<Head>()
                 .Property(x => x.HeadId).HasConversion(new GuidToBytesConverter());
-
-            modelBuilder.Entity<DocumentTransitionHistory>()
-                        .Property(x => x.Id).HasConversion(new GuidToBytesConverter());
-            modelBuilder.Entity<DocumentTransitionHistory>()
-                        .Property(x => x.DocumentId).HasConversion(new GuidToBytesConverter());
-            modelBuilder.Entity<DocumentTransitionHistory>()
-                    .Property(x => x.EmployeeId).HasConversion(new GuidToBytesConverter());
 
             modelBuilder.Entity<Document>()
                 .Property(x => x.Id).HasConversion(new GuidToBytesConverter());

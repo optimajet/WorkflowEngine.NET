@@ -1,9 +1,7 @@
 namespace WF.Sample.MySql
 {
-    using System;
     using System.Data.Entity;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
+
 
     public partial class SampleContext : DbContext
     {
@@ -14,12 +12,10 @@ namespace WF.Sample.MySql
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 
@@ -42,9 +38,9 @@ namespace WF.Sample.MySql
                 .HasForeignKey(r => r.EmployeeId);
 
             modelBuilder.Entity<Role>()
-                        .HasMany(e => e.EmployeeRoles)
-                        .WithRequired(r => r.Role)
-                        .HasForeignKey(r => r.RoleId);
+                .HasMany(e => e.EmployeeRoles)
+                .WithRequired(r => r.Role)
+                .HasForeignKey(r => r.RoleId);
 
             modelBuilder.Entity<StructDivision>()
                 .HasMany(e => e.StructDivision1)
@@ -54,8 +50,8 @@ namespace WF.Sample.MySql
 
             modelBuilder.Entity<EmployeeRole>()
                 .HasKey(x => new { x.RoleId, x.EmployeeId })
-                .HasRequired(x => x.Role).WithMany(x => x.EmployeeRoles)
-            ;
+                .HasRequired(x => x.Role).WithMany(x => x.EmployeeRoles);
+
         }
     }
 }

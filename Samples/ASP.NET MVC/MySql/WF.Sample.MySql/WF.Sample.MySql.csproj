@@ -47,12 +47,12 @@
       <SpecificVersion>False</SpecificVersion>
       <HintPath>..\packages\MySql.Data.Entity.6.9.12\lib\net45\MySql.Data.Entity.EF6.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.MySQL, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.MySQL, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.MySQL.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -71,23 +71,20 @@
     <Reference Include="System.Xml" />
   </ItemGroup>
   <ItemGroup>
-    <Compile Include="Entities\Document.cs" />
-    <Compile Include="Entities\DocumentTransitionHistory.cs" />
-    <Compile Include="Entities\Employee.cs" />
-    <Compile Include="Entities\EmployeeRole.cs" />
-    <Compile Include="Entities\Head.cs" />
-    <Compile Include="Entities\Role.cs" />
-    <Compile Include="Entities\StructDivision.cs" />
-    <Compile Include="Entities\WorkflowInbox.cs" />
-    <Compile Include="Entities\WorkflowScheme.cs" />
-    <Compile Include="Implementation\DocumentRepository.cs" />
-    <Compile Include="Implementation\EmployeeRepository.cs" />
-    <Compile Include="Implementation\InboxRepository.cs" />
-    <Compile Include="Implementation\PersistenceProviderContainer.cs" />
-    <Compile Include="Implementation\SettingsProvider.cs" />
-    <Compile Include="Mappings.cs" />
-    <Compile Include="Properties\AssemblyInfo.cs" />
-    <Compile Include="SampleContext.cs" />
+      <Compile Include="Entities\Document.cs" />
+      <Compile Include="Entities\Employee.cs" />
+      <Compile Include="Entities\EmployeeRole.cs" />
+      <Compile Include="Entities\Head.cs" />
+      <Compile Include="Entities\Role.cs" />
+      <Compile Include="Entities\StructDivision.cs" />
+      <Compile Include="Entities\WorkflowScheme.cs" />
+      <Compile Include="Implementation\DocumentRepository.cs" />
+      <Compile Include="Implementation\EmployeeRepository.cs" />
+      <Compile Include="Implementation\PersistenceProviderContainer.cs" />
+      <Compile Include="Implementation\SettingsProvider.cs" />
+      <Compile Include="Mappings.cs" />
+      <Compile Include="Properties\AssemblyInfo.cs" />
+      <Compile Include="SampleContext.cs" />
   </ItemGroup>
   <ItemGroup>
     <None Include="app.config">

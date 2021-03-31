@@ -1,9 +1,5 @@
 ﻿using AutoMapper;
 using System;
-using System.Collections.Generic;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 
 namespace WF.Sample.MsSql
 {
@@ -21,7 +17,6 @@ namespace WF.Sample.MsSql
                 cfg.CreateMap<Employee, Business.Model.Employee>();
                 cfg.CreateMap<Role, Business.Model.Role>();
                 cfg.CreateMap<EmployeeRole, Business.Model.EmployeeRole>();
-                cfg.CreateMap<DocumentTransitionHistory, Business.Model.DocumentTransitionHistory>();
 
                 cfg.CreateMap<Document, Business.Model.Document>();
             });

@@ -63,6 +63,14 @@
     <Reference Include="AutoMapper, Version=7.0.1.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.7.0.1\lib\net45\AutoMapper.dll</HintPath>
     </Reference>
+    <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
+    <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
+      <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
+      <Private>True</Private>
+    </Reference>
     <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
       <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
       <Private>True</Private>
@@ -85,8 +93,8 @@
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
-        <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion> 
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -158,11 +166,12 @@
     </Compile>
     <Compile Include="Helpers\CurrentUserSettings.cs" />
     <Compile Include="Helpers\WebPageHelper.cs" />
-    <Compile Include="Models\DesignerModel.cs" />
     <Compile Include="Models\DocumentHistoryModel.cs" />
     <Compile Include="Models\DocumentListModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
-    <Compile Include="Models\LoadTestingStatistics.cs" />
+    <Compile Include="Models\InboxDocumentModel.cs" />
+    <Compile Include="Models\IPaging.cs" />
+    <Compile Include="Models\OutboxDocumentModel.cs" />
     <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Properties\AssemblyInfo.cs" />
     <Compile Include="ServiceLocation\DataServiceProvider.cs" />
@@ -232,17 +241,14 @@
     <Content Include="templates\toolbarinfo.html" />
     <Content Include="templates\toolbarside.html" />
     <Content Include="templates\transition.html" />
+    <Content Include="Views\Document\Inbox.cshtml" />
+    <Content Include="Views\Document\Outbox.cshtml" />
+    <Content Include="Views\Shared\Partial\Paging.cshtml" />
     <Content Include="Web.config">
       <SubType>Designer</SubType>
     </Content>
     <Content Include="Views\_ViewStart.cshtml" />
     <Content Include="Views\Shared\Error.cshtml" />
-    <Content Include="Views\Web.config">
-      <SubType>Designer</SubType>
-    </Content>
-  </ItemGroup>
-  <ItemGroup>
-    <Folder Include="App_Data\" />
   </ItemGroup>
   <ItemGroup>
     <Content Include="packages.config" />
@@ -254,6 +260,10 @@
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj">
       <Project>{6f156ea6-2b81-4c09-9fcc-3cf0a69c5967}</Project>
       <Name>WF.Sample.Business</Name>
+    </ProjectReference>
+    <ProjectReference Include="..\WF.Sample.MsSql\WF.Sample.MsSql.csproj">
+      <Project>{36151a6d-e786-4508-bbac-63d78d45e7e9}</Project>
+      <Name>WF.Sample.MsSql</Name>
     </ProjectReference>
   </ItemGroup>
   <ItemGroup>
@@ -285,6 +295,7 @@
   <ItemGroup>
     <Content Include="Configuration\Autofac.config" />
     <None Include="Properties\PublishProfiles\WFSample.pubxml" />
+    <None Include="Views\Web.config" />
   </ItemGroup>
   <PropertyGroup>
     <VisualStudioVersion Condition="'$(VisualStudioVersion)' == ''">10.0</VisualStudioVersion>

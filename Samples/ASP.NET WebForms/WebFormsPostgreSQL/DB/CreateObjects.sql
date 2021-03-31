@@ -59,19 +59,6 @@ CREATE TABLE IF NOT EXISTS "Document" (
 	  CONSTRAINT "PK_Document" PRIMARY KEY ("Id")
 	);
 
-CREATE TABLE IF NOT EXISTS "DocumentTransitionHistory" (
-	  "Id" uuid NOT NULL,
-	  "DocumentId" uuid NOT NULL REFERENCES "Document" ON DELETE CASCADE,
-	  "EmployeeId" uuid NULL REFERENCES "Employee",
-	  "AllowedToEmployeeNames" text NOT NULL,
-	  "TransitionTime" timestamp NULL,
-	  "Order" SERIAL,
-	  "InitialState" character varying(1024) NOT NULL,
-	  "DestinationState" character varying(1024) NOT NULL,
-	  "Command" character varying(1024) NOT NULL,
-	  CONSTRAINT "PK_DocumentTransitionHistory" PRIMARY KEY ("Id")
-	);
-
 CREATE TABLE IF NOT EXISTS "Roles" (
 	  "Id" uuid NOT NULL,
 	  "Name" character varying(256) NOT NULL,

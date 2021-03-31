@@ -51,10 +51,12 @@
       <HintPath>..\packages\Npgsql.4.0.10\lib\net45\Npgsql.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core">
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.PostgreSQL">
+    <Reference Include="OptimaJet.Workflow.PostgreSQL, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.PostgreSQL.dll</HintPath>
     </Reference>
     <Reference Include="System" />
@@ -93,12 +95,10 @@
   <ItemGroup>
     <Compile Include="Entities\Document.cs" />
     <Compile Include="Implementation\DocumentRepository.cs" />
-    <Compile Include="Entities\DocumentTransitionHistory.cs" />
     <Compile Include="Entities\Employee.cs" />
     <Compile Include="Entities\EmployeeRole.cs" />
     <Compile Include="Entities\Head.cs" />
     <Compile Include="Implementation\EmployeeRepository.cs" />
-    <Compile Include="Implementation\InboxRepository.cs" />
     <Compile Include="Implementation\PersistenceProviderContainer.cs" />
     <Compile Include="Implementation\SettingsProvider.cs" />
     <Compile Include="Mappings.cs" />
@@ -106,7 +106,6 @@
     <Compile Include="Entities\Role.cs" />
     <Compile Include="SampleContext.cs" />
     <Compile Include="Entities\StructDivision.cs" />
-    <Compile Include="Entities\WorkflowInbox.cs" />
     <Compile Include="Entities\WorkflowScheme.cs" />
   </ItemGroup>
   <ItemGroup>

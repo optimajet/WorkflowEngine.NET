@@ -1,8 +1,5 @@
 namespace WF.Sample.MsSql
 {
-    using System;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
 
@@ -17,12 +14,10 @@ namespace WF.Sample.MsSql
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 

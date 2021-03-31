@@ -1,0 +1,469 @@
+<h3>{{ labels.Title }}</h3>
+<el-form class="WorkflowDesignerWindowForm"
+    :model="FormData" 
+    ref="form" 
+    label-position="top" 
+    label-width="150px">
+    <div class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item class="el-form-item" :label="labels.Name" :rules="requiredRule(ActivityRules)" prop="Name" style="flex-grow: 1;">
+                <el-input v-model="FormData.Name" @input="nameOnChange" :placeholder="labels.Name" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+        <el-form-item v-if="expertMode" size="small">
+            <el-checkbox v-model="FormData.IsInitial" @change="onInitialChange" :label="labels.IsInitial" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-model="FormData.IsForSetState" :label="labels.IsForSetState" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-model="FormData.IsAutoSchemeUpdate" :label="labels.IsAutoSchemeUpdate" name="type" :disabled="readonly"></el-checkbox>
+        </el-form-item>  
+    </div>
+    
+    <div style="margin-bottom: 10px;">`
+        <h4 class="SettingsHeader">
+            <span >{{ labels.Condition }}</span>
+            <a style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{}})">  |  {{ ButtonTextCreate }}</a>
+        </h4>
+        <div>
+            <table v-if="FormData.Conditions.length > 0" class="WorkflowDesignerTable">
+                <th>
+                    <td v-if="isIE"></td>
+                    <td>{{labels.ConditionType}}</td>
+                    <td>{{labels.ConditionAction}}</td>
+                    <td>{{labels.ConditionActionParameter}}</td>
+                    <td>{{labels.ConditionInversion}}</td>
+                    <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
+                </th>
+                <tr v-for="(сondition, index) in FormData.Conditions" 
+                    :class="dragOverIndex == index && dragOverBlock  == сondition ? 'dragOver' : ''"
+                    @dragstart="dragstart(index, $event, FormData.Conditions)" @dragend="dragend($event)"
+                    @dragover="dragover(сondition, index, $event)">
+                    <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" >
+                        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+                    </td>
+                    <td>
+                        <el-select
+                                v-model="сondition.Type"
+                                :title="validateField('Type', сondition)"
+                                :class="validateField('Type', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option key="Action" :label="labels.ActionLabel" value="Action"></el-option>
+                            <el-option key="Expression" :label="labels.ExpressionLabel" value="Expression"></el-option>
+                        </el-select>
+                    </td>
+                    <td v-if="сondition.Type == 'Action'">
+                        <el-select
+                                v-model="сondition.Action.ActionName"
+                                :title="validateField('Action.ActionName', сondition)"
+                                :class="validateField('Action.ActionName', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option v-for="item in conditions" :key="item" :label="item" :value="item"></el-option>
+                        </el-select>
+                    </td>
+                    <td v-if="сondition.Type == 'Action'">
+                        <div style="flex-flow: nowrap; display: flex;align-items: center;">
+                            <el-autocomplete style="margin-right: 5px;" v-model="сondition.Action.ActionParameter" :disabled="readonly" :fetch-suggestions="querySearch"
+                                             @focus="setCurrentItem(сondition)"></el-autocomplete>
+                        </div>
+                    </td>
+                    <td v-if="сondition.Type == 'Expression'" colspan="2">
+                        <div style="flex-flow: nowrap; display: flex;align-items: center;">
+                            <el-input
+                                    v-model="сondition.Expression"
+                                    :title="validateField('Expression', сondition)"
+                                    :class="validateField('Expression', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                    :readonly="readonly"
+                                    style="margin-right: 5px;">
+                            </el-input>
+                        </div>
+                    </td>
+                    <td v-if="сondition.Type == 'Action' || сondition.Type == 'Expression'">
+                        <el-checkbox v-model="сondition.ConditionInversion" :disabled="readonly"></el-checkbox>
+                    </td>
+                    <td v-if="expertMode && (сondition.Type == 'Action' || сondition.Type == 'Expression')">
+                        <el-select
+                                v-model="сondition.ResultOnPreExecution"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                clearable
+                                placeholder="">
+                            <el-option key="True" label="True" :value="true"></el-option>
+                            <el-option key="False" label="False" :value="false"></el-option>
+                        </el-select>
+                    </td>
+                    <td :style="!readonly ? 'width: 94px;' : 'width: 42px;'">
+                        <el-button-group>
+                            <el-button @click="сondition.Type == 'Action' ? showjson('Action.ActionParameter', сondition, {name: сondition.Action.ActionName ,type: ['Condition']}) : showjson('Expression', сondition, {expression: true})" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == сondition ? 'is-active' : '')"></el-button>
+                            <el-button v-if="!readonly" @click="removeRow(FormData.Conditions, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                        </el-button-group>
+                    </td>
+                </tr>
+            </table>
+        </div>
+    </div>
+    <div style="margin-bottom: 10px;">
+        <h4 class="SettingsHeader">
+            <span>{{ labels.Transition }}</span>
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{}})"></a>
+        </h4>
+        <form class="el-form--inline el-form--label-top SettingsWithPadding" style="display: flex;">
+            <div style="width: 100%;" class="el-form--inline el-form--label-top">
+                <el-form-item style="width: 48%;" :label="labels.WhenTrue" :rules="getFieldRules('WhenTrueTo')" prop="WhenTrueTo" :readonly="readonly">
+                    <el-select
+                            v-model="FormData.WhenTrueTo"
+                            style="width: 100%;"
+                            :disabled="readonly"
+                            filterable
+                            placeholder="">
+                        <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+                    </el-select>
+                </el-form-item>
+                <el-form-item style="width: 49%;" :label="labels.WhenFalse" :rules="getFieldRules('WhenFalseTo')" prop="WhenFalseTo" :readonly="readonly">
+                    <el-select
+                            v-model="FormData.WhenFalseTo"
+                            style="width: 100%;"
+                            :disabled="readonly"
+                            filterable
+                            placeholder="">
+                        <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+                    </el-select>
+                </el-form-item>
+            </div>
+        </form>
+    </div>
+</el-form>
+<div class="WorkflowDesignerButtons">
+    <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<el-dialog
+    :title="confirmdialog.title"
+    :before-close="function() {confirmdialog.visible = false}"
+    :visible="confirmdialog.visible"
+    :modal-append-to-body="false"
+    width="30%">
+    <span>{{ confirmdialog.message }}</span>
+    <span slot="footer" class="dialog-footer">
+        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
+        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
+    </span>
+</el-dialog> 
+<script>
+    function validationcondition_Init(me){
+         me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.ValidationCondition,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+            SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
+            SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
+            confirmdialog: {
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                visible: false,
+                yes: WorkflowDesignerConstants.ButtonTextYes,
+                no: WorkflowDesignerConstants.ButtonTextNo,
+                onSuccess: function(){
+                    me.VueConfig.data.confirmdialog.visible = false;
+                    me.onClose(true);
+                }
+            },
+            expertMode: false,
+            actions: [],
+            activities: [],
+            activitiesStore: me.graph.data.Activities,
+            conditions: me.graph.getConditionNames() || [],
+            conditionsStore: me.graph.data.CodeActions,
+            states: [],
+            editItem: null,
+            FormData: { },
+        });   
+        me.transitionManager = me.graph.GetComponentByType('WorkflowDesignerTransitionManager');
+        me.activityManager = me.graph.GetComponentByType('WorkflowDesignerActivityManager');   
+
+        me.VueConfig.methods.GetTransitionsFrom = function (activityName) {
+            var transitions = {};
+            var foundTransitions = me.transitionManager.GetTransitionsFrom(activityName);
+            foundTransitions.forEach(function (control) {
+                var item = control.item;
+                var name = item.From.Name;
+                if (item.Conditions && item.Conditions[0] && (item.Conditions[0].Type == 'Expression' || item.Conditions[0].Type == 'Action')) {
+                        transitions.true = control;
+                } else {
+                    transitions.false = control;
+                }
+            });
+            return transitions;
+        };
+
+        me.VueConfig.methods.updateActivitiesList = function(value){
+            me.VueConfig.data.activities = [];
+            me.graph.data.Activities.forEach(element => 
+            {
+                if(element == me.linkItem) //not add current activity
+                    return;
+                me.VueConfig.data.activities.push(element);
+            });
+        }
+
+        me.VueConfig.watch = {
+            conditionsStore(val) {            
+                    me.VueConfig.data.conditions = me.graph.getConditionNames();
+            },
+            activitiesStore(val) {                    
+                    me.VueConfig.methods.updateActivitiesList();
+            },
+        }
+               
+        me.VueConfig.methods.onUpdate = function(item){
+            var transitions = me.VueConfig.methods.GetTransitionsFrom(item.Name);
+            me.VueConfig.data.transitions = transitions;
+            var formdata = me.VueConfig.data.FormData;
+            formdata.Name = item.Name;
+            formdata.ExecutionTimeout = item.ExecutionTimeout ? WorkflowDesignerCommon.clone(item.ExecutionTimeout) : {ResumeValue:"1"};
+            formdata.IdleTimeout = item.IdleTimeout ? WorkflowDesignerCommon.clone(item.IdleTimeout) : {ResumeValue:"1"};
+            formdata.ExceptionsHandler = item.ExceptionsHandler ? WorkflowDesignerCommon.clone(item.ExceptionsHandler) : {ResumeValue:"1"};
+            formdata.State = item.State;
+            formdata.IsInitial = item.IsInitial;
+            formdata.IsFinal = item.IsFinal;
+            formdata.IsForSetState = item.IsForSetState;
+            formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
+            formdata.Implementation = Array.isArray(item.Implementation) ?WorkflowDesignerCommon.clone(item.Implementation) : [];
+            formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
+            formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
+            formdata.Conditions = transitions.true && transitions.true.item.Conditions ? WorkflowDesignerCommon.clone(transitions.true.item.Conditions) : [{Action: {}}];
+            formdata.Conditions.forEach(function (condition) {
+                if (!condition.Action)
+                    condition.Action = {};
+            });
+            formdata.WhenTrueTo = transitions.true ? transitions.true.to.GetName() : '';
+            formdata.WhenFalseTo = transitions.false ? transitions.false.to.GetName() : '';
+
+            me.linkItem = item;
+            me.activityControl = me.activityManager.find(item.Name);
+            me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
+            me.VueConfig.data.prevName = item.Name;
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+            me.VueConfig.data.actions = me.graph.getActionNames(); 
+            me.VueConfig.methods.updateActivitiesList();
+
+
+            var objectCorrect = me.VueConfig.methods.objectCorrect;     
+        };     
+
+        me.VueConfig.methods.nameOnChange = function(value){
+            var formdata = me.VueConfig.data.FormData;
+            if(formdata.State == me.VueConfig.data.prevName){
+                formdata.State = value;
+            }
+            me.VueConfig.data.prevName = value;
+        };
+
+        me.VueConfig.methods.onInitialChange = function(){
+            var formdata = me.VueConfig.data.FormData;
+            formdata.IsFinal = formdata.IsInitial ? false : formdata.IsFinal;
+        };
+        
+        me.VueConfig.methods.onFinalChange = function(){            
+            var formdata = me.VueConfig.data.FormData;
+            formdata.IsInitial = formdata.IsFinal ? false : formdata.IsInitial;
+        };
+
+        me.VueConfig.methods.setCurrentItem = function(item) {
+            this.currentItem = item;
+        };
+        me.VueConfig.methods.querySearch = function(queryString, cb) {
+            if(me.VueConfig.data.readonly)
+                return cb([]);
+                
+            var res = me.graph.getAutoCompleteSuggestions2("actionparameter", this.currentItem.ActionName, queryString);
+            cb(res);
+        };
+
+    me.VueConfig.methods.getFieldRules = function (field) {
+        var res = [{required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
+
+        if (field == "Name") {
+            var validator = function (rule, value, callback) {
+                var isValid = true;
+                me.graph.data.Transitions.forEach(function (a) {
+                    if (a != me.linkItem && a.Name == value) {
+                        isValid = false;
+                    }
+                });
+
+                if (isValid) {
+                    callback();
+                } else {
+                    callback(new Error(rule.message));
+                }
+            };
+            res.push({validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+        }
+        return res;
+    };
+
+        me.VueConfig.methods.validateField = function (name, item) {
+            if (name != 'Name' && name != "Actor.Name" && name != "Type" && name != "Action.ActionName" && name != "Expression")
+                return;
+
+            if (!WorkflowDesignerCommon.getValueByPropertyName(item, name)) {
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if (name == "Type") {
+                var conditions = me.VueConfig.data.FormData.Conditions;
+                var labels = me.VueConfig.data.labels;
+                if (item.Type == "Always" && conditions.filter(function (c) {
+                    return c.Type == item.Type
+                }).length > 1) {
+                    return labels.AlwaysConditionShouldBeSingle;
+                }
+
+                if (item.Type == "Otherwise" && conditions.filter(function (c) {
+                    return c.Type == item.Type
+                }).length > 1) {
+                    return labels.OtherwiseConditionShouldBeSingle;
+                }
+            }
+        };
+
+        me.VueConfig.methods.ActivityRules = function(res)
+        {
+            //validate on unique Activity name
+            var validator = function(rule, value, callback){ 
+                var isValid = true;
+                me.graph.data.Activities.forEach(function (a) {
+                    if (a != me.linkItem && a.Name == value) {
+                        isValid = false;
+                    }
+                });
+                
+                if(isValid){
+                    callback();
+                }
+                else{                    
+                    callback(new Error(rule.message));
+                }
+            };
+
+            res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+
+            return res;
+        };
+        me.VueConfig.methods.addRow = function(items, item){
+            items.push(item || {});
+        };
+
+        me.VueConfig.methods.removeRow = function(items, index){
+            items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.showjson = function (name, item, params) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function (value) {
+                if (me.editItem) {
+                    WorkflowDesignerCommon.setValueByPropertyName(me.editItem, name, value);
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function (value) {
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var value = WorkflowDesignerCommon.getValueByPropertyName(item, name);
+            me.VueConfig.data.jsonform = me.showjson(value, params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.onHideEvent = function(){
+            me.VueConfig.data.confirmdialog.visible = false;
+        };
+
+        me.VueConfig.methods.saveTransition =  function() {
+                var FormData = me.VueConfig.data.FormData;
+                var transitions = me.VueConfig.data.transitions;
+
+                var targetActivities = {
+                    true: me.activityManager.find(FormData.WhenTrueTo),
+                    false: me.activityManager.find(FormData.WhenFalseTo)}
+                ;
+
+                if (transitions.true) {
+                    transitions.true.setTo(targetActivities.true);
+                } else {
+                    transitions.true = me.transitionManager.CreateNewTransition(me.activityControl, targetActivities.true);
+                }
+                transitions.true.item.Conditions = FormData.Conditions;
+
+                if (transitions.false) {
+                    transitions.false.setTo(targetActivities.false);
+                } else  {
+                    transitions.false = me.transitionManager.CreateNewTransition(me.activityControl, targetActivities.false);
+                }
+        }
+
+        me.VueConfig.methods.validate = function () {
+            var validateFunc = me.VueConfig.methods.validateField;
+            var data = me.VueConfig.data.FormData;
+
+            if (Array.isArray(data.Conditions) && data.Conditions.length == 0) {
+                me.VueConfig.data.showconditionerror = WorkflowDesignerConstants.TransitionFormLabel.ConditionsListShouldNotBeEmpty;
+                return false;
+            }
+
+            for (var i = 0; i < data.Conditions.length; i++) {
+                var item = data.Conditions[i];
+                if (validateFunc('Type', item) ||
+                        (item.Type == 'Action' && validateFunc('Action.ActionName', item)) ||
+                        (item.Type == 'Expression' && validateFunc('Expression', item)))
+                    return false;
+            }
+
+            return true;
+        };
+
+
+        me.VueConfig.methods.onSave = function()
+        {
+             if(this.$refs && WorkflowDesignerCommon.validateForms(this.$refs) && me.VueConfig.methods.validate())
+             {
+                me.VueConfig.methods.saveTransition();
+                me.onSuccess(me.VueConfig.data.FormData);
+                me.onClose(true);
+            }
+        };
+
+        me.VueConfig.methods.onClose = function(){
+;
+            if(me.VueConfig.data.readonly) {
+                me.onClose(true);
+                return;
+            }
+
+            var originalItem = me.VueConfig.data.originalItem;
+            var item = me.VueConfig.data.FormData;
+
+            if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
+                me.onClose(true);
+            }
+            else{
+                me.VueConfig.data.confirmdialog.visible = true;
+                return false;
+            }
+        };
+    };
+</script>

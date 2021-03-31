@@ -1,0 +1,11 @@
+<svg width="{item.TextWidth + 20}" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="{item.TextWidth + 16}" height="56" rx="10"  ry="10" fill="{Color}" stroke="{item.Selected ? '#F39C12' : (item.IsInline? '#CECECE' : item.Color)}" stroke-width="3" stroke-linejoin="round" stroke-dasharray="{item.IsInline? '8 4': 'none'}"/>
+    <text x="9" y="19" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">{Name}</text>
+    <text x="9" y="32" font-family="Arial" font-size="12" fill="{TextColor}">{State}</text>
+    <text x="9" y="49" visibility="{item.IsInitial ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{IsInitialLabel}</text>
+    <text x="9" y="49" visibility="{item.IsFinal ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{IsFinalLabel}</text>
+    <text x="{item.TextWidth + 5}" y="19" visibility="{item.IsInline ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">I</text>
+    <text x="{item.TextWidth - 3}" y="49" visibility="{Array.isArray(item.PreExecutionImplementation) && item.PreExecutionImplementation.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">P</text>
+    <text x="{item.TextWidth + 5}" y="49" visibility="{Array.isArray(item.Implementation) && item.Implementation.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">E</text>
+    <text x="{9 + ((item.IsInitial || item.IsFinal)?30:0) }" y="49" visibility="{item.IsForSetState ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{((item.IsInitial || item.IsFinal)?" - ":"") + item.IsForSetStateLabel}</text>
+</svg>

@@ -8,6 +8,12 @@ namespace WF.Sample.MongoDb.Entities
 {
     public class Document
     {
+        public Document()
+        {
+            State = "VacationRequestCreated";
+            StateName = "Vacation request created";
+        }
+        
         public Guid Id { get; set; }
         public int? Number { get; set; }
 
@@ -27,24 +33,6 @@ namespace WF.Sample.MongoDb.Entities
 
         public string State { get; set; }
         public string StateName { get; set; }
-
-        public Document ()
-        {
-            TransitionHistories = new List<DocumentTransitionHistory>();
-        }
-
-        public string StateNameToSet { get; set; }
-
-        private List<DocumentTransitionHistory> _transitionHistories = null;
-        public List<DocumentTransitionHistory> TransitionHistories
-        {
-            get
-            {
-                if (_transitionHistories == null)
-                    _transitionHistories = new List<DocumentTransitionHistory>();
-                return _transitionHistories;
-            }
-            set { _transitionHistories = value; }
-        }
+        
     }
 }

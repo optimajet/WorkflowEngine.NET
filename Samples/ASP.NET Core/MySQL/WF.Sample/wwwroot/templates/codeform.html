@@ -1,9 +1,24 @@
 <h3>{{ParentItem.Name ? ParentItem.Name : "Unnamed code acttion"}} {{ labels.Title }}</h3>
-
-<b>{{ labels.Usings }}</b>
-<el-input v-model="Usings" :readonly="readonly" :title="labels.Usings" type="textarea" rows="4"></el-input>
-<div>{{ ReturnValue }} <b>{{ ParentItem.Name }}</b> ({{FuncSignature}}){</div>
-<div :id="editor_container" class="WorkflowDesignerJsonEditor" style="height: calc(100% - 230px)"></div>
+<b class="CustomLabel">{{ labels.Usings }}</b>
+<el-select
+    v-model="UsingsValue"
+    @change="onUsingsChange"
+    multiple
+    collapse-tags
+    allow-create
+    filterable
+    style="width: 100%; margin-bottom: 15px;"
+    :title="labels.Usings" 
+    placeholder="Select">
+        <el-option
+            v-for="item in Usings"
+            :key="item"
+            :label="item"
+            :value="item">
+        </el-option>
+</el-select>
+<div style="white-space: nowrap;">{{ ReturnValue }} <b>{{ ParentItem.Name }}</b> ({{FuncSignature}}){</div>
+<div :id="editor_container" class="WorkflowDesignerJsonEditor" style="height: calc(100% - 195px)"></div>
 }
 <div class="WorkflowDesignerButtons">
     <el-button v-if="!readonly" @click="onCompile" type="info">{{ labels.Compile }}</el-button>
@@ -21,18 +36,20 @@
         <el-button @click="infodialog.visible = false">{{labels.OK}}</el-button>
     </span>
 </el-dialog>
-<script>
+<script type="application/javascript">
     function codeform_Init(me){
+        var funcSignature = "ProcessInstance processInstance, WorkflowRuntime runtime, string parameter";
         me.VueConfig.data = Object.assign(me.VueConfig.data, {
             editor_container: me.id + "_editor",
             readonly: false,
             labels: WorkflowDesignerConstants.EditCodeLabel,                
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            Usings: "",
+            Usings: null,
+            UsingsValue: null,
             Name: "",
             ReturnValue: "void",
-            FuncSignature: "ProcessInstance processInstance, WorkflowRuntime runtime, string parameter",
+            FuncSignature: funcSignature,
             infodialog: {
                 title: "",
                 message: "",
@@ -43,15 +60,6 @@
                 }
             },
         });
-
-        var modifyUsingString = function (usings) {
-            var lastsymbol = usings.substring(usings.length - 1);
-
-            if (lastsymbol === ';')
-                usings = usings.substring(0, usings.length - 1);
-
-            return usings.split(';').join(';\r\n') + ';';
-        }
         
         var updateDataFromParent = function () {
             var data = me.VueConfig.data;
@@ -59,11 +67,60 @@
             data.Name = ParentItem.Name;
             data.Type = ParentItem.Type;
             data.IsAsync = ParentItem.IsAsync;
-            data.Usings = modifyUsingString(ParentItem.Usings ? decodeURIComponent(ParentItem.Usings) : (me.graph.data.AdditionalParams.Usings.join(';') + ';'));
-           
+
+            if (!ParentItem.IsGlobal)
+            {
+                var commonUsings = me.VueConfig.data.CommonUsings;
+                var additionalUsings = ParentItem.Usings ? decodeURIComponent(ParentItem.Usings).split(";") : [];
+                var excludedUsings = ParentItem.ExcludedUsings ? decodeURIComponent(ParentItem.ExcludedUsings).split(";") : [];
+                additionalUsings = additionalUsings.filter(function (additionalUsing){return additionalUsing !== ''});
+                excludedUsings = excludedUsings.filter(function (excludedUsing){return excludedUsing !== ''});
+                var selectedUsings = [];
+                var allUsings = [];
+                commonUsings.forEach(function (commonUsing) {
+                    if (!excludedUsings.includes(commonUsing)) {
+                        selectedUsings.push(commonUsing);
+                    }
+                    if (!allUsings.includes(commonUsing)) {
+                        allUsings.push(commonUsing);
+                    }
+                });
+
+                additionalUsings.forEach(function (additionalUing) {
+                    if (!selectedUsings.includes(additionalUing)) {
+                        selectedUsings.push(additionalUing);
+                    }
+                    if (!allUsings.includes(additionalUing)) {
+                        allUsings.push(additionalUing);
+                    }
+                });
+
+                allUsings.sort();
+                selectedUsings.sort();
+
+
+                data.Usings = allUsings;
+                data.UsingsValue = selectedUsings;
+            }
+            else {
+                if (ParentItem.Usings !== undefined && ParentItem.Usings !== null && ParentItem.Usings !== '')
+                {
+                    data.Usings = decodeURIComponent(ParentItem.Usings).split(";").filter(function (using){return using !== ''});
+                    data.UsingsValue = decodeURIComponent(ParentItem.Usings).split(";").filter(function (using){return using !== ''});
+                }
+                else {
+                    data.Usings  = WorkflowDesignerCommon.clone(me.graph.data.AdditionalParams.Usings);
+                    data.UsingsValue = WorkflowDesignerCommon.clone(me.graph.data.AdditionalParams.Usings);
+                }
+            }
+
+      //      me.VueConfig.methods.onUsingsChange(data.UsingsValue);
+          //  me.VueConfig.methods.onUsingsChange(me.graph.data.CodeActionsCommonUsings && me.graph.data.CodeActionsCommonUsings.split(";") || []);
+
             var code = ParentItem.ActionCode;
             if (ParentItem.Type === 'Action') {
                 data.ReturnValue = ParentItem.IsAsync ? 'async Task ' : 'void ';
+                data.FuncSignature = ParentItem.IsAsync ? funcSignature + ", CancellationToken token" : funcSignature;
 
                 if(!code){
                     code = "// TODO Insert your code here";
@@ -71,6 +128,7 @@
             }
             if (ParentItem.Type === 'Condition') {
                 data.ReturnValue = ParentItem.IsAsync ? 'async Task<bool> ' : 'bool ';
+                data.FuncSignature = ParentItem.IsAsync ? funcSignature + ", CancellationToken token" : funcSignature;
 
                 if(!code){
                     code = "bool result = true;\n\n// TODO Insert your code here\n\nreturn result;";
@@ -78,6 +136,7 @@
             }
             if (ParentItem.Type === 'RuleGet') {
                 data.ReturnValue = ParentItem.IsAsync ? 'async Task<IEnumerable<string>> ' : 'IEnumerable<string> ';
+                data.FuncSignature = ParentItem.IsAsync ? funcSignature + ", CancellationToken token" : funcSignature;
 
                     if(!code){
                     code = "var result = new List<string>();\n\n// TODO Insert your code here\n\nreturn result;";
@@ -86,7 +145,8 @@
 
             if (ParentItem.Type === 'RuleCheck') {
                 data.ReturnValue = ParentItem.IsAsync ? 'async Task<bool> ' : 'bool ';
-                data.FuncSignature = "ProcessInstance processInstance, WorkflowRuntime runtime, string parameter, string identityId";
+                data.FuncSignature = ParentItem.IsAsync ?
+                        funcSignature + ", string identityId, CancellationToken token" : funcSignature + ", string identityId";
 
                 if(!code){
                     code = "bool result = true;\n\n// TODO Insert your code here\n\nreturn result;";
@@ -98,20 +158,18 @@
             }, 10);
         }
 
-        me.VueConfig.methods.onUpdate = function(item){
+        me.VueConfig.methods.onUpdate = function(dataFromParent){
             var data = me.VueConfig.data;
             data.readonly = me.graph.Settings.readonly;
-            data.ParentItem = item;
-            updateDataFromParent();            
+            data.ParentItem = dataFromParent.item;
+            data.CommonUsings = dataFromParent.commonUsings;
+            updateDataFromParent();
         };
-    
-        me.VueConfig.watch = {
-            ParentItem : {
-                handle: function(val){
-                    updateDataFromParent();
-                },
-                deep: true
-            }
+
+        me.VueConfig.methods.onShow = function(){
+            me.unwatch =  me.VueApp.$watch('ParentItem', function() {
+                updateDataFromParent();
+            }, { deep: true });
         }
 
         me.VueConfig.methods.renderEditor = function(value){
@@ -137,10 +195,59 @@
             me.editor.clearSelection();
         };
 
+        me.VueConfig.methods.onUsingsChange = function(values){
+            if (!values || !values.length) {
+                return;
+            }
+            var data = me.VueConfig.data;
+            values.forEach(function(value) {
+                if (!data.Usings.includes(value)) {
+                    data.Usings.push(value);
+                }
+            });
+            data.Usings.sort();
+        };
+
         me.VueConfig.methods.onSave = function(){
+
             var actionCode = encodeURIComponent(me.editor.getValue());
+            var usings = [];
+            var exludedUsings = [];
+
+            if (!me.VueConfig.data.ParentItem.IsGlobal) {
+                var selectedUsings = me.VueConfig.data.UsingsValue;
+                var commonUsings = me.VueConfig.data.CommonUsings;
+
+                selectedUsings.forEach(function (selectedUsing) {
+                    if (!commonUsings.includes(selectedUsing)) {
+                        usings.push(selectedUsing);
+                    }
+                });
+
+                commonUsings.forEach(function (commonUsing) {
+                    if (!selectedUsings.includes(commonUsing)) {
+                        exludedUsings.push(commonUsing)
+                    }
+                });
+            }
+            else {
+                usings = me.VueConfig.data.UsingsValue;
+                exludedUsings = [];
+            }
+            var usingsString = usings.join(";");
+            if (usingsString !== '')
+            {
+                usingsString  += ';'; //for compatibility with older versions
+            }
+            var exludedUsingsString = exludedUsings.join(";");
+            if (exludedUsingsString !== '')
+            {
+                exludedUsingsString += ';';
+            }
+            me.unwatch();
             me.onSuccess({
-                Usings : me.VueConfig.data.Usings ? encodeURIComponent(me.VueConfig.data.Usings.replace(/(\r\n|\n|\r)/gm, "")) : "",
+                Usings : encodeURIComponent(usingsString),
+                ExcludedUsings :  encodeURIComponent(exludedUsingsString),
                 ActionCode: actionCode
             });
             me.onClose(true);
@@ -148,6 +255,7 @@
 
         me.VueConfig.methods.onClose = function(){
             me.VueConfig.data.infodialog.visible = false;
+            me.unwatch();
             me.onClose(true);
         };
 
@@ -159,7 +267,7 @@
                 IsGlobal: false, 
                 IsAsync: data.IsAsync, 
                 ActionCode: encodeURIComponent(me.editor.getValue()),
-                Usings: encodeURIComponent(data.Usings ? data.Usings.replace(/(\r\n|\n|\r)/gm, "") : "")
+                Usings: encodeURIComponent(data.UsingsValue.join(";"))
             }
             
             var callbackfn = function (response) {

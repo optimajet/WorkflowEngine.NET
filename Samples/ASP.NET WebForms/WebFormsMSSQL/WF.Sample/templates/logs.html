@@ -1,0 +1,217 @@
+<h3>{{ header }}
+  <el-switch v-model="this.logEnabled" @change="changeLogEnabled"></el-switch>
+</h3>
+<el-input-number v-if="autoRefresh"
+                 v-model="speedOfRefresh"
+                 :precision="1" :step="0.1" controls-position="right" size="small"
+                 :min="0.3" :max="10" style="width: 95px"></el-input-number>
+<el-button-group size="small" style="margin-top: -1px">
+  <el-checkbox-group v-model="autoRefresh" size="small">
+    <el-checkbox-button v-model="autoRefresh" @change="onAutoRefresh" label="Auto refresh"></el-checkbox-button>
+    <el-button icon="el-icon-refresh" size="small" @click="onRefresh"
+               style="vertical-align: middle; height: 32px;"></el-button>
+  </el-checkbox-group>
+</el-button-group>
+<el-table
+    :data="tableData"
+    :span-method="arraySpanMethod"
+    :default-sort="{prop: 'Timestamp', order: 'descending'}"
+    style="width: 100%"
+    :row-style="tableRowStyle"
+    @cell-mouse-enter="onHoveringRow"
+    fit
+    height="calc(100% - 75px)">
+  <el-table-column type="expand">
+    <template slot-scope="props">
+      <el-row
+          v-for="(key) in Object.keys(props.row.Properties).filter(function(x) {if (props.row.Properties[x]) return x;})">
+        <el-col :span="12">{{ key }}</el-col>
+        <el-col :span="12">{{ props.row.Properties[key] || "Empty" }}</el-col>
+      </el-row>
+    </template>
+  </el-table-column>
+  <el-table-column
+      label="Timestamp"
+      prop="Timestamp"
+      :formatter="getFormatDate"
+      width="190">
+  </el-table-column>
+  <el-table-column
+      label="Message"
+      prop="Message">
+  </el-table-column>
+  <el-table-column
+      label="Exception"
+      width="90">
+    <template slot-scope="scope">
+      <el-button v-if="scope.row.Exception != null" size="mini" type="danger"
+                 @click="handleDialogOpen(scope.row.Exception)">Show
+      </el-button>
+    </template>
+  </el-table-column>
+  <infinite-loading
+      slot="append"
+      @infinite="infiniteHandler"
+      force-use-infinite-wrapper=".el-table__body-wrapper">
+  </infinite-loading>
+</el-table>
+<el-dialog
+    title="Exception info"
+    :visible.sync="dialog.visible"
+    :modal=false
+    top="40vh"
+    width="500px">
+  <p>{{ dialog.data.ClassName }}</p>
+  <p v-if="dialog.data.Message">{{ dialog.data.Message }}</p>
+  <el-button type="text" @click="dialog.showDetails = !dialog.showDetails">
+    {{ dialog.showDetails ? "Hide details" : "Show details" }}
+  </el-button>
+  <pre class="CodeBlock" v-if="dialog.showDetails"><code>{{ dialog.data }}</code></pre>
+  <el-button slot="footer" type="primary" @click="dialog.visible = false">Ok</el-button>
+</el-dialog>
+
+<script type="application/javascript">
+//TODO  вынести строки в констатнты
+//TODO disabled control panel if logs disabled
+
+function logs_Init(me) {
+  this.designer = me.graph.designer;
+  me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    header: WorkflowDesignerConstants.Logs.Label,
+    designer: me.graph.designer,
+    count: 20,
+    items: [],
+    tableData: [],
+    loading: true,
+    autoRefresh: false,
+    speedOfRefresh: 1,
+    logEnabled: false,
+    dialog: {
+      visible: false,
+      data: {},
+      showDetails: false
+    },
+    folder: me.graph.Settings.templatefolder
+  });
+  me.VueConfig.methods = {
+    onAutoRefresh: function () {
+      //TODO не запускать параллельно новый метод, если предыдущий активен
+      if (this.autoRefresh) {
+        this.onRefresh();
+        setTimeout(this.onAutoRefresh, this.speedOfRefresh * 1000);
+      }
+    },
+    changeLogEnabled: function () {
+      this.logEnabled = Boolean(this.designer.changelogenabled());
+    },
+    handleDialogOpen: function (data) {
+      this.dialog.data = data;
+      this.dialog.visible = true;
+    },
+    tableRowStyle: function (data) {
+      let row = data.row;
+      let rowStyle = {};
+
+      if (row["isNew"]) {
+        rowStyle.background = 'rgba(64,158,255,0.1)';
+      } else if (row["Exception"] != null) {
+        rowStyle.background = 'rgba(245,108,108,0.1)';
+      }
+
+      if (row["Properties"] && ["StartExecution", "EndExecution"].includes(row["Properties"]["EventType"])) {
+        rowStyle.fontWeight = 'bold';
+        rowStyle.textAlignLast = 'center';
+      }
+
+      return rowStyle;
+    },
+    arraySpanMethod: function (data) {
+      let row = data.row;
+      let columnIndex = data.columnIndex;
+
+      if (row["Properties"] && ["StartExecution", "EndExecution"].includes(row["Properties"]["EventType"])) {
+        if ([1, 3].includes(columnIndex)) {
+          return [0, 0];
+        } else if (columnIndex === 2) {
+          return [1, 3];
+        }
+      }
+    },
+    onHoveringRow: function (row) {
+      if (row.isNew) {
+        row.isNew = false;
+      }
+    },
+    onRefresh: function () {
+      var additionalLogs;
+      if (this.tableData.length === 0) {
+        additionalLogs = this.designer.getprocesslogs({suboperation: "Last", count: this.count});
+      } else {
+        var dateTime = this.findMaxDateTime(this.tableData)
+        additionalLogs = this.designer.getprocesslogs({suboperation: "Last", dateTime: dateTime});
+      }
+      if (additionalLogs.length) {
+        additionalLogs.map(function (item) {
+          item.isNew = true;
+        })
+        this.tableData = this.tableData.concat(additionalLogs);
+      }
+    },
+    infiniteHandler: function ($state) {
+      if (this.tableData.length === 0) {
+        $state.loaded();
+        $state.complete();
+        return;
+      }
+      var dateTime = this.findMinDateTime(this.tableData)
+      var additionalLogs = this.designer.getprocesslogs({suboperation: "Early", dateTime: dateTime, count: this.count});
+      if (additionalLogs.length) {
+        this.tableData = this.tableData.concat(additionalLogs);
+        if (additionalLogs.length < this.count)
+          $state.complete();
+        else
+          $state.loaded();
+      } else {
+        $state.complete();
+      }
+    },
+    findMinDateTime: function (arr) {
+      var len = arr.length, min = arr[0]["CreatedOn"];
+      while (len--) {
+        if (arr[len]["CreatedOn"] < min) {
+          min = arr[len]["CreatedOn"];
+        }
+      }
+      return min;
+    },
+    findMaxDateTime: function (arr) {
+      var len = arr.length, max = arr[0]["CreatedOn"];
+      while (len--) {
+        if (arr[len]["CreatedOn"] > max) {
+          max = arr[len]["CreatedOn"];
+        }
+      }
+      return max;
+    },
+    getFormatDate: function (a, b, stringDate, d) {
+      let date = new Date(stringDate);
+      let options = {
+        hour12: false,
+        month: '2-digit',
+        day: '2-digit',
+        year: '2-digit',
+        hour: '2-digit',
+        minute: '2-digit',
+        second: '2-digit',
+      };
+      return date.toLocaleString("en-US", options) + ". " + date.getMilliseconds();
+    }
+  }
+
+  me.VueConfig.created = function () {
+    this.tableData = this.designer.getprocesslogs({suboperation: "Last", count: this.count});
+    this.logEnabled = Boolean(this.designer.getlogenabledstate());
+  }
+}
+
+</script>

@@ -22,13 +22,13 @@
         <tr>
             <td><code>Roles</code></td>
             <td>
-                @Html.Partial("Roles", Model.Roles)
+                @(await Html.PartialAsync("Roles", Model.Roles))
             </td>
         </tr>
         <tr>
             <td><code>StructDivisions</code></td>
             <td>
-                @Html.Partial("StructDivision", Model)
+                @(await Html.PartialAsync("StructDivision", Model))
             </td>
         </tr>
     </tbody>

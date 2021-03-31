@@ -1,10 +1,13 @@
+using OptimaJet.Workflow.Core.Persistence;
+using WF.Sample.Business.Model;
+
 namespace WF.Sample.MySql
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
+ 
 
     [Table("Employee")]
     public partial class Employee
@@ -14,7 +17,6 @@ namespace WF.Sample.MySql
         {
             Documents = new HashSet<Document>();
             Documents1 = new HashSet<Document>();
-            DocumentTransitionHistories = new HashSet<DocumentTransitionHistory>();
             EmployeeRoles = new HashSet<EmployeeRole>();
         }
 
@@ -24,7 +26,6 @@ namespace WF.Sample.MySql
         [StringLength(256)]
         public string Name { get; set; }
 
-        [Required]
         public byte[] StructDivisionId { get; set; }
 
         public bool IsHead { get; set; }
@@ -36,7 +37,6 @@ namespace WF.Sample.MySql
         public virtual ICollection<Document> Documents1 { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
 
         public virtual StructDivision StructDivision { get; set; }
 

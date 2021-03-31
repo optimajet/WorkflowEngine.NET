@@ -2,6 +2,9 @@
     <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerActorsList" class="WorkflowDesignerWindowForm">
+    <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
+        <el-switch  v-model="showPredefined" :active-text="labels.ShowPredefinedActors"></el-switch>
+    </div>
     <table class="WorkflowDesignerTable">
         <th>
             <td v-if="isIE"></td>
@@ -9,7 +12,7 @@
             <td><b>{{labels.Rule}}</b></td>
             <td><b>{{labels.Value}}</b></td>
         </th>
-        <tr v-for="(item, index) in items"
+        <tr v-for="(item, index) in items" v-if="showPredefined || item.IsPredefined!=true"
             :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
             @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
             @dragover="dragover(item, index, $event)">
@@ -19,14 +22,14 @@
                     v-model="item.Name" 
                     :title="validateField('Name', item)" 
                     :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
-                    :readonly="readonly"
+                    :readonly="readonly || item.IsPredefined === true"
                 ></el-input>
             </td>
             <td>
                 <el-select 
                     v-model="item.Rule" 
                     style="width: 100%;" 
-                    :disabled="readonly"
+                    :disabled="readonly || item.IsPredefined === true"
                     filterable clearable 
                     placeholder="" 
                     :title="validateField('Rule', item)" 
@@ -35,13 +38,13 @@
                 </el-select>
             </td>
             <td>
-                <el-autocomplete v-model="item.Value" :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(item)"></el-autocomplete>
+                <el-autocomplete v-model="item.Value" :readonly="readonly || item.IsPredefined === true" :fetch-suggestions="querySearch" @focus="setCurrentItem(item)"></el-autocomplete>
             </td>
 
             <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
                 <el-button-group>
-                    <el-button @click="showjson('Value', item)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"></el-button>
-                    <el-button @click="remove(index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                    <el-button @click="showjson('Value', item)" v-if="item.IsPredefined != true" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"></el-button>
+                    <el-button @click="remove(index)"  v-if="item.IsPredefined != true" class="WorkflowDesignerTableDeleteButton"></el-button>
                 </el-button-group>
             </td>
         </tr>
@@ -63,7 +66,7 @@
         <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
     </span>
 </el-dialog> 
-<script>
+<script type="application/javascript">
     function actors_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
@@ -83,7 +86,8 @@
                     me.VueConfig.data.confirmdialog.visible = false;
                     me.onClose(true);
                 }
-            }
+            },
+            showPredefined: false
         });
 
         me.VueConfig.methods.setCurrentItem = function(item) {

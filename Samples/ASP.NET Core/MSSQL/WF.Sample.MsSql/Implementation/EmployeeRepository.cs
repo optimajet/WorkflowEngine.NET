@@ -2,8 +2,6 @@
 using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
 
 
@@ -33,7 +31,6 @@ namespace WF.Sample.MsSql.Implementation
                                  .ToList().Select(e => Mappings.Mapper.Map<Business.Model.Employee>(e))
                                  .OrderBy(c => c.Name).ToList();
         }
-
         public IEnumerable<string> GetInRole(string roleName)
         {
             return

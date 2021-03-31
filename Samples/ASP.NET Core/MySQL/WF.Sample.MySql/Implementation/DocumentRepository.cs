@@ -1,11 +1,14 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Xml.Linq;
+using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
-using Microsoft.EntityFrameworkCore;
-using MySql.Data.MySqlClient;
+using WF.Sample.Business.Workflow;
+
 
 namespace WF.Sample.MySql.Implementation
 {
@@ -18,7 +21,7 @@ namespace WF.Sample.MySql.Implementation
             _sampleContext = sampleContext;
         }
 
-        public void ChangeState(Guid id, string nextState, string nextStateName)
+        public void ChangeState(Guid id, string nextState,  string nextStateName)
         {
             var document = GetDocument(id);
             if (document == null)
@@ -26,47 +29,62 @@ namespace WF.Sample.MySql.Implementation
 
             document.State = nextState;
             document.StateName = nextStateName;
+            
             _sampleContext.SaveChanges();
         }
-
+        
         public void Delete(Guid[] ids)
         {
             var commandParams = new string[ids.Length];
-
             for (int i = 0; i < ids.Length; i += 1)
-            {
                 commandParams[i] = $"@p{i}";
+            
+            //TODO 
+            //Can't use Contains with Guid. It's will be fixed in MySql.Data.EntityFrameworkCore 8.0.24.
+            //Read about Bug: https://bugs.mysql.com/bug.php?id=93398
+            // var query = _sampleContext.Documents.Where(x => ids.Contains(x.Id));
+            // _sampleContext.Documents.RemoveRange(objs);
+            
+            foreach (var id in ids)
+            {
+                WorkflowInit.Runtime.PersistenceProvider.DropWorkflowInboxAsync(id).GetAwaiter().GetResult();
+                WorkflowInit.Runtime.PersistenceProvider.DropApprovalHistoryByProcessIdAsync(id).GetAwaiter().GetResult();
             }
-
-            _sampleContext.Database.ExecuteSqlCommand($"DELETE FROM `Document` WHERE `Id` IN ({string.Join(",", commandParams)})",
+            
+            _sampleContext.Database.ExecuteSqlCommand($"DELETE FROM `Document` WHERE `Id` IN ({string.Join(",", commandParams)})", 
                 ids.Select(x => x.ToByteArray()).ToArray());
-
-        }
-
-        public void DeleteEmptyPreHistory(Guid processId)
-        {
-            var existingNotUsedItems =
-                   _sampleContext.DocumentTransitionHistories.Where(
-                       dth =>
-                       dth.DocumentId == processId && !dth.TransitionTime.HasValue);
-
-            _sampleContext.DocumentTransitionHistories.RemoveRange(existingNotUsedItems);
-
+            
             _sampleContext.SaveChanges();
         }
 
-        public List<Business.Model.Document> Get(out int count, int page = 0, int pageSize = 128)
+        public List<Business.Model.Document> Get(out int count, int page = 1, int pageSize = 128)
         {
+            page -= 1;
             int actual = page * pageSize;
             var query = _sampleContext.Documents.OrderByDescending(c => c.Number);
             count = query.Count();
-
             return query.Include(x => x.Author)
                         .Include(x => x.Manager)
                         .Skip(actual)
                         .Take(pageSize)
                         .ToList()
                         .Select(d => Mappings.Mapper.Map<Business.Model.Document>(d)).ToList();
+        }
+        
+        public List<Business.Model.Document> GetByIds(List<Guid> ids)
+        {
+            var documents = new List<Document>();
+            foreach (var id in ids.Distinct())
+            {
+                documents.Add(GetDocument(id));
+            }
+            
+            //TODO 
+            //Can't use Contains with Guid. It's will be fixed in MySql.Data.EntityFrameworkCore 8.0.24.
+            //Read about Bug: https://bugs.mysql.com/bug.php?id=93398
+            // var query = _sampleContext.Documents.Where(x => ids.Contains(x.Id));
+          
+            return documents.Where(x=>x!=null).Select(d => Mappings.Mapper.Map<Business.Model.Document>(d)).ToList();
         }
 
         public IEnumerable<string> GetAuthorsBoss(Guid documentId)
@@ -80,47 +98,6 @@ namespace WF.Sample.MySql.Implementation
                     .Select(h => h.HeadId)
                     .ToList()
                     .Select(c => c.ToString());
-        }
-
-        public List<Business.Model.DocumentTransitionHistory> GetHistory(Guid id)
-        {
-            DateTime orderTime = new DateTime(9999, 12, 31);
-           
-            return _sampleContext.DocumentTransitionHistories
-                 .Include(x => x.Employee)
-                 .Where(h => h.DocumentId == id)
-                 .OrderBy(h => h.TransitionTime == null ? orderTime : h.TransitionTime.Value)
-                 .ThenBy(h => h.Order)
-                 .ToList()
-                 .Select(x => Mappings.Mapper.Map<Business.Model.DocumentTransitionHistory>(x)).ToList();
-        }
-
-        public List<Business.Model.Document> GetInbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            var strGuid = identityId.ToString();
-            int actual = page * pageSize;
-            var subQuery = _sampleContext.WorkflowInboxes.Where(c => c.IdentityId == strGuid);
-
-            var query = _sampleContext.Documents.Include(x => x.Author)
-                                                .Include(x => x.Manager)
-                                                .Where(c => subQuery.Any(i => i.ProcessId == c.Id));
-            count = query.Count();
-            return query.OrderByDescending(c => c.Number).Skip(actual).Take(pageSize)
-                        .ToList()
-                        .Select(d => Mappings.Mapper.Map<Business.Model.Document>(d)).ToList();
-        }
-
-        public List<Business.Model.Document> GetOutbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            int actual = page * pageSize;
-            var subQuery = _sampleContext.DocumentTransitionHistories.Where(c => c.EmployeeId == identityId);
-            var query = _sampleContext.Documents.Include(x => x.Author)
-                                                .Include(x => x.Manager)
-                                                .Where(c => subQuery.Any(i => i.DocumentId == c.Id));
-            count = query.Count();
-            return query.OrderByDescending(c => c.Number).Skip(actual).Take(pageSize)
-                .ToList()
-                .Select(d => Mappings.Mapper.Map<Business.Model.Document>(d)).ToList();
         }
 
         public Business.Model.Document InsertOrUpdate(Business.Model.Document doc)
@@ -166,52 +143,6 @@ namespace WF.Sample.MySql.Implementation
             return _sampleContext.VHeads.Count(h => h.Id == document.AuthorId && h.HeadId == identityId) > 0;
         }
 
-        public void UpdateTransitionHistory(Guid id, string currentState, string nextState, string command, Guid? employeeId)
-        {
-           
-            var historyItem =
-              _sampleContext.DocumentTransitionHistories.FirstOrDefault(
-                  h => h.DocumentId == id && !h.TransitionTime.HasValue &&
-                  h.InitialState == currentState && h.DestinationState == nextState);
-
-            if (historyItem == null)
-            {
-                historyItem = new DocumentTransitionHistory
-                {
-                    Id = Guid.NewGuid(),
-                    AllowedToEmployeeNames = string.Empty,
-                    DestinationState = nextState,
-                    DocumentId = id,
-                    InitialState = currentState
-                };
-
-                _sampleContext.DocumentTransitionHistories.Add(historyItem);
-
-            }
-
-            historyItem.Command = command;
-            historyItem.TransitionTime = DateTime.Now;
-            historyItem.EmployeeId = employeeId;
-
-            _sampleContext.SaveChanges();
-        }
-
-        public void WriteTransitionHistory(Guid id, string currentState, string nextState, string command, IEnumerable<string> identities)
-        {
-            var historyItem = new DocumentTransitionHistory
-            {
-                Id = Guid.NewGuid(),
-                AllowedToEmployeeNames = GetEmployeesString(identities),
-                DestinationState = nextState,
-                DocumentId = id,
-                InitialState = currentState,
-                Command = command
-            };
-
-            _sampleContext.DocumentTransitionHistories.Add(historyItem);
-            _sampleContext.SaveChanges();
-        }
-
         public Business.Model.Document Get(Guid id, bool loadChildEntities = true)
         {
             Document document = GetDocument(id, loadChildEntities);
@@ -240,18 +171,9 @@ namespace WF.Sample.MySql.Implementation
 
         private string GetEmployeesString(IEnumerable<string> identities)
         {
-            var commandParams = new MySqlParameter[identities.Count()];
+            var identitiesGuid = identities.Select(c => new Guid(c));
 
-            int index = 0;
-            foreach(var i in identities)
-            {
-                commandParams[index++] = new MySqlParameter($"@p{index}", new Guid(i).ToByteArray());
-            }
-
-            var employees = _sampleContext.Employees.FromSql(
-                $"SELECT * FROM `Employee` WHERE `Id` IN ({string.Join(",", commandParams.Select(x => x.ParameterName))})",
-                commandParams
-            );
+            var employees = _sampleContext.Employees.Where(e => identitiesGuid.Contains(e.Id)).ToList();
 
             var sb = new StringBuilder();
             bool isFirst = true;

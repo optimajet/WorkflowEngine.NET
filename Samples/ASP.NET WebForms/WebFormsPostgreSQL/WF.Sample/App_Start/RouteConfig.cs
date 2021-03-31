@@ -11,19 +11,27 @@ namespace WF.Sample
     {
         public static void RegisterRoutes(RouteCollection routes)
         {
-            routes.MapPageRoute("DocumentListRoute", "Document/{action}", "~/Pages/Document/List.aspx", true, new RouteValueDictionary
+            routes.MapPageRoute("DocumentListRoute", "Document/Index{action}", "~/Pages/Document/Index.aspx", true, new RouteValueDictionary
             {
                 { "action", "Index" }
-            }, new RouteValueDictionary
-            {
-                { "action", "^.*Index.*$|^.*Inbox.*$|^.*Outbox.*$" }
             });
 
+            routes.MapPageRoute("DocumentInboxRoute", "Document/Inbox/{action}", "~/Pages/Document/Inbox.aspx", true,
+            new RouteValueDictionary
+            {
+                {"action", "Inbox"}
+            });
+            
+            routes.MapPageRoute("DocumentOutboxRoute", "Document/Outbox/{action}", "~/Pages/Document/Outbox.aspx", true,
+            new RouteValueDictionary
+            {
+                {"action", "Outbox"}
+            });
+            
             routes.MapPageRoute("EditDocumentRoute", "Document/Edit/{id}", "~/Pages/Document/Edit.aspx", true, new RouteValueDictionary
             {
                 { "id", Guid.Empty }
             });
-
             routes.Add(new Route("Document/DeleteRows", new HttpHandlerRoute("~/Pages/Document/DeleteRowsHandler.ashx")));
 
             routes.Add(new Route("Designer/API", new HttpHandlerRoute("~/Pages/Designer/WFEDesigner.ashx")));

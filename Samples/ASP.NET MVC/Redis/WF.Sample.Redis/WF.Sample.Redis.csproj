@@ -38,10 +38,12 @@
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core">
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Redis">
+    <Reference Include="OptimaJet.Workflow.Redis, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Redis.dll</HintPath>
     </Reference>
     <Reference Include="StackExchange.Redis.StrongName, Version=1.2.6.0, Culture=neutral, PublicKeyToken=c219ff1ca8c2ce46">
@@ -65,13 +67,11 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Document.cs" />
-    <Compile Include="Entities\DocumentTransitionHistory.cs" />
     <Compile Include="Entities\Employee.cs" />
     <Compile Include="Entities\StructDivision.cs" />
     <Compile Include="ConnectionSettingsProvider.cs" />
     <Compile Include="Implementation\DocumentRepository.cs" />
     <Compile Include="Implementation\EmployeeRepository.cs" />
-    <Compile Include="Implementation\InboxRepository.cs" />
     <Compile Include="Implementation\PersistenceProviderContainer.cs" />
     <Compile Include="Implementation\RepositoryBase.cs" />
     <Compile Include="Implementation\SettingsProvider.cs" />

@@ -18,12 +18,10 @@ namespace WF.Sample.Oracle
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 
@@ -50,15 +48,11 @@ namespace WF.Sample.Oracle
 
             
             modelBuilder.Entity<Document>().Property(x => x.Number)
-                .HasColumnName("Number")
-            ;
+                .HasColumnName("Number");
+            
             modelBuilder.Entity<Document>().Property(x => x.Comment)
-                .HasColumnName("Comment")
-            ;
-            modelBuilder.Entity<DocumentTransitionHistory>().Property(x => x.Order)
-                .HasColumnName("Order")
-            ;
-   
+                .HasColumnName("Comment");
+
             modelBuilder.Entity<Employee>()
                 .HasMany(e => e.Documents)
                 .WithOne(e => e.Author)

@@ -1,3 +1,5 @@
+using OptimaJet.Workflow.Core.Persistence;
+
 namespace WF.Sample.PostgreSql
 {
     using System;
@@ -6,6 +8,7 @@ namespace WF.Sample.PostgreSql
     using Microsoft.EntityFrameworkCore;
     using Microsoft.Extensions.Configuration;
 
+ 
     public partial class SampleContext : DbContext
     {
         private readonly IConfiguration _config;
@@ -16,12 +19,10 @@ namespace WF.Sample.PostgreSql
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 
@@ -31,6 +32,7 @@ namespace WF.Sample.PostgreSql
             {
                 optionsBuilder.UseNpgsql(_config.GetConnectionString("DefaultConnection"));
             }
+
         }
 
         protected override void OnModelCreating(ModelBuilder modelBuilder)

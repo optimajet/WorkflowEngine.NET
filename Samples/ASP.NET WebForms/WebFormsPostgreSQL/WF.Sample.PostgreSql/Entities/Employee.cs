@@ -1,10 +1,12 @@
+using OptimaJet.Workflow.Core.Persistence;
+
 namespace WF.Sample.PostgreSql
 {
     using System;
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
-    using System.Data.Entity.Spatial;
+ 
 
     [Table("public.Employee")]
     public partial class Employee
@@ -14,7 +16,6 @@ namespace WF.Sample.PostgreSql
         {
             Documents = new HashSet<Document>();
             Documents1 = new HashSet<Document>();
-            DocumentTransitionHistories = new HashSet<DocumentTransitionHistory>();
             EmployeeRoles = new HashSet<EmployeeRole>();
         }
 
@@ -35,7 +36,6 @@ namespace WF.Sample.PostgreSql
         public virtual ICollection<Document> Documents1 { get; set; }
 
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
 
         public virtual StructDivision StructDivision { get; set; }
 

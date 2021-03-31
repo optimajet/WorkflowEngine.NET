@@ -4,6 +4,7 @@ namespace WF.Sample.MySql
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+ 
 
     [Table("Roles")]
     public partial class Role

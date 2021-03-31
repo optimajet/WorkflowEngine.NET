@@ -1,11 +1,12 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace WF.Sample.MySql.Implementation
 {
@@ -29,7 +30,7 @@ namespace WF.Sample.MySql.Implementation
             model.Employees = Mappings.Mapper.Map<IList<Employee>, List<Business.Model.Employee>>(
                 _sampleContext.Employees.Include(x => x.StructDivision)
                                         .Include(x => x.EmployeeRoles)
-                                        .ThenInclude(er => er.Role)
+                                        .ThenInclude(x => x.Role)
                                         .ToList()
             );
 

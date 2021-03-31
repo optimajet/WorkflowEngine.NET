@@ -1,8 +1,12 @@
-﻿@using WF.Sample.Business.DataAccess
+﻿@using System.Web.Mvc
+@using System.Web.Mvc.Html
+@using WF.Sample.Business.DataAccess
+@using WF.Sample.Extensions
 @{
     ViewBag.Title = "Edit";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
+
 @model WF.Sample.Models.DocumentModel
 
 @{
@@ -19,24 +23,25 @@
 
     <div class="fields">
 
-        @if (Model.Commands.Count() == 0 && Model.HistoryModel.Items != null)
+        @if (!Model.Commands.Any() && Model.HistoryModel.Items != null)
         {
             var nextStep = Model.HistoryModel.Items.FirstOrDefault(c => !c.TransitionTime.HasValue);
 
             if (nextStep != null)
             {
-            <div class="field">
-                <span style="color: #CC3300">
-                    For the current user commands are not available.<br />
-                    @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedToEmployeeNames))
-                </span>
-            </div>
+                <div class="field">
+                    <span style="color: #CC3300">
+                        For the current user commands are not available.<br />
+                        @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedTo))
+                    </span>
+                </div>
             }
         }
 
-        @if (Model.Commands.Count() > 0 || Model.AvailiableStates.Count > 0)
+        @if (Model.Commands.Any() || Model.AvailiableStates.Count > 0)
         {
-            if (Model.Commands.Count() > 0)
+
+            if (Model.Commands.Any())
             {
                 <div class="field">
                     @foreach (var command in Model.Commands)
@@ -56,6 +61,7 @@
                     }
                 </div>
             }
+
 
             <div class="field">
                 <button name="button" value="SetState" class="ui button">Set This State</button>
@@ -130,7 +136,7 @@
     }
 
     <div class="field">
-        @Html.Partial("DocumentHistory", hModel)
+        @(Html.Partial("DocumentHistory", hModel))
     </div>
     <div class="field">
         <button name="button" value="Save" class="ui primary button">Save</button>

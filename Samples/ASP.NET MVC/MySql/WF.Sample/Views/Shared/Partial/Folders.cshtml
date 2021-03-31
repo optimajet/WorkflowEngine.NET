@@ -14,7 +14,6 @@
         }
     }
 }
-
 <div style="width: 300px; float: left;">
     <div class="ui menu">
         <a href="/" class="item">@Html.Raw(folder == 0 ? "<b>All vacation requests</b>" : "All vacation requests")</a>
@@ -22,16 +21,3 @@
         <a href="/Document/Outbox" class="item">@Html.Raw(folder == 2 ? "<b>Outbox</b>" : "Outbox")</a>
     </div>
 </div>
-
-<script>
-    function ReCalcInbox() {
-        $.ajax({
-            type: "POST",
-            url: "@Url.Action("RecalcInbox", "Document")",
-            success: function (msg) {
-                alert(msg);
-            }
-        });
-    }
-
-</script>

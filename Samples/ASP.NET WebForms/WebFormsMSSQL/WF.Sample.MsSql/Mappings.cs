@@ -4,7 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WF.Sample.Business.Model;
+using OptimaJet.Workflow.Core.Persistence;
 
 namespace WF.Sample.MsSql
 {
@@ -18,15 +18,12 @@ namespace WF.Sample.MsSql
         {
             var config = new MapperConfiguration(cfg => {
 
-                cfg.CreateMap<Business.StructDivision, StructDivision>();
-                cfg.CreateMap<Business.Employee, Employee>();
-                cfg.CreateMap<Business.Role, Role>();
-                cfg.CreateMap<Business.EmployeeRole, EmployeeRole>();
-                cfg.CreateMap<Business.DocumentTransitionHistory, DocumentTransitionHistory>();
+                cfg.CreateMap<StructDivision, Business.Model.StructDivision>();
+                cfg.CreateMap<Employee, Business.Model.Employee>();
+                cfg.CreateMap<Role, Business.Model.Role>();
+                cfg.CreateMap<EmployeeRole, Business.Model.EmployeeRole>();
 
-                cfg.CreateMap<Business.Document, Document>()
-                    .ForMember(d => d.Author, o => o.MapFrom(s => s.Employee1))
-                    .ForMember(d => d.Manager, o => o.MapFrom(s => s.Employee));
+                cfg.CreateMap<Document, Business.Model.Document>();
             });
 
             var mapper = config.CreateMapper();

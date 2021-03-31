@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using AutoMapper;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
 using WF.Sample.Business.Workflow;
@@ -28,31 +29,25 @@ namespace WF.Sample.MongoDb.Implementation
             }
         }
 
+        public List<Document> GetByIds(List<Guid> ids)
+        {
+            var docdbcoll = Store.GetCollection<Entities.Document>("Document");
+            var query = docdbcoll.Find(x => ids.Contains(x.Id)).ToList();
+            return query
+                .Select(d => Mappings.Mapper.Map<Business.Model.Document>(d)).ToList();
+        }
+
         public void Delete(Guid[] ids)
         {
             var dbcoll = Store.GetCollection<Entities.Document>("Document");
 
             dbcoll.DeleteMany(Builders<Entities.Document>.Filter.In(c => c.Id, ids));
-
-            var dbcollInbox = Store.GetCollection<Entities.WorkflowInbox>("WorkflowInbox");
-            dbcollInbox.DeleteMany(Builders<Entities.WorkflowInbox>.Filter.In(c => c.ProcessId, ids));
         }
-
-        public void DeleteEmptyPreHistory(Guid processId)
-        {
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-            var doc = dbcoll.Find(x => x.Id == processId).FirstOrDefault();
-            if (doc != null)
-            {
-                doc.TransitionHistories.RemoveAll(dth => !dth.TransitionTime.HasValue);
-                dbcoll.ReplaceOne(x => x.Id == doc.Id, doc, new UpdateOptions { IsUpsert = true });
-            }
-        }
-
+        
         public List<Document> Get(out int count, int page = 0, int pageSize = 128)
         {
+            page -= 1;
             var dbcoll = Store.GetCollection<Entities.Document>("Document");
-
             var query = dbcoll.AsQueryable();
             int actual = page * pageSize;
             count = query.Count();
@@ -99,58 +94,19 @@ namespace WF.Sample.MongoDb.Implementation
 
             return res.Distinct();
         }
-
-        public List<DocumentTransitionHistory> GetHistory(Guid id)
-        {
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-            var doc = dbcoll.Find(x => x.Id == id).FirstOrDefault();
-            if (doc == null) return null;
-
-            return doc.TransitionHistories.Select(h => Mappings.Mapper.Map<DocumentTransitionHistory>(h)).ToList();
-        }
-
-        public List<Document> GetInbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            var res = new List<Document>();
-
-            var dbcollInbox = Store.GetCollection<Entities.WorkflowInbox>("WorkflowInbox");
-
-            count = (int)dbcollInbox.CountDocuments(c => c.IdentityId == identityId.ToString());
-            int actual = page * pageSize;
-
-            var inbox = dbcollInbox.Find(c => c.IdentityId == identityId.ToString()).Skip(actual).Limit(pageSize).ToList();
-
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-
-            var docs = dbcoll.Find(Builders<Entities.Document>.Filter.In(c => c.Id, inbox.Select(i => i.ProcessId))).ToList();
-
-            res.AddRange(docs.Select(d => Mappings.Mapper.Map<Document>(d)));
-            return res;
-        }
-
-        public List<Document> GetOutbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            var res = new List<Document>();
-
-            int actual = page * pageSize;
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-
-            var query = dbcoll.Find(Builders<Entities.Document>.Filter.ElemMatch(x => x.TransitionHistories, x => x.EmployeeId == identityId));
-            
-            count = (int)query.CountDocuments();
-
-            var docs = query.Skip(actual).Limit(pageSize).ToList();
-            res.AddRange(docs.Select(d => Mappings.Mapper.Map<Document>(d)));
-
-            return res;
-        }
-
+        
         public Document InsertOrUpdate(Document doc)
         {
             Entities.Document target = null;
 
             var dbcoll = Store.GetCollection<Entities.Document>("Document");
 
+            if (String.IsNullOrEmpty(doc.Manager?.Name) && doc.Manager!=null)
+            {
+                var manager = CacheHelper<Entities.Employee>.Cache.FirstOrDefault(x => x.Id == doc.Manager.Id);
+                doc.Manager.Name = manager?.Name;
+            }
+            
             if (doc.Id != Guid.Empty)
             {
                 target = dbcoll.Find(x => x.Id == doc.Id).FirstOrDefault();
@@ -193,66 +149,6 @@ namespace WF.Sample.MongoDb.Implementation
             return GetAuthorsBoss(documentId).Contains(identityId.ToString());
         }
 
-        public void UpdateTransitionHistory(Guid id, string currentState, string nextState, string command, Guid? employeeId)
-        {
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-            var doc = dbcoll.Find(x => x.Id == id).FirstOrDefault();
-
-            if (doc == null) throw new ArgumentException("Document not found", "id");
-
-            var historyItem = doc.TransitionHistories.FirstOrDefault(h => !h.TransitionTime.HasValue && 
-                h.InitialState == currentState && 
-                h.DestinationState == nextState);
-
-            if (historyItem == null)
-            {
-                historyItem = new Entities.DocumentTransitionHistory
-                {
-                    Id = Guid.NewGuid(),
-                    AllowedToEmployeeNames = string.Empty,
-                    DestinationState = nextState,
-                    InitialState = currentState
-                };
-
-                doc.TransitionHistories.Add(historyItem);
-            }
-
-            historyItem.Command = command;
-            historyItem.TransitionTime = DateTime.Now;
-            historyItem.EmployeeId = employeeId;
-            
-            if(employeeId.HasValue)
-            {
-                var employee = Store.GetCollection<Entities.Employee>("Employee").Find(x => x.Id == employeeId.Value).FirstOrDefault();
-                historyItem.EmployeeName = employee.Name;
-            }else
-            {
-                historyItem.EmployeeName = null;
-            }
-
-            dbcoll.ReplaceOne(x => x.Id == doc.Id, doc, new UpdateOptions { IsUpsert = true });
-        }
-
-        public void WriteTransitionHistory(Guid id, string currentState, string nextState, string command, IEnumerable<string> identities)
-        {
-            var dbcoll = Store.GetCollection<Entities.Document>("Document");
-            var doc = dbcoll.Find(x => x.Id == id).FirstOrDefault();
-
-            if (doc == null) throw new ArgumentException("Document not found", "id");
-
-            var historyItem = new Entities.DocumentTransitionHistory
-            {
-                Id = Guid.NewGuid(),
-                AllowedToEmployeeNames = GetEmployeesString(identities),
-                DestinationState = nextState,
-                InitialState = currentState,
-                Command = command
-            };
-
-            doc.TransitionHistories.Add(historyItem);
-            dbcoll.ReplaceOne(x => x.Id == doc.Id, doc, new UpdateOptions { IsUpsert = true });
-        }
-
         private string GetEmployeesString(IEnumerable<string> identities)
         {
             var identitiesGuid = identities.Select(c => new Guid(c));
@@ -290,5 +186,6 @@ namespace WF.Sample.MongoDb.Implementation
             }
             return res;
         }
+        
     }
 }

@@ -40,11 +40,12 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=3.4.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <SpecificVersion>False</SpecificVersion>
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Oracle">
+    <Reference Include="OptimaJet.Workflow.Oracle, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Oracle.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
@@ -70,17 +71,14 @@
   </ItemGroup>
   <ItemGroup>
     <Compile Include="Entities\Document.cs" />
-    <Compile Include="Entities\DocumentTransitionHistory.cs" />
     <Compile Include="Entities\Employee.cs" />
     <Compile Include="Entities\EmployeeRole.cs" />
     <Compile Include="Entities\Head.cs" />
     <Compile Include="Entities\Role.cs" />
     <Compile Include="Entities\StructDivision.cs" />
-    <Compile Include="Entities\WorkflowInbox.cs" />
     <Compile Include="Entities\WorkflowScheme.cs" />
     <Compile Include="Implementation\DocumentRepository.cs" />
     <Compile Include="Implementation\EmployeeRepository.cs" />
-    <Compile Include="Implementation\InboxRepository.cs" />
     <Compile Include="Implementation\PersistenceProviderContainer.cs" />
     <Compile Include="Implementation\SettingsProvider.cs" />
     <Compile Include="Mappings.cs" />

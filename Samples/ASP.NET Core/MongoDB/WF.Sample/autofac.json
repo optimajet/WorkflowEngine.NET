@@ -32,14 +32,6 @@
           "type": "WF.Sample.Business.DataAccess.IPersistenceProviderContainer, WF.Sample.Business"
         }
       ]
-    },
-    {
-      "type": "WF.Sample.MongoDb.Implementation.InboxRepository",
-      "services": [
-        {
-          "type": "WF.Sample.Business.DataAccess.IInboxRepository, WF.Sample.Business"
-        }
-      ]
     }
   ]
 }

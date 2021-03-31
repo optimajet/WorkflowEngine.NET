@@ -1,30 +1,29 @@
+using Oracle.ManagedDataAccess.Client;
+
 namespace WF.Sample.Oracle
 {
-    using System;
     using System.Data.Entity;
-    using System.ComponentModel.DataAnnotations.Schema;
-    using System.Linq;
-    using global::Oracle.ManagedDataAccess.Client;
+
 
     public partial class SampleContext : DbContext
     {
         public SampleContext()
             : base("name=ConnectionString")
         {
+            Configuration.LazyLoadingEnabled = false;
         }
 
         public virtual DbSet<Document> Documents { get; set; }
-        public virtual DbSet<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
         public virtual DbSet<Employee> Employees { get; set; }
         public virtual DbSet<Role> Roles { get; set; }
         public virtual DbSet<StructDivision> StructDivisions { get; set; }
         public virtual DbSet<Head> VHeads { get; set; }
-        public virtual DbSet<WorkflowInbox> WorkflowInboxes { get; set; }
         public virtual DbSet<EmployeeRole> EmployeeRoles { get; set; }
         public virtual DbSet<WorkflowScheme> WorkflowSchemes { get; set; }
 
         protected override void OnModelCreating(DbModelBuilder modelBuilder)
         {
+            
             var builder = new OracleConnectionStringBuilder(Database.Connection.ConnectionString);
             modelBuilder.HasDefaultSchema(builder.UserID);
 
@@ -32,7 +31,8 @@ namespace WF.Sample.Oracle
 
             modelBuilder.Entity<Document>().Property(x => x.Number).HasColumnName("Number");
             modelBuilder.Entity<Document>().Property(x => x.Comment).HasColumnName("Comment");
-            modelBuilder.Entity<DocumentTransitionHistory>().Property(x => x.Order).HasColumnName("Order");
+
+
 
             modelBuilder.Entity<Employee>()
                 .HasMany(e => e.Documents)
@@ -51,9 +51,9 @@ namespace WF.Sample.Oracle
                 .HasForeignKey(r => r.EmployeeId);
 
             modelBuilder.Entity<Role>()
-                        .HasMany(e => e.EmployeeRoles)
-                        .WithRequired(r => r.Role)
-                        .HasForeignKey(r => r.RoleId);
+                .HasMany(e => e.EmployeeRoles)
+                .WithRequired(r => r.Role)
+                .HasForeignKey(r => r.RoleId);
 
             modelBuilder.Entity<StructDivision>()
                 .HasMany(e => e.StructDivision1)
@@ -64,7 +64,8 @@ namespace WF.Sample.Oracle
             modelBuilder.Entity<EmployeeRole>()
                 .HasKey(x => new { x.RoleId, x.EmployeeId })
                 .HasRequired(x => x.Role).WithMany(x => x.EmployeeRoles)
-            ;
+         ;
+
         }
     }
 }

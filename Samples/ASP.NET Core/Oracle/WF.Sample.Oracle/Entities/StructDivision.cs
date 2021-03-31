@@ -4,6 +4,7 @@ namespace WF.Sample.Oracle
     using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
+ 
 
     [Table("STRUCTDIVISION")]
     public partial class StructDivision

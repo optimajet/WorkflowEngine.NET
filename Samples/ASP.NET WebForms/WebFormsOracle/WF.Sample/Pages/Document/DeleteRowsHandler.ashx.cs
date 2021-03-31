@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Web;
 using WF.Sample.Business.DataAccess;
+using WF.Sample.Business.Workflow;
 
 namespace WF.Sample.Document
 {
@@ -26,6 +27,12 @@ namespace WF.Sample.Document
             try
             {
                 var guids = ids.Select(x => new Guid(x)).ToArray();
+                
+                foreach (var id in guids)
+                {
+                    WorkflowInit.Runtime.PersistenceProvider.DeleteProcessAsync(id);
+                }
+                
                 DocumentRepository.Delete(guids);
             }
             catch (Exception ex)

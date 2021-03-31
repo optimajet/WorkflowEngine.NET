@@ -1,4 +1,5 @@
-﻿@model WF.Sample.Models.DocumentHistoryModel
+﻿@using System.Web.Mvc.Html
+@model WF.Sample.Models.DocumentHistoryModel
 @if (Model != null && Model.Items != null && Model.Items.Count > 0)
 {
     <h1>Document's Transition History</h1>
@@ -17,16 +18,15 @@
                 <tr>
                     <td>@Html.Label(item.InitialState)</td>
                     <td>@Html.Label(item.DestinationState)</td>
-                    <td>@Html.Label(item.Command)</td>
-                    <td>@Html.Label(item.Employee != null ? item.Employee.Name : "")</td>
+                    <td>@Html.Label(item.TriggerName)</td>
+                    <td>@Html.Label(!string.IsNullOrEmpty(item.IdentityId) ? item.Employee.Name??item.IdentityId : "")</td>
                     <td>
                         @if (item.TransitionTime.HasValue)
                         {
-                            @Html.Raw(string.Format("{0}",
-                            item.TransitionTime.Value.ToString("yyyy-MM-dd HH:mm:ss")))
+                            @Html.Raw(string.Format("{0:yyyy-MM-dd HH:mm:ss}", item.TransitionTime.Value))
                         }
                     </td>
-                    <td>@Html.Label(item.AllowedToEmployeeNames)</td>
+                    <td>@Html.Label(item.AllowedTo)</td>
                 </tr>
             }
         </tbody>

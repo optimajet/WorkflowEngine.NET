@@ -65,7 +65,8 @@
       <HintPath>..\packages\Newtonsoft.Json.12.0.3\lib\net45\Newtonsoft.Json.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core">
+    <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+        <SpecificVersion>False</SpecificVersion>
       <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Collections.Immutable, Version=1.2.5.0, Culture=neutral, PublicKeyToken=b03f5f7f11d50a3a">
@@ -157,12 +158,16 @@
     <Content Include="Controls\DocumentHistoryControl.ascx" />
     <Content Include="Controls\FoldersControl.ascx" />
     <Content Include="Controls\HeaderControl.ascx" />
+    <Content Include="Controls\InboxAvailableCommandsControl.ascx" />
+    <Content Include="Controls\Paging.ascx" />
     <Content Include="Pages\Designer\Index.aspx" />
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Images\logo.png" />
     <Content Include="Pages\Document\Edit.aspx" />
-    <Content Include="Pages\Document\List.aspx" />
+    <Content Include="Pages\Document\Inbox.aspx" />
+    <Content Include="Pages\Document\Index.aspx" />
+    <Content Include="Pages\Document\Outbox.aspx" />
     <Content Include="Pages\Settings\Edit.aspx" />
     <Content Include="Scripts\jquery.js" />
     <Content Include="Scripts\pace.min.js" />
@@ -268,6 +273,28 @@
     <Compile Include="Controls\HeaderControl.ascx.designer.cs">
       <DependentUpon>HeaderControl.ascx</DependentUpon>
     </Compile>
+    <Compile Include="Controls\InboxAvailableCommandsControl.ascx.cs">
+      <DependentUpon>InboxAvailableCommandsControl.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\InboxAvailableCommandsControl.ascx.designer.cs">
+      <DependentUpon>InboxAvailableCommandsControl.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Controls\Paging.ascx.cs">
+      <DependentUpon>Paging.ascx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Controls\Paging.ascx.designer.cs">
+      <DependentUpon>Paging.ascx</DependentUpon>
+    </Compile>
+    <Compile Include="Helpers\DocumentExtensions.cs" />
+    <Compile Include="Helpers\DocumentsPage.cs" />
+    <Compile Include="Helpers\DocumentsPage.designer.cs" />
+    <Compile Include="Models\DocumentListModel.cs" />
+    <Compile Include="Models\InboxDocumentModel.cs" />
+    <Compile Include="Models\IPaging.cs" />
+    <Compile Include="Models\OutboxDocumentModel.cs" />
+    <Compile Include="Models\SettingsModel.cs" />
     <Compile Include="Pages\Designer\Index.aspx.cs">
       <DependentUpon>Index.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
@@ -292,12 +319,26 @@
     <Compile Include="Pages\Document\Edit.aspx.designer.cs">
       <DependentUpon>Edit.aspx</DependentUpon>
     </Compile>
-    <Compile Include="Pages\Document\List.aspx.cs">
-      <DependentUpon>List.aspx</DependentUpon>
+    <Compile Include="Pages\Document\Inbox.aspx.cs">
+      <DependentUpon>Inbox.aspx</DependentUpon>
       <SubType>ASPXCodeBehind</SubType>
     </Compile>
-    <Compile Include="Pages\Document\List.aspx.designer.cs">
-      <DependentUpon>List.aspx</DependentUpon>
+    <Compile Include="Pages\Document\Inbox.aspx.designer.cs">
+      <DependentUpon>Inbox.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Document\Index.aspx.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Document\Index.aspx.designer.cs">
+      <DependentUpon>Index.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Document\Outbox.aspx.cs">
+      <DependentUpon>Outbox.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Document\Outbox.aspx.designer.cs">
+      <DependentUpon>Outbox.aspx</DependentUpon>
     </Compile>
     <Compile Include="Pages\Settings\Edit.aspx.cs">
       <DependentUpon>Edit.aspx</DependentUpon>

@@ -4,7 +4,7 @@
     <div class="field">
         <span style="color: #CC3300">
             For the current user commands are not available.<br />
-            In the field <b>"Current employee"</b>, select one of the users: <b><%=  Model.HistoryModel.Items.First(c => !c.TransitionTime.HasValue).AllowedToEmployeeNames %></b>
+            In the field <b>"Current employee"</b>, select one of the users: <b><%=  Model.HistoryModel.Items.First(c => !c.TransitionTime.HasValue).AllowedTo %></b>
         </span>
     </div>
 <% } %>

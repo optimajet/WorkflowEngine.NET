@@ -30,7 +30,7 @@
                 <div class="field">
                     <span style="color: #CC3300">
                         For the current user commands are not available.<br />
-                        @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedToEmployeeNames))
+                        @Html.Raw(string.Format("In the field <b>\"Current employee\"</b>, select one of the users: <b>{0}</b>", nextStep.AllowedTo))
                     </span>
                 </div>
             }
@@ -134,7 +134,7 @@
     }
 
     <div class="field">
-        @Html.Partial("DocumentHistory", hModel)
+        @(await Html.PartialAsync("DocumentHistory", hModel))
     </div>
     <div class="field">
         <button name="button" value="Save" class="ui primary button">Save</button>

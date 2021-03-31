@@ -1,7 +1,10 @@
 ﻿@using System.Linq
+@using System.Web.Mvc
+@using System.Web.Mvc.Html
 @using WF.Sample.Business.Model
 @using WF.Sample.Helpers
 @using WF.Sample.Business.DataAccess
+@using WF.Sample.Extensions
 @{
     Guid currentEmployeeId = CurrentUserSettings.GetCurrentUser();
     IEmployeeRepository er = DependencyResolver.Current.GetService<IEmployeeRepository>();

@@ -2,6 +2,24 @@
     <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerCodeActionsList" class="WorkflowDesignerWindowForm">
+    <b class="CustomLabel">{{ labels.CommonUsings }}</b>
+    <el-select
+        v-model="UsingsValue"
+        @change="onUsingsChange"
+        multiple
+        collapse-tags
+        allow-create
+        filterable
+        style="width: 100%; margin-bottom: 15px;"
+        :title="labels.CommonUsings"
+        placeholder="Select">
+            <el-option
+                v-for="item in Usings"
+                :key="item"
+                :label="item"
+                :value="item">
+            </el-option>
+    </el-select>
     <table class="WorkflowDesignerTable">
         <th>
             <td v-if="isIE"></td>
@@ -71,7 +89,7 @@
         <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
     </span>
 </el-dialog> 
-<script>
+<script type="application/javascript">
     function codeactions_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
@@ -81,7 +99,6 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
             EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
             confirmdialog: {
                 title: WorkflowDesignerConstants.DialogConfirmText,
@@ -94,6 +111,8 @@
                     me.onClose(true);
                 }
             },
+            Usings: null,
+            UsingsValue: null,
             editCodeItem: undefined,
             editParametersItem: undefined
         });
@@ -103,8 +122,26 @@
         };
         
         me.VueConfig.methods.onUpdate = function(){
-            me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.CodeActions);
-            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+            var data = me.VueConfig.data;
+            data.items = WorkflowDesignerCommon.clone(me.graph.data.CodeActions);
+            data.readonly = me.graph.Settings.readonly;
+
+            data.Usings = WorkflowDesignerCommon.clone(me.graph.data.AdditionalParams.Usings);
+            var commonUsings = me.graph.data.CodeActionsCommonUsings ?
+                me.graph.data.CodeActionsCommonUsings.split(';').filter(function (using) { return using !== ''}) :
+                me.graph.data.AdditionalParams.Usings;
+            data.UsingsValue = WorkflowDesignerCommon.clone(commonUsings);
+            me.VueConfig.methods.onUsingsChange(data.UsingsValue);
+        };
+
+        me.VueConfig.methods.onUsingsChange = function(values){
+            var data = me.VueConfig.data;
+            values.forEach(function(value) {
+                if (!data.Usings.includes(value)) {
+                    data.Usings.push(value);
+                }
+            });
+            data.Usings.sort();
         };
 
         me.VueConfig.methods.add = function(){
@@ -142,6 +179,7 @@
             } 
         };
         me.VueConfig.methods.showcode = function(item) {
+
             me.VueConfig.data.editCodeItem = me.editCodeItem = item;
 
             var windowId = me.id + "_codeform";
@@ -150,6 +188,7 @@
                 if(me.editCodeItem){
                     me.editCodeItem["ActionCode"] = res.ActionCode;
                     me.editCodeItem["Usings"] = res.Usings;
+                    me.editCodeItem["ExcludedUsings"] = res.ExcludedUsings;
                     me.VueConfig.data.editCodeItem = undefined;
                     delete me.editCodeItem;
                 }
@@ -175,7 +214,7 @@
                 me.codeform = me.graph.CreateWindow(windowId, options);
             }   
 
-            me.codeform.show("codeform", item);
+            me.codeform.show("codeform", {item:item,commonUsings:me.VueConfig.data.UsingsValue});
         };
 
         me.VueConfig.methods.showparameters = function(item) {
@@ -295,47 +334,54 @@
         return names;
     }
         me.VueConfig.methods.onSave = function(){
-            if(!(me.VueConfig.methods.validate && me.VueConfig.methods.validate()))
+            if(!(me.VueConfig.methods.validate && me.VueConfig.methods.validate())) {
                 return;
+            }
     
-                for (var j = 0; j <me.VueConfig.data.items.length; j++)
+            for (var j = 0; j <me.VueConfig.data.items.length; j++) {
+                var dataItem = me.VueConfig.data.items[j];
+                if (typeof dataItem.ActionCode === "undefined")
                 {
-                    var dataItem = me.VueConfig.data.items[j];
-                    if (typeof dataItem.ActionCode === "undefined")
+                    if (dataItem.Type === "Action")
                     {
-                        if (dataItem.Type === "Action")
-                        {
-                            dataItem.ActionCode = "return;"
-                        }
-                        else if (dataItem.Type === "Condition")
-                        {
-                            dataItem.ActionCode = "return false;"
-                        }
-                        else if (dataItem.Type === "RuleGet")
-                        {
-                            dataItem.ActionCode = "return new List<string>();"
-                        }
-                        else if (dataItem.Type === "RuleCheck")
-                        {
-                            dataItem.ActionCode = "return false;"
-                        } 
+                        dataItem.ActionCode = "return;"
                     }
-                    
-                    if (typeof dataItem.Usings === "undefined")
+                    else if (dataItem.Type === "Condition")
                     {
-                        dataItem.Usings="";
+                        dataItem.ActionCode = "return false;"
                     }
-                    
+                    else if (dataItem.Type === "RuleGet")
+                    {
+                        dataItem.ActionCode = "return new List<string>();"
+                    }
+                    else if (dataItem.Type === "RuleCheck")
+                    {
+                        dataItem.ActionCode = "return false;"
+                    } 
                 }
+                
+                if (typeof dataItem.Usings === "undefined")
+                {
+                    dataItem.Usings="";
+                }                
+            }
                
-             var names = me.VueConfig.methods.getGlobalCodeActionsForDelete(me.graph.data.CodeActions, me.VueConfig.data.items);
-                if(names.length > 0)
-                {
-                    me.graph.designer.deleteGlobalCodeAction(names);
-                }
+            var names = me.VueConfig.methods.getGlobalCodeActionsForDelete(me.graph.data.CodeActions, me.VueConfig.data.items);
+            if(names.length > 0)
+            {
+                me.graph.designer.deleteGlobalCodeAction(names);
+            }
 
-                me.graph.UpdateData(me.graph.data.CodeActions, me.VueConfig.data.items);
-                me.onClose(true);
+            me.graph.UpdateData(me.graph.data.CodeActions, me.VueConfig.data.items);
+
+            var usingsString = me.VueConfig.data.UsingsValue.join(";");
+            if (usingsString !== '')
+            {
+                usingsString += ';'; //for unification with legacy usings
+            }
+            me.graph.data.CodeActionsCommonUsings = usingsString;
+            me.graph.StoreGraphData();
+            me.onClose(true);
         };
 
         me.VueConfig.methods.onClose = function(){

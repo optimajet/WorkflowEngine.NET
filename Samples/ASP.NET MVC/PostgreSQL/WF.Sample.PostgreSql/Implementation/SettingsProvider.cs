@@ -1,11 +1,9 @@
-﻿using System;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
+using System.Data.Entity;
 using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
-using System.Data.Entity;
+
 
 namespace WF.Sample.PostgreSql.Implementation
 {
@@ -28,8 +26,8 @@ namespace WF.Sample.PostgreSql.Implementation
 
             model.Employees = Mappings.Mapper.Map<IList<Employee>, List<Business.Model.Employee>>(
                 _sampleContext.Employees.Include(x => x.StructDivision)
-                                        .Include(x => x.EmployeeRoles.Select(er => er.Role))
-                                        .ToList()
+                    .Include(x => x.EmployeeRoles.Select(er => er.Role))
+                    .ToList()
             );
 
             model.Roles = Mappings.Mapper.Map<IList<Role>, List<Business.Model.Role>>(_sampleContext.Roles.ToList());

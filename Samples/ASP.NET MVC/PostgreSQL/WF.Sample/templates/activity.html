@@ -7,10 +7,10 @@
     <div class="SettingsWithPadding">
         <div class="el-form--inline el-form--label-top">
             <el-form-item class="el-form-item" :label="labels.Name" :rules="getFieldRules('Name')" prop="Name" style="flex-grow: 1;">
-                <el-input v-model="FormData.Name" @input="nameOnChange" :readonly="readonly"></el-input>
+                <el-input v-model="FormData.Name" @input="nameOnChange" :placeholder="labels.Name" :readonly="readonly"></el-input>
             </el-form-item>
             <el-form-item class="el-form-item" :label="labels.State" prop="State" style="flex-grow: 1;">
-                <el-input v-model="FormData.State" :readonly="readonly"></el-input>
+                <el-input v-model="FormData.State" :placeholder="labels.State" :readonly="readonly"></el-input>
             </el-form-item>
         </div>
         <el-form-item size="small">
@@ -18,124 +18,377 @@
             <el-checkbox v-model="FormData.IsFinal" @change="onFinalChange":label="labels.IsFinal" name="type" :disabled="readonly"></el-checkbox>
             <el-checkbox v-model="FormData.IsForSetState" :label="labels.IsForSetState" name="type" :disabled="readonly"></el-checkbox>
             <el-checkbox v-model="FormData.IsAutoSchemeUpdate" :label="labels.IsAutoSchemeUpdate" name="type" :disabled="readonly"></el-checkbox>
+            <el-checkbox v-if="expertMode" v-model="FormData.DisablePersist" :label="labels.DisablePersist" name="type" :disabled="readonly"></el-checkbox>
         </el-form-item>  
     </div>
     
     <div style="margin-bottom: 10px;">
         <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Implementation }}  |  
-            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Implementation)">{{ ButtonTextCreate }}</a>
+            <a v-if="!readonly" style="cursor:pointer" @click="addActionRow(FormData.Implementation)">{{ ButtonTextCreate }}</a>
         </h4>
-        <table v-if="FormData.Implementation.length > 0" class="WorkflowDesignerTable">
-            <th>
-                <td v-if="isIE"></td>
-                <td>{{labels.ImpAction}}</td>
-                <td>{{labels.ImpActionParameter}}</td>
-            </th>
-            <tr v-for="(imp, index) in FormData.Implementation"
-                :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
-                @dragstart="dragstart(index, $event, FormData.Implementation)" @dragend="dragend($event)"
-                @dragover="dragover(imp, index, $event)">
-                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly"><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
-                <td>
-                    <el-select 
-                        v-model="imp.ActionName" 
-                        :title="validateField('ActionName', imp)" 
-                        :class="validateField('ActionName', imp) ? 'WorkflowDesignerInputError' : ''"
-                        style="width: 100%;" 
-                        :disabled="readonly"
-                        filterable 
-                        placeholder="">
-                        <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
-                    </el-select>
-                </td>
-                <td>
-                    <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;"  :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
-                </td>
-                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
-                    <el-button-group>
-                        <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
-                        <el-button @click="removeRow(FormData.Implementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
-                    </el-button-group>
-                </td>
+        <table class="WorkflowDesignerTable" v-if="FormData.Implementation.length > 0">
+            <tr>
+                 <td></td>
+                 <td>{{labels.ImpAction}}</td>
+                 <td>{{labels.ImpActionParameter}}</td>
+             </tr>
+        <tr v-for="(imp, index) in FormData.Implementation" 
+        :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+        @dragstart="dragstart(index, $event, FormData.Implementation)"
+        @dragend="dragend($event)"
+        @dragover="dragover(imp, index, $event)"> 
+
+            <td  class='WorkflowDesignerTableMoveCol' :draggable="!readonly">
+                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+            </td >
+            <td >
+                <el-select 
+                    v-model="imp.ActionName" 
+                    style="width: 100%;" 
+                    :disabled="readonly"
+                    :title="validateField(notEmpty, imp.ActionName)" 
+                    :class="validateField(notEmpty, imp.ActionName) ? 'WorkflowDesignerInputError' : ''"
+                    filterable 
+                    clearable 
+                    :placeholder="labels.ImpAction">
+                    <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;" clearable :placeholder="labels.ImpActionParameter" :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
+            </td>
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
+                    <el-button @click="removeRow(FormData.Implementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
             </tr>
         </table>
     </div>
     <div v-if="expertMode" style="margin-bottom: 10px;">
         <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.PreExecutionImplementation }}  |  
-            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.PreExecutionImplementation)">{{ ButtonTextCreate }}</a>
+            <a v-if="!readonly" style="cursor:pointer" @click="addActionRow(FormData.PreExecutionImplementation)">{{ ButtonTextCreate }}</a>
         </h4>
         <table v-if="FormData.PreExecutionImplementation.length > 0" class="WorkflowDesignerTable">
-            <th>
-                <td v-if="isIE"></td>
+            <tr>
+                <td></td>
                 <td>{{labels.ImpAction}}</td>
                 <td>{{labels.ImpActionParameter}}</td>
-            </th>
-            <tr v-for="(imp, index) in FormData.PreExecutionImplementation"
-                :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
-                @dragstart="dragstart(index, $event, FormData.PreExecutionImplementation)" @dragend="dragend($event)"
-                @dragover="dragover(imp, index, $event)">
-                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
-                <td>
-                    <el-select 
-                        v-model="imp.ActionName" 
-                        :title="validateField('ActionName', imp)" 
-                        :class="validateField('ActionName', imp) ? 'WorkflowDesignerInputError' : ''"
-                        style="width: 100%;" 
-                        :disabled="readonly"
-                        filterable 
-                        placeholder="">
-                        <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
-                    </el-select>
-                </td>
-                <td>
-                    <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;"  :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
-                </td>
-                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
-                    <el-button-group>
-                        <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
-                        <el-button @click="removeRow(FormData.PreExecutionImplementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
-                    </el-button-group>
-                </td>
             </tr>
+        <tr v-for="(imp, index) in FormData.PreExecutionImplementation"  
+            :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event, FormData.PreExecutionImplementation)" 
+            @dragend="dragend($event)"
+            @dragover="dragover(imp, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly">
+                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+            </td>
+            <td>
+                <el-select 
+                    v-model="imp.ActionName" 
+                    style="width: 100%;" 
+                    :disabled="readonly"
+                    :title="validateField(notEmpty, imp.ActionName)" 
+                    :class="validateField(notEmpty, imp.ActionName) ? 'WorkflowDesignerInputError' : ''"
+                    filterable 
+                    clearable 
+                    :placeholder="labels.ImpAction">
+                    <el-option v-for="item in actions" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>
+            <td >
+                <el-autocomplete v-model="imp.ActionParameter" style="width: 100%;" clearable :placeholder="labels.ImpActionParameter" :readonly="readonly" :fetch-suggestions="querySearch" @focus="setCurrentItem(imp)"></el-autocomplete>
+            </td>
+            <td v-if="!readonly"  class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button @click="showjson('ActionParameter', imp)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == imp ? 'is-active' : '')"></el-button>
+                    <el-button @click="removeRow(FormData.PreExecutionImplementation, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+        </tr>
         </table>
     </div>
     <div v-if="expertMode" style="margin-bottom: 10px;">
         <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Annotations }}  |  
-            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Annotations)">{{ ButtonTextCreate }}</a>
+            <a v-if="!readonly" style="cursor:pointer" @click="addAnnotationRow(FormData.Annotations)">{{ ButtonTextCreate }}</a>
         </h4>
-
         <table v-if="FormData.Annotations.length > 0" class="WorkflowDesignerTable">
-            <th>
-                <td v-if="isIE"></td>
-                <td>{{labels.AnnotationName}}</td>
-                <td>{{labels.AnnotationValue}}</td>
-            </th>
-            <tr v-for="(annotation, index) in FormData.Annotations"
-                :class="dragOverIndex == index && dragOverBlock  == annotation ? 'dragOver' : ''"
-                @dragstart="dragstart(index, $event, FormData.Annotations)" @dragend="dragend($event)" 
-                @dragover="dragover(annotation, index, $event)">
-                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
-                <td>
-                    <el-input 
-                        v-model="annotation.Name" 
-                        :title="validateField('Name', annotation)" 
-                        :class="validateField('Name', annotation) ? 'WorkflowDesignerInputError' : ''">
-                    </el-input>
-                </td>
-                <td>
-                    <el-input 
-                        v-model="annotation.JsonValue" :readonly="readonly">
-                    </el-input>
-                </td>
-                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
-                    <el-button-group>
-                        <el-button @click="showjson('JsonValue', annotation)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == annotation ? 'is-active' : '')"></el-button>
-                        <el-button @click="removeRow(FormData.Annotations, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
-                    </el-button-group>
-                </td>
-            </tr>
+        <tr>
+            <td></td>
+            <td>{{labels.AnnotationName}}</td>
+            <td>{{labels.AnnotationValue}}</td>
+        </tr>
+        <tr v-for="(annotation, index) in FormData.Annotations"
+            :class="dragOverIndex == index && dragOverBlock  == annotation ? 'dragOver' : ''"
+            @dragstart="dragstart(index, $event, FormData.Annotations)" 
+            @dragend="dragend($event)" 
+            @dragover="dragover(annotation, index, $event)">
+            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly">
+                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+            </td>
+            <td>
+                <el-input 
+                    v-model="annotation.Name" 
+                    :placeholder="labels.AnnotationName"
+                    :title="validateField(notEmpty, annotation.Name)" 
+                    :class="validateField(notEmpty, annotation.Name) ? 'WorkflowDesignerInputError' : ''"
+                    clearable >
+                </el-input>
+            </td>
+            <td >
+                <el-input 
+                    v-model="annotation.JsonValue" 
+                    :placeholder="labels.AnnotationValue"
+                    clearable 
+                    :readonly="readonly">
+                </el-input>
+            </td>
+            <td v-if="!readonly"  class="WorkflowDesignerTableEditButtons Double">
+                <el-button-group>
+                    <el-button @click="showjson('JsonValue', annotation)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == annotation ? 'is-active' : '')"></el-button>
+                    <el-button @click="removeRow(FormData.Annotations, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </el-button-group>
+            </td>
+        </tr>
         </table>
     </div> 
+    <div v-if="expertMode" style="margin-bottom: 10px;">
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.TimeoutsLabel }}</h4>
+        <table class="WorkflowDesignerTable">
+        <tr>
+            <td>
+                <el-tooltip :content="labels.ExecutionTimeoutWarning" placement="top-start">
+                    <div>
+                    {{labels.ExecutionTimeoutLabel}}<i class="el-icon-warning" style="display: contents; color: #FF3300; opacity: 0.6; margin-left: 3px;"></i>
+                    </div>
+                </el-tooltip>
+            </td>
+            <td>{{labels.TypeLabel}}</td>
+            <td v-if="FormData.ExecutionTimeout.Type == 'SetActivity'">{{labels.ActivityLabel}}</td>
+            <td v-if="FormData.ExecutionTimeout.Type == 'SetState'">{{labels.StateLabel}}</td>
+            <td v-if="FormData.ExecutionTimeout.Type == 'Retry'">{{labels.RetryCountLabel}}</td>
+        </tr>
+        <tr>
+            <td :readonly="readonly":label="labels.ExecutionTimeoutLabel" >
+                <el-input  clearable  v-model="FormData.ExecutionTimeout.Timer" 
+                :placeholder="labels.ExecutionTimeoutLabel"
+                :title="FormData.ExecutionTimeout.Type ? validateField(notEmpty, FormData.ExecutionTimeout.Timer):''" 
+                :class="(FormData.ExecutionTimeout.Type ? validateField(notEmpty, FormData.ExecutionTimeout.Timer) : false) ? 'WorkflowDesignerInputError' : ''"
+                :readonly="readonly"></el-input>
+            </td> 
+            <td >
+                <el-select      
+                v-model="FormData.ExecutionTimeout.Type"            
+                style="width: 100%;" 
+                :disabled="readonly"
+                filterable
+                @change="delete  FormData.ExecutionTimeout.NameForSet"
+                :title="FormData.ExecutionTimeout.Timer ? validateField(notEmpty, FormData.ExecutionTimeout.Type):''" 
+                :class="(FormData.ExecutionTimeout.Timer ? validateField(notEmpty, FormData.ExecutionTimeout.Type) : false) ? 'WorkflowDesignerInputError' : ''"
+                clearable
+                :placeholder="labels.TypeLabel">
+                <el-option key="SetActivity" :label="labels.SetActivityLabel" value="SetActivity"></el-option>
+                <el-option key="SetState" :label="labels.SetStateLabel" value="SetState"></el-option>
+                <el-option key="Retry" :label="labels.RetryLabel" value="Retry"></el-option>
+                </el-select>
+            </td> 
+            <td v-if="FormData.ExecutionTimeout.Type == 'SetActivity'" >
+                <el-select 
+                v-model="FormData.ExecutionTimeout.NameForSet"
+                style="width: 100%;" 
+                :disabled="readonly"
+                filterable
+                :title="validateField(notEmpty, FormData.ExecutionTimeout.NameForSet)" 
+                :class="validateField(notEmpty, FormData.ExecutionTimeout.NameForSet) ? 'WorkflowDesignerInputError' : ''" 
+                clearable
+                :placeholder="labels.ActivityLabel">
+                <el-option  v-for="item in activities" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>
+            <td v-if="FormData.ExecutionTimeout.Type == 'SetState'">
+                <el-select 
+                v-model="FormData.ExecutionTimeout.NameForSet"
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="validateField(notEmpty, FormData.ExecutionTimeout.NameForSet)" 
+                :class="validateField(notEmpty, FormData.ExecutionTimeout.NameForSet) ? 'WorkflowDesignerInputError' : ''" 
+                filterable
+                clearable 
+                :placeholder="labels.StateLabel">
+                <el-option v-for="item in states" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>            
+            <td v-if="FormData.ExecutionTimeout.Type == 'Retry'">
+                <el-input-number  
+                v-model="FormData.ExecutionTimeout.RetryCount" clearable
+                :title="validateField(notEmpty, FormData.ExecutionTimeout.RetryCount)"
+                :class="validateField(notEmpty, FormData.ExecutionTimeout.RetryCount) ? 'WorkflowDesignerInputError' : ''"
+                 :placeholder="labels.RetryCountLabel" controls-position="right" style="width: 100%;" :readonly="readonly"></el-input-number>
+            </td>   
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButton">
+                <el-button @click="FormData.ExecutionTimeout = {RetryCount:'1'}" class="WorkflowDesignerTableDeleteButton"></el-button>
+            </td>
+        </tr>
+        </table>
+        <table class="WorkflowDesignerTable"> 
+        <tr>
+            <td>{{labels.IdleTimeoutLabel}}</td>
+            <td>{{labels.TypeLabel}}</td>
+            <td v-if="FormData.IdleTimeout.Type == 'SetActivity'">{{labels.ActivityLabel}}</td>
+            <td v-if="FormData.IdleTimeout.Type == 'SetState'">{{labels.StateLabel}}</td>
+        </tr>
+        <tr>
+            <td :readonly="readonly">
+                <el-input  v-model="FormData.IdleTimeout.Timer" 
+                clearable
+                :title="FormData.IdleTimeout.Type ? validateField(notEmpty, FormData.IdleTimeout.Timer):''" 
+                :class="(FormData.IdleTimeout.Type ? validateField(notEmpty, FormData.IdleTimeout.Timer) : false) ? 'WorkflowDesignerInputError' : ''"
+                  :placeholder="labels.IdleTimeoutLabel"
+                   :readonly="readonly"></el-input>
+            </td> 
+            <td :readonly="readonly">
+                <el-select
+                v-model="FormData.IdleTimeout.Type"                 
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="FormData.IdleTimeout.Timer ? validateField(notEmpty, FormData.IdleTimeout.Type):''" 
+                :class="(FormData.IdleTimeout.Timer ? validateField(notEmpty, FormData.IdleTimeout.Type) : false) ? 'WorkflowDesignerInputError' : ''"
+                filterable 
+                @change="delete  FormData.IdleTimeout.NameForSet"
+                clearable 
+                :placeholder="labels.TypeLabel">
+                <el-option key="SetActivity" :label="labels.SetActivityLabel" value="SetActivity"></el-option>
+                <el-option key="SetState" :label="labels.SetStateLabel" value="SetState"></el-option>
+                </el-select>
+            </td> 
+            <td v-if="FormData.IdleTimeout.Type == 'SetActivity'">
+                <el-select 
+                v-model="FormData.IdleTimeout.NameForSet"
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="validateField(notEmpty, FormData.IdleTimeout.NameForSet)" 
+                :class="validateField(notEmpty, FormData.IdleTimeout.NameForSet) ? 'WorkflowDesignerInputError' : ''"
+                filterable 
+                clearable 
+                :placeholder="labels.ActivityLabel">
+                <el-option  v-for="item in activities" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>
+            <td v-if="FormData.IdleTimeout.Type == 'SetState'">
+                <el-select 
+                v-model="FormData.IdleTimeout.NameForSet"
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="validateField(notEmpty, FormData.IdleTimeout.NameForSet)" 
+                :class="validateField(notEmpty, FormData.IdleTimeout.NameForSet) ? 'WorkflowDesignerInputError' : ''"
+                filterable 
+                clearable 
+                :placeholder="labels.StateLabel">
+                <el-option v-for="item in states" :key="item" :label="item"  :value="item"></el-option>
+                </el-select>
+            </td> 
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButton">
+                <el-button @click="FormData.IdleTimeout = {RetryCount:'1'}" class="WorkflowDesignerTableDeleteButton"></el-button>
+            </td>
+        </tr>
+    </table>
+    </div>
+    <div v-if="expertMode" style="margin-bottom: 10px;">
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.ExceptionsHandling }}  |  
+            <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.ExceptionsHandlers)">{{ ButtonTextCreate }}</a>
+        </h4>
+        <table class="WorkflowDesignerTable" v-if="FormData.ExceptionsHandlers.length > 0">               
+        <tr>
+            <td></td>
+            <td>{{labels.Exceptions}}</td>
+            <td>{{labels.TypeLabel}}</td>
+            <td>{{labels.ImpAction}}</td>
+        </tr>
+        <tr v-for="(imp, index) in FormData.ExceptionsHandlers" 
+        :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+        @dragstart="dragstart(index, $event, FormData.ExceptionsHandlers)"
+        @dragend="dragend($event)"
+        @dragover="dragover(imp, index, $event)">
+            <td  class='WorkflowDesignerTableMoveCol' :draggable="!readonly">
+                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+            </td >
+            <td>
+                <el-select    
+                v-model="imp.Exceptions"     
+                style="width: 100%;"
+                :disabled="readonly"
+                filterable 
+                allow-create
+                :title="validateField(notEmpty, imp.Exceptions)" 
+                :class="validateField(notEmpty, imp.Exceptions) ? 'WorkflowDesignerInputError' : ''"
+                multiple
+                clearable 
+                filterable
+                :placeholder="labels.Exceptions">
+                <el-option key="AllExceptions" :label="labels.AllExceptions" value="*"></el-option>
+                </el-select>
+            </td> 
+            <td >
+                <el-select
+                v-model="imp.Type"                 
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="validateField(notEmpty, imp.Type)" 
+                :class="validateField(notEmpty, imp.Type) ? 'WorkflowDesignerInputError' : ''"
+                filterable
+                @change="delete imp.NameForSet"
+                clearable
+                :placeholder="labels.TypeLabel">
+                <el-option key="SetActivity" :label="labels.SetActivityLabel" value="SetActivity"></el-option>
+                <el-option key="SetState" :label="labels.SetStateLabel" value="SetState"></el-option>
+                <el-option key="Retry" :label="labels.RetryLabel" value="Retry"></el-option>
+                <el-option key="Ignore" :label="labels.IgnoreLabel" value="Ignore"></el-option>
+                </el-select>
+            </td> 
+            <td v-if="imp.Type == 'SetActivity'" 
+                :readonly="readonly">
+                <el-select 
+                v-model="imp.NameForSet"
+                :title="validateField(notEmpty, imp.NameForSet)" 
+                :class="validateField(notEmpty, imp.NameForSet) ? 'WorkflowDesignerInputError' : ''"
+                style="width: 100%;" 
+                :disabled="readonly"
+                filterable 
+                clearable
+                :placeholder="labels.ActivityLabel">
+                <el-option  v-for="item in activities" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td>
+            <td v-if="imp.Type == 'SetState'" >
+                <el-select 
+                v-model="imp.NameForSet"
+                style="width: 100%;" 
+                :disabled="readonly"
+                :title="validateField(notEmpty, imp.NameForSet)" 
+                :class="validateField(notEmpty, imp.NameForSet) ? 'WorkflowDesignerInputError' : ''"
+                filterable
+                clearable                
+                :placeholder="labels.StateLabel">
+                <el-option v-for="item in states" :key="item" :label="item" :value="item"></el-option>
+                </el-select>
+            </td> 
+            <td v-if="imp.Type == 'Retry'">
+                <el-input-number  clearable v-model="imp.RetryCount"
+                :placeholder="labels.RetryCountLabel"
+                :title="validateField(notEmpty, imp.RetryCount)"
+                :class="validateField(notEmpty, imp.RetryCount) ? 'WorkflowDesignerInputError' : ''"
+                 controls-position="right"
+                  style="width: 100%;" :readonly="readonly"></el-input-number>
+            </td>
+            <td v-if="imp.Type == 'Ignore' || !imp.Type">
+            </td>
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButton">
+                <el-button  @click="removeRow(FormData.ExceptionsHandlers, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+            </td>
+        </tr>
+        </table>
+    </div>
 </el-form>
 <div class="WorkflowDesignerButtons">
     <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
@@ -154,7 +407,7 @@
         <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
     </span>
 </el-dialog> 
-<script>
+<script type="application/javascript">
     function activity_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
@@ -178,19 +431,34 @@
             },
             expertMode: false,
             actions: [],
+            activities: [],
+            states: [],
             editItem: null,
             FormData: { },
+            actionsStore: me.graph.data.CodeActions,
         });
-        
+
+        me.VueConfig.watch = {
+            actionsStore:function(val) {            
+                me.VueConfig.data.actions = me.graph.getActionNames();
+            },
+        }
+               
         me.VueConfig.methods.onUpdate = function(item){
+    
             var formdata = me.VueConfig.data.FormData;
             formdata.Name = item.Name;
+            formdata.ExecutionTimeout = item.ExecutionTimeout ? WorkflowDesignerCommon.clone(item.ExecutionTimeout) : {RetryCount:"1"};
+            formdata.IdleTimeout = item.IdleTimeout ? WorkflowDesignerCommon.clone(item.IdleTimeout) : {RetryCount:"1"};
+            // formdata.ExceptionsHandler = item.ExceptionsHandler ? WorkflowDesignerCommon.clone(item.ExceptionsHandler) : {RetryCount:"1", Exceptions:[]};
+            formdata.ExceptionsHandlers = Array.isArray(item.ExceptionsHandlers) ? WorkflowDesignerCommon.clone(item.ExceptionsHandlers) : [];
             formdata.State = item.State;
             formdata.IsInitial = item.IsInitial;
             formdata.IsFinal = item.IsFinal;
             formdata.IsForSetState = item.IsForSetState;
             formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
-            formdata.Implementation = Array.isArray(item.Implementation) ?WorkflowDesignerCommon.clone(item.Implementation) : [];
+            formdata.DisablePersist = item.DisablePersist;
+            formdata.Implementation = Array.isArray(item.Implementation) ? WorkflowDesignerCommon.clone(item.Implementation) : [];
             formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
             formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
 
@@ -198,11 +466,88 @@
             me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
             me.VueConfig.data.prevName = item.Name;
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
-            me.VueConfig.data.actions = me.graph.getActionNames();
+            me.VueConfig.data.actions = me.graph.getActionNames(); 
 
-            if(formdata.PreExecutionImplementation.length > 0 || formdata.Annotations.length > 0)
-                me.VueConfig.data.expertMode = true;
+            me.graph.data.Activities.forEach(function(element) {
+                if(element==item) //not add current activity
+                    return;
+                 me.VueConfig.data.activities.push(element.Name);
+                 if (element.State && element.State !== '') {
+                     me.VueConfig.data.states.push(element.State);
+                 }
+            });
+
+            me.VueConfig.data.activities.sort();
+            me.VueConfig.data.states.sort();
+
+            var objectCorrect = me.VueConfig.methods.objectCorrect;
+
+            if((formdata.PreExecutionImplementation.length > 0)
+                || (formdata.Annotations.length > 0)
+                || objectCorrect(formdata.ExecutionTimeout.Type)
+                || objectCorrect(formdata.IdleTimeout.Type)
+                || formdata.ExceptionsHandlers.length > 0
+                || formdata.DisablePersist)
+                {
+                    me.VueConfig.data.expertMode = true;
+                }          
         };
+
+        me.VueConfig.methods.getFieldRules = function(field){
+            var res = [{ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
+
+            if(field == "Name"){
+                var validator = function(rule, value, callback){ 
+                    var isValid = true;
+                    me.graph.data.Activities.forEach(function (a) {
+                        if (a != me.linkItem && a.Name == value) {
+                            isValid = false;
+                        }
+                    });
+                    
+                    if(isValid){
+                        callback();
+                    }
+                    else{                    
+                        callback(new Error(rule.message));
+                    }
+                };
+                res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+            }
+            return res;
+        };
+
+        me.VueConfig.methods.validateField = function(rules, value)
+        {
+
+            var value = arguments[arguments.length-1];
+
+            for (var i = 0; i < arguments.length-1; i++) 
+            {
+                var error = arguments[i](value);
+                if(error)
+                    return error;
+            }
+
+         
+        };
+
+        me.VueConfig.methods.notEmpty = function(value)
+        {
+            var isValid = true;
+            if(!me.VueConfig.methods.objectCorrect(value))
+                isValid = false;
+           
+           
+            if (Object.prototype.toString.call(value) === '[object Array]') 
+            {
+                if(value.length < 1)
+                    isValid = false;
+            }
+
+            if(!isValid)
+                return WorkflowDesignerConstants.FieldIsRequired;
+        }
 
         me.VueConfig.methods.nameOnChange = function(value){
             var formdata = me.VueConfig.data.FormData;
@@ -233,33 +578,152 @@
             cb(res);
         };
 
-        me.VueConfig.methods.getFieldRules = function(field){
-            var res = [{ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
-
-            if(field == "Name"){
-                var validator = function(rule, value, callback){ 
-                    var isValid = true;
-                    me.graph.data.Activities.forEach(function (a) {
-                        if (a != me.linkItem && a.Name == value) {
-                            isValid = false;
-                        }
-                    });
+        me.VueConfig.methods.validate = function(){
+            var validateFunc = me.VueConfig.methods.validateField;
+            var data = me.VueConfig.data.FormData;
+            var notEmptyRule = me.VueConfig.methods.notEmpty;
+            for(var i=0; i < data.Implementation.length; i++){
+                var item = data.Implementation[i];
+                if(validateFunc(notEmptyRule, item.ActionName))
+                {
+                    return false;
+                }
                     
-                    if(isValid){
-                        callback();
-                    }
-                    else{                    
-                        callback(new Error(rule.message));
-                    }
-                };
-                res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
             }
+
+            for(var i=0; i < data.PreExecutionImplementation.length; i++){
+                var item = data.PreExecutionImplementation[i];
+                if(validateFunc(notEmptyRule, item.ActionName))
+                {
+                    return false;
+                }
+            }
+
+            for(var i=0; i < data.Annotations.length; i++){
+                var item = data.Annotations[i];
+                if(validateFunc(notEmptyRule, item.Name))
+                {
+                    return false;
+                }
+            }
+            
+            if(data.ExecutionTimeout.Type)
+            {
+                if(validateFunc(notEmptyRule, data.ExecutionTimeout.Timer))
+                {
+                    return false;
+                }
+            }
+            if(data.ExecutionTimeout.Timer)
+            {
+                if(validateFunc(notEmptyRule, data.ExecutionTimeout.Type))
+                {
+                    return false;
+                }
+            }
+           
+            if(data.ExecutionTimeout.Type == 'SetActivity' || data.ExecutionTimeout.Type == 'SetState')
+            {
+                if(validateFunc(notEmptyRule, data.ExecutionTimeout.NameForSet))
+                {
+                    return false;
+                }
+            }
+
+            if(data.ExecutionTimeout.Type == 'Retry')
+            {
+                if(validateFunc(notEmptyRule, data.ExecutionTimeout.RetryCount))
+                {
+                    return false;
+                }
+            }
+
+            if(data.IdleTimeout.Type)
+            {
+                if(validateFunc(notEmptyRule, data.IdleTimeout.Timer))
+                {
+                    return false;
+                }
+            }
+
+            if(data.IdleTimeout.Timer)
+            {
+                if(validateFunc(notEmptyRule, data.IdleTimeout.Type))
+                {
+                    return false;
+                }
+            }
+ 
+            if(typeof data.IdleTimeout.Type != 'undefined')
+            {
+                if(validateFunc(notEmptyRule, data.IdleTimeout.NameForSet))
+                {
+                    return false;
+                }
+            }
+
+            for(var i=0; i < data.ExceptionsHandlers.length; i++){
+                var item = data.ExceptionsHandlers[i];
+                if(validateFunc(notEmptyRule, item.Exceptions)||
+                validateFunc(notEmptyRule, item.Type))
+                {
+                    return false;
+                }
+                if(item.Type == 'SetActivity' || item.Type == 'SetState')
+                {
+                    if(validateFunc(notEmptyRule, item.NameForSet))
+                    {
+                        return false;
+                    }
+                }
+
+                if(item.Type == 'Retry')
+                {
+                    if(validateFunc(notEmptyRule, item.RetryCount))
+                    {
+                        return false;
+                    }
+                }
+                    
+            }
+
+            return true;
+        };
+
+        me.VueConfig.methods.ActivityRules = function(res)
+        {
+            //validate on unique Activity name
+            var validator = function(rule, value, callback){ 
+                var isValid = true;
+                me.graph.data.Activities.forEach(function (a) {
+                    if (a != me.linkItem && a.Name == value) {
+                        isValid = false;
+                    }
+                });
+                
+                if(isValid){
+                    callback();
+                }
+                else{                    
+                    callback(new Error(rule.message));
+                }
+            };
+
+            res.push({ validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+
             return res;
         };
 
-
         me.VueConfig.methods.addRow = function(items){
+            items.push({});
+        };
+
+        me.VueConfig.methods.addActionRow = function(items){
             items.push({ActionParameter:""});
+        };
+
+        me.VueConfig.methods.addAnnotationRow = function(items){
+            items.push({JsonValue:null});
         };
 
         me.VueConfig.methods.removeRow = function(items, index){
@@ -289,52 +753,16 @@
             me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
         };
 
-        me.VueConfig.methods.validateField = function(name, item){
-            if(name != 'Name' && name != "ActionName")
-                return;
-
-            if(!item[name]){
-                return WorkflowDesignerConstants.FieldIsRequired;
-            }
-        };
-
-        me.VueConfig.methods.validate = function(){
-            var validateFunc = me.VueConfig.methods.validateField;
-            var data = me.VueConfig.data.FormData;
-            for(var i=0; i < data.Implementation.length; i++){
-                var item = data.Implementation[i];
-                if(validateFunc('ActionName', item))
-                    return false;
-            }
-
-            for(var i=0; i < data.PreExecutionImplementation.length; i++){
-                var item = data.PreExecutionImplementation[i];
-                if(validateFunc('ActionName', item))
-                    return false;
-            }
-
-            for(var i=0; i < data.Annotations.length; i++){
-                var item = data.Annotations[i];
-                if(validateFunc('Name', item))
-                    return false;
-            }
-
-            return true;
-        };
-
         me.VueConfig.methods.onHideEvent = function(){
             me.VueConfig.data.confirmdialog.visible = false;
         };
 
-        me.VueConfig.methods.onSave = function(){
-            if(this.$refs && this.$refs.form && me.VueConfig.methods.validate()){
-                this.$refs.form.validate(function(valid) {
-                    if (valid) {
-                        me.onSuccess(me.VueConfig.data.FormData);
-                        me.onClose(true);
-                    }
-                });
-                return;
+        me.VueConfig.methods.onSave = function()
+        {
+            if(this.$refs && WorkflowDesignerCommon.validateForms(this.$refs)&& me.VueConfig.methods.validate())
+            {
+                me.onSuccess(me.VueConfig.data.FormData);
+                me.onClose(true);
             }
         };
 

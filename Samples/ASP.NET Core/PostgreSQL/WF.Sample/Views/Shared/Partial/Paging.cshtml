@@ -1,0 +1,43 @@
+﻿@model WF.Sample.Models.IPaging
+@functions {
+
+    string GetActionName()
+    {
+        var action = ViewContext.RouteData.Values["action"].ToString();
+        return  action== "Index" ? string.Empty : "/Document/" + action;
+    }
+}
+@{
+    var lastPage = (int) Math.Ceiling((double) Model.Count / Model.PageSize);
+    
+    if (lastPage <1)
+    {
+        lastPage = 1;
+    }
+}
+
+Current Page: @Html.Raw(Model.Page)<br />
+Items count: @Model.Count <br />
+
+@if (Model.Page != 1)
+{
+    <a href="@GetActionName()?page=1">fist page</a> 
+    <a>|</a>
+}
+
+@if (Model.Page > 1)
+{
+    <a href="@GetActionName()?page=@(Model.Page - 1)">prev page</a>
+    <a>|</a>
+}
+
+@if (Model.Page < lastPage)
+{
+    <a href="@GetActionName()?page=@(Model.Page + 1)">next page</a>
+    <a>|</a>
+}
+
+@if (Model.Page!=lastPage)
+{
+    <a href="@GetActionName()?page=@(lastPage)">last page</a>
+}

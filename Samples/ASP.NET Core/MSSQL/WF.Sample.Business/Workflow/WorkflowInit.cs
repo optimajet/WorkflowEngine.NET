@@ -1,16 +1,15 @@
 using System;
-using System.Linq;
 using System.Reflection;
 using System.Xml.Linq;
 using OptimaJet.Workflow.Core.Builder;
-using OptimaJet.Workflow.Core.Bus;
 using OptimaJet.Workflow.Core.Parser;
 using OptimaJet.Workflow.Core.Runtime;
-using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Plugins;
+using WF.Sample.Business.Model;
 
 namespace WF.Sample.Business.Workflow
 {
@@ -37,32 +36,63 @@ namespace WF.Sample.Business.Workflow
                 {
                     if (_runtime == null)
                     {
-                        var plugin = new OptimaJet.Workflow.Core.Plugins.BasicPlugin();
+                        var loopPlugin = new LoopPlugin();
+                        var filePlugin = new FilePlugin();
+                        var approvalPlugin = new ApprovalPlugin();
+                        
+                        #region ApprovalPlugin Settings
+                        
+                        approvalPlugin.GetUserNamesByIds += GeUserNamesByIds;
+                        // approvalPlugin.AutoApprovalHistory = true;
+                        // approvalPlugin.NameParameterForComment = "Comment";
+
+                        #endregion ApprovalPlugin Settings
+                        
+                        var basicPlugin = new BasicPlugin();
+                        
+                        #region BasicPlugin Settings
+                        
                         //Settings for SendEmail actions
-                        // plugin.Setting_Mailserver = "smtp.yourserver.com";
-                        // plugin.Setting_MailserverPort = 25;
-                        // plugin.Setting_MailserverFrom = "from@yourserver.com";
-                        // plugin.Setting_MailserverLogin = "login@yourserver.com";
-                        // plugin.Setting_MailserverPassword = "password";
-                        // plugin.Setting_MailserverSsl = true;
-                        plugin.UsersInRoleAsync = UsersInRoleAsync;
+                        // basicPlugin.Setting_Mailserver = "smtp.yourserver.com";
+                        // basicPlugin.Setting_MailserverPort = 25;
+                        // basicPlugin.Setting_MailserverFrom = "from@yourserver.com";
+                        // basicPlugin.Setting_MailserverLogin = "login@yourserver.com";
+                        // basicPlugin.Setting_MailserverPassword = "password";
+                        // basicPlugin.Setting_MailserverSsl = true;
+                        
+                        //not implemented
+                        basicPlugin.ApproversInStageAsync += ApproversInStageAsync;
+                        
+                        basicPlugin.UsersInRoleAsync += UsersInRoleAsync;
+                        basicPlugin.CheckPredefinedActorAsync += CheckPredefinedActorAsync;
+                        basicPlugin.GetPredefinedIdentitiesAsync += GetPredefinedIdentitiesAsync;
+                        basicPlugin.UpdateDocumentStateAsync += UpdateDocumentStateAsync;
+                        
+                        basicPlugin.WithActors(new List<string>() {"Manager", "Author"});
+                        
+                        #endregion BasicPlugin Settings
                         
                         var provider = DataServiceProvider.Get<IPersistenceProviderContainer>().Provider;
+                        
+                        var externalParametersProvider = new ExternalParametersProvider();
+                        externalParametersProvider.GetDocument += GetDocument;
 
                         var builder = new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache();
-
                         _runtime = new WorkflowRuntime()
                             .WithBuilder(builder)
                             .WithActionProvider(new ActionProvider(DataServiceProvider))
                             .WithRuleProvider(new RuleProvider(DataServiceProvider))
+                            .WithDesignerAutocompleteProvider(new AutoCompleteProvider())
                             .WithPersistenceProvider(provider)
                             .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
                             .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
-                            .WithPlugin(plugin)
+                            .WithPlugins(null, basicPlugin, loopPlugin, filePlugin, approvalPlugin)
+                            .WithExternalParametersProvider(externalParametersProvider)
+                            .CodeActionsDebugOn()
                             .AsSingleServer() //.AsMultiServer()
+                        //    .WithConsoleAllLogger()
                             .Start();
-                       
-                        _runtime.OnProcessStatusChanged += _runtime_ProcessStatusChanged;
+
                     }
                 }
             }
@@ -71,57 +101,79 @@ namespace WF.Sample.Business.Workflow
         public static async Task<IEnumerable<string>> UsersInRoleAsync(string roleName, ProcessInstance processInstance)
         {
             var provider = DataServiceProvider.Get<IEmployeeRepository>();
-            return provider.GetInRole(roleName);            
+            return  provider.GetInRole(roleName);
         }
-
-        public static WorkflowRuntime Runtime => _runtime;
-
-        static void _runtime_ProcessStatusChanged(object sender, ProcessStatusChangedEventArgs e)
+        
+        public static async Task<bool> CheckPredefinedActorAsync(ProcessInstance processInstance, WorkflowRuntime runtime, string parameter, string identityId)
         {
-            if (e.NewStatus != ProcessStatus.Idled && e.NewStatus != ProcessStatus.Finalized)
-                return;
-
-            if (string.IsNullOrEmpty(e.SchemeCode))
-                return;
-
-            DataServiceProvider.Get<IDocumentRepository>().DeleteEmptyPreHistory(e.ProcessId);
-            _runtime.PreExecuteFromCurrentActivity(e.ProcessId);
-
-            //Inbox
-            var ir = DataServiceProvider.Get<IInboxRepository>();
-            ir.DropWorkflowInbox(e.ProcessId);
-
-            if (e.NewStatus != ProcessStatus.Finalized)
+            var doc = GetDocument(processInstance);
+            if (Guid.TryParse(identityId, out Guid id))
             {
-                Task.Run(() => PreExecuteAndFillInbox(e));
-            }
-
-            //Change state name
-            if (!e.IsSubprocess)
-            {
-                var nextState = e.ProcessInstance.CurrentState;
-                if(nextState == null)
+                if (parameter == "Author")
                 {
-                    nextState = e.ProcessInstance.CurrentActivityName;
+                    if (id == doc.AuthorId)
+                        return true;
+                    else
+                        return false;
                 }
-                var nextStateName = Runtime.GetLocalizedStateName(e.ProcessId, nextState);
 
-                var docRepository = DataServiceProvider.Get<IDocumentRepository>();
-
-                docRepository.ChangeState(e.ProcessId, nextState, nextStateName);
+                if (parameter == "Manager")
+                {
+                    if (id == doc.ManagerId)
+                        return true;
+                    else
+                        return false;
+                }
             }
+
+            return false;
         }
 
-        #region Inbox
-        private static void PreExecuteAndFillInbox(ProcessStatusChangedEventArgs e)
+        public static async Task<IEnumerable<string>> GetPredefinedIdentitiesAsync(ProcessInstance processInstance, WorkflowRuntime runtime, string parameter)
         {
-            DataServiceProvider.Get<IInboxRepository>().FillInbox(e.ProcessId, Runtime);
+            var doc = GetDocument(processInstance);
+            
+            if (parameter == "Author")
+                return new List<string>() {doc.AuthorId.ToString()};
+            
+            if (parameter == "Manager")
+                return new List<string>() {doc.ManagerId.ToString()};
+
+            return new List<string>();
         }
 
-        public static void RecalcInbox()
+        public static async Task<IEnumerable<string>> ApproversInStageAsync(string stageName, ProcessInstance processInstance)
         {
-            DataServiceProvider.Get<IInboxRepository>().RecalcInbox(Runtime);
+            throw new NotImplementedException();
         }
-        #endregion
+        public static List<string> GeUserNamesByIds(List<string> idS)
+        {
+            var employeeRepository = DataServiceProvider.Get<IEmployeeRepository>();
+            List<string> names = new List<string>();
+            foreach (var id in idS)
+            {
+                if(Guid.TryParse(id, out Guid guid))
+                    names.Add(employeeRepository.GetNameById(guid));
+                else
+                    names.Add(id);
+            }
+
+            return names;
+        }
+        public static async Task UpdateDocumentStateAsync(ProcessInstance processInstance, string stateName, string  localizedStateName)
+        {
+            var docRepository = DataServiceProvider.Get<IDocumentRepository>();
+            docRepository.ChangeState(processInstance.ProcessId, stateName, localizedStateName);
+        }
+
+        public static Document GetDocument(ProcessInstance processInstance)
+        {
+            var docRepository = DataServiceProvider.Get<IDocumentRepository>();
+            var doc = docRepository.Get(processInstance.ProcessId);
+            return doc;
+        }
+        
+        public static WorkflowRuntime Runtime => _runtime;
+        
     }
 }

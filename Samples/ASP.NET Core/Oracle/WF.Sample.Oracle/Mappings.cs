@@ -4,6 +4,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Persistence;
 
 namespace WF.Sample.Oracle
 {
@@ -17,26 +18,12 @@ namespace WF.Sample.Oracle
         {
             var config = new MapperConfiguration(cfg => {
 
-                cfg.CreateMap<StructDivision, Business.Model.StructDivision>()
-                ;
+                cfg.CreateMap<StructDivision, Business.Model.StructDivision>();
+                cfg.CreateMap<Employee, Business.Model.Employee>();
+                cfg.CreateMap<Role, Business.Model.Role>();
+                cfg.CreateMap<EmployeeRole, Business.Model.EmployeeRole>();
 
-                cfg.CreateMap<Employee, Business.Model.Employee>()
-                ;
-
-                cfg.CreateMap<Role, Business.Model.Role>()
-                
-                ;
-
-                cfg.CreateMap<EmployeeRole, Business.Model.EmployeeRole>()
-                ;
-
-                cfg.CreateMap<DocumentTransitionHistory, Business.Model.DocumentTransitionHistory>()
-              
-                ;
-
-                cfg.CreateMap<Document, Business.Model.Document>()
-              
-                ;
+                cfg.CreateMap<Document, Business.Model.Document>();
             });
 
             var mapper = config.CreateMapper();

@@ -42,7 +42,7 @@
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<script>
+<script type="application/javascript">
     function jsonform_Init(me){
         me.VueConfig.data = Object.assign(me.VueConfig.data, {
             editor_container: me.id + "_editor",

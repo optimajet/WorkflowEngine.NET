@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 5.0
+Version: 5.1
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -10,6 +10,8 @@ CREATE TABLE IF NOT EXISTS "WorkflowInbox"
   "Id" uuid NOT NULL,
   "ProcessId" uuid NOT NULL,
   "IdentityId" character varying(256) NOT NULL,
+  "AddingDate" timestamp NOT NULL  DEFAULT localtimestamp,
+  "AvailableCommands" character varying(1024) NOT NULL DEFAULT '',
   CONSTRAINT "WorkflowInbox_pkey" PRIMARY KEY ("Id")
 );
 
@@ -34,6 +36,8 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstance" (
   "TenantId" character varying(1024) NULL,
   "StartingTransition" text NULL,
   "SubprocessName" text NULL,
+  "CreationDate" timestamp NOT NULL DEFAULT localtimestamp,
+  "LastTransitionDate" timestamp NULL,
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
 
@@ -112,6 +116,8 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessTransitionHistory" (
   "FromStateName" character varying(256) NULL,
   "TriggerName" character varying(256) NULL,
   "IsFinalised" boolean NOT NULL,
+  "StartTransitionTime" timestamp,
+  "TransitionDuration" bigint,
   CONSTRAINT "WorkflowProcessTransitionHistory_pkey" PRIMARY KEY ("Id")
 );
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTransitionHistory_ProcessId_idx"  ON "WorkflowProcessTransitionHistory" USING btree ("ProcessId");
@@ -180,4 +186,5 @@ CREATE TABLE IF NOT EXISTS "WorkflowApprovalHistory" (
   CONSTRAINT "WorkflowApprovalHistory_pkey" PRIMARY KEY ("Id")
 );
 CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_ProcessId_idx"  ON "WorkflowApprovalHistory" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_IdentityId_idx" ON "WorkflowApprovalHistory" USING btree ("IdentityId");
 

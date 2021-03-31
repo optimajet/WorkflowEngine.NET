@@ -10,6 +10,7 @@ using System.Web.UI;
 using System.Web.UI.WebControls;
 using OptimaJet.Workflow.Core.Runtime;
 using WF.Sample.Business.DataAccess;
+using WF.Sample.Business.Model;
 using WF.Sample.Business.Workflow;
 using WF.Sample.Extensions;
 using WF.Sample.Helpers;
@@ -27,21 +28,21 @@ namespace WF.Sample.Pages.Document
         protected void Page_Load(object sender, EventArgs e)
         {
         }
-
+        
         public DocumentModel GetModel()
         {
             var id = RouteData.Values["id"] != null ? new Guid(RouteData.Values["id"].ToString()) : Guid.Empty;
 
             DocumentModel model = null;
 
-            if (id != Guid.Empty)
+            if(id!=Guid.Empty)
             {
                 var d = DocumentRepository.Get(id);
-                if (d != null)
+                if(d != null)
                 {
                     CreateWorkflowIfNotExists(id);
-
-                    var h = DocumentRepository.GetHistory(id);
+                    var history = GetApprovalHistory(id);
+                    
                     model = new DocumentModel()
                     {
                         Id = d.Id,
@@ -49,18 +50,18 @@ namespace WF.Sample.Pages.Document
                         AuthorName = d.Author.Name,
                         Comment = d.Comment,
                         ManagerId = d.ManagerId,
-                        ManagerName = d.ManagerId.HasValue ? d.Manager.Name : string.Empty,
+                        ManagerName =
+                            d.ManagerId.HasValue ? d.Manager.Name : string.Empty,
                         Name = d.Name,
                         Number = d.Number,
                         StateName = d.StateName,
                         Sum = d.Sum,
                         Commands = GetCommands(id),
                         AvailiableStates = GetStates(id),
-                        HistoryModel = new DocumentHistoryModel { Items = h }
+                        HistoryModel = new DocumentHistoryModel{Items = history}
                     };
-                    model.StateNameToSet = model.AvailiableStates.Keys.FirstOrDefault();
                 }
-
+                
             }
             else
             {
@@ -104,7 +105,7 @@ namespace WF.Sample.Pages.Document
 
         }
 
-        private void ExecuteCommand(Guid id, string commandName, DocumentModel document)
+        public static void ExecuteCommand(Guid id, string commandName, DocumentModel document)
         {
             var currentUser = CurrentUserSettings.GetCurrentUser().ToString();
 
@@ -261,6 +262,53 @@ namespace WF.Sample.Pages.Document
                 designerUrl = "~/Designer?processid=" + id.ToString();
             }
             return designerUrl;
+        }
+        
+        private List<DocumentApprovalHistory> GetApprovalHistory(Guid id)
+        {
+            var approvalHistory =   WorkflowInit.Runtime.PersistenceProvider
+                .GetApprovalHistoryByProcessIdAsync(id).Result;
+            var employees =  EmployeeRepository.GetAll();
+            List<DocumentApprovalHistory> histories = new List<DocumentApprovalHistory>();
+            foreach (var item in approvalHistory)
+            {
+                Employee employee = null;
+                if (Guid.TryParse(item.IdentityId,  out id) )
+                {
+                    employee = employees.FirstOrDefault(x => x.Id == id);
+                }
+
+                var allowedTo = new List<string>();
+                foreach (var user in item.AllowedTo)
+                {
+                    //Get name if it's Guid
+                    if(Guid.TryParse(user, out Guid guid))
+                    {
+                        allowedTo.Add(employees.FirstOrDefault(x => x.Id == guid)?.Name??user);
+                    }
+                    else
+                    {
+                        allowedTo.Add(user);
+                    }
+                }
+                
+                histories.Add(new DocumentApprovalHistory()
+                {
+                    Id = item.Id,
+                    ProcessId = item.ProcessId,
+                    IdentityId  = item.IdentityId,
+                    AllowedTo  = string.Join(",", allowedTo),
+                    TransitionTime  = item.TransitionTime,
+                    Sort  = item.Sort,
+                    InitialState  = item.InitialState,
+                    DestinationState  = item.DestinationState,
+                    TriggerName  = item.TriggerName,
+                    Commentary  = item.Commentary,
+                    Employee = employee
+                });
+            }
+
+            return histories;
         }
     }
 }

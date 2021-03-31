@@ -16,7 +16,7 @@
             <a href="javascript:DownloadSchemeBPMN()" class="ui secondary button">Download BPMN2</a>
             <a href="javascript:SelectScheme('bpmn')" class="ui secondary button">Upload BPMN2</a>
         </div>
-        <input type="file" name="uploadFile" id="uploadFile" style="display:none" onchange="javascript: UploadScheme();">
+        <input type="file" name="uploadFile" id="uploadFile" style="display:none" onchange="javascript: UploadScheme(this);">
     </div>
     <div id="wfdesigner" style="min-height:600px"></div>
 
@@ -128,8 +128,11 @@
             file.trigger('click');
         }
     
-        function UploadScheme() {
+        function UploadScheme(form) {
     
+            if (form.value=="")
+            return;
+
             if (selectSchemeType == "bpmn") {
                 wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
                     wfdesigner.autoarrangement();

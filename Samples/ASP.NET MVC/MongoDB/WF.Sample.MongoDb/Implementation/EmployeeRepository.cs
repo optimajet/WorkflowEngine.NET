@@ -18,7 +18,7 @@ namespace WF.Sample.MongoDb.Implementation
 
         public bool CheckRole(Guid employeeId, string roleName)
         {
-            var emp = CacheHelper<Entities.Employee>.Cache.Where(c => c.Id == employeeId).FirstOrDefault();
+            var emp = CacheHelper<Entities.Employee>.Cache.FirstOrDefault(c => c.Id == employeeId);
             return emp.Roles.Any(c => c.Value == roleName);
         }
 

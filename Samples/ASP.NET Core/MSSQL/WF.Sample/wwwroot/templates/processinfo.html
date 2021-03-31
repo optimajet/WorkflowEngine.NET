@@ -16,6 +16,9 @@
                 <el-form-item>
                     <el-switch :active-text="InlineLabel" v-model="CanBeInlined" :disabled="readonly"></el-switch>
                 </el-form-item>
+                <el-form-item>
+                    <el-switch :active-text="LogEnabledLabel" v-model="LogEnabled" :disabled="readonly"></el-switch>
+                </el-form-item>
                 <el-form-item v-if="Id">
                     <el-switch :active-text="labels.IsObsolete" v-model="IsObsolete" :disabled="readonly"></el-switch>
                 </el-form-item>
@@ -185,10 +188,6 @@
             </el-collapse>
         </el-tab-pane>
     </el-tabs>
-    <div class="WorkflowDesignerButtons">
-        <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
-        <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
-    </div>
     <el-dialog
         :title="confirmdialog.title"
         :before-close="function() {confirmdialog.visible = false}"
@@ -202,12 +201,17 @@
         </span>
     </el-dialog>
 </div>
-<script>
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<script type="application/javascript">
     function processinfo_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
             labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
             InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
+            LogEnabledLabel: WorkflowDesignerConstants.Logs.Label,
             editItem: undefined,     
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
@@ -225,6 +229,7 @@
             FormData: {},
             Tags: [],
             CanBeInlined: null,
+            LogEnabled: false,
             IsObsolete: false,
             DefiningParameters: undefined,
             ProcessTimers: [],
@@ -240,6 +245,7 @@
             var data = me.VueConfig.data;
             data.Tags = WorkflowDesignerCommon.clone(me.graph.data.Tags);
             data.CanBeInlined = me.graph.data.CanBeInlined;
+            data.LogEnabled = me.graph.data.LogEnabled;
             data.Name = me.graph.data.Name;
             if(me.graph.data.Id && me.graph.data.Id != "00000000-0000-0000-0000-000000000000"){
                 data.Id = me.graph.data.Id
@@ -272,7 +278,9 @@
             var data = me.graph.data;
             data.Tags = WorkflowDesignerCommon.clone(me.VueConfig.data.Tags);
             data.CanBeInlined = me.VueConfig.data.CanBeInlined;
+            data.LogEnabled = me.VueConfig.data.LogEnabled;
             me.graph.setInlinedFlag(data.CanBeInlined);
+            me.graph.setLogEnabled(data.LogEnabled);
             me.onClose(true);
         };
 
@@ -290,10 +298,10 @@
                 return;
             }
 
-            if (!me.VueConfig.data.readonly && (!WorkflowDesignerCommon.compareArray(
-                me.graph.data.Tags, 
-                me.VueConfig.data.Tags) ||
-                me.graph.data.CanBeInlined !== me.VueConfig.data.CanBeInlined)) {
+            if (!me.VueConfig.data.readonly
+                && (!WorkflowDesignerCommon.compareArray(me.graph.data.Tags, me.VueConfig.data.Tags)
+                    || me.graph.data.CanBeInlined !== me.VueConfig.data.CanBeInlined
+                    || me.graph.data.LogEnabled !== me.VueConfig.data.LogEnabled)) {
                 
                 me.VueConfig.data.confirmdialog.visible = true;
                 return false;

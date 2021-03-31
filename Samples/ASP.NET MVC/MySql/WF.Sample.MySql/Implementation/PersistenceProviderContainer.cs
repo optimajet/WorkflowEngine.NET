@@ -1,13 +1,6 @@
-﻿using OptimaJet.Workflow.Core.Generator;
-using OptimaJet.Workflow.Core.Persistence;
-using OptimaJet.Workflow.MySQL;
-using System;
-using System.Collections.Generic;
+﻿using OptimaJet.Workflow.Core.Persistence;
 using System.Configuration;
-using System.Linq;
-using System.Text;
-using System.Threading.Tasks;
-using System.Xml.Linq;
+using OptimaJet.Workflow.MySQL;
 using WF.Sample.Business.DataAccess;
 
 namespace WF.Sample.MySql.Implementation

@@ -27,28 +27,7 @@ namespace WF.Sample.Redis.Entities
         public string StateName { get; set; }
         
         public string State { get; set; }
-
-        public Dictionary<string, string> AvailiableStates { get; set; }
-
-        public Document ()
-        {   
-            AvailiableStates = new Dictionary<string, string>{};
-            TransitionHistories = new List<DocumentTransitionHistory>();
-        }
-
-        public string StateNameToSet { get; set; }
-
-        private List<DocumentTransitionHistory> _transitionHistories = null;
-        public List<DocumentTransitionHistory> TransitionHistories
-        {
-            get
-            {
-                if (_transitionHistories == null)
-                    _transitionHistories = new List<DocumentTransitionHistory>();
-                return _transitionHistories;
-            }
-            set { _transitionHistories = value; }
-        }
+        
 
     }
 }

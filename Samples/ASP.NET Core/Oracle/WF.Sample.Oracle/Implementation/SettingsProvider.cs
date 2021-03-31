@@ -7,6 +7,7 @@ using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
 
+
 namespace WF.Sample.Oracle.Implementation
 {
     public class SettingsProvider : ISettingsProvider
@@ -29,7 +30,7 @@ namespace WF.Sample.Oracle.Implementation
             model.Employees = Mappings.Mapper.Map<IList<Employee>, List<Business.Model.Employee>>(
                 _sampleContext.Employees.Include(x => x.StructDivision)
                                         .Include(x => x.EmployeeRoles)
-                                        .ThenInclude(er => er.Role)
+                                        .ThenInclude(x => x.Role)
                                         .ToList()
             );
 

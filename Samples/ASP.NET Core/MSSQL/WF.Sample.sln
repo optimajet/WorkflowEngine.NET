@@ -1,7 +1,7 @@
 ﻿
 Microsoft Visual Studio Solution File, Format Version 12.00
-# Visual Studio 15
-VisualStudioVersion = 15.0.28307.168
+# Visual Studio Version 16
+VisualStudioVersion = 16.0.30517.126
 MinimumVisualStudioVersion = 10.0.40219.1
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WF.Sample", "WF.Sample\WF.Sample.csproj", "{B3DEB58B-8FE3-40EC-A451-D0FBB5622B38}"
 	ProjectSection(ProjectDependencies) = postProject
@@ -10,7 +10,7 @@ Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WF.Sample", "WF.Sample\WF.S
 EndProject
 Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WF.Sample.Business", "WF.Sample.Business\WF.Sample.Business.csproj", "{A4ECE62F-B0A1-47D6-9DA6-0446E792F824}"
 EndProject
-Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "WF.Sample.MsSql", "WF.Sample.MsSql\WF.Sample.MsSql.csproj", "{9FFD0A19-34BE-4DD5-916C-B680B769EDC9}"
+Project("{9A19103F-16F7-4668-BE54-9A1E7A4F7556}") = "WF.Sample.MsSql", "WF.Sample.MsSql\WF.Sample.MsSql.csproj", "{9FFD0A19-34BE-4DD5-916C-B680B769EDC9}"
 EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution

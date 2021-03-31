@@ -47,9 +47,9 @@ namespace WF.Sample.Controllers
             var res = WorkflowInit.Runtime.DesignerAPI(pars, out bool hasError, filestream, true);
 
             if (pars["operation"].ToLower() == "downloadscheme" && !hasError)
-                return File(Encoding.UTF8.GetBytes(res), "text/xml");
+                return File(Encoding.UTF8.GetBytes(res), "text/xml", "scheme.xml");
             if (pars["operation"].ToLower() == "downloadschemebpmn" && !hasError)
-                return File(Encoding.UTF8.GetBytes(res), "text/xml");
+                return File(Encoding.UTF8.GetBytes(res), "text/xml", "scheme.bpmn");
 
             return Content(res);
 

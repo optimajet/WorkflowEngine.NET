@@ -1,3 +1,5 @@
+using OptimaJet.Workflow.Core.Persistence;
+
 namespace WF.Sample.Oracle
 {
     using System;
@@ -11,7 +13,6 @@ namespace WF.Sample.Oracle
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Document()
         {
-            DocumentTransitionHistories = new HashSet<DocumentTransitionHistory>();
             State = "VacationRequestCreated";
             StateName = "Vacation request created";
         }
@@ -27,7 +28,6 @@ namespace WF.Sample.Oracle
 
         public string Comment { get; set; }
 
-        [Required]
         public Guid AuthorId { get; set; }
 
         public Guid? ManagerId { get; set; }
@@ -44,8 +44,5 @@ namespace WF.Sample.Oracle
         public virtual Employee Author { get; set; }
 
         public virtual Employee Manager { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
     }
 }

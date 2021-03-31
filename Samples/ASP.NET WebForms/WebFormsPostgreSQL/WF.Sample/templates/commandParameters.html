@@ -69,7 +69,7 @@
         <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
     </span>
 </el-dialog> 
-<script>
+<script type="application/javascript">
     function commandParameters_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
@@ -89,8 +89,15 @@
                     me.VueConfig.data.confirmdialog.visible = false;
                     me.onClose(true);
                 }
-            }
+            },
+            parametersStore: me.graph.data.Parameters,
         });
+
+        me.VueConfig.watch = {
+            parametersStore:function(val) {            
+                me.VueConfig.data.parameters = me.graph.getNonSystemParameters();
+            },
+        }
 
         me.VueConfig.methods.setCurrentItem = function(item) {
             this.currentItem = item;

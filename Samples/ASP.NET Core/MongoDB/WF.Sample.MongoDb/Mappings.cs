@@ -25,12 +25,6 @@ namespace WF.Sample.MongoDb
                         null))
                 ;
 
-                cfg.CreateMap<DocumentTransitionHistory, Business.Model.DocumentTransitionHistory>()
-                   .ForMember(d => d.Employee, o => o.MapFrom(s => s.EmployeeId.HasValue ?
-                        new Business.Model.Employee { Id = s.EmployeeId.Value, Name = s.EmployeeName ?? "" } :
-                        null))
-                ;
-
                 cfg.CreateMap<Employee, Business.Model.Employee>()
                    .ForMember(d => d.EmployeeRoles, o => o.MapFrom(s => s.Roles.Select(kvp => new Business.Model.EmployeeRole
                    {

@@ -22,14 +22,7 @@ namespace WF.Sample.MongoDb
                    .ForMember(d => d.Author, o => o.MapFrom(s => new Business.Model.Employee { Id = s.AuthorId, Name = s.AuthorName }))
                    .ForMember(d => d.Manager, o => o.MapFrom(s => s.ManagerId.HasValue ? 
                         new Business.Model.Employee { Id = s.ManagerId.Value, Name = s.ManagerName } : 
-                        null))
-                ;
-
-                cfg.CreateMap<DocumentTransitionHistory, Business.Model.DocumentTransitionHistory>()
-                   .ForMember(d => d.Employee, o => o.MapFrom(s => s.EmployeeId.HasValue ?
-                        new Business.Model.Employee { Id = s.EmployeeId.Value, Name = s.EmployeeName ?? "" } :
-                        null))
-                ;
+                        null));
 
                 cfg.CreateMap<Employee, Business.Model.Employee>()
                    .ForMember(d => d.EmployeeRoles, o => o.MapFrom(s => s.Roles.Select(kvp => new Business.Model.EmployeeRole

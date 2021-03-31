@@ -6,6 +6,7 @@ File: DropPersistenceObjects.sql
 */
 
 DROP TABLE workflowinbox;
+DROP TABLE WorkflowApprovalHistory;
 DROP TABLE workflowprocessinstance;
 DROP TABLE workflowprocessinstancepersistence;
 DROP TABLE workflowprocessinstancestatus;

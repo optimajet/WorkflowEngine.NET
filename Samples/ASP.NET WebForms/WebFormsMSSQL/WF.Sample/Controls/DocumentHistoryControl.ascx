@@ -4,7 +4,7 @@
 
     <h1>Document's Transition History</h1>
 
-    <asp:Repeater DataSource="<%# Model.Items %>" id="HistoryTableRepeater" runat="server" ItemType="WF.Sample.Business.Model.DocumentTransitionHistory">
+    <asp:Repeater DataSource="<%# Model.Items %>" id="HistoryTableRepeater" runat="server" ItemType="WF.Sample.Business.Model.DocumentApprovalHistory">
         <HeaderTemplate>
            <table class="table">
             <tbody>
@@ -22,10 +22,10 @@
             <tr>
                 <td><label><%#: Item.InitialState %></label></td>
                 <td><label><%#: Item.DestinationState %></label></td>
-                <td><label><%#: Item.Command %></label></td>
-                <td><label><%#: Item.Employee != null ? Item.Employee.Name : "" %></label></td>
+                <td><label><%#: Item.TriggerName %></label></td>
+                <td><label><%#: !string.IsNullOrEmpty(Item.IdentityId)? (Item.Employee.Name??Item.IdentityId) : "" %></label></td>
                 <td><label><%#: Item.TransitionTime.HasValue ? Item.TransitionTime.Value.ToString("yyyy-MM-dd HH:mm:ss") : "" %></label></td>
-                <td><label><%#: Item.AllowedToEmployeeNames %></label></td>
+                <td><label><%#: Item.AllowedTo %></label></td>
             </tr>
         </ItemTemplate>
              

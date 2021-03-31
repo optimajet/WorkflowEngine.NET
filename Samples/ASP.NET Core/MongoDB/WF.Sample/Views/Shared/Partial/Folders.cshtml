@@ -1,5 +1,4 @@
-﻿@using System.Linq
-@using Microsoft.AspNetCore.Http.Extensions
+﻿@using Microsoft.AspNetCore.Http.Extensions
 
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor ContextAccessor
 
@@ -25,16 +24,3 @@
         <a href="/Document/Outbox" class="item">@Html.Raw(folder == 2 ? "<b>Outbox</b>" : "Outbox")</a>
     </div>
 </div>
-
-<script>
-    function ReCalcInbox() {
-        $.ajax({
-            type: "POST",
-            url: "@Url.Action("RecalcInbox", "Document")",
-            success: function (msg) {
-                alert(msg);
-            }
-        });
-    }
-
-</script>

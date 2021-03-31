@@ -1,17 +1,15 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.ComponentModel.DataAnnotations;
-using System.Linq;
-using System.Web;
-using WF.Sample.Business;
 
 namespace WF.Sample.Models
 {
     public class DocumentModel
     {
+        public static string NotFoundError = "Document is not found";
         public Guid Id { get; set; }
         public int? Number { get; set; }
-
+        
         [Required]
         [StringLength(256)]
         [DataType(DataType.Text)]
@@ -28,10 +26,12 @@ namespace WF.Sample.Models
         [Display(Name = "Author")]
         public string AuthorName { get; set; }
 
+        [Required]
         [DataType(DataType.Text)]
         [Display(Name = "Manager")]
         public Guid? ManagerId { get; set; }
-
+        
+        
         [DataType(DataType.Text)]
         [Display(Name = "Manager")]
         public string ManagerName { get; set; }
@@ -41,6 +41,10 @@ namespace WF.Sample.Models
 
         [Display(Name = "State")]
         public string StateName { get; set; }
+        
+        //False - if document is not found
+        public bool IsCorrect { get; set; } = true;
+        
 
         public DocumentCommandModel[] Commands { get; set; }
 

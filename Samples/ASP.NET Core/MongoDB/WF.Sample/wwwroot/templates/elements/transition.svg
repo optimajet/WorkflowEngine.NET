@@ -1,0 +1,20 @@
+<svg width="{11.5 + (item.IsTimer ? 12:0) + item.TextWidth +  (item.IsActor ? 12:0) + (item.IsCondition ? 12:0) + (item.IsOtherwise ? 12:0)}" height="25"  fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect width="{11.5 + (item.IsTimer ? 12:0) + item.TextWidth +  (item.IsActor ? 12:0) + (item.IsCondition ? 12:0) + (item.IsOtherwise ? 12:0)}" height="25" rx="15" ry="15" fill="{Color}"/>    
+    <path fill="{TextColor}" 
+        visibility="{item.IsTimer ? 'visible' : 'hidden'}" 
+        transform="translate(4,5.5)scale(0.55)" 
+        d="M12,20A8,8 0 0,0 20,12A8,8 0 0,0 12,4A8,8 0 0,0 4,12A8,8 0 0,0 12,20M12,2A10,10 0 0,1 22,12A10,10 0 0,1 12,22C6.47,22 2,17.5 2,12A10,10 0 0,1 12,2M12.5,7V12.25L17,14.92L16.25,16.15L11,13V7H12.5Z"/>
+    <text x="{6 + (item.IsTimer ? 12 : 0)}" y="16.5" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">{Text}</text>
+    <path  fill="{TextColor}" 
+        visibility="{item.IsActor ? 'visible' : 'hidden'}" 
+        transform="translate({6 + (item.IsTimer ? 12:0) + item.TextWidth},5.5)scale(0.55)" 
+        d="M12,4A4,4 0 0,1 16,8A4,4 0 0,1 12,12A4,4 0 0,1 8,8A4,4 0 0,1 12,4M12,14C16.42,14 20,15.79 20,18V20H4V18C4,15.79 7.58,14 12,14Z"/>
+    <path  fill="{TextColor}" 
+        visibility="{item.IsCondition ? 'visible' : 'hidden'}" 
+        transform="translate({6 + (item.IsTimer ? 12:0) +  (item.IsActor ? 12:0) + item.TextWidth },5.5)scale(0.55)" 
+        d="M10,19H13V22H10V19M12,2C17.35,2.22 19.68,7.62 16.5,11.67C15.67,12.67 14.33,13.33 13.67,14.17C13,15 13,16 13,17H10C10,15.33 10,13.92 10.67,12.92C11.33,11.92 12.67,11.33 13.5,10.67C15.92,8.43 15.32,5.26 12,5A3,3 0 0,0 9,8H6A6,6 0 0,1 12,2Z"/>
+    <path  fill="{TextColor}" 
+        visibility="{item.IsOtherwise ? 'visible' : 'hidden'}" 
+        transform="translate({6 + (item.IsTimer ? 12:0) +  (item.IsActor ? 12:0) + (item.IsCondition ? 12:0) + item.TextWidth},5.55)scale(0.55)" 
+        d="M14,4L16.29,6.29L13.41,9.17L14.83,10.59L17.71,7.71L20,10V4M10,4H4V10L6.29,7.71L11,12.41V20H13V11.59L7.71,6.29"/>
+</svg>

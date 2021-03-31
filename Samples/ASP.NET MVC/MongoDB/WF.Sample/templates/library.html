@@ -18,7 +18,7 @@
         </div>
     </div>
 </el-form>
-<script>
+<script type="application/javascript">
     function library_Init(me)
     {
         me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -64,12 +64,23 @@
             me.VueConfig.watch.options.handler();
         };
 
-        me.VueConfig.methods.insertScheme = function(item, pos){
+        me.VueConfig.methods.insertScheme = function(item, e){
+            var loadingSpinner = $("<div class='WorkflowDesignerWindowLoaderOverlay Compact'><div class='cv-spinner'><span class='spinner'></span></div></div>")
+            $("body").append(loadingSpinner);
+            loadingSpinner.css('left',e.pageX + 'px');          
+            loadingSpinner.css('top',e.pageY + 'px');
+            loadingSpinner.show();
+
+            var offset = me.parentContainer.offset();
+            var pos = {
+                x: e.pageX - offset.left, 
+                y: e.pageY - offset.top
+            };
             $.ajax({
                 url: me.VueConfig.data.folder + item.File, 
                 dataType: 'text'
             }).done(function(result) {
-                me.graph.insertScheme(result, pos);                
+                me.graph.insertScheme(result, pos, function () { loadingSpinner.remove() });                               
             });
         }
 
@@ -90,13 +101,8 @@
             me.parentContainer.off("dragover.library");
             
             if(this.draggingItem !== undefined)
-           {
-                var offset = me.parentContainer.offset();
-                var pos = {
-                    x: e.pageX - offset.left, 
-                    y: e.pageY - offset.top
-                };
-                this.insertScheme(this.draggingItem, pos);
+           {                
+                this.insertScheme(this.draggingItem, e);
                 this.draggingItem = undefined;
             }
         };

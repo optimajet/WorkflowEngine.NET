@@ -1,10 +1,11 @@
-﻿using System;
+﻿using Microsoft.EntityFrameworkCore;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
-using Microsoft.EntityFrameworkCore;
+
 
 namespace WF.Sample.MySql.Implementation
 {
@@ -19,19 +20,19 @@ namespace WF.Sample.MySql.Implementation
 
         public bool CheckRole(Guid employeeId, string roleName)
         {
-            return _sampleContext.EmployeeRoles.Count(r => r.EmployeeId == employeeId && r.Role.Name == roleName) > 0;
+            return _sampleContext.EmployeeRoles.Any(r => r.EmployeeId == employeeId && r.Role.Name == roleName);
         }
 
         public List<Business.Model.Employee> GetAll()
         {
+      
             return _sampleContext.Employees
                                  .Include(x => x.StructDivision)
                                  .Include(x => x.EmployeeRoles)
-                                 .ThenInclude(er => er.Role)
+                                 .ThenInclude(x => x.Role)
                                  .ToList().Select(e => Mappings.Mapper.Map<Business.Model.Employee>(e))
                                  .OrderBy(c => c.Name).ToList();
         }
-
         public IEnumerable<string> GetInRole(string roleName)
         {
             return

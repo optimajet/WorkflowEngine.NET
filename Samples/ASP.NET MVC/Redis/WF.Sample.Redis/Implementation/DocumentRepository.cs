@@ -8,6 +8,7 @@ using System.Text;
 using System.Threading.Tasks;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
+using Employee = WF.Sample.Redis.Entities.Employee;
 
 namespace WF.Sample.Redis.Implementation
 {
@@ -29,6 +30,13 @@ namespace WF.Sample.Redis.Implementation
                 doc.State = nextState;
                 SaveDocument(db, doc);
             }
+        }
+
+        public List<Document> GetByIds(List<Guid> ids)
+        {
+            var db = _connector.GetDatabase();
+            var docs = db.StringGet(ids.Select(k => (RedisKey)GetKeyForDocument(k)).ToArray());
+            return docs.Where(x=>x.HasValue).Select(d => Mappings.Mapper.Map<Document>(JsonConvert.DeserializeObject<Entities.Document>(d))).ToList();
         }
 
         public void Delete(Guid[] ids)
@@ -54,15 +62,6 @@ namespace WF.Sample.Redis.Implementation
                     }
                 }
 
-                foreach(var h in doc.TransitionHistories)
-                {
-                    if(h.EmployeeId.HasValue)
-                    {
-                        batch.SortedSetRemoveAsync(GetKeyForOutboxDocuments(h.EmployeeId.Value), doc.Id.ToString());
-                        Debug.Write($"{GetKeyForOutboxDocuments(h.EmployeeId.Value)} removed from outbox");
-                    }
-                }
-
                 batch.KeyDeleteAsync(employeesKey);
             }
 
@@ -75,36 +74,9 @@ namespace WF.Sample.Redis.Implementation
             batch.Execute();
         }
 
-        public void DeleteEmptyPreHistory(Guid processId)
+        public List<Document> Get(out int count, int page = 1, int pageSize = 128)
         {
-            var db = _connector.GetDatabase();
-            var doc = GetDocument(db, processId);
-            
-            if (doc != null)
-            {
-                var employeeIdsOfEmptyPreHistory = doc.TransitionHistories
-                    .Where(x => !x.TransitionTime.HasValue && x.EmployeeId.HasValue)
-                    .Select(x => x.EmployeeId.Value).Distinct();
-
-                doc.TransitionHistories.RemoveAll(dth => !dth.TransitionTime.HasValue);
-
-                var employeeIdsToDelete = employeeIdsOfEmptyPreHistory.Where(x => !doc.TransitionHistories.Any(h => h.EmployeeId == x));
-
-                var batch = db.CreateBatch();
-
-                SaveDocument(batch, doc);
-
-                foreach(var id in employeeIdsToDelete)
-                {
-                    batch.SortedSetRemoveAsync(GetKeyForOutboxDocuments(id), doc.Id.ToString());
-                }
-
-                batch.Execute();
-            }
-        }
-
-        public List<Document> Get(out int count, int page = 0, int pageSize = 128)
-        {
+            page -= 1;
             var db = _connector.GetDatabase();
             var documentCollectionKey = GetKeyForSortedDocuments();
 
@@ -159,56 +131,20 @@ namespace WF.Sample.Redis.Implementation
 
             return res.Distinct();
         }
-
-        public List<DocumentTransitionHistory> GetHistory(Guid id)
-        {
-            var db = _connector.GetDatabase();
-            var document = GetDocument(db, id);
-            if (document == null)
-                return null;
-
-            return document.TransitionHistories.Select(h => Mappings.Mapper.Map<DocumentTransitionHistory>(h)).ToList();
-        }
-
-        public List<Document> GetInbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            var db = _connector.GetDatabase();
-
-            var inboxKey = GetKeyForInboxDocuments(identityId);
-
-            count = (int)db.ListLength(inboxKey);
-
-            var inbox = db.ListRange(inboxKey, page * pageSize, (page + 1) * pageSize - 1);
-
-            var docs = db.StringGet(inbox.Select(k => (RedisKey)GetKeyForDocument(new Guid((string)k))).ToArray());
-
-            return docs.Select(d => Mappings.Mapper.Map<Document>(JsonConvert.DeserializeObject<Entities.Document>(d))).ToList();
-        }
-
-        public List<Document> GetOutbox(Guid identityId, out int count, int page = 0, int pageSize = 128)
-        {
-            var res = new List<Document>();
-
-            var db = _connector.GetDatabase();
-
-            var outboxKey = GetKeyForOutboxDocuments(identityId);
-
-            count = (int)db.SortedSetLength(outboxKey);
-
-            var outbox = db.SortedSetRangeByRank(outboxKey, page * pageSize, (page + 1) * pageSize - 1);
-
-            var docs = db.StringGet(outbox.Select(k => (RedisKey)GetKeyForDocument(new Guid((string)k))).ToArray());
-
-            return docs.Select(d => Mappings.Mapper.Map<Document>(JsonConvert.DeserializeObject<Entities.Document>(d))).ToList();
-        }
-
+        
         public Document InsertOrUpdate(Document doc)
         {
             Entities.Document target = null;
-
+            
             var db = _connector.GetDatabase();
             var batch = db.CreateBatch();
 
+            if (String.IsNullOrEmpty(doc.Manager?.Name) && doc.Manager!=null)
+            {
+                Employee manager = GetEmployee(db, doc.Manager.Id);
+                doc.Manager.Name = manager?.Name;
+            }
+            
             if (doc.Id != Guid.Empty)
             {
                 target = GetDocument(db, doc.Id);
@@ -253,78 +189,6 @@ namespace WF.Sample.Redis.Implementation
         public bool IsAuthorsBoss(Guid documentId, Guid identityId)
         {
             return GetAuthorsBoss(documentId).Contains(identityId.ToString());
-        }
-
-        public void UpdateTransitionHistory(Guid id, string currentState, string nextState, string command, Guid? employeeId)
-        {
-            var db = _connector.GetDatabase();
-
-            var doc = GetDocument(db, id);
-
-            if (doc == null) throw new ArgumentException("Document not found", nameof(id));
-
-            var historyItem = doc.TransitionHistories.FirstOrDefault(h => !h.TransitionTime.HasValue &&
-                h.InitialState == currentState &&
-                h.DestinationState == nextState);
-
-            if (historyItem == null)
-            {
-                historyItem = new Entities.DocumentTransitionHistory
-                {
-                    Id = Guid.NewGuid(),
-                    AllowedToEmployeeNames = string.Empty,
-                    DestinationState = nextState,
-                    InitialState = currentState
-                };
-
-                doc.TransitionHistories.Add(historyItem);
-            }
-
-            historyItem.Command = command;
-            historyItem.TransitionTime = DateTime.Now;
-            historyItem.EmployeeId = employeeId;
-
-            if (employeeId.HasValue)
-            {
-                var employee = GetEmployee(db, employeeId.Value);
-                historyItem.EmployeeName = employee.Name;
-            }
-            else
-            {
-                historyItem.EmployeeName = null;
-            }
-
-            var batch = db.CreateBatch();
-
-            SaveDocument(batch, doc);
-            if (employeeId.HasValue)
-            {
-                batch.SortedSetAddAsync(GetKeyForOutboxDocuments(employeeId.Value), id.ToString(), GetNextOutboxNumber(db));
-            }
-
-            batch.Execute();
-        }
-
-        public void WriteTransitionHistory(Guid id, string currentState, string nextState, string command, IEnumerable<string> identities)
-        {
-            var db = _connector.GetDatabase();
-
-            var doc = GetDocument(db, id);
-
-            if (doc == null) throw new ArgumentException("Document not found", "id");
-
-            var historyItem = new Entities.DocumentTransitionHistory
-            {
-                Id = Guid.NewGuid(),
-                AllowedToEmployeeNames = GetEmployeesString(db, identities),
-                DestinationState = nextState,
-                InitialState = currentState,
-                Command = command
-            };
-
-            doc.TransitionHistories.Add(historyItem);
-
-            SaveDocument(db, doc);
         }
 
         private string GetEmployeesString(IDatabase database, IEnumerable<string> identities)

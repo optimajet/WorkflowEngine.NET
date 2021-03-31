@@ -52,9 +52,13 @@
     <Reference Include="Newtonsoft.Json">
       <HintPath>..\..\DLL\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=4.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+      <Reference Include="OptimaJet.Workflow.Core, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+          <SpecificVersion>False</SpecificVersion>
+          <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
+      </Reference>
+    <Reference Include="OptimaJet.Workflow.FilesPlugin, Version=5.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
         <SpecificVersion>False</SpecificVersion>
-      <HintPath>..\..\DLL\OptimaJet.Workflow.Core.dll</HintPath>
+      <HintPath>..\..\DLL\OptimaJet.Workflow.FilesPlugin.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Configuration" />
@@ -71,11 +75,10 @@
     <Compile Include="DataAccess\IDataServiceProvider.cs" />
     <Compile Include="DataAccess\IDocumentRepository.cs" />
     <Compile Include="DataAccess\IEmployeeRepository.cs" />
-    <Compile Include="DataAccess\IInboxRepository.cs" />
     <Compile Include="DataAccess\IPersistenceProviderContainer.cs" />
     <Compile Include="DataAccess\ISettingsProvider.cs" />
     <Compile Include="Model\Document.cs" />
-    <Compile Include="Model\DocumentTransitionHistory.cs" />
+    <Compile Include="Model\DocumentApprovalHistory.cs" />
     <Compile Include="Model\Employee.cs" />
     <Compile Include="Model\EmployeeRole.cs" />
     <Compile Include="Model\Role.cs" />
@@ -88,6 +91,8 @@
       <DependentUpon>Settings.settings</DependentUpon>
     </Compile>
     <Compile Include="Workflow\ActionProvider.cs" />
+    <Compile Include="Workflow\AutoCompleteProvider.cs" />
+    <Compile Include="Workflow\ExternalParametersProvider.cs" />
     <Compile Include="Workflow\WorkflowInit.cs" />
     <Compile Include="Workflow\RuleProvider.cs" />
   </ItemGroup>

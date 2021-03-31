@@ -1,7 +1,6 @@
 namespace WF.Sample.MsSql
 {
     using System;
-    using System.Collections.Generic;
     using System.ComponentModel.DataAnnotations;
     using System.ComponentModel.DataAnnotations.Schema;
  
@@ -12,7 +11,6 @@ namespace WF.Sample.MsSql
         [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2214:DoNotCallOverridableMethodsInConstructors")]
         public Document()
         {
-            DocumentTransitionHistories = new HashSet<DocumentTransitionHistory>();
             State = "VacationRequestCreated";
             StateName = "Vacation request created";
         }
@@ -44,8 +42,5 @@ namespace WF.Sample.MsSql
         public virtual Employee Author { get; set; }
 
         public virtual Employee Manager { get; set; }
-
-        [System.Diagnostics.CodeAnalysis.SuppressMessage("Microsoft.Usage", "CA2227:CollectionPropertiesShouldBeReadOnly")]
-        public virtual ICollection<DocumentTransitionHistory> DocumentTransitionHistories { get; set; }
     }
 }

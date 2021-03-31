@@ -17,8 +17,8 @@
                 <tr>
                     <td>@Html.Label(item.InitialState)</td>
                     <td>@Html.Label(item.DestinationState)</td>
-                    <td>@Html.Label(item.Command)</td>
-                    <td>@Html.Label(item.Employee != null ? item.Employee.Name : "")</td>
+                    <td>@Html.Label(item.TriggerName)</td>
+                    <td>@Html.Label(item?.IdentityId != null ? item.Employee?.Name??item.IdentityId : "")</td>
                     <td>
                         @if (item.TransitionTime.HasValue)
                         {
@@ -26,7 +26,7 @@
                             item.TransitionTime.Value.ToString("yyyy-MM-dd HH:mm:ss")))
                         }
                     </td>
-                    <td>@Html.Label(item.AllowedToEmployeeNames)</td>
+                    <td>@Html.Label(item.AllowedTo)</td>
                 </tr>
             }
         </tbody>

@@ -8,7 +8,7 @@ using WF.Sample.Models;
 
 namespace WF.Sample.Controls
 {
-    public partial class CommandsNotAvailableControl : System.Web.UI.UserControl
+    public partial class CommandsNotAvailableControl : UserControl
     {
         public DocumentModel Model { get; set; }
 
@@ -19,7 +19,7 @@ namespace WF.Sample.Controls
 
         protected bool Show()
         {
-            return (Model.Commands.Count() == 0 && Model.HistoryModel.Items != null && 
+            return (Model.Commands.Length == 0 && Model.HistoryModel.Items != null && 
                     Model.HistoryModel.Items.Any(c => !c.TransitionTime.HasValue));
         }
     }

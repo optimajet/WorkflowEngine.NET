@@ -17,7 +17,7 @@
         </el-card>
     </div>
 </el-form>
-<script>
+<script type="application/javascript">
     function elements_Init(me){
         var data = me.VueConfig.data;
         data.labels = WorkflowDesignerConstants.Elements;
@@ -103,8 +103,17 @@
                 ActivityType: item.ActivityType,
                 Annotations: [
                     {JsonValue: item.Type, Name: "__customtype"}
-                ]
+                ],
+                Template:item.Template,
+                SVGTemplate:item.SVGTemplate
             };
+
+            if (item.Type === 'DecisionTable' || item.Type === 'Decision')
+            {
+                //decisions doesn't have state by default
+                activity.State = null;
+                activity.IsForSetState = false;
+            }
 
             if(item.DefaultValues){
                 for(p in item.DefaultValues){
@@ -171,5 +180,5 @@
               }
           },
       };
-    };
+     };
 </script>

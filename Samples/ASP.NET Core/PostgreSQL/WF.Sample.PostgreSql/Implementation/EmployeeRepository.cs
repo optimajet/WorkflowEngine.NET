@@ -25,6 +25,7 @@ namespace WF.Sample.PostgreSql.Implementation
 
         public List<Business.Model.Employee> GetAll()
         {
+      
             return _sampleContext.Employees
                                  .Include(x => x.StructDivision)
                                  .Include(x => x.EmployeeRoles)
@@ -32,7 +33,6 @@ namespace WF.Sample.PostgreSql.Implementation
                                  .ToList().Select(e => Mappings.Mapper.Map<Business.Model.Employee>(e))
                                  .OrderBy(c => c.Name).ToList();
         }
-
         public IEnumerable<string> GetInRole(string roleName)
         {
             return

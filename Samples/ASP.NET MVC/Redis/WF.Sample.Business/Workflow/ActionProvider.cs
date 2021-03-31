@@ -108,12 +108,12 @@ namespace WF.Sample.Business.Workflow
             return _asyncConditions.ContainsKey(name);
         }
 
-        public List<string> GetActions(string schemeCode)
+        public List<string> GetActions(string schemeCode, NamesSearchType namesSearchType)
         {
             return _actions.Keys.Union(_asyncActions.Keys).ToList();
         }
 
-        public List<string> GetConditions(string schemeCode)
+        public List<string> GetConditions(string schemeCode, NamesSearchType namesSearchType)
         {
             return _conditions.Keys.Union(_asyncConditions.Keys).ToList();
         }

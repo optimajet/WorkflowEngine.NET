@@ -92,27 +92,6 @@ BEGIN
 	PRINT 'Document CREATE TABLE'
 END
 
-IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'DocumentTransitionHistory')
-BEGIN
-	CREATE TABLE dbo.DocumentTransitionHistory (
-	  Id uniqueidentifier NOT NULL,
-	  DocumentId uniqueidentifier NOT NULL,
-	  EmployeeId uniqueidentifier NULL,
-	  AllowedToEmployeeNames nvarchar(max) NOT NULL,
-	  TransitionTime datetime NULL,
-	  [Order] bigint IDENTITY,
-	  TransitionTimeForSort AS (coalesce([TransitionTime],CONVERT([datetime],'9999-12-31',(20)))),
-	  InitialState nvarchar(1024) NOT NULL,
-	  DestinationState nvarchar(1024) NOT NULL,
-	  Command nvarchar(1024) NOT NULL,
-	  CONSTRAINT PK_DocumentTransitionHistory PRIMARY KEY (Id),
-	  CONSTRAINT FK_DocumentTransitionHistory_Document FOREIGN KEY (DocumentId) REFERENCES dbo.Document (Id) ON DELETE CASCADE ON UPDATE CASCADE,
-	  CONSTRAINT FK_DocumentTransitionHistory_Employee FOREIGN KEY (EmployeeId) REFERENCES dbo.Employee (Id)
-	)
-
-	PRINT 'DocumentTransitionHistory CREATE TABLE'
-END
-
 IF NOT EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'Roles')
 BEGIN
 	CREATE TABLE dbo.Roles (
