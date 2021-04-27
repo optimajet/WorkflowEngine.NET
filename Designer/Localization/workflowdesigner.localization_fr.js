@@ -276,6 +276,8 @@
     HistoryTabExecutorIdLabel: "Executor Id",
     HistoryTabActorIdLabel: "Actor Id",
     HistoryTabTimeLabel: "Time",
+    HistoryTabStartTimeLabel: "Start Time",
+    HistoryTabDurationLabel: "Duration (ms)",
     HistoryTabTriggerNameLabel: "Trigger Name",
     HistoryTabTransitionClassifierNameLabel: "",
     ParametersNameLabel: "Name",
@@ -327,7 +329,8 @@
     DateShouldBeInISOFormat: "Date/Time parameter should be in ISO8601 format",
     SwitchToJson: "Switch to JSON editor",
     SwitchToConstructor: "Switch to parameter values editor",
-    InvalidJson: "JSON object is invalid or does not match the model"
+    InvalidJson: "JSON object is invalid or does not match the model",
+    IncorrectForm: "Your form contains greater than one element, and at least one element doesn't have a Name. Please specify the Name for each element."
   },
   ToolbarLabel: {
     CreateActivity: "Créer une activité",

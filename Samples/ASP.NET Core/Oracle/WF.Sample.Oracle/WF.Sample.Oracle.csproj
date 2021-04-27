@@ -9,8 +9,8 @@
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
     <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.70" />
     <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.70" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForOracle" Version="5.1.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForOracle" Version="5.1.2" />
   </ItemGroup>
 
   <ItemGroup>

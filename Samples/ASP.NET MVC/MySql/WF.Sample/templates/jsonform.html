@@ -96,11 +96,23 @@
                 me.VueConfig.data.formMode = true;
                 me.VueConfig.data.fields = fields;
 
+                if (me.VueConfig.data.fields.length > 1 && me.VueConfig.data.fields.find (function (f){return f.Name === '';}))
+                {
+                    console.error(WorkflowDesignerConstants.EditParametersFormlabel.IncorrectForm);
+                    me.VueConfig.methods.showConfirm({
+                        title: WorkflowDesignerConstants.AlertTitle,
+                        message: WorkflowDesignerConstants.EditParametersFormlabel.IncorrectForm,
+                        isAlert : true
+                        });
+
+                    return;
+                }
+
                 if(!value && !me.VueConfig.data.readonly){
                     var tmp = {};
 
                     if (me.VueConfig.data.fields.length === 1 && me.VueConfig.data.fields[0].Name === '' ) {
-                        if(typeof  me.VueConfig.data.fields[0].DefaultValue != "undefined")
+                        if(typeof me.VueConfig.data.fields[0].DefaultValue != "undefined")
                         {
                             if (me.VueConfig.data.fields[0].Type === 'Checkbox')
                             {

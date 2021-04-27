@@ -1,4 +1,4 @@
-<h3>{{ labels.Title }}  |  
+<h3>{{ labels.Title  + (!readonly ? "  |  " : "")}}
     <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerCommandsList" class="WorkflowDesignerWindowForm">

@@ -23,7 +23,7 @@
     </div>
     
     <div style="margin-bottom: 10px;">
-        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Implementation }}  |  
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Implementation + (!readonly ? "  |  " : "")}}
             <a v-if="!readonly" style="cursor:pointer" @click="addActionRow(FormData.Implementation)">{{ ButtonTextCreate }}</a>
         </h4>
         <table class="WorkflowDesignerTable" v-if="FormData.Implementation.length > 0">
@@ -67,7 +67,7 @@
         </table>
     </div>
     <div v-if="expertMode" style="margin-bottom: 10px;">
-        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.PreExecutionImplementation }}  |  
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.PreExecutionImplementation  + (!readonly ? "  |  " : "")}}
             <a v-if="!readonly" style="cursor:pointer" @click="addActionRow(FormData.PreExecutionImplementation)">{{ ButtonTextCreate }}</a>
         </h4>
         <table v-if="FormData.PreExecutionImplementation.length > 0" class="WorkflowDesignerTable">
@@ -110,7 +110,7 @@
         </table>
     </div>
     <div v-if="expertMode" style="margin-bottom: 10px;">
-        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Annotations }}  |  
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.Annotations  + (!readonly ? "  |  " : "")}}
             <a v-if="!readonly" style="cursor:pointer" @click="addAnnotationRow(FormData.Annotations)">{{ ButtonTextCreate }}</a>
         </h4>
         <table v-if="FormData.Annotations.length > 0" class="WorkflowDesignerTable">
@@ -295,7 +295,7 @@
     </table>
     </div>
     <div v-if="expertMode" style="margin-bottom: 10px;">
-        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.ExceptionsHandling }}  |  
+        <h4 style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.ExceptionsHandling  + (!readonly ? "  |  " : "")}}
             <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.ExceptionsHandlers)">{{ ButtonTextCreate }}</a>
         </h4>
         <table class="WorkflowDesignerTable" v-if="FormData.ExceptionsHandlers.length > 0">               

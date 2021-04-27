@@ -22,8 +22,8 @@
     
     <div style="margin-bottom: 10px">
         <h4 class="SettingsHeader"  style="margin-bottom: 17px;">
-            <span >{{ labels.Transition }}</span>
-            <a style="cursor:pointer" @click="addRow(Transitions.all, {condition: {Type: 'Expression',Expression:null, Action: {ActionParameter:null}}})">  |  {{ ButtonTextCreate }}</a>
+            <span >{{ labels.Transition  + (!readonly ? "  |  " : "")}}</span>
+            <a style="cursor:pointer" @click="addRow(Transitions.all, {condition: {Type: 'Expression',Expression:null, Action: {ActionParameter:null}}})">{{ ButtonTextCreate }}</a>
         </h4>
         <div style="margin-left: 20px;">
             <table class="WorkflowDesignerTable">

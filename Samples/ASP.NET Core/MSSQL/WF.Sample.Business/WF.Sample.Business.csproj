@@ -9,8 +9,8 @@
   </ItemGroup>
 
   <ItemGroup>
-      <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.0" />
-      <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.1.0" />
+      <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.2" />
+      <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.1.2" />
       
   </ItemGroup>
 

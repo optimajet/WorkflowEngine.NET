@@ -22,8 +22,8 @@
     
     <div style="margin-bottom: 10px;">
         <h4 class="SettingsHeader">
-            <span >{{ labels.Condition }}</span>
-            <a style="cursor:pointer" @click="addRow(FormData.Conditions, {Action: {ActionParameter:null}, Type: 'Expression', Expression:null})">  |  {{ ButtonTextCreate }}</a>
+            <span >{{ labels.Condition + (!readonly ? "  |  " : "")}}</span>
+            <a style="cursor:pointer" @click="addRow(FormData.Conditions, {Action: {ActionParameter:null}, Type: 'Expression', Expression:null})">{{ ButtonTextCreate }}</a>
         </h4>
         <div>
             <table v-if="FormData.Conditions.length > 0" class="WorkflowDesignerTable">

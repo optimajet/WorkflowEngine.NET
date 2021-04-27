@@ -51,9 +51,9 @@
     },
     {
         "Title": "ParallelApprovalWithoutBranches",
-        "Description": "Simple scheme with three elements for demonstration approvaling with 2 stages.",
+        "Description": "Simple scheme with three elements for demonstration approval with 2 stages.",
         "File": "library/ParallelApprovalWithoutBranches.xml",
-        "Plugins": "ApprovalPlugin, BasicPlugin"
+        "Plugins": "BasicPlugin"
     },
     {
         "Header": "BasicPlugin"

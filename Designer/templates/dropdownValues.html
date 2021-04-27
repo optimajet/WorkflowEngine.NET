@@ -1,4 +1,4 @@
-<h3>{{(name || labels.Dropdown) + " " + labels.Values }}  |  
+<h3>{{(name || labels.Dropdown) + " " + labels.Values  + (!readonly ? "  |  " : "")}}
     <a v-if="!readonly" style="cursor:pointer" @click="addDropdownValues()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerDropdownValues" class="WorkflowDesignerWindowForm">
