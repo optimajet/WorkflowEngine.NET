@@ -1,17 +1,12 @@
-﻿<Project Sdk="Microsoft.NET.Sdk">
-
+<Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
-
   <ItemGroup>
     <Folder Include="Workflow" />
   </ItemGroup>
-
   <ItemGroup>
-      <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.3" />
-      <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.1.3" />
-      
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.4" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.1.4" />
   </ItemGroup>
-
 </Project>

@@ -251,6 +251,7 @@
             formdata.EnableOtherwise = !!transitions.otherwise.activity;
             me.VueConfig.data.Transitions = transitions;
             me.VueConfig.data.originalTransitions =  WorkflowDesignerCommon.clone(transitions);
+            me.VueConfig.data.originalName = item.Name;
 
             transitions.all.forEach(function (transition) {
                 if (!transition.condition.Action)
@@ -433,17 +434,33 @@
                 var FormData = me.VueConfig.data.FormData;
                 var transitions = me.VueConfig.data.Transitions;                
                 var originalTransitions = me.VueConfig.data.originalTransitions;
+                var originalName = me.VueConfig.data.originalName;
 
-                originalTransitions.all.forEach(function (originalTransition) {
-                    if (!transitions.all.some(function(current) {return originalTransition.activity === current.activity})) {
-                        var controls = me.transitionManager.GetTransitionsFromTo(FormData.Name, originalTransition.activity);
+                if (FormData.Name !== originalName)
+                {
+                    originalTransitions.all.forEach(function (originalTransition) {
+                        var controls = me.transitionManager.GetTransitionsFromTo(originalName, originalTransition.activity);
                         if (controls && controls.length) {
                             controls.forEach(function(control) {
                                 control.Delete();
                             })
                         }
-                    }
-                });
+                    });
+                }
+                else
+                {
+                    originalTransitions.all.forEach(function (originalTransition) {
+                        if (!transitions.all.some(function(current) {return originalTransition.activity === current.activity})) {
+                            var controls = me.transitionManager.GetTransitionsFromTo(FormData.Name, originalTransition.activity);
+                            if (controls && controls.length) {
+                                controls.forEach(function(control) {
+                                    control.Delete();
+                                })
+                            }
+                        }
+                    });
+                }
+
 
                 transitions.all.forEach(function(item) {
                     var controls = me.transitionManager.GetTransitionsFromTo(FormData.Name, item.activity);
@@ -454,6 +471,15 @@
                         controls[0].item.Conditions = [item.condition];
                     }
                 });
+
+                if (FormData.Name !== originalName && originalTransitions.otherwise) {
+                    var controls = me.transitionManager.GetTransitionsFromTo(originalName, originalTransitions.otherwise.activity);
+                    if (controls && controls.length) {
+                        controls.forEach(function (control) {
+                            control.Delete();
+                        })
+                    }
+                }
 
                 if (originalTransitions.otherwise.activity !== transitions.otherwise.activity || !me.VueConfig.data.FormData.EnableOtherwise) {
                     var controls = me.transitionManager.GetTransitionsFromTo(FormData.Name, originalTransitions.otherwise.activity);
