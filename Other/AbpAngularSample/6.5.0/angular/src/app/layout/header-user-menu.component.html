@@ -1,0 +1,17 @@
+<li class="nav-item dropdown nav-user-menu" dropdown>
+  <a href="javascript:;" class="nav-link" dropdownToggle>
+    <img
+      class="user-image img-circle elevation-2"
+      src="assets/img/user.png"
+      alt="User Image"
+    />
+  </a>
+  <div class="dropdown-menu dropdown-menu-right" *dropdownMenu>
+    <a class="dropdown-item" [routerLink]="['update-password']">
+      <i class="fas fa-user-edit"></i> {{ "UpdatePassword" | localize }}
+    </a>
+    <a class="dropdown-item" href="javascript:;" (click)="logout()">
+      <i class="fas fa-sign-out-alt"></i> {{ "Logout" | localize }}
+    </a>
+  </div>
+</li>

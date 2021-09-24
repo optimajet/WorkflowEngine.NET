@@ -1,0 +1,9 @@
+<div class="wrapper">
+  <app-header></app-header>
+  <sidebar></sidebar>
+  <div class="content-wrapper">
+    <router-outlet></router-outlet>
+  </div>
+  <app-footer></app-footer>
+  <div id="sidebar-overlay" (click)="toggleSidebar()"></div>
+</div>

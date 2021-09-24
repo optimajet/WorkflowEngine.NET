@@ -1,0 +1,57 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="ja">
+  <texts>
+    <text name="HomePage" value="ホームページ" />
+    <text name="About" value="我々について" />
+    <text name="WelcomeMessage" value="ようこそ AbpAngularSample へ!" />
+
+    <text name="FormIsNotValidMessage" value="フォームは無効です。エラーを修正してください。" />
+    <text name="TenantNameCanNotBeEmpty" value="テナント名を空にすることはできません" />
+
+    <text name="InvalidUserNameOrPassword" value="無効なユーザー名またはパスワードです" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="テナント名前 {0} の定義がありません。" />
+    <text name="TenantIsNotActive" value="テナント {0} はアクティブではありません。 " />
+    <text name="UserIsNotActiveAndCanNotLogin" value="ユーザー {0} がアクティブでなくログインできません。" />
+    <text name="PleaseEnterLoginInformation" value="ログイン情報を入力してください" />
+    <text name="TenancyName" value="テナント名" />
+    <text name="UserNameOrEmail" value="ユーザ名 または E-mail" />
+    <text name="Password" value="パスワード" />
+    <text name="RememberMe" value="ログイン情報を記憶する" />
+    <text name="LogIn" value="ログイン" />
+
+    <text name="LoginFailed" value="ログイン失敗!" />
+
+    <text name="NameSurname" value="名 姓" />
+    <text name="UserName" value="ユーザ名" />
+    <text name="Name" value="名前" />
+    <text name="Surname" value="姓" />
+    <text name="EmailAddress" value="E-mailアドレス" />
+
+    <text name="Tenants" value="テナント" />
+    <text name="SavedSuccessfully" value="保存成功" />
+    <text name="CreateNewTenant" value="新規テナント作成" />
+    <text name="AdminEmailAddress" value="管理者 E-mailアドレス" />
+    <text name="Save" value="保存" />
+    <text name="Cancel" value="キャンセル" />
+    <text name="TenantName_Regex_Description" value="テナント名は少なくとも 2 文字、英字で始まり、文字、数字、ダッシュまたはアンダー スコアである必要があります。" />
+    <text name="DefaultPasswordIs" value="デフォルトパスワードは {0} です" />
+    <text name="CanBeEmptyToLoginAsHost" value="ホストでのログインは空とすることができます。" />
+    <text name="Register" value="登録" />
+    <text name="OrLoginWith" value="または次でログイン" />
+    <text name="WaitingForActivationMessage" value="あなたのアカウントがシステム管理者によってアクティブにされるまで待機しています。" />
+    <text name="TenantSelection" value="テナント選択" />
+    <text name="TenantSelection_Detail" value="次のテナントの 1 つを選択してください。" />
+    <text name="Logout" value="ログアウト" />
+
+    <text name="RegisterFormUserNameInvalidMessage">ユーザのメールアドレスを入力しないでください。</text>
+
+    <text name="DatabaseConnectionString" value="データベース接続文字列" />
+    <text name="Users" value="ユーザ" />
+    <text name="IsActive" value="アクティブ" />
+    <text name="FullName" value="フルネーム" />
+    <text name="CreateNewUser" value="新規ユーザ作成" />
+    <text name="Yes" value="はい" />
+    <text name="No" value="いいえ" />
+    <text name="Optional" value="オプション" />
+  </texts>
+</localizationDictionary>

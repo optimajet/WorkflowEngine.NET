@@ -1,0 +1,147 @@
+﻿<div [@routerTransition]>
+  <h4 class="text-center mb-3">{{ "Register" | localize }}</h4>
+  <form autocomplete="off" #registerForm="ngForm" (ngSubmit)="save()">
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          name="name"
+          placeholder="{{ 'Name' | localize }}"
+          required
+          maxlength="64"
+          [(ngModel)]="model.name"
+          #nameModel="ngModel"
+          #nameEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-arrow-left"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="nameModel"
+        [controlEl]="nameEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          name="surname"
+          placeholder="{{ 'Surname' | localize }}"
+          required
+          maxlength="64"
+          [(ngModel)]="model.surname"
+          #surnameModel="ngModel"
+          #surnameEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-arrow-left"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="surnameModel"
+        [controlEl]="surnameEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="email"
+          class="form-control"
+          name="emailAddress"
+          placeholder="{{ 'EmailAddress' | localize }}"
+          required
+          maxlength="256"
+          pattern="^\w+([\.-]?\w+)*@\w+([\.-]?\w+)*(\.\w{1,})+$"
+          [(ngModel)]="model.emailAddress"
+          #emailAddressModel="ngModel"
+          #emailAddressEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-envelope"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="emailAddressModel"
+        [controlEl]="emailAddressEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="email"
+          class="form-control"
+          name="userName"
+          placeholder=" {{ 'UserName' | localize }}"
+          required
+          maxlength="32"
+          [(ngModel)]="model.userName"
+          #userNameModel="ngModel"
+          #userNameEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-user"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="userNameModel"
+        [controlEl]="userNameEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="password"
+          class="form-control"
+          name="password"
+          placeholder="{{ 'Password' | localize }}"
+          [(ngModel)]="model.password"
+          required
+          maxlength="32"
+          #passwordModel="ngModel"
+          #passwordEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-lock"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="passwordModel"
+        [controlEl]="passwordEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="row">
+      <div class="col-8">
+        <button
+          type="button"
+          class="btn btn-default"
+          [disabled]="saving"
+          [routerLink]="['../login']"
+        >
+          <i class="fa fa-arrow-circle-left"></i> {{ "Back" | localize }}
+        </button>
+      </div>
+      <div class="col-4">
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [disabled]="!registerForm.form.valid || saving"
+        >
+          {{ "Register" | localize }}
+        </button>
+      </div>
+    </div>
+  </form>
+</div>

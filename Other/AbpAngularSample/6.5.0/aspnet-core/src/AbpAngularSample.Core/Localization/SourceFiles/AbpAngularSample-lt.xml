@@ -1,0 +1,109 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="lt">
+  <texts>
+    <text name="HomePage" value="Pagrindinis" />
+    <text name="About" value="Apie" />
+    <text name="WelcomeMessage" value="Sveiki atvykė į AbpAngularSample!" />
+
+    <text name="FormIsNotValidMessage" value="Forma blogai užpildyta. Peržiūrėkite ir pataisykite klaidas." />
+    <text name="TenantNameCanNotBeEmpty" value="Savininko pavadinimas negali būti tuščias" />
+
+    <text name="InvalidUserNameOrPassword" value="Blogas vartotojo vardas ar slaptažodis" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="Nėra tokio savininko su pavadinimu {0}" />
+    <text name="TenantIsNotActive" value="Savininkas {0} nėra aktyvus." />
+    <text name="UserIsNotActiveAndCanNotLogin" value="Vartotojas {0} nėra aktyvus ir todėl negali prisijungti." />
+    <text name="UserEmailIsNotConfirmedAndCanNotLogin">Jūsų el. pašto adresas nepatvirtintas. Jūs negalite prisijungti.</text>
+    <text name="UserLockedOutMessage">Vartotojo paskyra buvo užblokuota. Pabandykite dar kartą vėliau.</text>
+    <text name="PleaseEnterLoginInformation" value="Įveskite prisijungimo informaciją" />
+    <text name="TenancyName" value="Savininko pavadinimas" />
+    <text name="UserNameOrEmail" value="Vartotojo vardas ar slaptažodis" />
+    <text name="Password" value="Slaptažodis" />
+    <text name="RememberMe" value="Prisiminti mane" />
+    <text name="LogIn" value="Prisijungti" />
+
+    <text name="LoginFailed" value="Prisijungimas nepavyko!" />
+
+    <text name="NameSurname" value="Vardas pavardė" />
+    <text name="UserName" value="Vartotojo vardas" />
+    <text name="Name" value="Vardas" />
+    <text name="Surname" value="Pavardė" />
+    <text name="EmailAddress" value="El. pašto adresas" />
+
+    <text name="Tenants" value="Savininkai" />
+    <text name="SavedSuccessfully" value="Išsaugota sėkmingai" />
+    <text name="CreateNewTenant" value="Sukurti naują savininką" />
+    <text name="AdminEmailAddress" value="Administratoriaus el. pašto adresas" />
+    <text name="Save" value="Išsaugoti" />
+    <text name="Cancel" value="Atšaukti" />
+    <text name="TenantName_Regex_Description" value="Savininko pavadinimas privalo būti bent 2 simboliai, prasidėti su raide, skaičiumi, brūkšneliu ar pabraukimu." />
+    <text name="DefaultPasswordIs" value="Slaptažodis pagal nutylėjimą yra {0}" />
+    <text name="CanBeEmptyToLoginAsHost" value="Gali būti tuščia prisijungimui šeimininku." />
+    <text name="Register" value="Registruotis" />
+    <text name="OrLoginWith" value="Arba prisijungti su" />
+    <text name="WaitingForActivationMessage" value="Jūsų paskyra laukia, kol bus aktyvuota sistemos administratoriaus." />
+    <text name="TenantSelection" value="Savininko Pasirinkimas" />
+    <text name="TenantSelection_Detail" value="Pasirinkite vieną iš šių savininkų." />
+    <text name="Logout" value="Atsijungti" />
+
+    <text name="RegisterFormUserNameInvalidMessage">Neveskite el. pašto adreso kaip vartotojo vardo.</text>
+
+    <text name="DatabaseConnectionString" value="Duomenų bazės prisijungimo eilutė" />
+    <text name="Users" value="Vartotojai" />
+    <text name="IsActive" value="Aktyvus" />
+    <text name="FullName" value="Vardas pavardė" />
+    <text name="CreateNewUser" value="Sukurti naują vartotoją" />
+    <text name="Yes" value="Taip" />
+    <text name="No" value="Ne" />
+    <text name="Optional" value="Neprivaloma" />
+    <text name="LeaveEmptyToSwitchToHost">Palikite tuščią, kad perjungtumėte į priimantįjį</text>
+
+    <text name="CurrentTenant">Dabartinis savininkas</text>
+    <text name="NotSelected">Nepasirinkta</text>
+    <text name="Change">Keisti</text>
+    <text name="ChangeTenant">Keisti savininką</text>
+
+    <text name="MultiLevelMenu">Multi Level Menu</text>
+    <text name="Back">Atgal</text>
+    <text name="SuccessfullyRegistered">Sėkmingai užregistruota</text>
+    <text name="WaitingForEmailActivation">Jūsų el. pašto adresas turi būti aktyvuotas.</text>
+    <text name="Roles">Rolės</text>
+    <text name="DisplayName">Rodomas vardas</text>
+
+    <text name="Edit">Keisti</text>
+    <text name="Delete">Trinti</text>
+
+    <text name="CreateNewRole">Kurti naują rolę</text>
+    <text name="RoleName">Rolės pavadinimas</text>
+    <text name="Actions">Veiksmai</text>
+
+    <text name="CouldNotCompleteLoginOperation">Prisijungimo veiksmas nepavyko. Pabandykite vėliau.</text>
+
+    <text name="CouldNotValidateExternalUser">Nepavyko patikrinti išorinio vartotojo</text>
+    <text name="EditRole">Keisti rolę</text>
+    <text name="EditTenant">Keisti savininką</text>
+    <text name="EditUser">Keisti vartotoją</text>
+    <text name="TenantIdIsNotActive{0}">Savininkas su Id {0} yra neaktyvus</text>
+    <text name="UnknownTenantId{0}">Nežinomas savininko Id {0}</text>
+	
+	<text name="ThisFieldIsRequired">Šis laukas yra privalomas</text>
+    <text name="PleaseWait">Prašome palaukti...</text>
+    <text name="Administration">Administration</text>
+    <text name="ClearAll">Išvalyti visus</text>
+    <text name="ClearOthers">Išvalyti kitus</text>
+    <text name="LabelOptions">Etiketės nustatymai</text>
+    <text name="Permissions">Leidimai</text>
+    <text name="RoleDescription">Rolės aprašymas</text>
+    <text name="Refresh">Atnaujinti</text>
+    <text name="Create">Sukurti</text>
+    <text name="UserDetails">Vartotojo detalės</text>
+    <text name="UserRoles">Vartotojo rolės</text>
+    <text name="ConfirmPassword">Patvirtinti slaptažodį</text>
+    <text name="Version">Versija</text>
+    <text name="On">Įjungta</text>
+    <text name="Off">Išjungta</text>
+    <text name="AreYouSureWantToDelete">Ar tikrai norite pašalinti {0}?</text>
+    <text name="StartTyping">Pradėkite rašyti</text>
+    <text name="Skins">Apvalkalai</text>
+	<text name="Settings">Nustatymai</text>
+  </texts>
+</localizationDictionary>
