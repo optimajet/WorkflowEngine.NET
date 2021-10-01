@@ -63,7 +63,7 @@
                     @change="commandsListChange">
                 <el-option v-for="item in commands" :key="item" :label="item" :value="item"></el-option>
             </el-select>
-            <el-button @click="commandParameters" class="WorkflowDesignerTableCodeParametersButton"></el-button>
+            <el-button @click="commandParameters" :disabled="!FormData.Trigger.Command.Name" class="WorkflowDesignerTableCodeParametersButton"></el-button>
         </el-form-item>
         <el-form-item v-if="FormData.Trigger.Type == 'Timer'" :rules="getFieldRules('Trigger.Timer.Name')" :label="labels.TriggerTimer" prop="Trigger.Timer.Name">
             <el-select
@@ -657,8 +657,10 @@
 
         me.VueConfig.methods.commandParameters = function () {
             var windowId = me.id + "_commandParameters";
+            var name = me.VueConfig.data.FormData.Trigger.Command.Name;
 
-            var item = me.getCommandItem(me.VueConfig.data.FormData.Trigger.Command.Name)
+            var item = me.getCommandItem(name)
+            if (!item) return;
 
             if(!me.parametersform){
                 var options = {       
