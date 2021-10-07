@@ -20,6 +20,8 @@ using Microsoft.Extensions.Hosting;
 using Microsoft.OpenApi.Models;
 using Newtonsoft.Json.Serialization;
 using System.IO;
+using AbpAngularSample.Workflow;
+using OptimaJet.Workflow.Core.Runtime;
 
 namespace AbpAngularSample.Web.Host.Startup
 {
@@ -54,6 +56,10 @@ namespace AbpAngularSample.Web.Host.Startup
             IdentityRegistrar.Register(services);
             AuthConfigurer.Configure(services, _appConfiguration);
 
+            //WorkflowEngineSampleCode
+            services.AddSingleton<IWorkflowActionProvider, ActionProvider>();
+            services.AddSingleton((serviceProvider) => WorkflowRuntimeManager.InitWorkflowRuntime(serviceProvider, _appConfiguration));
+            
             services.AddSignalR();
 
             // Configure CORS for angular2 UI

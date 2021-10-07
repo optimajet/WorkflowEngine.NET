@@ -4,14 +4,16 @@ using AbpAngularSample.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace AbpAngularSample.Migrations
 {
     [DbContext(typeof(AbpAngularSampleDbContext))]
-    partial class AbpAngularSampleDbContextModelSnapshot : ModelSnapshot
+    [Migration("20210930133049_Workflow_Db_Changes")]
+    partial class Workflow_Db_Changes
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

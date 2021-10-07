@@ -3,8 +3,8 @@
     "windowsAuthentication": false,
     "anonymousAuthentication": true,
     "iisExpress": {
-      "applicationUrl": "https://localhost:44311/",
-      "sslPort": 44311
+      "applicationUrl": "http://localhost:21021/",
+      "sslPort": 0
     }
   },
   "profiles": {
@@ -18,11 +18,11 @@
     "AbpAngularSample.Web.Host": {
       "commandName": "Project",
       "launchBrowser": true,
-      "launchUrl": "https://localhost:44311/",
+      "launchUrl": "http://localhost:21021",
       "environmentVariables": {
         "ASPNETCORE_ENVIRONMENT": "Development"
       },
-      "applicationUrl": "https://localhost:44311/"
+      "applicationUrl": "http://localhost:21021/"
     }
   }
 }
