@@ -1,0 +1,27 @@
+﻿<!-- WorkflowEngineSampleCode -->
+
+<style>
+.editform-toolbar{
+    margin-bottom: 5px;
+}
+
+.editform-toolbar > button{
+    margin-right: 2px;
+}
+
+#wfdesigner{
+    background-color: white;
+}
+
+</style>
+
+<div class="editform-toolbar">
+    <button class="btn btn-primary waves-effect" type="button" (click)="save()"> Save </button>
+    <button class="btn btn-default waves-effect" type="button" (click)="download()"> Download </button>
+    <button *ngIf="processId == undefined" class="btn btn-default waves-effect" type="button" (click)="upload()"> Upload </button>
+</div>
+<workflow-designer 
+  [schemeCode]="schemeCode"
+  [processId]="processId"
+  [designerConfig]="designerConfig"
+></workflow-designer>

@@ -1835,6 +1835,758 @@ export class UserServiceProxy {
     }
 }
 
+//WorkflowEngineSampleCode
+@Injectable()
+export class WorkflowSchemeServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    /**
+     * @param code (optional) 
+     * @return Success
+     */
+    delete(code: string | null | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/Delete?";
+        if (code !== undefined)
+            url_ += "code=" + encodeURIComponent("" + code) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<void>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<void>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return _observableOf<void>(<any>null);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<void>(<any>null);
+    }
+
+    /**
+     * @param processId (optional) 
+     * @param commandName (optional) 
+     * @return Success
+     */
+    executeCommand(processId: string | null | undefined, commandName: string | null | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/ExecuteCommand?";
+        if (processId !== undefined)
+            url_ += "processId=" + encodeURIComponent("" + processId) + "&"; 
+        if (commandName !== undefined)
+            url_ += "commandName=" + encodeURIComponent("" + commandName) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processExecuteCommand(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processExecuteCommand(<any>response_);
+                } catch (e) {
+                    return <Observable<boolean>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<boolean>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processExecuteCommand(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<boolean>(<any>null);
+    }
+
+    /**
+     * @param processId (optional) 
+     * @return Success
+     */
+    getAvaliableCommands(processId: string | null | undefined): Observable<WorkflowCommandDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/GetAvaliableCommands?";
+        if (processId !== undefined)
+            url_ += "processId=" + encodeURIComponent("" + processId) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAvaliableCommands(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAvaliableCommands(<any>response_);
+                } catch (e) {
+                    return <Observable<WorkflowCommandDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<WorkflowCommandDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAvaliableCommands(response: HttpResponseBase): Observable<WorkflowCommandDto[]> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(WorkflowCommandDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<WorkflowCommandDto[]>(<any>null);
+    }
+
+    /**
+     * @param processId (optional) 
+     * @return Success
+     */
+    getStates(processId: string | null | undefined): Observable<string[]> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/GetStates?";
+        if (processId !== undefined)
+            url_ += "processId=" + encodeURIComponent("" + processId) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetStates(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetStates(<any>response_);
+                } catch (e) {
+                    return <Observable<string[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<string[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetStates(response: HttpResponseBase): Observable<string[]> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(item);
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<string[]>(<any>null);
+    }
+
+    /**
+     * @param processId (optional) 
+     * @param state (optional) 
+     * @return Success
+     */
+    setState(processId: string | null | undefined, state: string | null | undefined): Observable<boolean> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/SetState?";
+        if (processId !== undefined)
+            url_ += "processId=" + encodeURIComponent("" + processId) + "&"; 
+        if (state !== undefined)
+            url_ += "state=" + encodeURIComponent("" + state) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processSetState(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processSetState(<any>response_);
+                } catch (e) {
+                    return <Observable<boolean>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<boolean>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processSetState(response: HttpResponseBase): Observable<boolean> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 !== undefined ? resultData200 : <any>null;
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<boolean>(<any>null);
+    }
+
+    /**
+     * @return Success
+     */
+    getSchemes(): Observable<GetWorkflowSchemesOutput> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/GetSchemes";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSchemes(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetSchemes(<any>response_);
+                } catch (e) {
+                    return <Observable<GetWorkflowSchemesOutput>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<GetWorkflowSchemesOutput>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetSchemes(response: HttpResponseBase): Observable<GetWorkflowSchemesOutput> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? GetWorkflowSchemesOutput.fromJS(resultData200) : new GetWorkflowSchemesOutput();
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<GetWorkflowSchemesOutput>(<any>null);
+    }
+
+    /**
+     * @param processId (optional) 
+     * @return Success
+     */
+    getHistories(processId: string | null | undefined): Observable<WorkflowHistoryDto[]> {
+        let url_ = this.baseUrl + "/api/services/app/WorkflowScheme/GetHistories?";
+        if (processId !== undefined)
+            url_ += "processId=" + encodeURIComponent("" + processId) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetHistories(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetHistories(<any>response_);
+                } catch (e) {
+                    return <Observable<WorkflowHistoryDto[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<WorkflowHistoryDto[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetHistories(response: HttpResponseBase): Observable<WorkflowHistoryDto[]> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(WorkflowHistoryDto.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<WorkflowHistoryDto[]>(<any>null);
+    }
+}
+
+//WorkflowEngineSampleCode
+@Injectable()
+export class DocumentServiceProxy {
+    private http: HttpClient;
+    private baseUrl: string;
+    protected jsonParseReviver: ((key: string, value: any) => any) | undefined = undefined;
+
+    constructor(@Inject(HttpClient) http: HttpClient, @Optional() @Inject(API_BASE_URL) baseUrl?: string) {
+        this.http = http;
+        this.baseUrl = baseUrl ? baseUrl : "";
+    }
+
+    /**
+     * @param input (optional) 
+     * @return Success
+     */
+    create(input: CreateDocumentDto | null | undefined): Observable<DocumentDto> {
+        let url_ = this.baseUrl + "/api/services/app/Document/Create";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(input);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("post", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processCreate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processCreate(<any>response_);
+                } catch (e) {
+                    return <Observable<DocumentDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DocumentDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processCreate(response: HttpResponseBase): Observable<DocumentDto> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DocumentDto.fromJS(resultData200) : new DocumentDto();
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DocumentDto>(<any>null);
+    }
+
+    /**
+     * @param input (optional) 
+     * @return Success
+     */
+    update(input: DocumentDto | null | undefined): Observable<DocumentDto> {
+        let url_ = this.baseUrl + "/api/services/app/Document/Update";
+        url_ = url_.replace(/[?&]$/, "");
+
+        const content_ = JSON.stringify(input);
+
+        let options_ : any = {
+            body: content_,
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Content-Type": "application/json", 
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("put", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processUpdate(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processUpdate(<any>response_);
+                } catch (e) {
+                    return <Observable<DocumentDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DocumentDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processUpdate(response: HttpResponseBase): Observable<DocumentDto> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DocumentDto.fromJS(resultData200) : new DocumentDto();
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DocumentDto>(<any>null);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return Success
+     */
+    delete(id: number | null | undefined): Observable<void> {
+        let url_ = this.baseUrl + "/api/services/app/Document/Delete?";
+        if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+            })
+        };
+
+        return this.http.request("delete", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processDelete(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processDelete(<any>response_);
+                } catch (e) {
+                    return <Observable<void>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<void>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processDelete(response: HttpResponseBase): Observable<void> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return _observableOf<void>(<any>null);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<void>(<any>null);
+    }
+
+    /**
+     * @return Success
+     */
+    getSchemes(): Observable<SchemeForDocumentOutput[]> {
+        let url_ = this.baseUrl + "/api/services/app/Document/GetSchemes";
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetSchemes(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetSchemes(<any>response_);
+                } catch (e) {
+                    return <Observable<SchemeForDocumentOutput[]>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<SchemeForDocumentOutput[]>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetSchemes(response: HttpResponseBase): Observable<SchemeForDocumentOutput[]> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            if (resultData200 && resultData200.constructor === Array) {
+                result200 = [];
+                for (let item of resultData200)
+                    result200.push(SchemeForDocumentOutput.fromJS(item));
+            }
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<SchemeForDocumentOutput[]>(<any>null);
+    }
+
+    /**
+     * @param id (optional) 
+     * @return Success
+     */
+    get(id: number | null | undefined): Observable<DocumentDto> {
+        let url_ = this.baseUrl + "/api/services/app/Document/Get?";
+        if (id !== undefined)
+            url_ += "Id=" + encodeURIComponent("" + id) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGet(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGet(<any>response_);
+                } catch (e) {
+                    return <Observable<DocumentDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<DocumentDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGet(response: HttpResponseBase): Observable<DocumentDto> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? DocumentDto.fromJS(resultData200) : new DocumentDto();
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<DocumentDto>(<any>null);
+    }
+
+    /**
+     * @param documentName (optional) 
+     * @param displayName (optional) 
+     * @param description (optional) 
+     * @param skipCount (optional) 
+     * @param maxResultCount (optional) 
+     * @return Success
+     */
+    getAll(documentName: string | null | undefined, displayName: string | null | undefined, description: string | null | undefined, skipCount: number | null | undefined, maxResultCount: number | null | undefined): Observable<PagedResultDtoOfDocumentDto> {
+        let url_ = this.baseUrl + "/api/services/app/Document/GetAll?";
+        if (documentName !== undefined)
+            url_ += "DocumentName=" + encodeURIComponent("" + documentName) + "&"; 
+        if (displayName !== undefined)
+            url_ += "DisplayName=" + encodeURIComponent("" + displayName) + "&"; 
+        if (description !== undefined)
+            url_ += "Description=" + encodeURIComponent("" + description) + "&"; 
+        if (skipCount !== undefined)
+            url_ += "SkipCount=" + encodeURIComponent("" + skipCount) + "&"; 
+        if (maxResultCount !== undefined)
+            url_ += "MaxResultCount=" + encodeURIComponent("" + maxResultCount) + "&"; 
+        url_ = url_.replace(/[?&]$/, "");
+
+        let options_ : any = {
+            observe: "response",
+            responseType: "blob",
+            headers: new HttpHeaders({
+                "Accept": "application/json"
+            })
+        };
+
+        return this.http.request("get", url_, options_).pipe(_observableMergeMap((response_ : any) => {
+            return this.processGetAll(response_);
+        })).pipe(_observableCatch((response_: any) => {
+            if (response_ instanceof HttpResponseBase) {
+                try {
+                    return this.processGetAll(<any>response_);
+                } catch (e) {
+                    return <Observable<PagedResultDtoOfDocumentDto>><any>_observableThrow(e);
+                }
+            } else
+                return <Observable<PagedResultDtoOfDocumentDto>><any>_observableThrow(response_);
+        }));
+    }
+
+    protected processGetAll(response: HttpResponseBase): Observable<PagedResultDtoOfDocumentDto> {
+        const status = response.status;
+        const responseBlob = 
+            response instanceof HttpResponse ? response.body : 
+            (<any>response).error instanceof Blob ? (<any>response).error : undefined;
+
+        let _headers: any = {}; if (response.headers) { for (let key of response.headers.keys()) { _headers[key] = response.headers.get(key); }};
+        if (status === 200) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            let result200: any = null;
+            let resultData200 = _responseText === "" ? null : JSON.parse(_responseText, this.jsonParseReviver);
+            result200 = resultData200 ? PagedResultDtoOfDocumentDto.fromJS(resultData200) : new PagedResultDtoOfDocumentDto();
+            return _observableOf(result200);
+            }));
+        } else if (status !== 200 && status !== 204) {
+            return blobToText(responseBlob).pipe(_observableMergeMap(_responseText => {
+            return throwException("An unexpected server error occurred.", status, _responseText, _headers);
+            }));
+        }
+        return _observableOf<PagedResultDtoOfDocumentDto>(<any>null);
+    }
+}
+
 export class ApplicationInfoDto implements IApplicationInfoDto {
     version: string | undefined;
     releaseDate: moment.Moment;
@@ -3819,4 +4571,519 @@ function blobToText(blob: any): Observable<string> {
             reader.readAsText(blob);
         }
     });
+}
+
+
+//WorkflowEngineSampleCode
+export interface IWorkflowCommandDto {
+    name: string | undefined;
+    localizedName: string | undefined;
+    classifier: string | undefined;
+    id: number | undefined;
+}
+
+export class WorkflowCommandDto implements IWorkflowCommandDto {
+    name: string | undefined;
+    localizedName: string | undefined;
+    classifier: string | undefined;
+    id: number | undefined;
+
+    constructor(data?: IWorkflowCommandDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.name = data["name"];
+            this.localizedName = data["localizedName"];
+            this.classifier = data["classifier"];
+            this.id = data["id"];
+        }
+    }
+
+    static fromJS(data: any): WorkflowCommandDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WorkflowCommandDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["localizedName"] = this.localizedName;
+        data["classifier"] = this.classifier;
+        data["id"] = this.id;
+        return data; 
+    }
+
+    clone(): WorkflowCommandDto {
+        const json = this.toJSON();
+        let result = new WorkflowCommandDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetWorkflowSchemesOutput {
+    schemes: WorkflowSchemeDto[] | undefined;
+    id: number | undefined;
+}
+
+export class GetWorkflowSchemesOutput implements IGetWorkflowSchemesOutput {
+    schemes: WorkflowSchemeDto[] | undefined;
+    id: number | undefined;
+
+    constructor(data?: IGetWorkflowSchemesOutput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            if (data["schemes"] && data["schemes"].constructor === Array) {
+                this.schemes = [];
+                for (let item of data["schemes"])
+                    this.schemes.push(WorkflowSchemeDto.fromJS(item));
+            }
+            this.id = data["id"];
+        }
+    }
+
+    static fromJS(data: any): GetWorkflowSchemesOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new GetWorkflowSchemesOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        if (this.schemes && this.schemes.constructor === Array) {
+            data["schemes"] = [];
+            for (let item of this.schemes)
+                data["schemes"].push(item.toJSON());
+        }
+        data["id"] = this.id;
+        return data; 
+    }
+
+    clone(): GetWorkflowSchemesOutput {
+        const json = this.toJSON();
+        let result = new GetWorkflowSchemesOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IGetWorkflowSchemesOutput {
+    schemes: WorkflowSchemeDto[] | undefined;
+    id: number | undefined;
+}
+
+export class WorkflowSchemeDto implements IWorkflowSchemeDto {
+    code: string | undefined;
+
+    constructor(data?: IWorkflowSchemeDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.code = data["code"];
+        }
+    }
+
+    static fromJS(data: any): WorkflowSchemeDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WorkflowSchemeDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["code"] = this.code;
+        return data; 
+    }
+
+    clone(): WorkflowSchemeDto {
+        const json = this.toJSON();
+        let result = new WorkflowSchemeDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWorkflowSchemeDto {
+    code: string | undefined;
+}
+
+export class WorkflowHistoryDto implements IWorkflowHistoryDto {
+    from: string | undefined;
+    to: string | undefined;
+    triggerName: string | undefined;
+    transitionTime: moment.Moment | undefined;
+    transitionClassifier: string | undefined;
+    executorIdentityId: string | undefined;
+    executorIdentityName: string | undefined;
+
+    constructor(data?: IWorkflowHistoryDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.from = data["from"];
+            this.to = data["to"];
+            this.triggerName = data["triggerName"];
+            this.transitionTime = data["transitionTime"] ? moment(data["transitionTime"].toString()) : <any>undefined;
+            this.transitionClassifier = data["transitionClassifier"];
+            this.executorIdentityId = data["executorIdentityId"];
+            this.executorIdentityName = data["executorIdentityName"];
+        }
+    }
+
+    static fromJS(data: any): WorkflowHistoryDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new WorkflowHistoryDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["from"] = this.from;
+        data["to"] = this.to;
+        data["triggerName"] = this.triggerName;
+        data["transitionTime"] = this.transitionTime ? this.transitionTime.toISOString() : <any>undefined;
+        data["transitionClassifier"] = this.transitionClassifier;
+        data["executorIdentityId"] = this.executorIdentityId;
+        data["executorIdentityName"] = this.executorIdentityName;
+        return data; 
+    }
+
+    clone(): WorkflowHistoryDto {
+        const json = this.toJSON();
+        let result = new WorkflowHistoryDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IWorkflowHistoryDto {
+    from: string | undefined;
+    to: string | undefined;
+    triggerName: string | undefined;
+    transitionTime: moment.Moment | undefined;
+    transitionClassifier: string | undefined;
+    executorIdentityId: string | undefined;
+    executorIdentityName: string | undefined;
+}
+
+
+export class CreateDocumentDto implements ICreateDocumentDto {
+    title: string;
+    description: string | undefined;
+    creationTime: moment.Moment | undefined;
+    state: string | undefined;
+    scheme: string | undefined;
+
+    constructor(data?: ICreateDocumentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.title = data["title"];
+            this.description = data["description"];
+            this.creationTime = data["creationTime"] ? moment(data["creationTime"].toString()) : <any>undefined;
+            this.state = data["state"];
+            this.scheme = data["scheme"];
+        }
+    }
+
+    static fromJS(data: any): CreateDocumentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new CreateDocumentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["creationTime"] = this.creationTime ? this.creationTime.toISOString() : <any>undefined;
+        data["state"] = this.state;
+        data["scheme"] = this.scheme;
+        return data; 
+    }
+
+    clone(): CreateDocumentDto {
+        const json = this.toJSON();
+        let result = new CreateDocumentDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ICreateDocumentDto {
+    title: string;
+    description: string | undefined;
+    creationTime: moment.Moment | undefined;
+    state: string | undefined;
+    scheme: string | undefined;
+}
+
+export class DocumentDto implements IDocumentDto {
+    title: string;
+    description: string | undefined;
+    creationTime: moment.Moment | undefined;
+    state: string | undefined;
+    scheme: string | undefined;
+    processId: string | undefined;
+    id: number | undefined;
+
+    constructor(data?: IDocumentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.title = data["title"];
+            this.description = data["description"];
+            this.creationTime = data["creationTime"] ? moment(data["creationTime"].toString()) : <any>undefined;
+            this.state = data["state"];
+            this.scheme = data["scheme"];
+            this.processId = data["processId"];
+            this.id = data["id"];
+        }
+    }
+
+    static fromJS(data: any): DocumentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new DocumentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["title"] = this.title;
+        data["description"] = this.description;
+        data["creationTime"] = this.creationTime ? this.creationTime.toISOString() : <any>undefined;
+        data["state"] = this.state;
+        data["scheme"] = this.scheme;
+        data["processId"] = this.processId;
+        data["id"] = this.id;
+        return data; 
+    }
+
+    clone(): DocumentDto {
+        const json = this.toJSON();
+        let result = new DocumentDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IDocumentDto {
+    title: string;
+    description: string | undefined;
+    creationTime: moment.Moment | undefined;
+    state: string | undefined;
+    scheme: string | undefined;
+    processId: string | undefined;
+    id: number | undefined;
+}
+
+export class SchemeForDocumentOutput implements ISchemeForDocumentOutput {
+    scheme: string | undefined;
+    commands: SchemeForDocumentCommandOutput[] | undefined;
+
+    constructor(data?: ISchemeForDocumentOutput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.scheme = data["scheme"];
+            if (data["commands"] && data["commands"].constructor === Array) {
+                this.commands = [];
+                for (let item of data["commands"])
+                    this.commands.push(SchemeForDocumentCommandOutput.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): SchemeForDocumentOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new SchemeForDocumentOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["scheme"] = this.scheme;
+        if (this.commands && this.commands.constructor === Array) {
+            data["commands"] = [];
+            for (let item of this.commands)
+                data["commands"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): SchemeForDocumentOutput {
+        const json = this.toJSON();
+        let result = new SchemeForDocumentOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISchemeForDocumentOutput {
+    scheme: string | undefined;
+    commands: SchemeForDocumentCommandOutput[] | undefined;
+}
+
+export class SchemeForDocumentCommandOutput implements ISchemeForDocumentCommandOutput {
+    name: string | undefined;
+    localizedName: string | undefined;
+    classifier: string | undefined;
+
+    constructor(data?: ISchemeForDocumentCommandOutput) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.name = data["name"];
+            this.localizedName = data["localizedName"];
+            this.classifier = data["classifier"];
+        }
+    }
+
+    static fromJS(data: any): SchemeForDocumentCommandOutput {
+        data = typeof data === 'object' ? data : {};
+        let result = new SchemeForDocumentCommandOutput();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["name"] = this.name;
+        data["localizedName"] = this.localizedName;
+        data["classifier"] = this.classifier;
+        return data; 
+    }
+
+    clone(): SchemeForDocumentCommandOutput {
+        const json = this.toJSON();
+        let result = new SchemeForDocumentCommandOutput();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface ISchemeForDocumentCommandOutput {
+    name: string | undefined;
+    localizedName: string | undefined;
+    classifier: string | undefined;
+}
+
+export class PagedResultDtoOfDocumentDto implements IPagedResultDtoOfDocumentDto {
+    totalCount: number | undefined;
+    items: DocumentDto[] | undefined;
+
+    constructor(data?: IPagedResultDtoOfDocumentDto) {
+        if (data) {
+            for (var property in data) {
+                if (data.hasOwnProperty(property))
+                    (<any>this)[property] = (<any>data)[property];
+            }
+        }
+    }
+
+    init(data?: any) {
+        if (data) {
+            this.totalCount = data["totalCount"];
+            if (data["items"] && data["items"].constructor === Array) {
+                this.items = [];
+                for (let item of data["items"])
+                    this.items.push(DocumentDto.fromJS(item));
+            }
+        }
+    }
+
+    static fromJS(data: any): PagedResultDtoOfDocumentDto {
+        data = typeof data === 'object' ? data : {};
+        let result = new PagedResultDtoOfDocumentDto();
+        result.init(data);
+        return result;
+    }
+
+    toJSON(data?: any) {
+        data = typeof data === 'object' ? data : {};
+        data["totalCount"] = this.totalCount;
+        if (this.items && this.items.constructor === Array) {
+            data["items"] = [];
+            for (let item of this.items)
+                data["items"].push(item.toJSON());
+        }
+        return data; 
+    }
+
+    clone(): PagedResultDtoOfDocumentDto {
+        const json = this.toJSON();
+        let result = new PagedResultDtoOfDocumentDto();
+        result.init(json);
+        return result;
+    }
+}
+
+export interface IPagedResultDtoOfDocumentDto {
+    totalCount: number | undefined;
+    items: DocumentDto[] | undefined;
 }

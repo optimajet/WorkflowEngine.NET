@@ -14,6 +14,10 @@ import { ServiceProxyModule } from '@shared/service-proxies/service-proxy.module
 import { SharedModule } from '@shared/shared.module';
 import { HomeComponent } from '@app/home/home.component';
 import { AboutComponent } from '@app/about/about.component';
+
+//WorkflowEngineSampleCode
+import { WorkflowDesignerModule } from '@optimajet/workflow-designer-angular';
+
 // tenants
 import { TenantsComponent } from '@app/tenants/tenants.component';
 import { CreateTenantDialogComponent } from './tenants/create-tenant/create-tenant-dialog.component';
@@ -38,6 +42,15 @@ import { SidebarComponent } from './layout/sidebar.component';
 import { SidebarLogoComponent } from './layout/sidebar-logo.component';
 import { SidebarUserPanelComponent } from './layout/sidebar-user-panel.component';
 import { SidebarMenuComponent } from './layout/sidebar-menu.component';
+
+
+//WorkflowEngineSampleCode
+import { WorkflowComponent } from '@app/workflow/workflow.component';
+import { CreateWorkflowComponent } from '@app/workflow/create-workflow/create-workflow.component';
+import { EditWorkflowComponent } from '@app/workflow/edit-workflow/edit-workflow.component';
+import { DocumentsComponent } from '@app/documents/documents.component';
+import { CreateDocumentComponent } from '@app/documents/create-document/create-document.component';
+import { EditDocumentComponent } from '@app/documents/edit-document/edit-document.component';
 
 @NgModule({
   declarations: [
@@ -67,7 +80,15 @@ import { SidebarMenuComponent } from './layout/sidebar-menu.component';
     SidebarComponent,
     SidebarLogoComponent,
     SidebarUserPanelComponent,
-    SidebarMenuComponent
+    SidebarMenuComponent,
+
+    //WorkflowEngineSampleCode
+    WorkflowComponent,
+    CreateWorkflowComponent,
+    EditWorkflowComponent,
+    DocumentsComponent,
+    CreateDocumentComponent,
+    EditDocumentComponent
   ],
   imports: [
     CommonModule,
@@ -83,6 +104,9 @@ import { SidebarMenuComponent } from './layout/sidebar-menu.component';
     ServiceProxyModule,
     SharedModule,
     NgxPaginationModule,
+    
+    //WorkflowEngineSampleCode
+    WorkflowDesignerModule
   ],
   providers: [],
   entryComponents: [

@@ -45,6 +45,19 @@ export class SidebarMenuComponent extends AppComponentBase implements OnInit {
         return [
             new MenuItem(this.l('About'), '/app/about', 'fas fa-info-circle'),
             new MenuItem(this.l('HomePage'), '/app/home', 'fas fa-home'),
+            
+            //WorkflowEngineSampleCode
+            new MenuItem(
+                this.l('Documents'),
+                '/app/documents',
+                'fas fa-file'
+            ),
+            new MenuItem(
+                this.l('Workflow'),
+                '/app/workflow',
+                'fas fa-network-wired'
+            ),
+
             new MenuItem(
                 this.l('Roles'),
                 '/app/roles',
