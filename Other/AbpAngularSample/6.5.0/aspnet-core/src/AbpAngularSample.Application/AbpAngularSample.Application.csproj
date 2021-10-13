@@ -19,7 +19,6 @@
   <ItemGroup>
     <PackageReference Include="Microsoft.CodeAnalysis.Common" Version="3.8.0" />
     <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.7" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.1.7" />
     <PackageReference Include="WorkflowEngine.NETCore-ProviderForMSSQL" Version="5.1.7" />
   </ItemGroup>
   
