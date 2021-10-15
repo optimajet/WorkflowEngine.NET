@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL
-Version: 3.4
+Version: 5.0
 File: DropPersistenceObjects.sql
 */
 
@@ -62,21 +62,6 @@ BEGIN
 	PRINT 'WorkflowScheme DROP TABLE'
 END
 
-IF EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'DropWorkflowProcess')
-BEGIN
-	DROP PROCEDURE [DropWorkflowProcess] 
-	PRINT 'DropWorkflowProcess DROP PROCEDURE'
-END
-
-IF EXISTS (SELECT 1 FROM sys.procedures WHERE name = N'DropWorkflowProcesses')
-BEGIN
-	DROP PROCEDURE [DropWorkflowProcesses] 
-	PRINT 'DropWorkflowProcesses DROP PROCEDURE'
-
-	DROP TYPE IdsTableType 
-	PRINT 'IdsTableType DROP TYPE'
-END
-
 IF EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowInbox')
 BEGIN
 	DROP TABLE [WorkflowInbox]
@@ -89,16 +74,40 @@ BEGIN
 	PRINT 'DropWorkflowInbox DROP PROCEDURE'
 END
 
+IF EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowApprovalHistory')
+BEGIN
+	DROP TABLE [WorkflowInbox]
+	PRINT 'WorkflowApprovalHistory DROP TABLE'
+END
+
 IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessTimer')
 BEGIN
 	DROP TABLE [WorkflowProcessTimer]
 	PRINT 'WorkflowProcessTimer DROP TABLE'
 END
 
+IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowProcessAssignment')
+BEGIN
+DROP TABLE [WorkflowProcessAssignment]
+    PRINT 'WorkflowProcessAssignment DROP TABLE'
+END
+
 IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowGlobalParameter')
 BEGIN
 	DROP TABLE WorkflowGlobalParameter
 	PRINT 'WorkflowGlobalParameter DROP TABLE'
+END
+
+IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowRuntime')
+BEGIN
+	DROP TABLE WorkflowRuntime
+	PRINT 'WorkflowRuntime DROP TABLE'
+END
+
+IF  EXISTS (SELECT 1 FROM [INFORMATION_SCHEMA].[TABLES] WHERE [TABLE_NAME] = N'WorkflowSync')
+BEGIN
+	DROP TABLE WorkflowSync
+	PRINT 'WorkflowSync DROP TABLE'
 END
 
 COMMIT TRANSACTION

@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL and Azure SQL
-Version: 3.4
+Version: 5.2
 File: CreatePersistenceObjects.sql
 
 */
@@ -55,7 +55,14 @@ BEGIN
 		,[ParentProcessId] UNIQUEIDENTIFIER
 		,[RootProcessId] UNIQUEIDENTIFIER NOT NULL
 		,[IsDeterminingParametersChanged] BIT DEFAULT 0 NOT NULL
+        ,[TenantId] NVARCHAR(1024)
+		,[StartingTransition] NVARCHAR(max)
+		,[SubprocessName] NVARCHAR(max)
+		,[CreationDate] datetime NOT NULL CONSTRAINT DF_WorkflowProcessInstance_CreationDate DEFAULT getdate()
+		,[LastTransitionDate] datetime NULL
 		)
+
+	CREATE INDEX IX_RootProcessId ON WorkflowProcessInstance (RootProcessId)
 
 	PRINT 'WorkflowProcessInstance CREATE TABLE'
 END
@@ -89,6 +96,8 @@ BEGIN
 		,[ProcessId] UNIQUEIDENTIFIER NOT NULL
 		,[ExecutorIdentityId] NVARCHAR(256)
 		,[ActorIdentityId] NVARCHAR(256)
+        ,[ExecutorName] NVARCHAR(256)
+        ,[ActorName] NVARCHAR(256)
 		,[FromActivityName] NVARCHAR(max) NOT NULL
 		,[ToActivityName] NVARCHAR(max) NOT NULL
 		,[ToStateName] NVARCHAR(max)
@@ -97,6 +106,8 @@ BEGIN
 		,[IsFinalised] BIT NOT NULL
 		,[FromStateName] NVARCHAR(max)
 		,[TriggerName] NVARCHAR(max)
+		,[StartTransitionTime] DATETIME
+		,[TransitionDuration] BIGINT
 		)
 
 	CREATE CLUSTERED INDEX IX_ProcessId_Clustered ON WorkflowProcessTransitionHistory (ProcessId)
@@ -116,7 +127,22 @@ BEGIN
 		[Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowProcessInstanceStatus PRIMARY KEY
 		,[Status] TINYINT NOT NULL
 		,[Lock] UNIQUEIDENTIFIER NOT NULL
+		,[RuntimeId] nvarchar(450) NOT NULL
+		,[SetTime] datetime NOT NULL
 		)
+
+	CREATE NONCLUSTERED INDEX [IX_WorkflowProcessInstanceStatus_Status] ON [dbo].[WorkflowProcessInstanceStatus]
+	(
+		[Status] ASC
+	)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
+
+
+	CREATE NONCLUSTERED INDEX [IX_WorkflowProcessInstanceStatus_Status_Runtime] ON [dbo].[WorkflowProcessInstanceStatus]
+	(
+		[Status] ASC,
+		[RuntimeId] ASC
+	)WITH (PAD_INDEX = OFF, STATISTICS_NORECOMPUTE = OFF, SORT_IN_TEMPDB = OFF, DROP_EXISTING = OFF, ONLINE = OFF, ALLOW_ROW_LOCKS = ON, ALLOW_PAGE_LOCKS = ON) ON [PRIMARY];
+
 
 	PRINT 'WorkflowProcessInstanceStatus CREATE TABLE'
 END
@@ -139,73 +165,44 @@ BEGIN
 END
 
 IF NOT EXISTS (
+        SELECT 1
+        FROM sys.procedures
+        WHERE name = N'DropUnusedWorkflowProcessScheme'
+    )
+    BEGIN
+        EXECUTE (
+            'CREATE PROCEDURE [DropUnusedWorkflowProcessScheme]
+    AS
+    BEGIN
+        DELETE wps FROM WorkflowProcessScheme AS wps 
+            WHERE wps.IsObsolete = 1 
+                AND NOT EXISTS (SELECT * FROM WorkflowProcessInstance wpi WHERE wpi.SchemeId = wps.Id )
+
+        RETURN (SELECT COUNT(*) 
+            FROM WorkflowProcessInstance wpi LEFT OUTER JOIN WorkflowProcessScheme wps ON wpi.SchemeId = wps.Id 
+            WHERE wps.Id IS NULL)
+    END'
+            )
+
+        PRINT 'DropUnusedWorkflowProcessScheme CREATE PROCEDURE'
+    END
+
+
+IF NOT EXISTS (
 		SELECT 1
 		FROM [INFORMATION_SCHEMA].[TABLES]
 		WHERE [TABLE_NAME] = N'WorkflowScheme'
 		)
 BEGIN
 	CREATE TABLE WorkflowScheme (
-		[Code] NVARCHAR(256) NOT NULL CONSTRAINT PK_WorkflowScheme PRIMARY KEY
-		,[Scheme] NVARCHAR(max) NOT NULL
+		[Code] NVARCHAR(256) NOT NULL CONSTRAINT PK_WorkflowScheme PRIMARY KEY,
+		[Scheme] NVARCHAR(max) NOT NULL,
+		[CanBeInlined] [bit] NOT NULL DEFAULT(0),
+		[InlinedSchemes] [nvarchar](max) NULL,
+        [Tags] [nvarchar](max) NULL,
 		)
 
 	PRINT 'WorkflowScheme CREATE TABLE'
-END
-
-IF NOT EXISTS (
-		SELECT 1
-		FROM sys.procedures
-		WHERE name = N'DropWorkflowProcess'
-		)
-BEGIN
-	EXECUTE (
-			'CREATE PROCEDURE [DropWorkflowProcess]
-		@id uniqueidentifier
-	AS
-	BEGIN
-		BEGIN TRAN
-
-		DELETE FROM dbo.WorkflowProcessInstance WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstanceStatus WHERE Id = @id
-		DELETE FROM dbo.WorkflowProcessInstancePersistence  WHERE ProcessId = @id
-
-		COMMIT TRAN
-	END'
-			)
-
-	PRINT 'DropWorkflowProcess CREATE PROCEDURE'
-END
-
-IF NOT EXISTS (
-		SELECT 1
-		FROM sys.procedures
-		WHERE name = N'DropWorkflowProcesses'
-		)
-BEGIN
-	EXECUTE (
-			'CREATE TYPE IdsTableType AS TABLE
-	( Id uniqueidentifier );'
-			)
-
-	PRINT 'IdsTableType CREATE TYPE'
-
-	EXECUTE (
-			'CREATE PROCEDURE [DropWorkflowProcesses]
-		@Ids  IdsTableType	READONLY
-	AS
-	BEGIN
-		BEGIN TRAN
-
-		DELETE dbo.WorkflowProcessInstance FROM dbo.WorkflowProcessInstance wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstanceStatus wpi  INNER JOIN @Ids  ids ON wpi.Id = ids.Id
-		DELETE dbo.WorkflowProcessInstanceStatus FROM dbo.WorkflowProcessInstancePersistence wpi  INNER JOIN @Ids  ids ON wpi.ProcessId = ids.Id
-
-
-		COMMIT TRAN
-	END'
-			)
-
-	PRINT 'DropWorkflowProcesses CREATE PROCEDURE'
 END
 
 IF NOT EXISTS (
@@ -218,6 +215,8 @@ BEGIN
 		[Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowInbox PRIMARY KEY NONCLUSTERED
 		,[ProcessId] UNIQUEIDENTIFIER NOT NULL
 		,[IdentityId] NVARCHAR(256) NOT NULL
+		,[AddingDate] DATETIME NOT NULL DEFAULT GETDATE()
+		,[AvailableCommands] NVARCHAR(max) NOT NULL DEFAULT ''
 		)
 
 	CREATE CLUSTERED INDEX IX_IdentityId_Clustered ON WorkflowInbox (IdentityId)
@@ -256,6 +255,7 @@ BEGIN
 	CREATE TABLE WorkflowProcessTimer (
 		[Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowProcessTimer PRIMARY KEY NONCLUSTERED
 		,[ProcessId] UNIQUEIDENTIFIER NOT NULL
+        ,[RootProcessId] UNIQUEIDENTIFIER NOT NULL
 		,[Name] NVARCHAR(max) NOT NULL
 		,[NextExecutionDateTime] DATETIME NOT NULL
 		,[Ignore] BIT NOT NULL
@@ -265,6 +265,40 @@ BEGIN
 
 	PRINT 'WorkflowProcessTimer CREATE TABLE'
 END
+
+
+IF NOT EXISTS (
+        SELECT 1
+        FROM [INFORMATION_SCHEMA].[TABLES]
+        WHERE [TABLE_NAME] = N'WorkflowProcessAssignment'
+    )
+    BEGIN
+        CREATE TABLE WorkflowProcessAssignment (
+            [Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowProcessAssignment PRIMARY KEY NONCLUSTERED
+            ,[AssignmentCode] NVARCHAR(2048) NOT NULL
+            ,[ProcessId] UNIQUEIDENTIFIER NOT NULL
+            ,[Name] NVARCHAR(max) NOT NULL
+            ,[Description] NVARCHAR(max)
+            ,[StatusState] NVARCHAR(max) NOT NULL
+            ,[DateCreation] DATETIME NOT NULL
+            ,[DateStart] DATETIME
+            ,[DateFinish] DATETIME
+            ,[DeadlineToStart] DATETIME
+            ,[DeadlineToComplete] DATETIME
+            ,[Executor] NVARCHAR(256) NOT NULL
+            ,[Observers] NVARCHAR(max)
+            ,[Tags] NVARCHAR(max)
+            ,[IsActive] BIT NOT NULL
+            ,[IsDeleted] BIT NOT NULL
+        )
+
+        CREATE INDEX IX_Assignment_ProcessId ON WorkflowProcessAssignment (ProcessId)
+        CREATE INDEX IX_Assignment_AssignmentCode ON WorkflowProcessAssignment (AssignmentCode)
+        CREATE INDEX IX_Assignment_Executor ON WorkflowProcessAssignment (Executor)
+        CREATE INDEX IX_Assignment_ProcessId_Executor ON WorkflowProcessAssignment (ProcessId, Executor)
+
+        PRINT 'WorkflowProcessAssignment CREATE TABLE'
+    END
 
 IF NOT EXISTS (
 		SELECT 1
@@ -286,6 +320,80 @@ BEGIN
 
 	PRINT 'WorkflowGlobalParameter CREATE TABLE'
 END
-GO
+
+IF NOT EXISTS (
+		SELECT 1
+		FROM [INFORMATION_SCHEMA].[TABLES]
+		WHERE [TABLE_NAME] = N'WorkflowRuntime'
+		)
+BEGIN
+	CREATE TABLE WorkflowRuntime (
+		[RuntimeId] nvarchar(450) NOT NULL CONSTRAINT PK_WorkflowRuntime PRIMARY KEY
+		,[Lock] UNIQUEIDENTIFIER NOT NULL
+		,[Status] TINYINT NOT NULL
+		,[RestorerId] nvarchar(450)
+		,[NextTimerTime] datetime
+		,[NextServiceTimerTime] datetime
+		,[LastAliveSignal] datetime
+		)
+
+	PRINT 'WorkflowRuntime CREATE TABLE'
+
+    EXEC('INSERT INTO WorkflowRuntime  (RuntimeId,Lock,Status)  VALUES (''00000000-0000-0000-0000-000000000000'', NEWID(),100)');
+END
+
+IF NOT EXISTS (
+		SELECT 1
+		FROM [INFORMATION_SCHEMA].[TABLES]
+		WHERE [TABLE_NAME] = N'WorkflowSync'
+		)
+BEGIN
+	CREATE TABLE WorkflowSync (
+		[Name] nvarchar(450) NOT NULL CONSTRAINT PK_WorkflowSync PRIMARY KEY
+		,[Lock] UNIQUEIDENTIFIER NOT NULL
+		)
+
+	INSERT INTO [dbo].[WorkflowSync]
+           ([Name]
+           ,[Lock])
+     VALUES
+           ('Timer',
+           NEWID());
+
+	INSERT INTO [dbo].[WorkflowSync]
+           ([Name]
+           ,[Lock])
+     VALUES
+           ('ServiceTimer',
+           NEWID());
+
+	PRINT 'WorkflowSync CREATE TABLE'
+END
+
+IF NOT EXISTS (
+		SELECT 1
+		FROM [INFORMATION_SCHEMA].[TABLES]
+		WHERE [TABLE_NAME] = N'WorkflowApprovalHistory'
+		)
+BEGIN
+CREATE TABLE [dbo].[WorkflowApprovalHistory](
+	[Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowApprovalHistory PRIMARY KEY NONCLUSTERED
+	,[ProcessId] UNIQUEIDENTIFIER NOT NULL
+	,[IdentityId] NVARCHAR(256) NULL
+	,[AllowedTo] NVARCHAR(max) NULL
+	,[TransitionTime] DateTime NULL
+	,[Sort] BIGINT NULL
+	,[InitialState] NVARCHAR(1024) NOT NULL
+	,[DestinationState] NVARCHAR(1024) NOT NULL
+	,[TriggerName] NVARCHAR(1024) NULL
+	,[Commentary] NVARCHAR(max) NULL
+    )
+
+	CREATE CLUSTERED INDEX IX_ProcessId_Clustered ON WorkflowApprovalHistory (ProcessId)
+	CREATE NONCLUSTERED INDEX IX_IdentityId ON WorkflowApprovalHistory (IdentityId)
+	PRINT 'WorkflowApprovalHistory CREATE TABLE'
+END
+
+
 
 COMMIT TRANSACTION
