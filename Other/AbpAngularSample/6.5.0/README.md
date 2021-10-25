@@ -7,43 +7,42 @@
 
 Create & download your project from https://aspnetboilerplate.com/Templates
 
-## Настройка Asp.Net Core решения
+### Asp.Net Core solution set up
 
-Все изменения, нужные для бекенд части приложения, вы можете найти в следующем [коммите]( https://github.com/optimajet/WorkflowEngine.NET/commit/fe1671d68e5c1aca3a1e9f391529e6079498df09). Все изменения в коде выделены комментарием ```WorkflowEngineSampleCode```. Вы можете использовать ключевое слово ```WorkflowEngineSampleCode``` в сочетании с глобальным поиском по проекту  для нахождения всех нужных изменений.
+You can find all the changes needed for the backend part of the application in the following [commit](https://github.com/optimajet/WorkflowEngine.NET/commit/fe1671d68e5c1aca3a1e9f391529e6079498df09). All code changes are highlighted with the comment *WorkflowEngineSampleCode*. You can use the *WorkflowEngineSampleCode* keyword at the global project search to find all the required changes.
 
-Для воспроизведения нашего семпла вам нужно сделать следующее:
+To make the same sample like this one, you need to follow these steps:
 
-- Добавить в проект c Application следующие нугет пакеты: WorkflowEngine.NetCore-Core, WorkflowEngine.NetCore-ProviderForMSSQL
-- Добавить ```WorkflowRuntimeManager``` вместе с ```ActionProvider``` (расположение Application/Workflow)
-- Добавить в DI ```IWorkflowActionProvider``` и ```WorkflowRuntime``` (расположение Web.Host/Startup/Startup.cs)
-- Добавить сущность ```Document``` (расположение Core/Documents)
-- Настроить контекст EF Core и произвести миграцию для добавления таблицы ```AppDocuments```  (расположение EntityFrameworkCore/YourSolutionNameDbContext.cs)
-- Настроить контекст EF Core и произвести миграцию для добавления таблицы ```AppDocuments```  (расположение EntityFrameworkCore/YourSolutionNameDbContext.cs)
-- Добавить ```DocumentAppService``` и ```WorkflowSchemeAppService``` вместе со всеми необходимыми Dto (расположение Application/Documents и Application/WorkflowSchemes)
-- Добавить ```DesignerController``` (расположение Web.Host/Controllers)
+- Add references to the following  NuGet packages to the AbpAngularSample.Application project: WorkflowEngine.NetCore-Core, WorkflowEngine.NetCore-ProviderForMSSQL
+- Add *WorkflowRuntimeManager* and *ActionProvider* (see AbpAngularSample.Application/Workflow folder)
+- Register services *IWorkflowActionProvider* and *WorkflowRuntime* (see AbpAngularSample.Web.Host/Startup/Startup.cs)
+- Add Document entity (see AbpAngularSample.Core/Documents)
+- Set up EF Core context and migrate to add *AppDocuments* table (see AbpAngularSample.EntityFrameworkCore/YourSolutionNameDbContext.cs)
+- Add *DocumentAppService* and *WorkflowSchemeAppService* with all required Dto (see AbpAngularSample.Application/Documents and AbpAngularSample.Application/WorkflowSchemes)
+- Add *DesignerController* (see AbpAngularSample.Web.Host/Controllers)
 
-Готово!
+Done!
 
-## Настройка Angular решения
+## Angular solution set up
 
-Все изменения, нужные для фронтенд части приложения, вы можете найти в следующем [коммите](https://github.com/optimajet/WorkflowEngine.NET/commit/ede24d4b02641afa86970c963bc946880fcd8eff). Все изменения в коде выделены комментарием ```WorkflowEngineSampleCode```, так же как и в бекенд части.
+You can find all the changes needed for the backend part of the application in the following [commit](https://github.com/optimajet/WorkflowEngine.NET/commit/ede24d4b02641afa86970c963bc946880fcd8eff).  All code changes are highlighted with the comment *WorkflowEngineSampleCode*. Same as at the backend part.
 
-Для воспроизведения нашего семпла вам нужно сделать следующее:
+To make the same sample like this one, you need to follow these steps:
 
-- Добавить пакет ```Workflow Designer``` для ангуляра и ```JQuery```
+- Add Workflow Designer Angular package and JQuery
 
 ```shell
 npm i @optimajet/workflow-designer-angular jquery
 ```
 
-- Реализовать ```WorkflowSchemeServiceProxy``` и ```DocumentServiceProxy``` и добавить их провайдеры (@shared/service-proxies/)
-- Реализовать ангуляровские компоненты для documents и workflow (@app/documents и @app/workflow)
-- Добавить ранее реализованные компоненты и модули в ```app.module.ts``` (@app/app.module.ts)
-- Добавить endpoints в роутинге  (@app/app-routing.module.ts)
-- Добавить разделы меню для новых компонентов (@app/layout/sidebar-menu.component.ts)
-- Добавить стили ```Workflow Designer``` в ```core.less``` (@shared/core.less)
+- Implement *WorkflowSchemeServiceProxy* and *DocumentServiceProxy* (see @shared/service-proxies/)
+- Implement Angular components for documents and workflow  (see @app/documents и @app/workflow)
+- Add components and modules implemented earlier into *app.module.ts* (see @app/app.module.ts)
+- Add endpoints to routing (see @app/app-routing.module.ts)
+- Add menu sections for new components (see @app/layout/sidebar-menu.component.ts)
+- Add the Workflow Designer styles into the *core.less* (see @shared/core.less)
 
-Готово!
+Done!
 
 # Screenshots
 
