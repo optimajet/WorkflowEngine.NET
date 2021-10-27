@@ -1,4 +1,5 @@
-﻿@{
+﻿
+@{
     ViewBag.Title = "Index";
     Layout = "~/Views/Shared/_Layout.cshtml";
 }
@@ -43,8 +44,8 @@
         return query_string;
     }();
 
-    var schemecode = 'SimpleWF';
-     var processid = QueryString.processid;
+    var schemecode =  QueryString.code ?  QueryString.code : 'SimpleWF';//'InlineScheme';
+    var processid = QueryString.processid;
     var graphwidth = 1200;
     var graphminheight = 600;
     var graphheight = graphminheight;
@@ -131,7 +132,7 @@
 
         if (form.value=="")
             return;
-            
+        
         if (selectSchemeType == "bpmn") {
             wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
                 wfdesigner.autoarrangement();

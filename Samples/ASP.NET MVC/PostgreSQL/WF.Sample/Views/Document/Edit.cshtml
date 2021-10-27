@@ -10,11 +10,12 @@
 @model WF.Sample.Models.DocumentModel
 
 @{
-    var designerUrl = "/Designer?schemeName=SimpleWF";
+    var designerUrl = Url.Action("Index", "Designer", new {schemeName = "SimpleWF"});
     if (Model.Id != Guid.Empty)
     {
-        designerUrl = "/Designer?processid=" + Model.Id.ToString();
+        designerUrl = Url.Action("Index", "Designer", new {processid = Model.Id});
     }
+    var createAssignmentUrl = Url.Action("AssignmentCreate", "Assignment",  new {processid = Model.Id});
     IEmployeeRepository er = DependencyResolver.Current.GetService<IEmployeeRepository>();
 }
 
@@ -74,6 +75,10 @@
             <div class="field">
                 <a class="ui circular left floated button" target="_blank" style="text-align:right" href="@designerUrl">Open in Workflow Designer</a>
             </div>
+            <div class="field">
+                <a class="ui circular left floated button" target="_blank" style="text-align:right" href="@createAssignmentUrl">Create assignment</a>
+            </div>
+
 
         }
     </div>

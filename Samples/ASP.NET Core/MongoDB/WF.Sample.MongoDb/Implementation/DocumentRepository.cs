@@ -66,6 +66,14 @@ namespace WF.Sample.MongoDb.Implementation
             return Mappings.Mapper.Map<Document>(doc);
         }
 
+        public Document GetByNumber(int number)
+        {
+            var dbcoll = Store.GetCollection<Entities.Document>("Document");
+            var doc = dbcoll.Find(x => x.Number == number).FirstOrDefault();
+            if (doc == null) return null;
+            return Mappings.Mapper.Map<Document>(doc);
+        }
+
         public IEnumerable<string> GetAuthorsBoss(Guid documentId)
         {
             var res = new List<string>();

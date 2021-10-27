@@ -1,0 +1,307 @@
+<h3>{{ customTitle ? customTitle : labels.Title }}</h3>
+<el-form
+        class="WorkflowDesignerWindowForm"
+        :model="FormData"
+        ref="form"
+        label-position="top"
+        label-width="150px">
+
+    <div v-if="Field.State != undefined"  class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item
+                    :label="customLabels.Name"
+                    :rules="getFieldRules(Field.Name)"
+                    :prop="Field.Name.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.Name" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    :label="customLabels.State"
+                    :rules="getFieldRules(Field.State)"
+                    :prop="Field.State.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.State" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+    </div>
+
+    <h4 v-if="Field.State != undefined" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{customLabels.Heading}}</h4>
+    <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
+
+        <div class="el-form--inline el-form--label-top" style="width: 100%"  >
+            <el-form-item
+                    v-if="Field.MailServer"
+                    :label="customLabels.MailServer"
+                    :rules="getFieldRules(Field.MailServer)"
+                    :prop="Field.MailServer.Name"
+                    class="el-form-item"
+                    style="flex-grow: 3;">
+                <el-input v-model="FormData.MailServer" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    v-if="Field.MailServerPort"
+                    :rules="getFieldRules(Field.MailServerPort,FormData.MailServerPort)"
+                    :prop="Field.MailServerPort.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <span slot="label">{{customLabels.MailServerPort}}
+                    <span @click="function(){FormData.MailServerPort = null; parameterFromProcess.MailServerPort = !parameterFromProcess.MailServerPort}"
+                          :style="parameterFromProcess.MailServerPort ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-input-number v-if="!parameterFromProcess.MailServerPort" controls-position="right" v-model="FormData.MailServerPort" :disabled="readonly" style="width:180px"></el-input-number>
+                <el-input v-if="parameterFromProcess.MailServerPort" v-model="FormData.MailServerPort" :disabled="readonly" style="width:180px"></el-input>
+            </el-form-item>
+        </div>
+
+        <div class="el-form--inline el-form--label-top"  >
+            <el-form-item
+                    v-if="Field.MailServerFrom"
+                    :label="customLabels.MailServerFrom"
+                    :rules="getFieldRules(Field.MailServerFrom)"
+                    :prop="Field.MailServerFrom.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input v-model="FormData.MailServerFrom" :readonly="readonly"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :label="customLabels.To"
+                    :rules="getFieldRules(Field.To)"
+                    :prop="Field.To.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input v-model="FormData.To" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+
+        <el-form-item
+                :label="customLabels.Subject"
+                :rules="getFieldRules(Field.Subject)"
+                :prop="Field.Subject.Name">
+            <el-input v-model="FormData.Subject" :readonly="readonly"></el-input>
+        </el-form-item>
+
+
+        <div class="el-form--inline el-form--label-top" >
+            <el-form-item
+                    v-if="Field.MailServerSsl"
+                    :rules="getFieldRules(Field.MailServerSsl,FormData.MailServerSsl)"
+                    :prop="Field.MailServerSsl.Name">
+                <span slot="label">{{customLabels.MailServerSsl}}
+                    <span @click="function(){FormData.MailServerSsl =parameterFromProcess.MailServerSsl ? false : null; parameterFromProcess.MailServerSsl = !parameterFromProcess.MailServerSsl}"
+                          :style="parameterFromProcess.MailServerSsl ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.MailServerSsl"
+                        v-model="FormData.MailServerSsl"
+                        :disabled="readonly"
+                        style="width:180px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.MailServerSsl" v-model="FormData.MailServerSsl" :disabled="readonly" style="width:180px"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :rules="getFieldRules(Field.IsHTML,FormData.IsHTML)"
+                    :prop="Field.IsHTML.Name">
+                <span slot="label">{{customLabels.IsHTML}}
+                    <span @click="function(){FormData.IsHTML = parameterFromProcess.IsHTML ? false : null; parameterFromProcess.IsHTML = !parameterFromProcess.IsHTML}"
+                          :style="parameterFromProcess.IsHTML ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.IsHTML"
+                        v-model="FormData.IsHTML"
+                        :disabled="readonly"
+                        style="width:180px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.IsHTML" v-model="FormData.IsHTML" :disabled="readonly" style="width:180px"></el-input>
+            </el-form-item>
+            <el-form-item
+                    v-if="Field.MailServerLogin || Field.MailServerPass"
+                    :label="customLabels.UseAuth">
+                <el-checkbox
+                        v-model="useAuth"
+                        :disabled="readonly">
+                </el-checkbox>
+            </el-form-item>
+        </div>
+
+        <div v-if="useAuth" class="el-form--inline el-form--label-top"  >
+            <el-form-item
+                    v-if="Field.MailServerLogin"
+                    :label="customLabels.MailServerLogin"
+                    :rules="getFieldRules(Field.MailServerLogin)"
+                    :prop="Field.MailServerLogin.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input v-model="FormData.MailServerLogin" :readonly="readonly"></el-input>
+            </el-form-item>
+            <el-form-item
+                    v-if="Field.MailServerPass"
+                    :label="customLabels.MailServerPass"
+                    :rules="getFieldRules(Field.MailServerPass)"
+                    :prop="Field.MailServerPass.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input v-model="FormData.MailServerPass" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+
+        <el-form-item
+                :label="customLabels.Body"
+                :rules="getFieldRules(Field.Body)"
+                :prop="Field.Body.Name">
+            <el-input v-model="FormData.Body" type="textarea" rows="5" :readonly="readonly"></el-input>
+        </el-form-item>
+
+    </div>
+
+</el-form>
+
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+
+<script type="application/javascript">
+    function customforms_basicsplugin_sendemailform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            customTitle: undefined,
+            readonly: false,
+            labels: WorkflowDesignerConstants.EditParametersFormlabel,
+            customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.SendEmail,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+            parameterFromProcess:{
+                MailServerPort: false,
+                MailServerSsl: false,
+                IsHTML: false
+            },
+            FormData: {},
+            Field:{},
+            useAuth: false
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+
+            if(parameterDefinition && parameterDefinition.name){
+                for(var i=0; i <= parameterDefinition.type.length; i++){
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                    if(fields && fields.length > 0)
+                        break;
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function (field) {
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '') {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+
+                    me.VueConfig.data.Field[field.Name] = field;
+                });
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox") {
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined") {
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else {
+                            tmp[field.Name] = null;
+                        }
+                    });
+
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+
+            me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+
+            if(!me.VueConfig.data.FormData)
+                me.VueConfig.data.FormData = {};
+
+            for (key in me.VueConfig.data.FormData) {
+                if(me.VueConfig.data.parameterFromProcess[key]!= undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
+                    me.VueConfig.data.parameterFromProcess[key] = true;
+                if (key !== "__customtype" && me.VueConfig.data.FormData.hasOwnProperty(key))
+                    if(!me.VueConfig.data.Field.hasOwnProperty(key))
+                        delete me.VueConfig.data.FormData[key];
+            }
+
+            me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
+
+            me.VueConfig.data.useAuth = me.VueConfig.data.FormData.MailServerPass != null || me.VueConfig.data.FormData.MailServerLogin != null
+        };
+
+        me.VueConfig.methods.getFieldRules  = function(field, parameterValue){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            if(me.VueConfig.data.parameterFromProcess[field.Name]){
+                var validator = function(rule, value, callback){
+                    if(WorkflowDesignerCommon.containsAt(parameterValue)){
+                        callback();
+                    }
+                    else{
+                        callback(new Error(rule.message));
+                    }
+                };
+                rules.push({ validator: validator, required: true, message: WorkflowDesignerConstants.FieldMustContainAt, trigger: 'blur'});
+            }
+
+
+            return rules;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(!me.VueConfig.data.useAuth){
+                me.VueConfig.data.FormData.MailServerLogin = null;
+                me.VueConfig.data.FormData.MailServerPass = null;
+            }
+
+            var value = undefined;
+            value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+
+            this.$refs.form.validate(function(valid) {
+                if (valid) {
+                    me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                    me.onClose(true);
+                }
+            });
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>

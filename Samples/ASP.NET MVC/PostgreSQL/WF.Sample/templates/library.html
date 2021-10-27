@@ -7,7 +7,7 @@
         </div>
         <div v-if="item.Title" :draggable="item.IsEnable" style="cursor:grab;" @dragstart="dragstart(item, $event)" @dragend="dragend($event)" @drop="drop($event)">      
             <el-card body-style="padding:15px;">
-                <el-tooltip :disabled="item.IsEnable" :content="WorkflowDesignerConstants.LibraryLabel.PluginRequired + ' ' + item.Plugins">
+                <el-tooltip :disabled="item.IsEnable" :content="libraryLabel.PluginRequired + ' ' + item.Plugins">
                 <div v-bind:class="{disabledCard: !item.IsEnable }">
                     <b> {{ item.Title }}</b>
                     <div v-if="item.Description" style="margin-top:10px;">
@@ -25,7 +25,8 @@
             header: WorkflowDesignerConstants.ToolbarLabel.Library,
             items: [],
             loading: true,
-            folder: me.graph.Settings.templatefolder
+            folder: me.graph.Settings.templatefolder,
+            libraryLabel:WorkflowDesignerConstants.LibraryLabel
         });
 
         me.VueConfig.methods.ValidateItems = function(items)
@@ -48,12 +49,18 @@
                 return items;
         };
 
-        var libraryUrl = me.VueConfig.data.folder + "library.json";
-        $.ajax({url: libraryUrl, async: true}).done(function(result) 
-        {
-            me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(result);
+        if(window.WFE_WITH_TEMPLATES){
+            me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(Array.from(WFELibrary));
             me.VueConfig.data.loading = false;
-        });
+        }
+        else{
+            var libraryUrl = me.VueConfig.data.folder + "library.json";
+            $.ajax({url: libraryUrl, async: true}).done(function(result) 
+            {
+                me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(result);
+                me.VueConfig.data.loading = false;
+            });
+        }
 
 
         me.VueConfig.methods.onUpdate = function(){
@@ -64,7 +71,9 @@
             me.VueConfig.watch.options.handler();
         };
 
-        me.VueConfig.methods.insertScheme = function(item, e){
+
+        me.VueConfig.methods.insertScheme = function(item){
+            var e = me.lastPos;
             var loadingSpinner = $("<div class='WorkflowDesignerWindowLoaderOverlay Compact'><div class='cv-spinner'><span class='spinner'></span></div></div>")
             $("body").append(loadingSpinner);
             loadingSpinner.css('left',e.pageX + 'px');          
@@ -76,19 +85,19 @@
                 x: e.pageX - offset.left, 
                 y: e.pageY - offset.top
             };
-            $.ajax({
-                url: me.VueConfig.data.folder + item.File, 
-                dataType: 'text'
-            }).done(function(result) {
-                me.graph.insertScheme(result, pos, function () { loadingSpinner.remove() });                               
-            });
+
+            me.graph.insertSchemeFromLibrary(item.File, pos, function(){loadingSpinner.remove()});
+        }
+
+        me.VueConfig.methods.savePos = function(e){ 
+            me.lastPos = e.originalEvent
         }
 
         me.VueConfig.methods.dragstart = function(item, e) {
             this.draggingItem = item;
             this.targetStyle = e.target.style;
             this.targetStyle.opacity = 0.6;
-
+            me.parentContainer.on("dragover", me.VueConfig.methods.savePos);
             try {
                 e.originalEvent.dataTransfer.setData('text/plain', 'anything'); //hack for drag&drop in FF
             } catch (e) {}
@@ -96,13 +105,14 @@
         };
 
         me.VueConfig.methods.dragend = function(e) 
-        {
+        {            
+            me.parentContainer.off("dragover",  me.VueConfig.methods.savePos );
             this.targetStyle.opacity = 1;
             me.parentContainer.off("dragover.library");
             
             if(this.draggingItem !== undefined)
            {                
-                this.insertScheme(this.draggingItem, e);
+                this.insertScheme(this.draggingItem);
                 this.draggingItem = undefined;
             }
         };

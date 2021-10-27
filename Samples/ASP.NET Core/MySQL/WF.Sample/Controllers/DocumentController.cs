@@ -6,9 +6,13 @@ using WF.Sample.Business.Model;
 using WF.Sample.Business.Workflow;
 using WF.Sample.Helpers;
 using WF.Sample.Models;
+using System.Threading;
+using System.Threading.Tasks;
 using AutoMapper;
 using WF.Sample.Business.DataAccess;
 using Microsoft.AspNetCore.Mvc;
+using Newtonsoft.Json;
+using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 
@@ -35,7 +39,7 @@ namespace WF.Sample.Controllers
             {
                 Page = page,
                 PageSize = pageSize,
-                Docs = _documentRepository.Get(out count, page, pageSize).Select(c=> GetDocumentModel<DocumentModel>(c)).ToList(),
+                Docs = _documentRepository.Get(out count, page, pageSize).Select(GetDocumentModel<DocumentModel>).ToList(),
                 Count = count,
             });
         }
@@ -72,7 +76,7 @@ namespace WF.Sample.Controllers
                 Page = page,
                 Docs =  GetDocumentsByOutbox(outbox),
                 PageSize = pageSize,
-                Count = count,
+                Count = count
             });
         }
         #endregion
@@ -154,7 +158,7 @@ namespace WF.Sample.Controllers
             }
             catch (Exception ex)
             {
-                var sb = new StringBuilder("Save error. " + ex.Message);
+                var sb = new StringBuilder("Ошибка сохранения. " + ex.Message);
                 if (ex.InnerException != null)
                     sb.AppendLine(ex.InnerException.Message);
                 ModelState.AddModelError("", sb.ToString());
@@ -170,6 +174,7 @@ namespace WF.Sample.Controllers
             return RedirectToAction("Edit", new { doc.Id});
             
         }
+
         #endregion
 
         #region Delete
@@ -246,6 +251,27 @@ namespace WF.Sample.Controllers
               
                 return;
             }
+            else if (commandName.Equals("Resume", StringComparison.InvariantCultureIgnoreCase))
+            {
+                if (string.IsNullOrEmpty(document.StateNameToSet))
+                    return;
+                var pi = WorkflowInit.Runtime.GetProcessInstanceAndFillProcessParameters(id);
+
+                var activity = pi.ProcessScheme.Activities.FirstOrDefault(a => a.IsForSetState && a.State.Equals(document.StateNameToSet, StringComparison.OrdinalIgnoreCase));
+
+                if (activity == null)
+                {
+                    return;
+                }
+                var resumeParams = new ResumeParams(id,activity.Name)
+                {
+                    IdentityId = currentUser,
+                    ImpersonatedIdentityId = currentUser
+                }.AddTemporaryParameter("Comment",document.Comment);
+                
+                WorkflowInit.Runtime.Resume(resumeParams);
+                return;
+            }
 
             var commands = WorkflowInit.Runtime.GetAvailableCommands(id, currentUser);
 
@@ -292,7 +318,7 @@ namespace WF.Sample.Controllers
 
         private List<InboxDocumentModel> GetDocumentsByInbox(List<InboxItem> inbox)
         {
-            var ids = inbox.Select(x => x.ProcessId).ToList();
+            var ids = inbox.Select(x => x.ProcessId).Distinct().ToList();
             
             var documents = _documentRepository.GetByIds(ids)
                 .ToDictionary(x=>x.Id, x=>x);
@@ -323,10 +349,10 @@ namespace WF.Sample.Controllers
 
             return docs;
         }
-
+        
         private List<OutboxDocumentModel> GetDocumentsByOutbox(List<OutboxItem> outbox)
         {
-            var ids = outbox.Select(x => x.ProcessId).ToList();
+            var ids = outbox.Select(x => x.ProcessId).Distinct().ToList();
             
             var documents = _documentRepository.GetByIds(ids)
                 .ToDictionary(x=>x.Id, x=>x);
@@ -406,5 +432,6 @@ namespace WF.Sample.Controllers
 
             return histories;
         }
+        
     }
 }

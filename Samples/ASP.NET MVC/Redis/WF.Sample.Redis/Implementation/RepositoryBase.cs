@@ -23,6 +23,11 @@ namespace WF.Sample.Redis.Implementation
         {
             return string.Format("{0}:document:{1:N}", _providerNamespace, id);
         }
+        
+        protected string GetKeyForDocumentIdsNumber()
+        {
+            return string.Format("{0}:documentnumbers:hashset", _providerNamespace);
+        }
 
         protected string GetKeyForEmployee(Guid id)
         {
@@ -98,6 +103,24 @@ namespace WF.Sample.Redis.Implementation
         protected string GetKeyForEmployeesSet()
         {
             return string.Format("{0}:employees:set", _providerNamespace);
+        }
+        
+        /// <summary>
+        /// Key for Set of Employee names
+        /// </summary>
+        /// <returns></returns>
+        protected string GetKeyForEmployeeNamesSet()
+        {
+            return string.Format("{0}:employeenames:set", _providerNamespace);
+        }
+        
+        /// <summary>
+        /// Key for Set of Employee ids
+        /// </summary>
+        /// <returns></returns>
+        protected string GetKeyForEmployeeIdsNameSet(string name)
+        {
+            return string.Format("{0}:employeename:{1}:ids:set", _providerNamespace, name);
         }
 
         /// <summary>

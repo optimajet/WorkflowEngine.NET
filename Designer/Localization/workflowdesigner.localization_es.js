@@ -1,4 +1,4 @@
- var WorkflowDesignerConstants = {
+var WorkflowDesignerConstants = {
   ActivityColor: "#ECF0F1",
   ActivityTextColor: "#2D3436",
   ActivityInitialColor: "#27AE60",
@@ -11,12 +11,17 @@
   SelectSubProcessColor: "#e3b015",
   SelectSubProcessTextColor: "#FFFFFF",
   ButtonActive: "#D4D8D9",
+  DateTimeFormat: "YYYY-MM-DD HH:MM:SS",
   BarColor: "#EDF1F2",
   BarSeparatorColor: "#D9DEE0",
+  IsRequiredColor: "#F56C6C",
+  ParameterFromProcessColor: "#1f8dd6",
   DeleteConfirm: "¿Está seguro de que desea eliminar los elementos seleccionados?",
   DeleteConfirmCurrent: "¿Estás seguro de que quieres eliminar este elemento?",
   FieldIsRequired: "¡Se requiere campo!",
+  FieldIsNotCorrected: "Field is not corrected!",
   FieldMustBeUnique: "¡El campo debe ser único!",
+  FieldMustContainAt: "Field must contain @",
   ButtonTextDelete: "Borrar",
   ButtonTextCreate: "Crear",
   ButtonTextSave: "Salvar",
@@ -52,6 +57,11 @@
     IsForSetState: "Para estado fijo",
     IsAutoSchemeUpdate: "Actualización automática del esquema",
     DisablePersist: "Disable persist",
+    DisablePersists: {
+      DisablePersistTransitionHistory: "Disable persist transition history",
+      DisablePersistState: "Disable persist process state",
+      DisablePersistParameters: "Disable persist process parameters"
+    },
     Implementation: "Implementación",
     PreExecutionImplementation: "Implementación Pre Ejecución",
     ImpOrder: "Orden",
@@ -76,6 +86,7 @@
     AnnotationName: "Name",
     AnnotationValue: "Value",
     Scheme: "Inline scheme",
+    UserComment: "Comentario",
     AlwaysConditionShouldBeSingle: "Siempre la condición debe ser individual",
     OtherwiseConditionShouldBeSingle: "De lo contrario la condición debe ser única."
   },
@@ -103,7 +114,8 @@
     ConditionActionParameter: "Action parameter",
     ConditionInversion: "Invert result",
     ActionLabel: "Action",
-    ExpressionLabel: "Expression"
+    ExpressionLabel: "Expression",
+    UserComment: "Comment"
   },
   DecisionTable: {
     Title: "Decision table",
@@ -128,7 +140,8 @@
     ConditionActionParameter: "Action parameter",
     ConditionInversion: "Invert result",
     ActionLabel: "Action",
-    ExpressionLabel: "Expression"
+    ExpressionLabel: "Expression",
+    UserComment: "Comment"
   },
   TransitionFormLabel: {
     Title: "Transición",
@@ -173,6 +186,7 @@
     ActionLabel: "Action",
     ExpressionLabel: "Expression",
     OtherwiseLabel: "Otherwise",
+    UserComment: "Comentario",
     Subprocess: "Subprocess",
     SubprocessNone: "None",
     SubprocessStart: "Start",
@@ -207,24 +221,36 @@
     IsDefault: "IsDefault",
     Culture: "Cultura",
     Value: "Valor",
-    Types: [
-      "Command",
-      "State",
-      "Parameter"
-    ]
+    Types: ["Command", "State", "Parameter"]
   },
   TimerFormLabel: {
     Title: "Temporizadores",
     Name: "Nombre",
     Type: "Tipo",
     Value: "Valor",
-    Types: [
-      "Command",
-      "State",
-      "Parameter"
-    ],
+    Types: ["Command", "State", "Parameter"],
     OverrideHint: "Anular el temporizador si existe",
     Override: "Anular"
+  },
+  AssignmentFormLabel: {
+    Title: "Assignments",
+    Code: "Code",
+    Name: "Name",
+    Executor: "Executor",
+    ExecutorId: "Executor Id",
+    Status: "Status",
+    DateCreation: "Date creation",
+    Description: "Description",
+    DateStart: "Date start",
+    DateFinish: "Date finish",
+    DeadlineToStart: "Deadline to start",
+    DeadlineToFinish: "Deadline to finish",
+    Observers: "Observers",
+    ObserverId: "Observer Id",
+    Tags: "Tags",
+    ProhibitedForExecution: "Prohibited for execution",
+    AssignmentDeleted: "Assignment deleted",
+    TypeSomething: "Type something"
   },
   ParameterFormLabel: {
     Title: "Parámetros",
@@ -275,6 +301,8 @@
     HistoryTabToStateLabel: "To State",
     HistoryTabExecutorIdLabel: "Executor Id",
     HistoryTabActorIdLabel: "Actor Id",
+    HistoryTabExecutorLabel: "Executor",
+    HistoryTabActorLabel: "Actor",
     HistoryTabTimeLabel: "Time",
     HistoryTabStartTimeLabel: "Start Time",
     HistoryTabDurationLabel: "Duration (ms)",
@@ -303,7 +331,7 @@
     IsGlobal: "Es global",
     IsAsync: "Asíncrono",
     Type: "Tipo",
-    GlobalDeleteMessage: "Si ha eliminado Global CodeAction, <br/> <b> ¡otros esquemas no podrán llamarlo! </b>",
+    GlobalDeleteMessage: "Si ha eliminado Global CodeAction, <br/> <b> ¡otros esquemas no podrán llamarlo! <\/b>",
     UnGlobalMessage: "Ha cambiado el estado de la bandera global. <br/> Se creará una acción de código local basada en esta acción de código global después de guardar este esquema.",
     EditParameters: "Edit parameters",
     Parameters: "Parameters",
@@ -314,6 +342,8 @@
     Dropdown: "Dropdown",
     MultiSelect: "MultiSelect",
     DateTime: "Date/Time",
+    Date: "Date",
+    Time: "Time",
     Values: "Values",
     DropdownName: "Name",
     DropdownValue: "Value",
@@ -330,6 +360,131 @@
     SwitchToJson: "Switch to JSON editor",
     SwitchToConstructor: "Switch to parameter values editor",
     InvalidJson: "JSON object is invalid or does not match the model",
+    CustomForms: {
+      HTTPRequest: {
+        Name: "Name",
+        State: "State",
+        UseAuth: "Use authentication",
+        Heading: "Request",
+        Url: "Url",
+        Post: "Post",
+        StoreResponse: "Store response",
+        Username: "Username",
+        Password: "Password",
+        ParameterName: "Parameter name",
+        ParameterPurpose: "Parameter purpose",
+        ContentType: "Content type",
+        AddProcessInstanceParameters: "Add process instance parameters",
+        Parameters: "Parameters",
+        Headers: "Headers"
+      },
+      SendEmail: {
+        Name: "Name",
+        State: "State",
+        Heading: "Form",
+        UseAuth: "Use authentication",
+        MailServer: "Mail server",
+        MailServerPort: "Mail server port",
+        MailServerFrom: "Mail server from",
+        To: "To",
+        Subject: "Subject",
+        MailServerSsl: "MailServerSsl",
+        IsHTML: "IsHTML",
+        MailServerLogin: "Mail server login",
+        MailServerPass: "Mail server pass",
+        Body: "Body"
+      },
+      StartLoopFor: {
+        Name: "Name",
+        State: "State",
+        Heading: "Loop",
+        DateRange: "Date range",
+        RangeSeparator: "To",
+        StartDate: "Start date",
+        EndDate: "End date",
+        Reverse: "Reverse",
+        LoopName: "Loop name",
+        LoopStateParameterName: "Loop state parameter name",
+        LoopCounterValueParameterName: "Loop counter value parameter name",
+        CounterType: "Counter type",
+        StartValue: "Start value",
+        EndValue: "End value",
+        Step: "Step",
+        StepType: "Step type",
+        IncludeLastValue: "Include last value"
+      },
+      StartLoopForeach: {
+        Name: "Name",
+        State: "State",
+        Heading: "Loop",
+        ValuesError: "None value cannot be empty!",
+        Values: "Values",
+        LoopName: "Loop name",
+        LoopStateParameterName: "Loop state parameter name",
+        LoopCounterValueParameterName: "Loop counter value parameter name",
+        Reverse: "Reverse"
+      },
+      CreateProcess: {
+        Name: "Name",
+        State: "State",
+        Heading: "Main settings",
+        ParameterName: "Name",
+        ParameterPurpose: "Purpose",
+        ParameterValue: "Value",
+        Scheme: "Scheme",
+        ProcessId: "Process id",
+        ProcessCreationParameters: "Process creation parameters",
+        ParameterInitialValue: "Initial value"
+      },
+      AssignmentCreate: {
+        Name: "Name",
+        State: "State",
+        Heading: "Assignment",
+        Code: "Code",
+        NewTag: "New Tag",
+        Executors: "Executors",
+        IsActive: "Is active",
+        Description: "Description",
+        DeadlineToStart: "Deadline to start",
+        DeadlineToComplete: "Deadline to complete",
+        Observers: "Observers",
+        Tags: "Tags"
+      },
+      AssignmentChange: {
+        Name: "Name",
+        State: "State",
+        Heading: "Assignment",
+        Code: "Code",
+        ReplacementExecutors: "Replacement of executors",
+        OldExecutor: "Old executor",
+        NewExecutor: "New executor",
+        AllExecutors: "All",
+        Change: "Change",
+        Status: "Status",
+        DeadlineToStart: "Deadline to start",
+        DeadlineToComplete: "Deadline to complete",
+        Tags: "Tags",
+        Observers: "Observers",
+        NewTag: "New Tag",
+        StatusState: "Status state",
+        IsActive: "Is active"
+      },
+      AssignmentsHaveStatus: {
+        Name: "Name",
+        State: "State",
+        Code: "Code",
+        Condition: "Condition",
+        IncludeInactive: "Include inactive",
+        StatusState: "Status state",
+        Assignments: "Assignments"
+      },
+      SetLoopState: {
+        Name: "Name",
+        State: "State",
+        LoopName: "Loop name",
+        LoopState: "Loop state"
+      }
+    },
     IncorrectForm: "Your form contains greater than one element, and at least one element doesn't have a Name. Please specify the Name for each element."
   },
   ToolbarLabel: {
@@ -349,6 +504,7 @@
     Actors: "Los actores",
     Commands: "Comandos",
     Parameters: "Parámetros",
+    Assignments: "Assignments",
     Localization: "Localización",
     Timers: "Temporizadores",
     AdditionalParameters: "Parámetros adicionales",
@@ -367,13 +523,20 @@
     ResetSettings: "Reset settings",
     ZoomPositionDefault: "Zoom por defecto"
   },
-  LibraryLabel: {
-    PluginRequired: "Plugin required:"
-  },
+  LibraryLabel: {PluginRequired: "Plugin required:"},
   Logs: {
     Label: "Logs",
     ParamName: "LogEnabled",
-    Description: "This parameter is the default value for logging processes based on this scheme"
+    Description: "This parameter is the default value for logging processes based on this scheme",
+    AutoRefresh: "Auto refresh",
+    Empty: "Empty",
+    Timestamp: "Timestamp",
+    Message: "Message",
+    Exception: "Exception",
+    Show: "Show",
+    ExceptionInfo: "Exception info",
+    HideDetails: "Hide details",
+    ShowDetails: "Show details"
   },
   ErrorActivityIsInitialCountText: "Un elemento debe estar marcado bandera Inicial",
   ErrorActivityIsFinalCountText: "This scheme is Inlined. One or more elements must be marked flag Final",
@@ -431,19 +594,126 @@
     InitialActivity: "Initial Activity",
     InitialActivityDesc: "It a initial state.",
     FinalActivity: "Final Activity",
-    FinalActivityDesc: "It a final state."
+    FinalActivityDesc: "It a final state.",
+    SetLoopState: {
+      Title: "Set loop state",
+      Description: "The action for set loop state"
+    }
   },
-  OverviewMap: {
-    show: true,
-    width: 300,
-    height: 150
-  },
+  OverviewMap: {show: true, width: 300, height: 150},
   UndoDepth: 200,
   DefaultCulture: "en-US",
   ErrorInBrowserConsole: "See more info in the browser console.",
-  EditJSONSettings: {
-    Height: 600,
-    Width: 1000,
-    CodeHeight: 480
-  }
+  ELEMENT: {
+    el: {
+      colorpicker: {confirm: "Confirmar", clear: "Despejar"},
+      datepicker: {
+        now: "Ahora",
+        today: "Hoy",
+        cancel: "Cancelar",
+        clear: "Despejar",
+        confirm: "Confirmar",
+        selectDate: "Seleccionar fecha",
+        selectTime: "Seleccionar hora",
+        startDate: "Fecha Incial",
+        startTime: "Hora Inicial",
+        endDate: "Fecha Final",
+        endTime: "Hora Final",
+        prevYear: "Año Anterior",
+        nextYear: "Próximo Año",
+        prevMonth: "Mes Anterior",
+        nextMonth: "Próximo Mes",
+        year: "",
+        month1: "enero",
+        month2: "febrero",
+        month3: "marzo",
+        month4: "abril",
+        month5: "mayo",
+        month6: "junio",
+        month7: "julio",
+        month8: "agosto",
+        month9: "septiembre",
+        month10: "octubre",
+        month11: "noviembre",
+        month12: "diciembre",
+        week: "week",
+        weeks: {
+          sun: "dom",
+          mon: "lun",
+          tue: "mar",
+          wed: "mié",
+          thu: "jue",
+          fri: "vie",
+          sat: "sáb"
+        },
+        months: {
+          jan: "ene",
+          feb: "feb",
+          mar: "mar",
+          apr: "abr",
+          may: "may",
+          jun: "jun",
+          jul: "jul",
+          aug: "ago",
+          sep: "sep",
+          oct: "oct",
+          nov: "nov",
+          dec: "dic"
+        }
+      },
+      select: {
+        loading: "Cargando",
+        noMatch: "No hay datos que coincidan",
+        noData: "Sin datos",
+        placeholder: "Seleccionar"
+      },
+      cascader: {
+        noMatch: "No hay datos que coincidan",
+        loading: "Cargando",
+        placeholder: "Seleccionar",
+        noData: "Sin datos"
+      },
+      pagination: {
+        goto: "Ir a",
+        pagesize: "/página",
+        total: "Total {total}",
+        pageClassifier: ""
+      },
+      messagebox: {
+        title: "Message",
+        confirm: "Aceptar",
+        cancel: "Cancelar",
+        error: "Entrada inválida"
+      },
+      upload: {
+        deleteTip: "Pulse Eliminar para retirar",
+        delete: "Eliminar",
+        preview: "Vista Previa",
+        continue: "Continuar"
+      },
+      table: {
+        emptyText: "Sin Datos",
+        confirmFilter: "Confirmar",
+        resetFilter: "Reiniciar",
+        clearFilter: "Despejar",
+        sumText: "Suma"
+      },
+      tree: {emptyText: "Sin Datos"},
+      transfer: {
+        noMatch: "No hay datos que coincidan",
+        noData: "Sin datos",
+        titles: ["Lista 1", "Lista 2"],
+        filterPlaceholder: "Ingresar palabra clave",
+        noCheckedFormat: "{total} artículos",
+        hasCheckedFormat: "{checked}/{total} revisados"
+      },
+      image: {error: "HA FALLADO"},
+      pageHeader: {title: "Volver"},
+      popconfirm: {confirmButtonText: "Si", cancelButtonText: "No"},
+      empty: {description: "Sin Datos"}
+    }
+  },
+  EditJSONSettings: {Height: 600, Width: 1000, CodeHeight: 480}
 };
+
+window.WorkflowDesignerConstants = WorkflowDesignerConstants;

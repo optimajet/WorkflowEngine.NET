@@ -1,0 +1,324 @@
+<h3>{{ customTitle ? customTitle : labels.Title }}</h3>
+<el-form
+        class="WorkflowDesignerWindowForm"
+        :model="FormData"
+        ref="form"
+        label-position="top"
+        label-width="150px">
+
+    <div v-if="Field.State != undefined"  class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item
+                    :label="customLabels.Name"
+                    :rules="getFieldRules(Field.Name)"
+                    :prop="Field.Name.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.Name" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    :label="customLabels.State"
+                    :rules="getFieldRules(Field.State)"
+                    :prop="Field.State.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.State" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+    </div>
+
+    <h4 v-if="Field.State != undefined" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{customLabels.Heading}}</h4>
+
+    <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
+        <el-form-item :label="customLabels.Url" :rules="getFieldRules(Field.Url)" :prop="Field.Url.Name">
+            <el-input v-model="FormData.Url" :readonly="readonly"></el-input>
+        </el-form-item>
+
+        <div class="el-form--inline el-form--label-top" >
+            <el-form-item
+                    :rules="getFieldRules(Field.Post,FormData.Post)"
+                    :prop="Field.Post.Name">
+                <span slot="label">{{customLabels.Post}}
+                    <span @click="function(){FormData.Post = parameterFromProcess.Post ? false : null; parameterFromProcess.Post = !parameterFromProcess.Post}"
+                          :style="parameterFromProcess.Post ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.Post"
+                        v-model="FormData.Post"
+                        :disabled="readonly"
+                        style="width:180px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.Post" v-model="FormData.Post" :disabled="readonly" style="width:180px"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :rules="getFieldRules(Field.StoreResponse,FormData.StoreResponse)"
+                    :prop="Field.StoreResponse.Name">
+                <span slot="label">{{customLabels.StoreResponse}}
+                    <span @click="function(){FormData.StoreResponse = parameterFromProcess.StoreResponse ? false : null; parameterFromProcess.StoreResponse = !parameterFromProcess.StoreResponse}"
+                          :style="parameterFromProcess.StoreResponse ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.StoreResponse"
+                        v-model="FormData.StoreResponse"
+                        :disabled="readonly"
+                        style="width:180px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.StoreResponse" v-model="FormData.StoreResponse" :disabled="readonly" style="width:180px"></el-input>
+            </el-form-item>
+            <el-form-item :label="customLabels.UseAuth">
+                <el-checkbox
+                        v-model="useAuth"
+                        :disabled="readonly">
+                </el-checkbox>
+            </el-form-item>
+        </div>
+
+        <div v-if="useAuth" class="el-form--inline el-form--label-top"  >
+            <el-form-item
+                    :label="customLabels.Username"
+                    :rules="getFieldRules(Field.Username)"
+                    :prop="Field.Username.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;" >
+                <el-input  v-model="FormData.Username" :readonly="readonly"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :label="customLabels.Password"
+                    :rules="getFieldRules(Field.Password)"
+                    :prop="Field.Password.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;" >
+                <el-input  v-model="FormData.Password" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+
+        <div v-if="FormData.StoreResponse || parameterFromProcess.StoreResponse" class="el-form--inline el-form--label-top"  >
+            <el-form-item
+                    :label="customLabels.ParameterName"
+                    :rules="getFieldRules(Field.ParameterName)"
+                    :prop="Field.ParameterName.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;" >
+                <el-input v-model="FormData.ParameterName" :readonly="readonly"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :rules="getFieldRules(Field.ParameterPurpose,FormData.ParameterPurpose)"
+                    :prop="Field.ParameterPurpose.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <span slot="label">{{customLabels.ParameterPurpose}}
+                    <span @click="function(){FormData.ParameterPurpose = parameterFromProcess.ParameterPurpose ? Field.ParameterPurpose.DropdownValues[0].Value : null; parameterFromProcess.ParameterPurpose = !parameterFromProcess.ParameterPurpose}"
+                          :style="parameterFromProcess.ParameterPurpose ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-select v-if="!parameterFromProcess.ParameterPurpose" v-model="FormData.ParameterPurpose" :disabled="readonly" style="width:200px">
+                    <el-option
+                            v-for="item in Field.ParameterPurpose.DropdownValues"
+                            :key="item.Value"
+                            :label="item.Name"
+                            :value="item.Value">
+                    </el-option>
+                </el-select>
+                <el-input v-if="parameterFromProcess.ParameterPurpose" v-model="FormData.ParameterPurpose" :disabled="readonly" style="width:200px"></el-input>
+            </el-form-item>
+        </div>
+
+        <div v-if="FormData.Post || parameterFromProcess.Post ">
+            <el-form-item
+                    :rules="getFieldRules(Field.ContentType,FormData.ContentType)"
+                    :prop="Field.ContentType.Name">
+                <span slot="label">{{customLabels.ContentType}}
+                    <span @click="function(){FormData.ContentType = parameterFromProcess.ContentType ? Field.ContentType.DropdownValues[0].Value : null; parameterFromProcess.ContentType = !parameterFromProcess.ContentType}"
+                          :style="parameterFromProcess.ContentType ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-select v-if="!parameterFromProcess.ContentType" v-model="FormData.ContentType" :disabled="readonly">
+                    <el-option
+                            v-for="item in Field.ContentType.DropdownValues"
+                            :key="item.Value"
+                            :label="item.Name"
+                            :value="item.Value">
+                    </el-option>
+                </el-select>
+                <el-input v-if="parameterFromProcess.ContentType" v-model="FormData.ContentType" :disabled="readonly"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :rules="getFieldRules(Field.AddProcessInstanceParameters,FormData.AddProcessInstanceParameters)"
+                    :prop="Field.AddProcessInstanceParameters.Name">
+                <span slot="label">{{customLabels.AddProcessInstanceParameters}}
+                    <span @click="function(){FormData.AddProcessInstanceParameters = parameterFromProcess.AddProcessInstanceParameters? false : null; parameterFromProcess.AddProcessInstanceParameters = !parameterFromProcess.AddProcessInstanceParameters}"
+                          :style="parameterFromProcess.AddProcessInstanceParameters ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.AddProcessInstanceParameters"
+                        v-model="FormData.AddProcessInstanceParameters"
+                        :disabled="readonly"
+                        style="width:300px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.AddProcessInstanceParameters" v-model="FormData.AddProcessInstanceParameters" :disabled="readonly" style="width:300px"></el-input>
+            </el-form-item>
+            <el-form-item
+                    :label="customLabels.Parameters"
+                    :rules="getFieldRules(Field.Parameters)"
+                    :prop="Field.Parameters.Name">
+                <el-input v-model="FormData.Parameters" type="textarea" rows="5" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+
+        <el-form-item
+                :label="customLabels.Headers"
+                :rules="getFieldRules(Field.Headers)"
+                :prop="Field.Headers.Name">
+            <el-input v-model="FormData.Headers" type="textarea" rows="5" :readonly="readonly"></el-input>
+        </el-form-item>
+    </div>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<script type="application/javascript">
+    function customforms_basicsplugin_httprequestform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            customTitle: undefined,
+            readonly: false,
+            labels: WorkflowDesignerConstants.EditParametersFormlabel,
+            customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.HTTPRequest,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            FormData: {},
+            Field:{},
+            parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+            parameterFromProcess:{
+                Post: false,
+                StoreResponse: false,
+                ParameterPurpose: false,
+                AddProcessInstanceParameters:false,
+                ContentType:false
+            },
+            useAuth: false
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+
+            if(parameterDefinition && parameterDefinition.name){
+                for(var i=0; i <= parameterDefinition.type.length; i++){
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                    if(fields && fields.length > 0)
+                        break;
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function (field) {
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '') {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+
+                    me.VueConfig.data.Field[field.Name] = field;
+                });
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox") {
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined") {
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else {
+                            tmp[field.Name] = null;
+                        }
+                    });
+
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+
+            me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+
+            if(!me.VueConfig.data.FormData)
+                me.VueConfig.data.FormData = {};
+
+            for (key in me.VueConfig.data.FormData) {
+                if(me.VueConfig.data.parameterFromProcess[key]!= undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
+                    me.VueConfig.data.parameterFromProcess[key] = true;
+                if (key !== "__customtype" && me.VueConfig.data.FormData.hasOwnProperty(key))
+                    if(!me.VueConfig.data.Field.hasOwnProperty(key))
+                        delete me.VueConfig.data.FormData[key];
+            }
+
+            me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+
+            me.VueConfig.data.useAuth = me.VueConfig.data.FormData.Username != null || me.VueConfig.data.FormData.Password != null;
+        };
+
+        me.VueConfig.methods.getFieldRules  = function(field, parameterValue){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            if(me.VueConfig.data.parameterFromProcess[field.Name]){
+                var validator = function(rule, value, callback){
+                    if(WorkflowDesignerCommon.containsAt(parameterValue)){
+                        callback();
+                    }
+                    else{
+                        callback(new Error(rule.message));
+                    }
+                };
+                rules.push({ validator: validator, required: true, message: WorkflowDesignerConstants.FieldMustContainAt, trigger: 'blur'});
+            }
+
+            return rules;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            if(!me.VueConfig.data.useAuth){
+                me.VueConfig.data.FormData.Password = null;
+                me.VueConfig.data.FormData.Username = null;
+            }
+
+            var value = undefined;
+            value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+
+            this.$refs.form.validate(function(valid) {
+                if (valid) {
+                    me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                    me.onClose(true);
+                }
+            });
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>

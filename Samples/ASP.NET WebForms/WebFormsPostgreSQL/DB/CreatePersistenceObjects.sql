@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 5.1
+Version: 5.2
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -97,10 +97,38 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessTimer" (
   "Ignore" boolean NOT NULL,
   CONSTRAINT "WorkflowProcessTimer_pkey" PRIMARY KEY ("Id")
 );
+
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_ProcessId_idx"  ON "WorkflowProcessTimer" USING btree ("ProcessId");
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Name_idx"  ON "WorkflowProcessTimer" USING btree ("Name");
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_NextExecutionDateTime_idx"  ON "WorkflowProcessTimer" USING btree ("NextExecutionDateTime");
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Ignore_idx"  ON "WorkflowProcessTimer" USING btree ("Ignore");
+
+--WorkflowProcessAssignment
+CREATE TABLE IF NOT EXISTS "WorkflowProcessAssignment"
+(
+    "Id" uuid NOT NULL,
+    "AssignmentCode" character varying(256) NOT NULL,
+    "ProcessId" uuid NOT NULL,
+    "Name" character varying(256) NOT NULL,
+    "Description" text,
+    "StatusState" character varying(256) NOT NULL,
+    "DateCreation" timestamp NOT NULL,
+    "DateStart" timestamp,
+    "DateFinish" timestamp,
+    "DeadlineToStart" timestamp,
+    "DeadlineToComplete" timestamp,
+    "Executor" character varying(256) NOT NULL,
+    "Observers" text,
+    "Tags" text,
+    "IsActive" boolean NOT NULL,
+    "IsDeleted" boolean NOT NULL,
+    CONSTRAINT "WorkflowProcessAssignment_pkey" PRIMARY KEY ("Id")
+);
+
+CREATE INDEX IF NOT EXISTS "WorkflowProcessAssignment_ProcessId_idx"  ON "WorkflowProcessAssignment" USING btree ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_AssignmentCode_idx"  ON "WorkflowProcessAssignment" USING btree ("AssignmentCode");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Executor_idx"  ON "WorkflowProcessAssignment" USING btree ("Executor");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_ProcessId_Executor_idx"  ON "WorkflowProcessAssignment" USING btree ("ProcessId", "Executor");
 
 --WorkflowProcessTransitionHistory
 CREATE TABLE IF NOT EXISTS "WorkflowProcessTransitionHistory" (
@@ -108,6 +136,8 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessTransitionHistory" (
   "ProcessId" uuid NOT NULL,
   "ExecutorIdentityId" character varying(256) NULL,
   "ActorIdentityId" character varying(256) NULL,
+  "ExecutorName" character varying(256) NULL,
+  "ActorName" character varying(256) NULL,
   "FromActivityName" character varying(256) NOT NULL,
   "ToActivityName" character varying(256) NOT NULL,
   "ToStateName" character varying(256) NULL,
@@ -187,4 +217,23 @@ CREATE TABLE IF NOT EXISTS "WorkflowApprovalHistory" (
 );
 CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_ProcessId_idx"  ON "WorkflowApprovalHistory" USING btree ("ProcessId");
 CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_IdentityId_idx" ON "WorkflowApprovalHistory" USING btree ("IdentityId");
+
+
+CREATE OR REPLACE FUNCTION public."DropUnusedWorkflowProcessScheme"()
+    RETURNS integer
+    LANGUAGE 'plpgsql'
+AS $BODY$
+DECLARE status INTEGER;
+BEGIN
+    DELETE FROM "WorkflowProcessScheme" AS wps
+        WHERE wps."IsObsolete"
+        AND NOT EXISTS (SELECT * FROM "WorkflowProcessInstance" wpi WHERE wpi."SchemeId" = wps."Id" );
+
+    SELECT COUNT(*) INTO status
+        FROM "WorkflowProcessInstance" wpi LEFT OUTER JOIN "WorkflowProcessScheme" wps ON wpi."SchemeId" = wps."Id"
+        WHERE wps."Id" IS NULL;
+
+    RETURN status;
+END;
+$BODY$;
 

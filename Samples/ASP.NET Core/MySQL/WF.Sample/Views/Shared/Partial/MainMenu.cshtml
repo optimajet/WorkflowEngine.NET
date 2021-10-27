@@ -4,8 +4,8 @@
             <a href="https://workflowengine.io"><img height="32" src="@Url.Content("~/images/logo.png")" /></a></div>
     </div>
     <div style="float:right">
-        <a href="/Document/Edit" class="ui primary button">Create a vacation request</a>
-        <a href="/Designer" class="ui secondary button">Designer</a>
+        <a href="@Url.Action("Edit","Document")" class="ui primary button">Create a vacation request</a>
+        <a href="@Url.Action("Index","Designer")" class="ui secondary button">Designer</a>
         <a href="/" class="ui secondary button">Vacation requests</a>
         <a href="@Url.Action("Edit", "Settings")" class="ui secondary button">Settings</a>
     </div>

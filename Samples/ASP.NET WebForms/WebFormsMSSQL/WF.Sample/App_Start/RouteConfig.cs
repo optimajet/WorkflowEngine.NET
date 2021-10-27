@@ -32,7 +32,22 @@ namespace WF.Sample
             {
                 { "id", Guid.Empty }
             });
+            
+            routes.MapPageRoute("DocumentAssignments", "Document/Assignments", "~/Pages/Document/Assignments.aspx", true);
+            
+            routes.MapPageRoute("DocumentAssignmentInfo", "Document/AssignmentInfo/{assignmentId}", "~/Pages/Document/AssignmentInfo.aspx", true,  new RouteValueDictionary
+            {
+                { "assignmentId", Guid.Empty }
+            });
+            
+            routes.MapPageRoute("DocumentAssignmentCreate", "Document/AssignmentCreate/{processId}", "~/Pages/Document/AssignmentInfo.aspx", true,  new RouteValueDictionary
+            {
+                { "processId", Guid.Empty }
+            });
+            
             routes.Add(new Route("Document/DeleteRows", new HttpHandlerRoute("~/Pages/Document/DeleteRowsHandler.ashx")));
+            
+            routes.Add(new Route("Document/DeleteAssignments", new HttpHandlerRoute("~/Pages/Document/DeleteAssignmentsHandler.ashx")));
 
             routes.Add(new Route("Designer/API", new HttpHandlerRoute("~/Pages/Designer/WFEDesigner.ashx")));
             

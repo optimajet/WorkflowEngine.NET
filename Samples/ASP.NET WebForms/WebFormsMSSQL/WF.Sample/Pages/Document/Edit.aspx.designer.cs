@@ -17,8 +17,20 @@ namespace WF.Sample.Pages.Document {
         /// </summary>
         /// <remarks>
         /// Auto-generated field.
-        /// To modify move field declaration from designer file to code-behind file.
+        /// To modify, move the field declaration from the designer file to a code-behind file.
         /// </remarks>
         protected global::System.Web.UI.WebControls.FormView DocumentFormView;
+        
+        /// <summary>
+        /// Master property.
+        /// </summary>
+        /// <remarks>
+        /// Auto-generated property.
+        /// </remarks>
+        public new WF.Sample.SiteMaster Master {
+            get {
+                return ((WF.Sample.SiteMaster)(base.Master));
+            }
+        }
     }
 }

@@ -164,6 +164,9 @@
     <Content Include="favicon.ico" />
     <Content Include="Global.asax" />
     <Content Include="Images\logo.png" />
+    <Content Include="Pages\Document\AssignmentInfo.aspx" />
+    <Content Include="Pages\Document\Assignments.aspx" />
+    <Content Include="Pages\Document\DeleteAssignmentsHandler.ashx" />
     <Content Include="Pages\Document\Edit.aspx" />
     <Content Include="Pages\Document\Inbox.aspx" />
     <Content Include="Pages\Document\Index.aspx" />
@@ -290,6 +293,9 @@
     <Compile Include="Helpers\DocumentExtensions.cs" />
     <Compile Include="Helpers\DocumentsPage.cs" />
     <Compile Include="Helpers\DocumentsPage.designer.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentFilterModel.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentInfoModel.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentItemModel.cs" />
     <Compile Include="Models\DocumentListModel.cs" />
     <Compile Include="Models\InboxDocumentModel.cs" />
     <Compile Include="Models\IPaging.cs" />
@@ -309,6 +315,23 @@
     <Compile Include="Helpers\CurrentUserSettings.cs" />
     <Compile Include="Models\DocumentHistoryModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
+    <Compile Include="Pages\Document\AssignmentInfo.aspx.cs">
+      <DependentUpon>AssignmentInfo.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Document\AssignmentInfo.aspx.designer.cs">
+      <DependentUpon>AssignmentInfo.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Document\Assignments.aspx.cs">
+      <DependentUpon>Assignments.aspx</DependentUpon>
+      <SubType>ASPXCodeBehind</SubType>
+    </Compile>
+    <Compile Include="Pages\Document\Assignments.aspx.designer.cs">
+      <DependentUpon>Assignments.aspx</DependentUpon>
+    </Compile>
+    <Compile Include="Pages\Document\DeleteAssignmentsHandler.ashx.cs">
+      <DependentUpon>DeleteAssignmentsHandler.ashx</DependentUpon>
+    </Compile>
     <Compile Include="Pages\Document\DeleteRowsHandler.ashx.cs">
       <DependentUpon>DeleteRowsHandler.ashx</DependentUpon>
     </Compile>

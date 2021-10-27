@@ -4,11 +4,11 @@
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
-    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
-    <PackageReference Include="Oracle.EntityFrameworkCore" Version="2.19.70" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.70" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.1.4" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForOracle" Version="5.1.4" />
+    <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="6.0.0-rc.1.21451.13" />
+    <PackageReference Include="Oracle.EntityFrameworkCore" Version="3.19.120" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="2.19.120" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.2.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForOracle" Version="5.2.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />

@@ -11,6 +11,7 @@ namespace WF.Sample.Business.DataAccess
         Model.Document InsertOrUpdate(Model.Document doc);
         List<Model.Document> Get(out int count, int page = 1, int pageSize = 128);
         Model.Document Get(Guid id, bool loadChildEntities = true);
+        Model.Document GetByNumber(int number);
         List<Model.Document> GetByIds(List<Guid> ids);
         void Delete(Guid[] ids);
         void ChangeState(Guid id, string nextState, string nextStateName);

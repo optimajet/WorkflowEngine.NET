@@ -1,4 +1,4 @@
- var WorkflowDesignerConstants = {
+var WorkflowDesignerConstants = {
   ActivityColor: "#ECF0F1",
   ActivityTextColor: "#2D3436",
   ActivityInitialColor: "#27AE60",
@@ -11,12 +11,17 @@
   SelectSubProcessColor: "#e3b015",
   SelectSubProcessTextColor: "#FFFFFF",
   ButtonActive: "#D4D8D9",
+  DateTimeFormat: "YYYY-MM-DD HH:MM:SS",
   BarColor: "#EDF1F2",
   BarSeparatorColor: "#D9DEE0",
+  IsRequiredColor: "#F56C6C",
+  ParameterFromProcessColor: "#1f8dd6",
   DeleteConfirm: "Seçilen öğeleri silmek istediğinizden emin misiniz?",
   DeleteConfirmCurrent: "Bu öğeyi silmek istediğinizden emin misiniz?",
   FieldIsRequired: "Alan gereklidir!",
+  FieldIsNotCorrected: "Field is not corrected!",
   FieldMustBeUnique: "Alan benzersiz olmalı!",
+  FieldMustContainAt: "Field must contain @",
   ButtonTextDelete: "Silmek",
   ButtonTextCreate: "Yaratmak",
   ButtonTextSave: "Kayıt etmek",
@@ -52,6 +57,11 @@
     IsForSetState: "Ayarlanmış durum için",
     IsAutoSchemeUpdate: "Otomatik şema güncellemesi",
     DisablePersist: "Disable persist",
+    DisablePersists: {
+      DisablePersistTransitionHistory: "Disable persist transition history",
+      DisablePersistState: "Disable persist process state",
+      DisablePersistParameters: "Disable persist process parameters"
+    },
     Implementation: "Uygulama",
     PreExecutionImplementation: "PreExecution Uygulaması",
     ImpOrder: "Sipariş",
@@ -76,6 +86,7 @@
     AnnotationName: "Name",
     AnnotationValue: "Value",
     Scheme: "Inline scheme",
+    UserComment: "Yorum Yap",
     AlwaysConditionShouldBeSingle: "Her zaman durum tek olmalı",
     OtherwiseConditionShouldBeSingle: "Aksi halde durum tek olmalı"
   },
@@ -103,7 +114,8 @@
     ConditionActionParameter: "Action parameter",
     ConditionInversion: "Invert result",
     ActionLabel: "Action",
-    ExpressionLabel: "Expression"
+    ExpressionLabel: "Expression",
+    UserComment: "Comment"
   },
   DecisionTable: {
     Title: "Decision table",
@@ -128,7 +140,8 @@
     ConditionActionParameter: "Action parameter",
     ConditionInversion: "Invert result",
     ActionLabel: "Action",
-    ExpressionLabel: "Expression"
+    ExpressionLabel: "Expression",
+    UserComment: "Comment"
   },
   TransitionFormLabel: {
     Title: "Geçiş",
@@ -173,6 +186,7 @@
     ActionLabel: "Action",
     ExpressionLabel: "Expression",
     OtherwiseLabel: "Otherwise",
+    UserComment: "Yorum Yap",
     Subprocess: "Subprocess",
     SubprocessNone: "None",
     SubprocessStart: "Start",
@@ -207,24 +221,36 @@
     IsDefault: "IsDefault",
     Culture: "Kültür",
     Value: "Değer",
-    Types: [
-      "Command",
-      "State",
-      "Parameter"
-    ]
+    Types: ["Command", "State", "Parameter"]
   },
   TimerFormLabel: {
     Title: "Zamanlayıcılar",
     Name: "Isim",
     Type: "Tip",
     Value: "Değer",
-    Types: [
-      "Command",
-      "State",
-      "Parameter"
-    ],
+    Types: ["Command", "State", "Parameter"],
     OverrideHint: "Varsa zamanlayıcıyı geçersiz kılar",
     Override: "Geçersiz kılar"
+  },
+  AssignmentFormLabel: {
+    Title: "Assignments",
+    Code: "Code",
+    Name: "Name",
+    Executor: "Executor",
+    ExecutorId: "Executor Id",
+    Status: "Status",
+    DateCreation: "Date creation",
+    Description: "Description",
+    DateStart: "Date start",
+    DateFinish: "Date finish",
+    DeadlineToStart: "Deadline to start",
+    DeadlineToFinish: "Deadline to finish",
+    Observers: "Observers",
+    ObserverId: "Observer Id",
+    Tags: "Tags",
+    ProhibitedForExecution: "Prohibited for execution",
+    AssignmentDeleted: "Assignment deleted",
+    TypeSomething: "Type something"
   },
   ParameterFormLabel: {
     Title: "Parametreler",
@@ -275,6 +301,8 @@
     HistoryTabToStateLabel: "To State",
     HistoryTabExecutorIdLabel: "Executor Id",
     HistoryTabActorIdLabel: "Actor Id",
+    HistoryTabExecutorLabel: "Executor",
+    HistoryTabActorLabel: "Actor",
     HistoryTabTimeLabel: "Time",
     HistoryTabStartTimeLabel: "Start Time",
     HistoryTabDurationLabel: "Duration (ms)",
@@ -303,7 +331,7 @@
     IsGlobal: "Küresel mi",
     IsAsync: "zaman uyumsuz",
     Type: "Tip",
-    GlobalDeleteMessage: "Global CodeAction'ı silerseniz - <br/> <b> diğer şemalar onu arayamaz! </b>",
+    GlobalDeleteMessage: "Global CodeAction'ı silerseniz - <br/> <b> diğer şemalar onu arayamaz! <\/b>",
     UnGlobalMessage: "Küresel bayrağın durumunu değiştirdiniz. <br/> Bu şemayı kaydettikten sonra bu Global CodeAction'a dayalı bir Yerel Kodlama Oluşturulacak.",
     EditParameters: "Edit parameters",
     Parameters: "Parameters",
@@ -314,6 +342,8 @@
     Dropdown: "Dropdown",
     MultiSelect: "MultiSelect",
     DateTime: "Date/Time",
+    Date: "Date",
+    Time: "Time",
     Values: "Values",
     DropdownName: "Name",
     DropdownValue: "Value",
@@ -330,6 +360,131 @@
     SwitchToJson: "Switch to JSON editor",
     SwitchToConstructor: "Switch to parameter values editor",
     InvalidJson: "JSON object is invalid or does not match the model",
+    CustomForms: {
+      HTTPRequest: {
+        Name: "Name",
+        State: "State",
+        UseAuth: "Use authentication",
+        Heading: "Request",
+        Url: "Url",
+        Post: "Post",
+        StoreResponse: "Store response",
+        Username: "Username",
+        Password: "Password",
+        ParameterName: "Parameter name",
+        ParameterPurpose: "Parameter purpose",
+        ContentType: "Content type",
+        AddProcessInstanceParameters: "Add process instance parameters",
+        Parameters: "Parameters",
+        Headers: "Headers"
+      },
+      SendEmail: {
+        Name: "Name",
+        State: "State",
+        Heading: "Form",
+        UseAuth: "Use authentication",
+        MailServer: "Mail server",
+        MailServerPort: "Mail server port",
+        MailServerFrom: "Mail server from",
+        To: "To",
+        Subject: "Subject",
+        MailServerSsl: "MailServerSsl",
+        IsHTML: "IsHTML",
+        MailServerLogin: "Mail server login",
+        MailServerPass: "Mail server pass",
+        Body: "Body"
+      },
+      StartLoopFor: {
+        Name: "Name",
+        State: "State",
+        Heading: "Loop",
+        DateRange: "Date range",
+        RangeSeparator: "To",
+        StartDate: "Start date",
+        EndDate: "End date",
+        Reverse: "Reverse",
+        LoopName: "Loop name",
+        LoopStateParameterName: "Loop state parameter name",
+        LoopCounterValueParameterName: "Loop counter value parameter name",
+        CounterType: "Counter type",
+        StartValue: "Start value",
+        EndValue: "End value",
+        Step: "Step",
+        StepType: "Step type",
+        IncludeLastValue: "Include last value"
+      },
+      StartLoopForeach: {
+        Name: "Name",
+        State: "State",
+        Heading: "Loop",
+        ValuesError: "None value cannot be empty!",
+        Values: "Values",
+        LoopName: "Loop name",
+        LoopStateParameterName: "Loop state parameter name",
+        LoopCounterValueParameterName: "Loop counter value parameter name",
+        Reverse: "Reverse"
+      },
+      CreateProcess: {
+        Name: "Name",
+        State: "State",
+        Heading: "Main settings",
+        ParameterName: "Name",
+        ParameterPurpose: "Purpose",
+        ParameterValue: "Value",
+        Scheme: "Scheme",
+        ProcessId: "Process id",
+        ProcessCreationParameters: "Process creation parameters",
+        ParameterInitialValue: "Initial value"
+      },
+      AssignmentCreate: {
+        Name: "Name",
+        State: "State",
+        Heading: "Assignment",
+        Code: "Code",
+        NewTag: "New Tag",
+        Executors: "Executors",
+        IsActive: "Is active",
+        Description: "Description",
+        DeadlineToStart: "Deadline to start",
+        DeadlineToComplete: "Deadline to complete",
+        Observers: "Observers",
+        Tags: "Tags"
+      },
+      AssignmentChange: {
+        Name: "Name",
+        State: "State",
+        Heading: "Assignment",
+        Code: "Code",
+        ReplacementExecutors: "Replacement of executors",
+        OldExecutor: "Old executor",
+        NewExecutor: "New executor",
+        AllExecutors: "All",
+        Change: "Change",
+        Status: "Status",
+        DeadlineToStart: "Deadline to start",
+        DeadlineToComplete: "Deadline to complete",
+        Tags: "Tags",
+        Observers: "Observers",
+        NewTag: "New Tag",
+        StatusState: "Status state",
+        IsActive: "Is active"
+      },
+      AssignmentsHaveStatus: {
+        Name: "Name",
+        State: "State",
+        Code: "Code",
+        Condition: "Condition",
+        IncludeInactive: "Include inactive",
+        StatusState: "Status state",
+        Assignments: "Assignments"
+      },
+      SetLoopState: {
+        Name: "Name",
+        State: "State",
+        LoopName: "Loop name",
+        LoopState: "Loop state"
+      }
+    },
     IncorrectForm: "Your form contains greater than one element, and at least one element doesn't have a Name. Please specify the Name for each element."
   },
   ToolbarLabel: {
@@ -349,6 +504,7 @@
     Actors: "Aktörler",
     Commands: "Komutları",
     Parameters: "Parametreler",
+    Assignments: "Assignments",
     Localization: "Yerelleştirme",
     Timers: "Zamanlayıcılar",
     AdditionalParameters: "Ek Parametreler",
@@ -367,13 +523,20 @@
     ResetSettings: "Reset settings",
     ZoomPositionDefault: "Yakınlaştırma varsayılanı"
   },
-  LibraryLabel: {
-    PluginRequired: "Plugin required:"
-  },
+  LibraryLabel: {PluginRequired: "Plugin required:"},
   Logs: {
     Label: "Logs",
     ParamName: "LogEnabled",
-    Description: "This parameter is the default value for logging processes based on this scheme"
+    Description: "This parameter is the default value for logging processes based on this scheme",
+    AutoRefresh: "Auto refresh",
+    Empty: "Empty",
+    Timestamp: "Timestamp",
+    Message: "Message",
+    Exception: "Exception",
+    Show: "Show",
+    ExceptionInfo: "Exception info",
+    HideDetails: "Hide details",
+    ShowDetails: "Show details"
   },
   ErrorActivityIsInitialCountText: "Bir öğe bayrakla işaretlenmiş olmalıdır",
   ErrorActivityIsFinalCountText: "This scheme is Inlined. One or more elements must be marked flag Final",
@@ -431,19 +594,126 @@
     InitialActivity: "Initial Activity",
     InitialActivityDesc: "It a initial state.",
     FinalActivity: "Final Activity",
-    FinalActivityDesc: "It a final state."
+    FinalActivityDesc: "It a final state.",
+    SetLoopState: {
+      Title: "Set loop state",
+      Description: "The action for set loop state"
+    }
   },
-  OverviewMap: {
-    show: true,
-    width: 300,
-    height: 150
-  },
+  OverviewMap: {show: true, width: 300, height: 150},
   UndoDepth: 200,
   DefaultCulture: "tr-TR",
   ErrorInBrowserConsole: "See more info in the browser console.",
-  EditJSONSettings: {
-    Height: 600,
-    Width: 1000,
-    CodeHeight: 480
-  }
+  ELEMENT: {
+    el: {
+      colorpicker: {confirm: "Onayla", clear: "Temizle"},
+      datepicker: {
+        now: "Şimdi",
+        today: "Bugün",
+        cancel: "İptal",
+        clear: "Temizle",
+        confirm: "Onayla",
+        selectDate: "Tarih seç",
+        selectTime: "Saat seç",
+        startDate: "Başlangıç Tarihi",
+        startTime: "Başlangıç Saati",
+        endDate: "Bitiş Tarihi",
+        endTime: "Bitiş Saati",
+        prevYear: "Önceki Yıl",
+        nextYear: "Sonraki Yıl",
+        prevMonth: "Önceki Ay",
+        nextMonth: "Sonraki Ay",
+        year: "",
+        month1: "Ocak",
+        month2: "Şubat",
+        month3: "Mart",
+        month4: "Nisan",
+        month5: "Mayıs",
+        month6: "Haziran",
+        month7: "Temmuz",
+        month8: "Ağustos",
+        month9: "Eylül",
+        month10: "Ekim",
+        month11: "Kasım",
+        month12: "Aralık",
+        week: "week",
+        weeks: {
+          sun: "Paz",
+          mon: "Pzt",
+          tue: "Sal",
+          wed: "Çar",
+          thu: "Per",
+          fri: "Cum",
+          sat: "Cmt"
+        },
+        months: {
+          jan: "Oca",
+          feb: "Şub",
+          mar: "Mar",
+          apr: "Nis",
+          may: "May",
+          jun: "Haz",
+          jul: "Tem",
+          aug: "Ağu",
+          sep: "Eyl",
+          oct: "Eki",
+          nov: "Kas",
+          dec: "Ara"
+        }
+      },
+      select: {
+        loading: "Yükleniyor",
+        noMatch: "Eşleşen veri bulunamadı",
+        noData: "Veri yok",
+        placeholder: "Seç"
+      },
+      cascader: {
+        noMatch: "Eşleşen veri bulunamadı",
+        loading: "Yükleniyor",
+        placeholder: "Seç",
+        noData: "Veri yok"
+      },
+      pagination: {
+        goto: "Git",
+        pagesize: "/sayfa",
+        total: "Toplam {total}",
+        pageClassifier: ""
+      },
+      messagebox: {
+        title: "Mesaj",
+        confirm: "Onayla",
+        cancel: "İptal",
+        error: "İllegal giriş"
+      },
+      upload: {
+        deleteTip: "kaldırmak için delete tuşuna bas",
+        delete: "Sil",
+        preview: "Görüntüle",
+        continue: "Devam"
+      },
+      table: {
+        emptyText: "Veri yok",
+        confirmFilter: "Onayla",
+        resetFilter: "Sıfırla",
+        clearFilter: "Hepsi",
+        sumText: "Sum"
+      },
+      tree: {emptyText: "Veri yok"},
+      transfer: {
+        noMatch: "Eşleşen veri bulunamadı",
+        noData: "Veri yok",
+        titles: ["Liste 1", "Liste 2"],
+        filterPlaceholder: "Anahtar kelimeleri gir",
+        noCheckedFormat: "{total} adet",
+        hasCheckedFormat: "{checked}/{total} seçildi"
+      },
+      image: {error: "FAILED"},
+      pageHeader: {title: "Back"},
+      popconfirm: {confirmButtonText: "Yes", cancelButtonText: "No"},
+      empty: {description: "Veri yok"}
+    }
+  },
+  EditJSONSettings: {Height: 600, Width: 1000, CodeHeight: 480}
 };
+
+window.WorkflowDesignerConstants = WorkflowDesignerConstants;

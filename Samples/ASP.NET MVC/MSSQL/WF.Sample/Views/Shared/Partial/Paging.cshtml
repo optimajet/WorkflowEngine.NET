@@ -4,7 +4,7 @@
     string GetActionName()
     {
         var action = ViewContext.RouteData.Values["action"].ToString();
-        return  action== "Index" ? string.Empty : "/Document/" + action;
+        return action == "Index" ? string.Empty : "/Document/" + action;
     }
 }
 @{

@@ -154,6 +154,8 @@ namespace WF.Sample.Redis.Implementation
             foreach (var e in employees)
             {
                 batch.StringSetAsync(GetKeyForEmployee(e.Id), JsonConvert.SerializeObject(e));
+                batch.SetAddAsync(GetKeyForEmployeeNamesSet(), e.Name);
+                batch.SetAddAsync(GetKeyForEmployeeIdsNameSet(e.Name), e.Id.ToString("N"));
             }
 
             Dictionary<string, RedisValue[]> employeesInRole = new Dictionary<string, RedisValue[]>()

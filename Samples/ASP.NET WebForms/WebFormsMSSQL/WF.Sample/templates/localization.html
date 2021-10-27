@@ -3,14 +3,14 @@
 </h3>
 <div id="WorkflowDesignerLocalizationList" class="WorkflowDesignerWindowForm">
     <table class="WorkflowDesignerTable">
-        <th>
-            <td v-if="isIE"></td>
-            <td><b>{{labels.ObjectName}}</b></td>
-            <td style="width: 15%;"><b>{{labels.Type}}</b></td>
-            <td><b>{{labels.IsDefault}}</b></td>
-            <td style="width: 9%;"><b>{{labels.Culture}}</b></td>
-            <td style="width: 25%;"><b>{{labels.Value}}</b></td>
-        </th>
+        <tr>
+            <th></th>
+            <th>{{labels.ObjectName}}</th>
+            <th style="width: 15%;">{{labels.Type}}</th>
+            <th>{{labels.IsDefault}}</th>
+            <th style="width: 9%;">{{labels.Culture}}</th>
+            <th style="width: 25%;">{{labels.Value}}</th>
+        </tr>
         <tr v-for="(item, index) in items"
             :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
             @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
@@ -65,18 +65,6 @@
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-    :title="confirmdialog.title"
-    :before-close="function() {confirmdialog.visible = false}"
-    :visible="confirmdialog.visible"
-    :modal-append-to-body="false"
-    width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog> 
 <script type="application/javascript">
     function localization_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -86,17 +74,6 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function(){
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            }
         });
 
         me.VueConfig.methods.onUpdate = function(){
@@ -138,10 +115,6 @@
             }
         };
 
-        me.VueConfig.methods.onHideEvent = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
-        }
-
         me.VueConfig.methods.validate = function(){
             var validateFunc = me.VueConfig.methods.validateField;
             var items = me.VueConfig.data.items;
@@ -162,7 +135,6 @@
         };
 
         me.VueConfig.methods.onClose = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
             
             if(me.VueConfig.data.readonly){
                 me.onClose(true);
@@ -174,12 +146,25 @@
                 me.VueConfig.data.items, 
                 ["ObjectName", "Type", "Culture", "Value", "IsDefault"])) {
                 
-                me.VueConfig.data.confirmdialog.visible = true;
+                me.showConfirm();
                 return false;
             }
             else{
                 me.onClose(true);
             }
         };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
+        }
     };
 </script>

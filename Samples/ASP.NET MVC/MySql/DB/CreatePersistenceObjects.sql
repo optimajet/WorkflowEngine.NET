@@ -3,7 +3,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 5.1
+Version: 5.2
 File: CreatePersistenceObjects.sql
 */
 
@@ -94,11 +94,38 @@ CREATE TABLE IF NOT EXISTS `workflowprocesstimer` (
   KEY `NextExecutionDateTime` (`NextExecutionDateTime`)
 );
 
+CREATE TABLE IF NOT EXISTS `workflowprocessassignment` (
+    `Id` binary(16) NOT NULL,
+    `AssignmentCode` varchar(256) NOT NULL,
+    `ProcessId` binary(16) NOT NULL,
+    `Name` varchar(256) NOT NULL,
+    `Description` text,
+    `StatusState` varchar(256) NOT NULL,
+    `DateCreation` datetime(3) NOT NULL,
+    `DateStart` datetime(3),
+    `DateFinish` datetime(3),
+    `DeadlineToStart` datetime(3),
+    `DeadlineToComplete` datetime(3),
+    `Executor` varchar(256) NOT NULL,
+    `Observers` text,
+    `Tags` text,
+    `IsActive` bit(1) NOT NULL,
+    `IsDeleted` bit(1) NOT NULL,
+    PRIMARY KEY (`Id`),
+    KEY `ProcessId` (`ProcessId`),
+    KEY `AssignmentCode` (`AssignmentCode`),
+    KEY `Executor` (`Executor`)
+);
+
+CREATE INDEX `ix_workflowprocessassignment_processid_executor` ON `workflowprocessassignment` (`ProcessId`,`Executor`);
+
 CREATE TABLE IF NOT EXISTS `workflowprocesstransitionhistory` (
   `Id` binary(16) NOT NULL,
   `ProcessId` binary(16) NOT NULL,
   `ExecutorIdentityId` varchar(256) default NULL,
   `ActorIdentityId` varchar(256) default NULL,
+  `ExecutorName` varchar(256) default NULL,
+  `ActorName` varchar(256) default NULL,
   `FromActivityName` varchar(256) NOT NULL,
   `ToActivityName` varchar(256) NOT NULL,
   `ToStateName` varchar(256) default NULL,
@@ -171,3 +198,23 @@ CREATE TABLE IF NOT EXISTS `workflowapprovalhistory`
     KEY `IdentityId` (`IdentityId`)
 );
 
+DROP FUNCTION IF EXISTS `DropUnusedWorkflowProcessScheme`;
+
+DELIMITER $$
+CREATE FUNCTION `DropUnusedWorkflowProcessScheme`()
+    RETURNS INTEGER
+    DETERMINISTIC
+BEGIN
+    DECLARE st INTEGER;
+
+    DELETE FROM `workflowprocessscheme` AS wps
+    WHERE wps.`IsObsolete` = 1
+      AND NOT EXISTS (SELECT * FROM `workflowprocessinstance` wpi WHERE wpi.`SchemeId` = wps.`Id` );
+
+    SELECT COUNT(*) into st
+    FROM `workflowprocessinstance` wpi LEFT OUTER JOIN `workflowprocessscheme` wps ON wpi.`SchemeId` = wps.`Id`
+    WHERE wps.`Id` IS NULL;
+
+    RETURN st;
+END$$
+DELIMITER ;

@@ -41,6 +41,12 @@
                             <a runat="server" class="ui circular left floated button" target="_blank" style="text-align:right" 
                                 href="<%# GetDesignerUrl(Item.Id) %>">Open in Workflow Designer</a>
                         </div>
+                        <div class="field">
+                            <a class="ui circular left floated button" target="_blank" style="text-align:right" href="<%#: Page.ResolveUrl("~/Document/AssignmentCreate?processid="+ Item.Id) %>">
+                                Create assignment
+                            </a>
+                        </div>
+                        
 
                     </asp:Placeholder>
 
