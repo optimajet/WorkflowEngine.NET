@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
 
@@ -28,7 +29,43 @@ namespace WF.Sample.Redis.Implementation
         {
             return GetAll(_connector.GetDatabase());
         }
+        
+        public List<Employee> GetWithPaging(string userName = null, SortDirection sortDirection = SortDirection.Asc, Paging paging = null)
+        {
+            var db = _connector.GetDatabase();
 
+            var names = db.SetMembers(GetKeyForEmployeeNamesSet()).Select(n => n.ToString()).ToList();
+            var resultNames = new List<string>();
+            
+            if (!string.IsNullOrEmpty(userName))
+            {
+                resultNames.AddRange(names.Where(name => name.Contains(userName)));
+            }
+            else
+            {
+                resultNames = names;
+            }
+
+            resultNames = sortDirection == SortDirection.Desc
+                ? resultNames.OrderByDescending(x => x).ToList()
+                : resultNames.OrderBy(x => x).ToList();
+
+            if (paging != null)
+            {
+                resultNames = resultNames.Skip(paging.PageSize * (paging.PageIndex - 1))
+                    .Take(paging.PageSize).ToList();
+            }
+
+            var ids = new List<Guid>();
+            foreach (var nameKey in resultNames)
+            {
+                ids.AddRange(db.SetMembers(GetKeyForEmployeeIdsNameSet(nameKey)).Select(id => Guid.Parse(id)));
+            }
+            var employees = db.StringGet(ids.Select(id => (RedisKey)GetKeyForEmployee(id)).ToArray());
+            
+            return employees.Where(x=>x.HasValue).Select(e => Mappings.Mapper.Map<Employee>(JsonConvert.DeserializeObject<Entities.Employee>(e))).ToList();
+        }
+        
         internal List<Employee> GetAll(IDatabase db)
         {
             var keys = db.SetMembers(GetKeyForEmployeesSet());

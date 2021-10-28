@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Data.Entity;
 using System.Linq;
+using OptimaJet.Workflow.Core.Persistence;
 using WF.Sample.Business.DataAccess;
 
 
@@ -21,7 +22,34 @@ namespace WF.Sample.MySql.Implementation
             var bytes = employeeId.ToByteArray();
             return _sampleContext.EmployeeRoles.Any(r => r.EmployeeId == bytes && r.Role.Name == roleName);
         }
+        
+        public List<Business.Model.Employee> GetWithPaging(string userName = null, SortDirection sortDirection = SortDirection.Asc, Paging paging = null)
+        {
+            List<Business.Model.Employee> result;
+            IQueryable<Employee> data;
+            if (userName == null)
+            {
+                data = (from emp in _sampleContext.Employees select emp);
+            }
+            else
+            {
+                var userNameUpper = userName.ToUpper();
+                data = (from emp in _sampleContext.Employees
+                    where emp.Name.ToUpper().Contains(userNameUpper)
+                    select emp);
+            }
 
+            var sortData = sortDirection == SortDirection.Asc ?  data.OrderBy(e => e.Name) :  data.OrderByDescending(e => e.Name);
+
+            if (paging == null)
+            {
+                return sortData.ToList().Select(e => Mappings.Mapper.Map<Business.Model.Employee>(e)).ToList();
+            }
+           
+            return sortData.Skip(paging.PageSize * (paging.PageIndex - 1))
+                .Take(paging.PageSize).ToList().Select(e => Mappings.Mapper.Map<Business.Model.Employee>(e)).ToList();
+        }
+        
         public List<Business.Model.Employee> GetAll()
         {
       

@@ -27,14 +27,14 @@
         </h4>
         <div style="margin-left: 20px;">
             <table class="WorkflowDesignerTable">
-                <th>
-                    <td v-if="isIE"></td>
-                    <td style="width: 160px;">{{labels.ConditionType}}</td>
-                    <td style="flex-grow: 1;">{{labels.Condition}}</td>
-                    <td style="flex-grow: 1;"></td>
+                <tr>
+                    <th></th>
+                    <th style="width: 160px;">{{labels.ConditionType}}</th>
+                    <th style="flex-grow: 1;">{{labels.Condition}}</th>
+                    <th style="flex-grow: 1;"></th>
                     <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
-                    <td style="width: 180px;">{{labels.To}}</td>
-                </th>
+                    <th style="width: 180px;">{{labels.To}}</th>
+                </tr>
                 <tr v-for="(transition, index) in Transitions.all">
                     <td></td>
                     <td>
@@ -138,24 +138,24 @@
             </table>
         </div>
     </div>
+    <div style="margin-bottom: 10px;">
+        <el-button v-if="!readonly && !itemHasComment" @click="showUserComment()" icon="el-icon-s-comment" circle></el-button>
+        <h4 v-if="itemHasComment" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.UserComment }}</h4>
+        <el-input
+                v-if="itemHasComment"
+                type="textarea"
+                :placeholder="labels.UserComment"
+                v-model="FormData.UserComment"
+                rows="5"
+        >
+        </el-input>
+    </div>
 </el-form>
 <div class="WorkflowDesignerButtons">
     <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-    :title="confirmdialog.title"
-    :before-close="function() {confirmdialog.visible = false}"
-    :visible="confirmdialog.visible"
-    :modal-append-to-body="false"
-    width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog> 
 <script type="application/javascript">
     function decisiontable_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -167,17 +167,6 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
             SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function(){
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            },
             expertMode: false,
             actions: [],
             activities: [],
@@ -186,6 +175,7 @@
             conditionsStore: me.graph.data.CodeActions,
             states: [],
             editItem: null,
+            itemHasComment: false,
             FormData: {},
         });   
         me.transitionManager = me.graph.GetComponentByType('WorkflowDesignerTransitionManager');
@@ -248,6 +238,7 @@
             formdata.IsInitial = item.IsInitial;
             formdata.IsForSetState = item.IsForSetState;
             formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
+            formdata.UserComment = item.UserComment;
             formdata.EnableOtherwise = !!transitions.otherwise.activity;
             me.VueConfig.data.Transitions = transitions;
             me.VueConfig.data.originalTransitions =  WorkflowDesignerCommon.clone(transitions);
@@ -268,10 +259,15 @@
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
             me.VueConfig.data.actions = me.graph.getActionNames(); 
             me.VueConfig.methods.updateActivitiesList();
+            me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
 
 
             var objectCorrect = me.VueConfig.methods.objectCorrect;     
-        };     
+        };
+
+        me.VueConfig.methods.showUserComment = function (){
+            me.VueConfig.data.itemHasComment = true;
+        }
 
         me.VueConfig.methods.EnableOtherwise = function(){
             var formdata = me.VueConfig.data.FormData;
@@ -402,10 +398,6 @@
             me.VueConfig.data.jsonform = me.showjson(value, params, onSuccess, onClose);
         };
 
-        me.VueConfig.methods.onHideEvent = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
-        };
-
         me.VueConfig.methods.validate = function () {
             var validateFunc = me.VueConfig.methods.validateField;
             var transitions = me.VueConfig.data.Transitions;
@@ -526,9 +518,22 @@
                 me.onClose(true);
             }
             else{
-                me.VueConfig.data.confirmdialog.visible = true;
+                me.showConfirm();
                 return false;
             }
         };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
+        }
     };
 </script>

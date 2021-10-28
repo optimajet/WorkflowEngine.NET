@@ -157,6 +157,7 @@
     </Reference>
   </ItemGroup>
   <ItemGroup>
+    <Compile Include="Controllers\AssignmentController.cs" />
     <Compile Include="Controllers\DesignerController.cs" />
     <Compile Include="Controllers\DocumentController.cs" />
     <Compile Include="Controllers\SettingsController.cs" />
@@ -166,6 +167,10 @@
     </Compile>
     <Compile Include="Helpers\CurrentUserSettings.cs" />
     <Compile Include="Helpers\WebPageHelper.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentFilterModel.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentInfoModel.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentItemModel.cs" />
+    <Compile Include="Models\AssignmentModels\AssignmentListModel.cs" />
     <Compile Include="Models\DocumentHistoryModel.cs" />
     <Compile Include="Models\DocumentListModel.cs" />
     <Compile Include="Models\DocumentModel.cs" />
@@ -241,6 +246,8 @@
     <Content Include="templates\toolbarinfo.html" />
     <Content Include="templates\toolbarside.html" />
     <Content Include="templates\transition.html" />
+    <Content Include="Views\Assignment\AssignmentInfo.cshtml" />
+    <Content Include="Views\Assignment\Assignments.cshtml" />
     <Content Include="Views\Document\Inbox.cshtml" />
     <Content Include="Views\Document\Outbox.cshtml" />
     <Content Include="Views\Shared\Partial\Paging.cshtml" />

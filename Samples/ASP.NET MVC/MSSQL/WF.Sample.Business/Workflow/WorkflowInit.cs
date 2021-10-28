@@ -8,7 +8,9 @@ using WF.Sample.Business.DataAccess;
 using System.Threading.Tasks;
 using System.Collections.Generic;
 using OptimaJet.Workflow.Core.Model;
+using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Plugins;
+using OptimaJet.Workflow.Plugins.AssignmentsPlugin;
 using WF.Sample.Business.Model;
 
 namespace WF.Sample.Business.Workflow
@@ -39,7 +41,10 @@ namespace WF.Sample.Business.Workflow
                         var loopPlugin = new LoopPlugin();
                         var filePlugin = new FilePlugin();
                         var approvalPlugin = new ApprovalPlugin();
-                        
+                        var assignmentPlugin = new AssignmentPlugin();
+                        assignmentPlugin.OnDeadlineToCompleteAsync += CheckDeadlineToCompleteAsync;
+                        assignmentPlugin.OnDeadlineToStartAsync += CheckDeadlineToStartAsync;
+
                         #region ApprovalPlugin Settings
                         
                         approvalPlugin.GetUserNamesByIds += GeUserNamesByIds;
@@ -78,7 +83,16 @@ namespace WF.Sample.Business.Workflow
                         externalParametersProvider.GetDocument += GetDocument;
 
                         var builder = new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache();
-                        _runtime = new WorkflowRuntime()
+                        _runtime = new WorkflowRuntime();
+
+                        _runtime.GetUsersWithIdentitiesAsync += GetUsersWithIdentitiesAsync;
+                        _runtime.GetUserByIdentityAsync += GetUserById;
+                        _runtime.AssignmentApi.OnUpdateAssignment += OnUpdateAssignment;
+                        _runtime.AssignmentApi.OnPostUpdateAssignment += OnPostUpdateAssignment;
+                        _runtime.GetCustomTimerValueAsync += GetCustomTimerValueAsync;
+                        _runtime.GetCustomTimerValueAsync += GetCustomTimerValueAsync;
+                        
+                        _runtime
                             .WithBuilder(builder)
                             .WithActionProvider(new ActionProvider(DataServiceProvider))
                             .WithRuleProvider(new RuleProvider(DataServiceProvider))
@@ -86,7 +100,7 @@ namespace WF.Sample.Business.Workflow
                             .WithPersistenceProvider(provider)
                             .SwitchAutoUpdateSchemeBeforeGetAvailableCommandsOn()
                             .RegisterAssemblyForCodeActions(Assembly.GetExecutingAssembly())
-                            .WithPlugins(null, basicPlugin, loopPlugin, filePlugin, approvalPlugin)
+                            .WithPlugins(null, basicPlugin, loopPlugin, filePlugin, approvalPlugin, assignmentPlugin)
                             .WithExternalParametersProvider(externalParametersProvider)
                             .CodeActionsDebugOn()
                             .AsSingleServer() //.AsMultiServer()
@@ -97,7 +111,80 @@ namespace WF.Sample.Business.Workflow
                 }
             }
         }
+        
+        public static async Task<DateTime?> GetCustomTimerValueAsync(string value, string name)
+        {
+            return value == "ten seconds" ? Runtime.RuntimeDateTimeNow.AddSeconds(10) : (DateTime?) null;
+        }
+        
+        public static Assignment OnUpdateAssignment(Assignment newAssignment, Assignment oldAssignment)
+        {
+            if (newAssignment.StatusState == AssignmentPlugin.DefaultStartStatus &&
+                oldAssignment.StatusState == AssignmentPlugin.DefaultStatus)
+            {
+                newAssignment.DateStart = DateTime.Now;
+            }
 
+            if (newAssignment.StatusState == AssignmentPlugin.DefaultCompletedStatus && oldAssignment.StatusState != AssignmentPlugin.DefaultCompletedStatus
+                || 
+                newAssignment.StatusState == AssignmentPlugin.DefaultDeclinedStatus && oldAssignment.StatusState != AssignmentPlugin.DefaultDeclinedStatus)
+            {
+                newAssignment.DateFinish = DateTime.Now;
+            }
+
+            return newAssignment;
+        }
+        
+        public static Assignment OnPostUpdateAssignment(Assignment newAssignment, Assignment oldAssignment)
+        {
+            if (newAssignment.StatusState == AssignmentPlugin.DefaultCompletedStatus && oldAssignment.StatusState != AssignmentPlugin.DefaultCompletedStatus
+                || 
+                newAssignment.StatusState == AssignmentPlugin.DefaultDeclinedStatus && oldAssignment.StatusState != AssignmentPlugin.DefaultDeclinedStatus)
+            {
+                newAssignment.IsActive = false;
+            }
+
+            return newAssignment;
+        }
+
+        public static async Task CheckDeadlineToStartAsync(Assignment assignment, AssignmentCheckDeadlineCondition condition)
+        {
+            if (condition == AssignmentCheckDeadlineCondition.Equal && assignment.StatusState == AssignmentPlugin.DefaultStatus)
+            {
+                assignment.Tags.Add("Overdue start deadline");
+                await Runtime.AssignmentApi.UpdateAssignmentAsync(assignment);
+            }
+        }
+        public static async Task CheckDeadlineToCompleteAsync(Assignment assignment, AssignmentCheckDeadlineCondition condition)
+        {
+            if (condition == AssignmentCheckDeadlineCondition.Equal && (assignment.StatusState == AssignmentPlugin.DefaultStatus || assignment.StatusState == AssignmentPlugin.DefaultStartStatus))
+            {
+                assignment.Tags.Add("Overdue finish deadline");
+                await Runtime.AssignmentApi.UpdateAssignmentAsync(assignment);
+            }
+        }
+        
+        public static async Task<string> GetUserById(string identity)
+        {
+            var provider = DataServiceProvider.Get<IEmployeeRepository>();
+            var id = Guid.Parse(identity);
+            return  provider.GetNameById(id);
+        }
+        
+        public static async Task<IEnumerable<UserIdentity>> GetUsersWithIdentitiesAsync(string userName = null, SortDirection sortDirection = SortDirection.Asc, Paging paging = null)
+        {
+            var result = new List<UserIdentity>();
+            var provider = DataServiceProvider.Get<IEmployeeRepository>();
+            var users = provider.GetWithPaging(userName, sortDirection, paging);
+
+            foreach (var user in users)
+            {
+                result.Add(new UserIdentity() {Identity = user.Id.ToString(), UserName = user.Name});
+            }
+
+            return result;
+        }
+        
         public static async Task<IEnumerable<string>> UsersInRoleAsync(string roleName, ProcessInstance processInstance)
         {
             var provider = DataServiceProvider.Get<IEmployeeRepository>();

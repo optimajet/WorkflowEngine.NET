@@ -74,6 +74,12 @@
             </el-button>
         </el-tooltip>
 
+        <el-tooltip v-if="settings.readonly && hasAssignments" :content="labels.Assignments">
+            <el-button :class="getButtonClass(assignments)" @click="showAssignments()">
+                <div class="WorkflowDesignerToolbarIcon Assignments"></div>
+            </el-button>
+        </el-tooltip>
+
         <el-tooltip :content="labels.ProcessInfo">
             <el-button :class="getButtonClass(processinfo)" @click="showProcessInfo()">
                 <div class="WorkflowDesignerToolbarIcon ProcessInfo"></div>
@@ -144,15 +150,30 @@
         data.labels = Object.assign(WorkflowDesignerConstants.ToolbarLabel, WorkflowDesignerConstants.Logs);
         data.legend = false;
         data.logs = false;
+        data.settings = null;
+        data.hasAssignments = false;
+        data.canBeInlined = false;
+        data.LogEnabled = false;
 
         me.VueConfig.methods.onUpdate = function () {
             data.settings = me.graph.Settings;
             data.undoDisabled = me.graph.graphDataIndex <= 0;
             data.redoDisabled = me.graph.graphData && me.graph.graphData.length <= (me.graph.graphDataIndex + 1);
             data.selected = me.graph.selected;
-            data.canBeInlined = me.graph.data.CanBeInlined;
-            data.LogEnabled = me.graph.data.LogEnabled;
+            if(me.graph.data!= undefined){
+                data.canBeInlined = me.graph.data.CanBeInlined;
+                data.LogEnabled = me.graph.data.LogEnabled;
+            }
             data.exinfo = me.graph.getParam("exinfo");
+
+            var plugins = me.graph.getPluginsNames();
+
+            for(var i = 0; i< plugins.length; i++){
+                if(plugins[i] == "AssignmentPlugin"){
+                    data.hasAssignments = true;
+                    break;
+                }
+            }
 
             var windowsNames = [
                 { name: "logs", show: me.VueConfig.methods.showLogs, editmode: true },
@@ -166,6 +187,10 @@
                 { name: "codeactions", show: me.VueConfig.methods.showCodeActions, editmode: false },
                 { name: "localization", show: me.VueConfig.methods.showLocalization, editmode: false },
                 { name: "processinfo", show: me.VueConfig.methods.showProcessInfo, editmode: false }];
+
+            if(data.hasAssignments){
+                windowsNames.push({ name: "assignments", show: me.VueConfig.methods.showAssignments, editmode: false });
+            }
 
             var restoreWindowState = function (obj) {
                 if (obj.editmode && data.settings.readonly)
@@ -236,6 +261,9 @@
 
         me.VueConfig.methods.showParameters = function () {
             me.VueConfig.methods.showPropertyWindow("parameters", "WorkflowDesignerParameters");
+        };
+        me.VueConfig.methods.showAssignments = function () {
+            me.VueConfig.methods.showPropertyWindow("assignments", "WorkflowDesignerParameters");
         };
 
         me.VueConfig.methods.showLocalization = function () {

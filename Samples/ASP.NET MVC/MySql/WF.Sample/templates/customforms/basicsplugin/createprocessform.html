@@ -1,0 +1,285 @@
+<h3>{{ customTitle ? customTitle : labels.Title }}</h3>
+<el-form
+        class="WorkflowDesignerWindowForm"
+        :model="FormData"
+        ref="form"
+        label-position="top"
+        label-width="150px">
+
+    <div v-if="Field.State != undefined"  class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item
+                    :label="customLabels.Name"
+                    :rules="getFieldRules(Field.Name)"
+                    :prop="Field.Name.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.Name" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    :label="customLabels.State"
+                    :rules="getFieldRules(Field.State)"
+                    :prop="Field.State.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.State" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+    </div>
+
+    <h4 v-if="Field.State != undefined" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{customLabels.Heading}}</h4>
+    <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item
+                    :label="customLabels.Scheme"
+                    :rules="getFieldRules(Field.Scheme)"
+                    :prop="Field.Scheme.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.Scheme" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    :label="customLabels.ProcessId"
+                    :rules="getFieldRules(Field.ProcessId)"
+                    :prop="Field.ProcessId.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.ProcessId" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+    </div>
+    <h4  style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ customLabels.ProcessCreationParameters  + (!readonly ? "  |  " : "")}}
+        <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+    </h4>
+    <div id="WorkflowDesignerParametersList" >
+        <table class="WorkflowDesignerTable">
+            <tr v-if="items.length > 0">
+                <th></th>
+                <th>{{customLabels.ParameterName}}</th>
+                <th>{{customLabels.ParameterPurpose}}</th>
+                <th>{{customLabels.ParameterValue}}</th>
+            </tr>
+            <tr v-for="(item, index) in items"
+                :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
+                @dragover="dragover(item, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+                <td>
+                    <el-input
+                            v-model="item.Name"
+                            :title="validateField('Name', item)"
+                            :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+                            :readonly="readonly || item.Purpose == 'System'"
+                    ></el-input>
+                </td>
+                <td>
+                    <el-select
+                            v-model="item.Purpose"
+                            style="width: 100%;"
+                            :disabled="readonly || item.Purpose == 'System'"
+                            filterable clearable
+                            placeholder=""
+                            :class="validateField('Purpose', item) ? 'WorkflowDesignerInputError' : ''">
+                        <el-option key="Temporary" label="Temporary" value="Temporary"></el-option>
+                        <el-option key="Persistence" label="Persistence" value="Persistence"></el-option>
+                        <el-option v-if="item.Purpose == 'System'" key="System" label="System" value="System"></el-option>
+                    </el-select>
+                </td>
+                <td>
+                    <el-input
+                            v-model="item.Value"
+                            :title="validateField('Value', item)"
+                            :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                            :readonly="readonly"
+                    ></el-input>
+                </td>
+                <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+                    <el-button-group>
+                        <el-button @click="showjson('Value', item)" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"></el-button>
+                        <el-button @click="remove(index)" class="WorkflowDesignerTableDeleteButton "></el-button>
+                    </el-button-group>
+                </td>
+            </tr>
+        </table>
+    </div>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+
+<script type="application/javascript">
+    function customforms_basicsplugin_createprocessform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            customTitle: undefined,
+            readonly: false,
+            editItem: undefined,
+            labels: WorkflowDesignerConstants.EditParametersFormlabel,
+            customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.CreateProcess,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            FormData: {},
+            Field:{},
+            items:[]
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+
+            if(parameterDefinition && parameterDefinition.name){
+                for(var i=0; i <= parameterDefinition.type.length; i++){
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                    if(fields && fields.length > 0)
+                        break;
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function (field) {
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '') {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+
+                    me.VueConfig.data.Field[field.Name] = field;
+                });
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox") {
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined") {
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else {
+                            tmp[field.Name] = null;
+                        }
+                    });
+
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+
+            me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+
+            if(!me.VueConfig.data.FormData)
+                me.VueConfig.data.FormData = {};
+
+            for (var key in me.VueConfig.data.FormData) {
+                if (key !== "__customtype" && me.VueConfig.data.FormData.hasOwnProperty(key))
+                    if(!me.VueConfig.data.Field.hasOwnProperty(key))
+                        delete me.VueConfig.data.FormData[key];
+            }
+
+            me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+
+            var params = JSON.parse(me.VueConfig.data.FormData.ProcessCreationParameters);
+            if(params != null){
+                params.forEach(function (item){
+                    var purpose = item.persist ? "Persistence" : "Temporary";
+                    me.VueConfig.data.items.push({"Purpose": purpose, "Value": item.value, "Name": item.name});
+                });
+            }
+        };
+
+        me.VueConfig.methods.add = function(){
+            me.VueConfig.data.items.push({Name:"", Purpose:"", Value:""});
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerParametersList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },10);
+        };
+
+        me.VueConfig.methods.showjson = function(name, item) {
+            me.VueConfig.data.editItem = item;
+            me.editItem = item;
+
+            var onSuccess = function(value){
+                if(me.editItem){
+                    me.editItem[name] = value;
+                    me.VueConfig.data.editItem = undefined;
+                    delete me.editItem;
+                }
+            };
+
+            var onClose = function(value){
+                me.VueConfig.data.editItem = undefined;
+            };
+
+            var params = {};
+            me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+        };
+
+        me.VueConfig.methods.validateField = function(name, item){
+            if(name != 'Name' && name != "Purpose")
+                return;
+
+            if(!item[name]){
+                return WorkflowDesignerConstants.FieldIsRequired;
+            }
+
+            if(name == "Name"){
+                var res = me.VueConfig.data.items.filter(function(i){ return i != item && i.Name == item.Name });
+                if(res.length > 0){
+                    return WorkflowDesignerConstants.FieldMustBeUnique;
+                }
+            }
+        };
+
+        me.VueConfig.methods.remove = function(index){
+            me.VueConfig.data.items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.getFieldRules = function(field){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            return rules;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+
+            me.VueConfig.data.FormData.ProcessCreationParameters = [];
+
+            me.VueConfig.data.items.forEach(function (item){
+                me.VueConfig.data.FormData.ProcessCreationParameters.push({"persist": item.Purpose == "Persistence", "value": item.Value, "name": item.Name});
+            });
+
+            me.VueConfig.data.FormData.ProcessCreationParameters = JSON.stringify(me.VueConfig.data.FormData.ProcessCreationParameters).toString();
+
+            var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+            this.$refs.form.validate(function(valid) {
+                if (valid) {
+                    me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                    me.onClose(true);
+                }
+            });
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>

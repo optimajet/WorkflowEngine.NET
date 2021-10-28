@@ -62,6 +62,7 @@ namespace WF.Sample.Redis.Implementation
                     }
                 }
 
+                batch.HashDeleteAsync(GetKeyForDocumentIdsNumber(), doc.Number.ToString());
                 batch.KeyDeleteAsync(employeesKey);
             }
 
@@ -97,6 +98,17 @@ namespace WF.Sample.Redis.Implementation
             if (doc == null) return null;
 
             return Mappings.Mapper.Map<Document>(doc);
+        }
+        
+        public Business.Model.Document GetByNumber(int number)
+        {
+            var db = _connector.GetDatabase();
+
+            var documentId = db.HashGet(GetKeyForDocumentIdsNumber(), number.ToString());
+            var documentJson = db.StringGet(GetKeyForDocument(Guid.Parse(documentId.ToString())));
+            var document = JsonConvert.DeserializeObject<Entities.Document>(documentJson.ToString());
+            
+            return Mappings.Mapper.Map<Document>(document);
         }
 
         public IEnumerable<string> GetAuthorsBoss(Guid documentId)
@@ -170,6 +182,7 @@ namespace WF.Sample.Redis.Implementation
                 doc.Id = target.Id;
 
                 batch.SortedSetAddAsync(GetKeyForSortedDocuments(), target.Id.ToString(), target.Number.Value);
+                batch.HashSetAsync(GetKeyForDocumentIdsNumber(), target.Number.ToString(), target.Id.ToString("N") );
             }
 
             target.Name = doc.Name;

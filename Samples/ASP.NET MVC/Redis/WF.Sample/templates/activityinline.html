@@ -17,24 +17,24 @@
             </el-option>
         </el-select>
     </el-form-item>
+
+    <el-button v-if="!readonly && !itemHasComment" @click="showUserComment()" icon="el-icon-s-comment" circle></el-button>
+    <el-form-item v-if="itemHasComment" :label="labels.UserComment">
+        <el-input
+          v-if="itemHasComment"
+          type="textarea"
+          :placeholder="labels.UserComment"
+          v-model="FormData.UserComment"
+          rows="5"
+        >
+        </el-input>
+    </el-form-item>
 </el-form>
 
 <div class="WorkflowDesignerButtons">
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-    :title="confirmdialog.title"
-    :before-close="function() {confirmdialog.visible = false}"
-    :visible="confirmdialog.visible"
-    :modal-append-to-body="false"
-    width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog> 
 <script type="application/javascript">
     function activityinline_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -42,17 +42,7 @@
             labels: WorkflowDesignerConstants.ActivityFormLabel,
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function(){
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            },
+            itemHasComment: false,
             schemes: [],
             FormData: { }
         });
@@ -62,6 +52,7 @@
             me.VueConfig.data.FormData.Name = item.Name;
             me.VueConfig.data.FormData.SchemeCode = item.SchemeCode;
             me.VueConfig.data.schemes = me.graph.data.AdditionalParams.InlinedSchemeCodes;
+            me.VueConfig.data.itemHasComment = item.UserComment != null && item.UserComment.length > 0;
 
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
         };
@@ -91,10 +82,6 @@
             return res;
         };
 
-        me.VueConfig.methods.onHideEvent = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
-        };
-
         me.VueConfig.methods.onSave = function(){
             if(this.$refs && this.$refs.form){
                 this.$refs.form.validate(function(valid) {
@@ -120,8 +107,25 @@
                 me.onClose(true);
             }
             else{
-                me.VueConfig.data.confirmdialog.visible = true;
+                me.showConfirm();
             }
         };
+
+        me.VueConfig.methods.showUserComment = function (){
+            me.VueConfig.data.itemHasComment = true;
+        }
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
+        }
     };
 </script>

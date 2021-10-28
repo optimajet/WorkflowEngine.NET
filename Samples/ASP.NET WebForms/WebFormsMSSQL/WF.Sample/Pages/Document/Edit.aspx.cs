@@ -50,8 +50,7 @@ namespace WF.Sample.Pages.Document
                         AuthorName = d.Author.Name,
                         Comment = d.Comment,
                         ManagerId = d.ManagerId,
-                        ManagerName =
-                            d.ManagerId.HasValue ? d.Manager.Name : string.Empty,
+                        ManagerName = d.ManagerId.HasValue ? d.Manager.Name : string.Empty,
                         Name = d.Name,
                         Number = d.Number,
                         StateName = d.StateName,

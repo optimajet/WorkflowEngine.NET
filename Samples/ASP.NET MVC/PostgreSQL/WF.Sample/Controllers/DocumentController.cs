@@ -9,6 +9,7 @@ using WF.Sample.Helpers;
 using WF.Sample.Models;
 using System.Threading;
 using AutoMapper;
+using OptimaJet.Workflow.Core.Model;
 using WF.Sample.Business.DataAccess;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
@@ -74,7 +75,8 @@ namespace WF.Sample.Controllers
                 PageSize = pageSize,
                 Count = count,
             });
-        } 
+        }
+        
         #endregion
 
         #region Edit
@@ -170,11 +172,11 @@ namespace WF.Sample.Controllers
             return RedirectToAction("Edit", new { doc.Id});
             
         }
+
         #endregion
 
         #region Delete
-
-
+        
         public ActionResult DeleteRows(Guid[] ids)
         {
             if (ids == null || ids.Length == 0)
@@ -292,7 +294,7 @@ namespace WF.Sample.Controllers
 
         private List<InboxDocumentModel> GetDocumentsByInbox(List<InboxItem> inbox)
         {
-            var ids = inbox.Select(x => x.ProcessId).ToList();
+            var ids = inbox.Select(x => x.ProcessId).Distinct().ToList();
             
             var documents = _documentRepository.GetByIds(ids)
                 .ToDictionary(x=>x.Id, x=>x);
@@ -323,10 +325,10 @@ namespace WF.Sample.Controllers
 
             return docs;
         }
-
+        
         private List<OutboxDocumentModel> GetDocumentsByOutbox(List<OutboxItem> outbox)
         {
-            var ids = outbox.Select(x => x.ProcessId).ToList();
+            var ids = outbox.Select(x => x.ProcessId).Distinct().ToList();
             
             var documents = _documentRepository.GetByIds(ids)
                 .ToDictionary(x=>x.Id, x=>x);

@@ -1,3 +1,5 @@
+using Microsoft.EntityFrameworkCore.Metadata;
+
 namespace WF.Sample.Oracle
 {
     using System;
@@ -37,16 +39,17 @@ namespace WF.Sample.Oracle
         {
             var builder = new OracleConnectionStringBuilder(_config.GetConnectionString("DefaultConnection"));
             modelBuilder.HasDefaultSchema(builder.UserID);
-
+            
             foreach (var entity in modelBuilder.Model.GetEntityTypes())
             {
                 foreach (var property in entity.GetProperties())
                 {
-                    property.Relational().ColumnName = property.Name.ToUpper();
+                    property.SetColumnName(property.Name.ToUpper());
                 }
             }
-
             
+            //property.Relational().ColumnName = property.Name.ToUpper();
+
             modelBuilder.Entity<Document>().Property(x => x.Number)
                 .HasColumnName("Number");
             

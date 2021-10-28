@@ -1,0 +1,242 @@
+﻿@{
+    ViewBag.Title = "Vacation requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+@model WF.Sample.Models.AssignmentInfoModel
+
+@functions
+{
+    static string GetValue(string field)
+    {
+        return string.IsNullOrEmpty(field) ?  "-" : field;
+    } 
+
+    Dictionary<string, object> GetHtmlAtt(Dictionary<string, object> att)
+    {
+        if (!Model.IsActive || Model.IsDeleted)
+        {
+            att.Add("readonly", "readonly");
+        }
+
+        return att;
+    }
+}
+
+@{
+    var editUrl =  Url.Action("Edit", "Document", new{Id = Model.ProcessId}) ;
+    var forCreate = Model.FormAction == "Create";
+    var onCancelUrl = forCreate
+        ? Url.Action("Edit", "Document", new {Id = Model.ProcessId})
+        : Url.Action("Assignments", "Assignment");
+}
+
+<script>
+    function createOrUpdate(isCreate){
+        var name = document.getElementById('inputName').value
+        
+        var isCorrect = true;
+        if (name == null || name.length == 0){
+            $("#formName").addClass("error");
+            isCorrect = false;
+        }
+        else{
+            $("#formName").removeClass("error");
+        }
+        
+        if(isCreate){
+            var code = document.getElementById('inputCode').value
+            if (isCreate && (code == null || code.length == 0)){
+                $("#formCode").addClass("error");
+                isCorrect = false;
+            }
+            else{
+                $("#formCode").removeClass("error");
+            }
+        }
+
+        if (isCorrect){
+            document.getElementById('assignmentForm').submit();
+        }
+    }
+</script>
+
+<div class="ui form" style="min-width: 300px;">
+ @using (Html.BeginForm("AssignmentCreateOrUpdate", "Assignment", FormMethod.Post,
+     new {id = "assignmentForm"}))
+ {
+     <div style="display: flex; margin-bottom: 15px">
+         <div style="flex: auto; margin-right: 30px">
+             <input type="text" style="display: none" value="@Model.AssignmentId" name="assignmentid"/>
+             <div class="field" id="formName" style="font-size: 20px">
+                 @Html.LabelFor(model => model.Name)
+                 @Html.TextBoxFor(model => model.Name,
+                     GetHtmlAtt(new Dictionary<string, object>()
+                     {
+                         {"id", "inputName"}
+                     }))
+             </div>
+             <div style="display: flex">
+                 <div class="field" style="width: 50%; margin-right: 15px">
+                     <label>Deadline to start</label>
+                     @Html.TextBoxFor(x => x.DeadlineToStart, "{0:yyyy-MM-ddTHH:mm:ss}",
+                         GetHtmlAtt(new Dictionary<string, object>()
+                         {
+                             {"style", "width:100%;padding-left:20px"},
+                             {"class", "form-control"},
+                             {"type", "datetime-local"},
+                         }))
+                 </div>
+                 <div class="field" style="width: 50%">
+                     <label>Deadline to complete</label>
+                     @Html.TextBoxFor(x => x.DeadlineToComplete, "{0:yyyy-MM-ddTHH:mm:ss}",
+                         GetHtmlAtt(new Dictionary<string, object>()
+                         {
+                             {"class", "form-control"},
+                             {"type", "datetime-local"},
+                         }))
+                 </div>
+             </div>
+             <div class="field">
+                 @Html.LabelFor(model => model.Description)
+                 @Html.TextAreaFor(model => model.Description, GetHtmlAtt(new Dictionary<string, object>()
+                 {
+                     {"style", "width:100%;padding-left:20px; min-height: 200px;"}
+                 }))
+             </div>
+         </div>
+
+         <div style="min-width: 350px; max-width: 350px; background: #F4F4F4; padding: 15px; border-radius: 10px">
+             @if (forCreate)
+             {
+                 <div class="field" id="formCode">
+                     <label>Assignment code</label>
+                     <input type="text" id="inputCode" class="ui" value="@Model.AssignmentCode" name="assignmentCode"/>
+                 </div>
+             }
+             else
+             {
+                 <div style="display: flex; margin-bottom: 15px">
+                     <div style="width: 50%">Assignment code</div>
+                     <div style="width: 50%">@Model.AssignmentCode</div>
+                 </div>
+             }
+             <div style="display: flex; margin-bottom: 15px">
+                 <div style="width: 50%">Document number</div>
+                 <div style="width: 50%"><a href=@editUrl>@Model.DocumentNumber</a></div>
+             </div>
+
+             <div style="display: flex; margin-bottom: 15px">
+                 <div style="width: 50%">Assignment state</div>
+                 <div style="width: 50%">
+                     @if (Model.IsDeleted)
+                     {
+                         <span style="color: red">Deleted</span>
+                     }
+                     else if (Model.IsActive)
+                     {
+                         <span style="color: green">Active</span>
+                     }
+                     else
+                     {
+                         <span style="color: orange">Not Active</span>
+                     }
+                 </div>
+             </div>
+
+             @if (!forCreate)
+             {
+                 <div style="display: flex; margin-bottom: 15px">
+                     <div style="width: 50%">Date creation</div>
+                     <div style="width: 50%">@Model.DateCreation</div>
+                 </div>
+             }
+
+             @if (Model.DateStart != null)
+             {
+                 <div style="display: flex; margin-bottom: 15px">
+                     <div style="width: 50%">Date start</div>
+                     <div style="width: 50%">@Model.DateStart</div>
+                 </div>
+             }
+
+             @if (Model.DateFinish != null)
+             {
+                 <div style="display: flex; margin-bottom: 15px">
+                     <div style="width: 50%">Date finish</div>
+                     <div style="width: 50%">@Model.DateFinish</div>
+                 </div>
+             }
+             @if (!forCreate)
+             {
+                 <div class="field">
+                     <label>Status</label>
+                     @if (Model.IsActive && !Model.IsDeleted)
+                     {
+                         @Html.DropDownList("StatusState",
+                             Model.Statuses.Select(s => new SelectListItem()
+                             {
+                                 Text = s,
+                                 Value = s,
+                                 Selected = s == Model.StatusState
+                             }).ToList(), GetHtmlAtt(new Dictionary<string, object>()))
+                     }
+                     else
+                     {
+                         <input type="text" class="ui" value="@Model.StatusState" readonly/>
+                         <br/>
+                     }
+                 </div>
+             }
+
+             <div class="field">
+                 <label>Executor</label>
+                 @if (Model.IsActive && !Model.IsDeleted)
+                 {
+                     @Html.DropDownList("Executor",
+                         Model.Employees.Select(s => new SelectListItem()
+                         {
+                             Text = s.Value,
+                             Value = s.Key.ToString(),
+                             Selected = s.Key == Model.Executor
+                         }).ToList(), GetHtmlAtt(new Dictionary<string, object>()))
+                 }
+                 else
+                 {
+                     <input type="text" class="ui" value="@Model.ExecutorName" readonly/>
+                     <br/>
+                 }
+             </div>
+             <div style="display: flex; margin-bottom: 15px">
+                 <div style="width: 50%">Observers</div>
+                 <div style="width: 50%">@GetValue(String.Join(", ", Model.Observers.Select(x => x.Value)))</div>
+             </div>
+             <div style="display: flex; margin-bottom: 15px">
+                 <div style="width: 50%">Tags</div>
+                 <div style="width: 50%">@GetValue(String.Join(", ", Model.Tags))</div>
+             </div>
+         </div>
+     </div>
+     <div class="field">
+         <input type="text" style="display: none" value="@Model.FormAction" name="formAction"/>
+         <input type="text" style="display: none" value="@Model.ProcessId" name="processid"/>
+
+         @if (Model.IsActive && !Model.IsDeleted)
+         {
+             if (forCreate)
+             {
+                 <button type="button" onclick="createOrUpdate(true)" class="ui primary button">Create</button>
+             }
+             else
+             {
+                 <button type="button" onclick="createOrUpdate(false)" class="ui primary button">Save</button>
+             }
+             <a href="@onCancelUrl" class="ui secondary button">Cancel</a>
+         }
+
+         @if (!forCreate)
+         {
+             <a href="@Url.Action("DeleteAssignments", "Assignment", new {ids = new Guid[] {(Guid) Model.AssignmentId}})" class="ui primary button">Delete assignment</a>
+         }
+     </div>
+ }
+</div>

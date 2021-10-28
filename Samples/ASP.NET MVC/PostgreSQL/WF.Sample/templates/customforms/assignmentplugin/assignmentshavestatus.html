@@ -1,0 +1,259 @@
+<h3>{{ labels.Title }}</h3>
+<el-form
+        class="WorkflowDesignerWindowForm"
+        :model="FormData"
+        ref="form"
+        label-position="top"
+        label-width="150px">
+
+    <el-form-item
+            :rules="getFieldRules(Field.StatusState,FormData.StatusState)"
+            :prop="Field.StatusState.Name"
+            style="width:100%">
+                <span slot="label">{{customLabels.StatusState}}
+                    <span @click="function(){FormData.StatusState = null; parameterFromProcess.StatusState = !parameterFromProcess.StatusState}"
+                          :style="parameterFromProcess.StatusState ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+        <el-select  style="width: 100%" v-if="!parameterFromProcess.StatusState" v-model="FormData.StatusState" :disabled="readonly">
+            <el-option
+                    v-for="item in Field.StatusState.DropdownValues"
+                    :key="item.Value"
+                    :label="item.Name"
+                    :value="item.Value">
+            </el-option>
+        </el-select>
+        <el-input v-if="parameterFromProcess.StatusState" v-model="FormData.StatusState" :disabled="readonly" style="width: 100%"></el-input>
+    </el-form-item>
+
+    <h4 class="SettingsHeader">
+        {{ customLabels.Assignments + (!readonly ? "  |  " : "")}}
+        <a v-if="!readonly" style="cursor:pointer" @click="addValue(assignments)">{{ ButtonTextCreate }}</a>
+    </h4>
+
+    <table class="WorkflowDesignerTable" style="margin-bottom: 10px">
+        <tr>
+            <th>{{customLabels.Code}}</th>
+            <th>{{customLabels.Condition}}</th>
+            <th>{{customLabels.IncludeInactive}}</th>
+        </tr>
+        <tr v-for="(assignment, index) in assignments">
+            <td style="position: relative">
+                <el-input
+                        :title="validateField('Code', assignment.code)"
+                        :class="validateField('Code', assignment.code) ? 'WorkflowDesignerInputError' : ''"
+                        v-model="assignment.code" style="width: 100%;" clearable  :readonly="readonly" ></el-input>
+            </td>
+            <td>
+                <el-select
+                        style="width:100%"
+                        :readonly="readonly"
+                        v-model="assignment.condition"
+                        :disabled="readonly">
+                    <el-option
+                            v-for="item in Field.Assignments.DropdownValues"
+                            :key="item.Value"
+                            :label="item.Name"
+                            :value="item.Value">
+                    </el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-checkbox
+                        v-model="assignment.includeInactive"
+                        :disabled="readonly"
+                        style="width:50px">
+                </el-checkbox>
+            </td>
+
+            <td v-if="!readonly && assignments.length > 1">
+                <el-button @click="removeRow(assignments, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+            </td>
+        </tr>
+    </table>
+</el-form>
+
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+
+<script type="application/javascript">
+    function customforms_assignmentplugin_assignmentshavestatus_Init(me){
+
+        var isAny = me.options && me.options.parameterDefinition && me.options.parameterDefinition.name === 'AssignmentsAnyHaveCertainStatus';
+
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            customTitle: undefined,
+            readonly: false,
+            FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            labels: WorkflowDesignerConstants.EditParametersFormlabel,
+            customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentsHaveStatus,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            isRequiredColor: WorkflowDesignerConstants.IsRequiredColor,
+            parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+            FormData: {},
+            parameterFromProcess:{
+                StatusState:false
+            },
+            assignments: [{code:"",condition: isAny ? 'Any' : 'All', includeInactive:false}],
+            isAny: isAny,
+            Field:{},
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+
+            if(parameterDefinition && parameterDefinition.name){
+                for(var i=0; i <= parameterDefinition.type.length; i++){
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                    if(fields && fields.length > 0)
+                        break;
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function (field) {
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '') {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+
+                    me.VueConfig.data.Field[field.Name] = field;
+                });
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox") {
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined") {
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else {
+                            tmp[field.Name] = null;
+                        }
+                    });
+
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+
+            me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+
+            if(!me.VueConfig.data.FormData)
+                me.VueConfig.data.FormData = {};
+
+            for (key in me.VueConfig.data.FormData) {
+                if(me.VueConfig.data.parameterFromProcess[key]!= undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
+                    me.VueConfig.data.parameterFromProcess[key] = true;
+                if (key !== "__customtype" && me.VueConfig.data.FormData.hasOwnProperty(key))
+                    if(!me.VueConfig.data.Field.hasOwnProperty(key))
+                        delete me.VueConfig.data.FormData[key];
+            }
+
+            me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
+
+            me.VueConfig.methods.initializeData();
+        };
+
+        me.VueConfig.methods.initializeData = function() {
+            if(me.VueConfig.data.FormData.Assignments == null)
+                return;
+
+            var assignments = JSON.parse(me.VueConfig.data.FormData.Assignments);
+            if(assignments.length > 0 ){
+                me.VueConfig.data.assignments = [];
+                assignments.forEach(function (item) {
+                    me.VueConfig.data.assignments.push({"code": item.code, "condition": item.condition, "includeInactive": item.includeInactive});
+                });
+            }
+        };
+
+        me.VueConfig.methods.validateField = function (name, item) {
+            if (name == "Code" && (item == null ||item.length == 0) )
+                return WorkflowDesignerConstants.FieldIsRequired;
+        };
+
+        me.VueConfig.methods.validate = function () {
+            for(var i = 0; i < me.VueConfig.data.assignments.length; i++ ){
+                if (me.VueConfig.data.assignments[i].code == null || me.VueConfig.data.assignments[i].code.length == 0){
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        me.VueConfig.methods.addValue = function(items){
+            if (me.VueConfig.data.isAny)
+            {
+                items.push({code:"",condition:"Any",includeInactive:false});
+            }
+            else {
+                items.push({code:"",condition:"All",includeInactive:false});
+            }
+        };
+
+        me.VueConfig.methods.removeRow = function(items, index){
+            items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.getFieldRules  = function(field, parameterValue){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            if(me.VueConfig.data.parameterFromProcess[field.Name]){
+                var validator = function(rule, value, callback){
+                    if(WorkflowDesignerCommon.containsAt(parameterValue)){
+                        callback();
+                    }
+                    else{
+                        callback(new Error(rule.message));
+                    }
+                };
+                rules.push({ validator: validator, required: true, message: WorkflowDesignerConstants.FieldMustContainAt, trigger: 'blur'});
+            }
+
+            return rules;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            me.VueConfig.data.FormData.Assignments = JSON.stringify(me.VueConfig.data.assignments).toString();
+
+            var value =  WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+
+            this.$refs.form.validate(function(valid) {
+                if (valid && me.VueConfig.methods.validate() ) {
+                    me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                    me.onClose(true);
+                }
+            });
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>
+
+

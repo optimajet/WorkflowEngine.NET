@@ -27,14 +27,14 @@
         </h4>
         <div>
             <table v-if="FormData.Conditions.length > 0" class="WorkflowDesignerTable">
-                <th>
-                    <td v-if="isIE"></td>
-                    <td>{{labels.ConditionType}}</td>
-                    <td>{{labels.ConditionAction}}</td>
-                    <td>{{labels.ConditionActionParameter}}</td>
-                    <td>{{labels.ConditionInversion}}</td>
-                    <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
-                </th>
+                <tr>
+                    <th></th>
+                    <th>{{labels.ConditionType}}</th>
+                    <th>{{labels.ConditionAction}}</th>
+                    <th v-if="hasConditionAnyAction()">{{labels.ConditionActionParameter}}</th>
+                    <th>{{labels.ConditionInversion}}</th>
+                    <th v-if="expertMode">{{labels.ResultOnPreExecution}}</th>
+                </tr>
                 <tr v-for="(сondition, index) in FormData.Conditions" 
                     :class="dragOverIndex == index && dragOverBlock  == сondition ? 'dragOver' : ''"
                     @dragstart="dragstart(index, $event, FormData.Conditions)" @dragend="dragend($event)"
@@ -75,17 +75,18 @@
                                              @focus="setCurrentItem(сondition)"></el-autocomplete>
                         </div>
                     </td>
-                    <td v-if="сondition.Type == 'Expression'" colspan="2">
+                    <td v-if="сondition.Type == 'Expression'">
                         <div style="flex-flow: nowrap; display: flex;align-items: center;">
                             <el-input
                                     v-model="сondition.Expression"
                                     :title="validateField('Expression', сondition)"
                                     :class="validateField('Expression', сondition) ? 'WorkflowDesignerInputError' : ''"
-                                    :readonly="readonly"
-                                    style="margin-right: 5px;">
+                                    :readonly="readonly">
                             </el-input>
                         </div>
                     </td>
+                    <td v-if="сondition.Type == 'Expression' && hasConditionAnyAction()"></td>
+
                     <td v-if="сondition.Type == 'Action' || сondition.Type == 'Expression'">
                         <el-checkbox v-model="сondition.ConditionInversion" :disabled="readonly"></el-checkbox>
                     </td>
@@ -104,7 +105,7 @@
                     <td :style="!readonly ? 'width: 94px;' : 'width: 42px;'">
                         <el-button-group>
                             <el-button @click="сondition.Type == 'Action' ? showjson('Action.ActionParameter', сondition, {name: сondition.Action.ActionName ,type: ['Condition']}) : showjson('Expression', сondition, {expression: true})" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == сondition ? 'is-active' : '')"></el-button>
-                            <el-button v-if="!readonly" @click="removeRow(FormData.Conditions, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                            <el-button v-if="!readonly" :disabled="FormData.Conditions.length == 1" @click="removeRow(FormData.Conditions, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
                         </el-button-group>
                     </td>
                 </tr>
@@ -141,24 +142,24 @@
             </div>
         </form>
     </div>
+    <div style="margin-bottom: 10px;">
+        <el-button v-if="!readonly && !itemHasComment" @click="showUserComment()" icon="el-icon-s-comment" circle></el-button>
+        <h4 v-if="itemHasComment" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.UserComment }}</h4>
+        <el-input
+                v-if="itemHasComment"
+                type="textarea"
+                :placeholder="labels.UserComment"
+                v-model="FormData.UserComment"
+                rows="5"
+        >
+        </el-input>
+    </div>
 </el-form>
 <div class="WorkflowDesignerButtons">
     <el-button @click="expertMode = !expertMode" type="text">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-    :title="confirmdialog.title"
-    :before-close="function() {confirmdialog.visible = false}"
-    :visible="confirmdialog.visible"
-    :modal-append-to-body="false"
-    width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog> 
 <script type="application/javascript">
     function decision_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -170,17 +171,6 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
             SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function(){
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            },
             expertMode: false,
             actions: [],
             activities: [],
@@ -189,7 +179,8 @@
             conditionsStore: me.graph.data.CodeActions,
             states: [],
             editItem: null,
-            FormData: { },
+            itemHasComment: false,
+            FormData: { }
         });   
         me.transitionManager = me.graph.GetComponentByType('WorkflowDesignerTransitionManager');
         me.activityManager = me.graph.GetComponentByType('WorkflowDesignerActivityManager');   
@@ -239,6 +230,7 @@
             formdata.IsFinal = item.IsFinal;
             formdata.IsForSetState = item.IsForSetState;
             formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
+            formdata.UserComment = item.UserComment;
             formdata.Implementation = Array.isArray(item.Implementation) ?WorkflowDesignerCommon.clone(item.Implementation) : [];
             formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
             formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
@@ -256,10 +248,15 @@
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
             me.VueConfig.data.actions = me.graph.getActionNames(); 
             me.VueConfig.methods.updateActivitiesList();
+            me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
 
 
             var objectCorrect = me.VueConfig.methods.objectCorrect;     
         };
+
+        me.VueConfig.methods.showUserComment = function (){
+            me.VueConfig.data.itemHasComment = true;
+        }
 
         me.VueConfig.methods.onInitialChange = function(){
             var formdata = me.VueConfig.data.FormData;
@@ -381,9 +378,16 @@
             me.VueConfig.data.jsonform = me.showjson(value, params, onSuccess, onClose);
         };
 
-        me.VueConfig.methods.onHideEvent = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
-        };
+        me.VueConfig.methods.hasConditionAnyAction = function (){
+            let result = false;
+            for(var i = 0; i< me.VueConfig.data.FormData.Conditions.length; i++ ){
+                if(me.VueConfig.data.FormData.Conditions[i].Type === "Action"){
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        }
 
         me.VueConfig.methods.saveTransition =  function() {
                 var FormData = me.VueConfig.data.FormData;
@@ -453,9 +457,22 @@
                 me.onClose(true);
             }
             else{
-                me.VueConfig.data.confirmdialog.visible = true;
+                me.showConfirm();
                 return false;
             }
+        };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
         };
     };
 </script>

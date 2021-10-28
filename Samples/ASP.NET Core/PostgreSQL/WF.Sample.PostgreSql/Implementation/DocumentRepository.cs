@@ -127,6 +127,13 @@ namespace WF.Sample.PostgreSql.Implementation
             if (document == null) return null;
             return Mappings.Mapper.Map<Business.Model.Document>(document);
         }
+        
+        public Business.Model.Document GetByNumber(int number)
+        {
+            var document = _sampleContext.Documents.FirstOrDefault(d => d.Number == number);
+            if (document == null) return null;
+            return Mappings.Mapper.Map<Business.Model.Document>(document);
+        }
 
         private Document GetDocument(Guid id, bool loadChildEntities = true)
         {

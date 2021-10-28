@@ -1,4 +1,5 @@
-﻿@using Microsoft.AspNetCore.Http.Extensions
+﻿@using System.Linq
+@using Microsoft.AspNetCore.Http.Extensions
 
 @inject Microsoft.AspNetCore.Http.IHttpContextAccessor ContextAccessor
 
@@ -14,13 +15,22 @@
         {
             folder = 2;
         }
+        else if (ContextAccessor.HttpContext.Request.GetEncodedUrl().ToLower().Contains("assignments"))
+        {
+            folder = 3;
+        }
+        else if (ContextAccessor.HttpContext.Request.GetEncodedUrl().ToLower().Contains("assignmentinfo"))
+        {
+            folder = 4;
+        }
     }
 }
 
 <div style="width: 300px; float: left;">
     <div class="ui menu">
         <a href="/" class="item">@Html.Raw(folder == 0 ? "<b>All vacation requests</b>" : "All vacation requests")</a>
-        <a href="/Document/Inbox" class="item">@Html.Raw(folder == 1 ? "<b>Inbox</b>" : "Inbox")</a>
-        <a href="/Document/Outbox" class="item">@Html.Raw(folder == 2 ? "<b>Outbox</b>" : "Outbox")</a>
+        <a href="@Url.Action("Inbox","Document")" class="item">@Html.Raw(folder == 1 ? "<b>Inbox</b>" : "Inbox")</a>
+        <a href="@Url.Action("Outbox","Document")" class="item">@Html.Raw(folder == 2 ? "<b>Outbox</b>" : "Outbox")</a>
+        <a href="@Url.Action("Assignments","Assignment")" class="item">@Html.Raw(folder == 3 ? "<b>Assignments</b>" : "Assignments")</a>
     </div>
 </div>

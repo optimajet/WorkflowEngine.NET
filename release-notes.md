@@ -1,5 +1,121 @@
 # Workflow Engine: Release Notes
 
+## 5.2 {#5.2}
+
+## Designer
+
+- Now the Designer is published to npm, there are three packages: for [any project](https://www.npmjs.com/package/@optimajet/workflow-designer), [Angular](https://www.npmjs.com/package/@optimajet/workflow-designer-angular) and [React](https://www.npmjs.com/package/@optimajet/workflow-designer-react).
+- Process history displayed in the designer now has server paging.
+- Upload and download of BPMN files can be customized using the following delegates:
+    
+    ```csharp
+    WorkflowInit.Runtime.BPMNApi.CustomDownload += (definition, scheme) => { };
+    WorkflowInit.Runtime.BPMNApi.CustomUpload += (definition, scheme) => { };
+    ```
+    
+- Added a possibility to write user comments to activities and transitions.
+- The date picker are used in the DateAndTime, Date, Time timer types.
+
+## Plugins
+
+- The Basic Plugin provides actions/activities to set states and execute commands in another process.
+- The SetParameter action/activity from the Basic Pugin now accepts expressions as the parameter value, i.e. you can set any parameter with expression based on other parameters, for example:
+    
+    ```csharp
+    @Amount * 2 + 100
+    ```
+    
+- A new Assignment Plugin to provide human tasks features was added. Read more about in the documentation Plugins/AssignmentPlugin.
+- The CreateProcess action/activity allows the passing parameters to the created process. You can use expressions in the process values.
+- The CheckApproversExist condition added to the Basic Plugin allows making conditional branch if nobody can approve the document.
+
+## Core
+
+- Added a stored procedure to clear unused schemes from *WorkflowProcessSchemeTable,* you can execute it using the following code:
+    
+    ```csharp
+    await WorkflowInit.Runtime.PersistenceProvider.DropUnusedWorkflowProcessSchemeAsync();
+    ```
+    
+- Added overloaded methods *GetAvailableCommandsAsync* and *GetAvailableStateToSetAsync* that take a process instance as a parameter.
+- Added a method to search global parameters by their type name.
+- If the process fails the exception message and stack trace will be saved to *LastError* and *LastErrorStackTrace* process parameters.
+- Now it is possible to use non-Latin characters in parameter names, which are then used in expressions.
+- Added two methods that's can be useful in offline mode:
+    
+    ```csharp
+    //returns all available transitions with commands for the user, these commands can be executed while the device is offline
+    await WorkflowInit.Runtime.OfflineApi.GetApprovalMapAsync(...);
+    //executes a series of commands when the device becomes online
+    await WorkflowInit.Runtime.OfflineApi.ExecuteSomeCommandsAsync(...);
+    ```
+    
+- You can have more precise control of disabling the process state persisting. You can separately disable persisting process state, persisting process parameters, and persisting transition history.
+- *PreExecuteAsync* method returns the List of activities that's will be executed*.*
+- The Date, DateTime, and Time parameter types are available for action/condition/rule parameters edit forms. They are displayed as date-time pickers.
+- The new Timer type - *Expression* is implemented. You can write expressions here that's will be interpreted the following way:
+    - if the expression returns DateTime the timer will be set to this DateTime.
+    - if the expression returns an integer value the timer will act as an interval timer where the returned value is interpreted as the interval in milliseconds.
+    
+    For example, you can write the following expressions (let's imagine that you have a Document process parameter with CreatedDate property):
+    
+    ```csharp
+    (@Document.CreatedDate).AddDays(1)
+    ```
+    
+- Added a method to get actors with commands:
+    
+    ```csharp
+    await WorkflowInit.Runtime.ActorsApi.GetActorsWithCommandsAsync(...);
+    ```
+    
+
+## Breaking changes:
+
+**Please, pay attention to these breaking changes before updating.**
+
+- The Workflow Designer isn't provided as the NuGet package anymore.
+- If you are using DateTime parameter types in parameter edit forms, please check that you are parsing them the standard way (DateTime.Parse for example), because now they are selected from date picker and it saves them to string in more ISO style:
+    
+    ```
+    //no timezone, but it was valid in previous version
+    Before: 2021-11-05 18:07
+    //selected in local time, saved in UTC
+    After: 2021-11-05T15:07:00.000Z
+    ```
+    
+- If you are using SetParameter action/activity from the Basic Plugin pay attention that:
+    - Before the parameter value was always interpreted as a string
+    - Now the parameter value is the compilable expression
+    
+    You have  two options how to preserve old behavior:
+    
+    - Quote the parameter value:
+        
+        ```
+        Before: Some Value
+        After: "Some Value"
+        ```
+        
+    - Switch on old behavior when initializing the Basic Plugin:
+        
+        ```csharp
+        basicPlugin.Setting_DontCompileExpressions = true;
+        ```
+        
+
+## Update instruction
+
+**The following additional actions must be taken to upgrade to Workflow Engine 5.2:**
+
+- Run the SQL script update_5_1_to_5_2 for all relative databases and MongoDB.
+    - [MSSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MSSQL/Scripts/update_5_1_to_5_2.sql)
+    - [PostgreSQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.PostgreSQL/Scripts/update_5_1_to_5_2.sql)
+    - [Oracle](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.Oracle/Scripts/update_5_1_to_5_2.sql)
+    - [MySQL](https://github.com/optimajet/WorkflowEngine.NET/blob/master/Providers/OptimaJet.Workflow.MySQL/Scripts/update_5_1_to_5_2.sql)
+- Update all files related to the Designer. They are available [here](https://github.com/optimajet/WorkflowEngine.NET/tree/master/Designer).
+- Update NuGet packages or DLLs.
+
 ## 5.1 {#5.1}
 
 ### Designer

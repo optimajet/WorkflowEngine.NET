@@ -6,7 +6,7 @@ namespace WF.Sample.MySql
     using System.ComponentModel.DataAnnotations.Schema;
  
 
-    [Table("WorkflowScheme")]
+    [Table("workflowscheme")]
     public partial class WorkflowScheme
     {
         [Key]

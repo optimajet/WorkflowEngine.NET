@@ -63,7 +63,7 @@
                     @change="commandsListChange">
                 <el-option v-for="item in commands" :key="item" :label="item" :value="item"></el-option>
             </el-select>
-            <el-button @click="commandParameters" class="WorkflowDesignerTableCodeParametersButton"></el-button>
+            <el-button @click="commandParameters" :disabled="!FormData.Trigger.Command.Name" class="WorkflowDesignerTableCodeParametersButton"></el-button>
         </el-form-item>
         <el-form-item v-if="FormData.Trigger.Type == 'Timer'" :rules="getFieldRules('Trigger.Timer.Name')" :label="labels.TriggerTimer" prop="Trigger.Timer.Name">
             <el-select
@@ -86,11 +86,11 @@
             <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Restrictions, { Actor: {}, Type: 'Allow'})">{{ ButtonTextCreate }}</a>
         </h4>
         <table v-if="FormData.Restrictions.length > 0" class="WorkflowDesignerTable">
-            <th>
-                <td v-if="isIE"></td>
-                <td>{{labels.RestrictionsActor}}</td>
-                <td>{{labels.RestrictionsType}}</td>
-            </th>
+            <tr>
+                <th></th>
+                <th>{{labels.RestrictionsActor}}</th>
+                <th>{{labels.RestrictionsType}}</th>
+            </tr>
             <tr v-for="(restriction, index) in FormData.Restrictions"
                 :class="dragOverIndex == index && dragOverBlock  == restriction ? 'dragOver' : ''"
                 @dragstart="dragstart(index, $event, FormData.Restrictions)"
@@ -164,14 +164,14 @@
         </el-form-item>
         <div v-if="FormData.conditionType == 'Conditional'">
             <table v-if="FormData.Conditions.length > 0" class="WorkflowDesignerTable">
-                <th>
-                    <td v-if="isIE"></td>
-                    <td>{{labels.ConditionType}}</td>
-                    <td>{{labels.ConditionAction}}</td>
-                    <td>{{labels.ConditionActionParameter}}</td>
-                    <td>{{labels.ConditionInversion}}</td>
-                    <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
-                </th>
+                <tr>
+                    <th></th>
+                    <th>{{labels.ConditionType}}</th>
+                    <th>{{labels.ConditionAction}}</th>
+                    <th v-if="hasConditionAnyAction()">{{labels.ConditionActionParameter}}</th>
+                    <th>{{labels.ConditionInversion}}</th>
+                    <th v-if="expertMode">{{labels.ResultOnPreExecution}}</th>
+                </tr>
                 <tr v-for="(сondition, index) in FormData.Conditions" 
                     :class="dragOverIndex == index && dragOverBlock  == сondition ? 'dragOver' : ''"
                     @dragstart="dragstart(index, $event, FormData.Conditions)" @dragend="dragend($event)"
@@ -187,7 +187,6 @@
                                 style="width: 100%;"
                                 :disabled="readonly"
                                 filterable
-                                clearable
                                 placeholder="">
                             <el-option key="Action" :label="labels.ActionLabel" value="Action"></el-option>
                             <el-option key="Expression" :label="labels.ExpressionLabel" value="Expression"></el-option>
@@ -212,17 +211,18 @@
                                              @focus="setCurrentItem(сondition)"></el-autocomplete>
                         </div>
                     </td>
-                    <td v-if="сondition.Type == 'Expression'" colspan="2">
+                    <td v-if="сondition.Type == 'Expression'">
                         <div style="flex-flow: nowrap; display: flex;align-items: center;">
                             <el-input
                                     v-model="сondition.Expression"
                                     :title="validateField('Expression', сondition)"
                                     :class="validateField('Expression', сondition) ? 'WorkflowDesignerInputError' : ''"
-                                    :readonly="readonly"
-                                    style="margin-right: 5px;">
+                                    :readonly="readonly">
                             </el-input>
                         </div>
                     </td>
+                    <td v-if="сondition.Type == 'Expression' && hasConditionAnyAction()"></td>
+
                     <td v-if="сondition.Type == 'Action' || сondition.Type == 'Expression'">
                         <el-checkbox v-model="сondition.ConditionInversion" :disabled="readonly"></el-checkbox>
                     </td>
@@ -318,7 +318,7 @@
                 <el-input v-model="FormData.SubprocessSpecifiedParameters"></el-input>
             </el-form-item>
         </div>
-        
+
         <el-form-item v-if="expertMode" :label="labels.SubprocessSpecifiedParameters" :readonly="readonly">
             <el-checkbox v-model="FormData.DisableParentStateControl" :label="labels.DisableParentStateControl" name="type" :disabled="readonly"></el-checkbox>
         </el-form-item>
@@ -353,11 +353,11 @@
         </h4>
 
         <table v-if="FormData.Annotations.length > 0" class="WorkflowDesignerTable">
-            <th>
-                <td v-if="isIE"></td>
-                <td>{{labels.AnnotationName}}</td>
-                <td>{{labels.AnnotationValue}}</td>
-            </th>
+            <tr>
+                <th></th>
+                <th>{{labels.AnnotationName}}</th>
+                <th>{{labels.AnnotationValue}}</th>
+            </tr>
             <tr v-for="(annotation, index) in FormData.Annotations"
                 :class="dragOverIndex == index && dragOverBlock  == annotation ? 'dragOver' : ''"
                 @dragstart="dragstart(index, $event, FormData.Annotations)" @dragend="dragend($event)"
@@ -366,11 +366,14 @@
                     <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
                 </td>
                 <td>
-                    <el-input
-                            v-model="annotation.Name"
-                            :title="validateField('Name', annotation)"
-                            :class="validateField('Name', annotation) ? 'WorkflowDesignerInputError' : ''">
-                    </el-input>
+                    
+                    <el-form-item class="el-form-item" :rules="annotationNameRules()" :prop="'Annotations.' + index + '.Name'" :inline-message="true" style="flex-grow: 1;">
+                        <el-input 
+                        v-model="annotation.Name"
+                        :title="validateField('Name', annotation)"
+                        :class="validateField('Name', annotation) ? 'WorkflowDesignerInputError' : ''">
+                        </el-input>
+                    </el-form-item>
                 </td>
                 <td>
                     <el-input
@@ -386,6 +389,18 @@
             </tr>
         </table>
     </div>
+    <div style="margin-bottom: 10px;">
+        <el-button v-if="!readonly && !itemHasComment" @click="showUserComment()" icon="el-icon-s-comment" circle></el-button>
+        <h4 v-if="itemHasComment" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{labels.UserComment}}</h4>
+        <el-input
+                v-if="itemHasComment"
+                type="textarea"
+                :placeholder="labels.UserComment"
+                v-model="FormData.UserComment"
+                rows="5"
+        >
+        </el-input>
+    </div>
 </el-form>
 
 <div class="WorkflowDesignerButtons">
@@ -393,18 +408,6 @@
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-        :title="confirmdialog.title"
-        :before-close="function() {confirmdialog.visible = false}"
-        :visible="confirmdialog.visible"
-        :modal-append-to-body="false"
-        width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog>
 <script type="application/javascript">
     function transition_Init(me) {
         me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -416,22 +419,12 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
             SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function () {
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            },
             showconditionerror: undefined,
             expertMode: false,
             restrictionDetails: false,
             conditionDetails: false,
             editItem: null,
+            itemHasComment:false,
             FormData: {},
             conditions: [],
             commands: [],
@@ -464,7 +457,7 @@
             actorsStore:function(val) {                    
                     me.VueConfig.data.actors = me.graph.getActorNames();
             },
-        }
+        };
 
         me.VueConfig.methods.onUpdate = function (item) {
             var formdata = me.VueConfig.data.FormData;
@@ -485,6 +478,7 @@
             formdata.MergeViaSetState = item.MergeViaSetState;
             formdata.DisableParentStateControl = item.DisableParentStateControl;
             formdata.ConditionsConcatenationType = item.ConditionsConcatenationType;
+            formdata.UserComment = item.UserComment;
             me.VueConfig.data.conditionDetails = formdata.ConditionsConcatenationType == "Or";
 
             formdata.AllowConcatenationType = item.AllowConcatenationType;
@@ -510,6 +504,7 @@
             me.linkItem = item;
             me.VueConfig.data.prevName = item.Name;
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
+            me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
 
             me.VueConfig.data.conditions = me.graph.getConditionNames();
             me.VueConfig.data.timers = me.graph.getTimerNames();
@@ -553,7 +548,7 @@
                 for (var i=0; i < obj.length; ++i)
                     if (func(obj[i])) return true;
                 
-                return false
+                return false;
             }
 
             if (findInObj(formdata.Conditions, function (item){
@@ -585,7 +580,7 @@
             return activities.filter(function (a) {
                 return a.Name == from && a.ActivityType === "Inline";
             }).length > 0;
-        }
+        };
 
         me.VueConfig.methods.triggerClick = function (type) {
             var formdata = me.VueConfig.data.FormData;
@@ -623,7 +618,7 @@
                     formdata.SubprocessInOutDefinition = undefined;
                     break;
             }
-        }
+        };
 
         me.VueConfig.methods.getSubprocessStyle = function (type) {
             switch (type) {
@@ -653,12 +648,14 @@
             } else if (type == "Conditional") {
                 conditions.push({Type: "Expression", Expression: null, Action: {ActionParameter:null}});
             }
-        }
+        };
 
         me.VueConfig.methods.commandParameters = function () {
             var windowId = me.id + "_commandParameters";
+            var name = me.VueConfig.data.FormData.Trigger.Command.Name;
 
-            var item = me.getCommandItem(me.VueConfig.data.FormData.Trigger.Command.Name)
+            var item = me.getCommandItem(me.VueConfig.data.FormData.Trigger.Command.Name);
+            if (!item) return;
 
             if(!me.parametersform){
                 var options = {       
@@ -672,19 +669,19 @@
             }   
 
             me.parametersform.show("commandParameters", item);
-        }
+        };
 
         me.getCommandItem = function (commandName) {
             return me.graph.data.Commands.find(function (command) {
                     return command.Name === commandName;
             });
-        }
+        };
         
         me.VueConfig.methods.commandsListChange = function (commandName) {
             if (!me.getCommandItem(commandName)) {
                 me.graph.data.Commands.push({Name: commandName, InputParameters: []});
             }
-        }
+        };
 
         me.VueConfig.methods.timersWindow = function () {
             var windowId = me.id + "_timers";
@@ -701,7 +698,22 @@
             }   
 
             me.parametersform.show("timers");
-        }
+        };
+
+        me.VueConfig.methods.showUserComment = function (){
+            me.VueConfig.data.itemHasComment = true;
+        };
+
+        me.VueConfig.methods.hasConditionAnyAction = function (){
+            var result = false;
+            for(var i =0; i < me.VueConfig.data.FormData.Conditions.length; i++ ){
+                if(me.VueConfig.data.FormData.Conditions[i].Type ==="Action"){
+                    result = true;
+                    break;
+                }
+            }
+            return result;
+        };
 
         me.VueConfig.methods.getClassifierStyle = function (classifier, type) {
             if (classifier != type) {
@@ -790,13 +802,13 @@
                 var conditions = me.VueConfig.data.FormData.Conditions;
                 var labels = me.VueConfig.data.labels;
                 if (item.Type == "Always" && conditions.filter(function (c) {
-                    return c.Type == item.Type
+                    return c.Type == item.Type;
                 }).length > 1) {
                     return labels.AlwaysConditionShouldBeSingle;
                 }
 
                 if (item.Type == "Otherwise" && conditions.filter(function (c) {
-                    return c.Type == item.Type
+                    return c.Type == item.Type;
                 }).length > 1) {
                     return labels.OtherwiseConditionShouldBeSingle;
                 }
@@ -835,10 +847,6 @@
             return true;
         };
 
-        me.VueConfig.methods.onHideEvent = function () {
-            me.VueConfig.data.confirmdialog.visible = false;
-        }
-
         me.VueConfig.methods.onSave = function () {
             if (this.$refs && this.$refs.form && me.VueConfig.methods.validate()) {
                 this.$refs.form.validate(function (valid) {
@@ -863,9 +871,22 @@
             if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
                 me.onClose(true);
             } else {
-                me.VueConfig.data.confirmdialog.visible = true;
+                me.showConfirm();
                 return false;
             }
+        };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
         };
     };
 </script>

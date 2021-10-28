@@ -64,7 +64,7 @@
                 Class: "Final"
             });
 
-            if(me.graph.data.AdditionalParams && Array.isArray(me.graph.data.AdditionalParams.CustomActivities)){
+            if(me.graph.data && me.graph.data.AdditionalParams && Array.isArray(me.graph.data.AdditionalParams.CustomActivities)){
                 var tmp = me.graph.data.AdditionalParams.CustomActivities.sort(function(a,b){ a.Title > b.Title });   
                 tmp.forEach(function(item){
                     item.Class = "Custom";
@@ -72,7 +72,7 @@
                 });         
             }
 
-            if(me.graph.data.AdditionalParams.InlinedSchemeCodes && Array.isArray(me.graph.data.AdditionalParams.InlinedSchemeCodes)){
+            if(me.graph.data && me.graph.data.AdditionalParams && me.graph.data.AdditionalParams.InlinedSchemeCodes && Array.isArray(me.graph.data.AdditionalParams.InlinedSchemeCodes)){
                 me.graph.data.AdditionalParams.InlinedSchemeCodes.forEach(function(item){
                     data.items.push({
                         Title: item,
@@ -87,7 +87,28 @@
                     });
                 });
             }
+
+            data.items.forEach(function (item){
+                if(item.Class  == "Custom"){
+                    me.VueConfig.methods.getLocalizationItem(item,item.Type)
+                }
+                else{
+                    me.VueConfig.methods.getLocalizationItem(item,item.Class)
+                }
+            });
+
             data.originalItems = data.items;
+        };
+
+        me.VueConfig.methods.getLocalizationItem = function (item, key){
+            if(data.labels[key] != undefined){
+                if(data.labels[key].Title != undefined){
+                    item.Title = data.labels[key].Title;
+                }
+                if(data.labels[key].Description != undefined){
+                    item.Description = data.labels[key].Description;
+                }
+            }
         };
 
         me.VueConfig.methods.onSearch = function(){ 
@@ -99,7 +120,7 @@
                 Name: item.Type,
                 IsInitial:item.IsInitial==true,
                 IsFinal:item.IsFinal==true,
-                State: item.Title,
+                State: item.Type,
                 ActivityType: item.ActivityType,
                 Annotations: [
                     {JsonValue: item.Type, Name: "__customtype"}

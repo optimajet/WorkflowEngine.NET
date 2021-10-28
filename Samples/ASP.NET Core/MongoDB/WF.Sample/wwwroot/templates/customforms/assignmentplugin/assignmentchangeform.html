@@ -1,0 +1,578 @@
+<h3>{{ customTitle ? customTitle : labels.Title }}</h3>
+<el-form
+        class="WorkflowDesignerWindowForm"
+        :model="FormData"
+        ref="form"
+        label-position="top"
+        label-width="150px">
+    <div v-if="Field.State != undefined"  class="SettingsWithPadding">
+        <div class="el-form--inline el-form--label-top">
+            <el-form-item
+                    :label="customLabels.Name"
+                    :rules="getFieldRules(Field.Name)"
+                    :prop="Field.Name.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.Name" :readonly="readonly"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    :label="customLabels.State"
+                    :rules="getFieldRules(Field.State)"
+                    :prop="Field.State.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input  v-model="FormData.State" :readonly="readonly"></el-input>
+            </el-form-item>
+        </div>
+    </div>
+
+    <h4 v-if="Field.State != undefined" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{customLabels.Heading}}</h4>
+
+    <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
+        <el-form-item
+                :label="customLabels.Code"
+                :rules="getFieldRules(Field.AssignmentCode)"
+                :prop="Field.AssignmentCode.Name"
+                class="el-form-item"
+                style="flex-grow: 4;">
+            <el-input  v-model="FormData.AssignmentCode" :readonly="readonly"></el-input>
+        </el-form-item>
+        <div>
+            <span>
+                <b>{{ customLabels.ReplacementExecutors + (!readonly ? "  |  " : "")}}
+                <a v-if="!readonly" style="cursor:pointer" @click="addValue(replacementExecutors)">{{ ButtonTextCreate }}</a></b>
+            </span>
+        </div>
+    </div>
+
+    <div style="margin-bottom: 10px" id="WorkflowDesignerParametersList" >
+        <table class="WorkflowDesignerTable">
+            <tr v-if="replacementExecutors.length > 0">
+                <th></th>
+                <th>{{customLabels.OldExecutor}}</th>
+                <th>{{customLabels.NewExecutor}}</th>
+            </tr>
+            <tr v-for="(replacementExecutor, index) in replacementExecutors"
+                :class="dragOverIndex == index && dragOverBlock  == replacementExecutor ? 'dragOver' : ''"
+                @dragstart="dragstart(index, $event)" @dragend="dragend($event, replacementExecutors)"
+                @dragover="dragover(replacementExecutor, index, $event)">
+                <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
+                <td>
+                    <el-select
+                            @focus="onFocusSelectUser"
+                            style="width:100%"
+                            :readonly="readonly"
+                            v-model="replacementExecutor.oldExecutor"
+                            :disabled="readonly"
+                            filterable
+                            remote
+                            reserve-keyword
+                            :remote-method="getUsers"
+                            :loading="loading">
+                        <el-option-group>
+                            <el-option
+                                    :label="customLabels.AllExecutors"
+                                    :value="{value:null, isActor:false}">
+                            </el-option>
+                            <el-option v-for="actor in actors" :key="actor" :label="actor" :value="{value:actor, isActor:true, name: actor}"></el-option>
+                        </el-option-group>
+                        <el-option-group>
+                            <el-option
+                                    v-for="user in userIdentities"
+                                    :key="user.value"
+                                    :label="user.label"
+                                    :value="{value:user.value, isActor:false, name: user.label}">
+                            </el-option>
+                        </el-option-group>
+                    </el-select>
+                </td>
+                <td>
+                    <el-select
+                            :title="validateExecutorField(replacementExecutor.newExecutor)"
+                            :class="validateExecutorField(replacementExecutor.newExecutor) ? 'WorkflowDesignerInputError' : ''"
+                            @focus="onFocusSelectUser"
+                            style="width:100%"
+                            :readonly="readonly"
+                            v-model="replacementExecutor.newExecutor"
+                            :disabled="readonly"
+                            filterable
+                            remote
+                            reserve-keyword
+                            :remote-method="getUsers"
+                            :loading="loading">
+                        <el-option
+                                v-for="user in userIdentities"
+                                :key="user.value"
+                                :label="user.label"
+                                :value="{value:user.value, identity:user.value, userName: user.label}">
+                        </el-option>
+                    </el-select>
+                </td>
+                <td v-if="!readonly">
+                    <el-button @click="removeRow(replacementExecutors, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
+        <div class="el-form--inline el-form--label-top" style="display: flex">
+            <el-form-item size="small">
+                <span style="margin-right: 20px"><b>{{customLabels.Change}}:</b> </span>
+                <el-checkbox
+                        v-model="FormData.ChangeStatus"
+                        :label="customLabels.Status"
+                        :disabled="readonly">
+                </el-checkbox>
+                <el-checkbox
+                        v-model="FormData.ChangeState"
+                        :label="customLabels.State"
+                        :disabled="readonly">
+                </el-checkbox>
+                <el-checkbox
+                        v-model="FormData.ChangeDeadlineToStart"
+                        :label="customLabels.DeadlineToStart"
+                        :disabled="readonly">
+                </el-checkbox>
+                <el-checkbox
+                        v-model="FormData.ChangeDeadlineToComplete"
+                        :label="customLabels.DeadlineToComplete"
+                        :disabled="readonly">
+                </el-checkbox>
+                <el-checkbox
+                        v-model="FormData.ChangeTags"
+                        :label="customLabels.Tags"
+                        :disabled="readonly">
+                </el-checkbox>
+                <el-checkbox
+                        v-model="FormData.ChangeObservers"
+                        :label="customLabels.Observers"
+                        :disabled="readonly">
+                </el-checkbox>
+            </el-form-item>
+        </div>
+
+        <div class="el-form--inline el-form--label-top" style="display: flex">
+            <el-form-item
+                    v-if="FormData.ChangeStatus"
+                    :rules="getFieldRules(Field.StatusState,FormData.StatusState)"
+                    :prop="Field.StatusState.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1">
+                <span slot="label">{{customLabels.StatusState}}
+                    <span @click="function(){FormData.StatusState = null; parameterFromProcess.StatusState = !parameterFromProcess.StatusState}"
+                          :style="parameterFromProcess.StatusState ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-select  style="width: 100%" v-if="!parameterFromProcess.StatusState" v-model="FormData.StatusState" :title="Field.StatusState.Comment" :disabled="readonly">
+                    <el-option
+                            v-for="item in Field.StatusState.DropdownValues"
+                            :key="item.Value"
+                            :label="item.Name"
+                            :value="item.Value">
+                    </el-option>
+                </el-select>
+                <el-input v-if="parameterFromProcess.StatusState" v-model="FormData.StatusState" :disabled="readonly" style="width: 100%"></el-input>
+            </el-form-item>
+
+            <el-form-item
+                    v-if="FormData.ChangeState"
+                    :rules="getFieldRules(Field.IsActive,FormData.IsActive)"
+                    :prop="Field.IsActive.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <span slot="label">{{customLabels.IsActive}}
+                    <span @click="function(){FormData.IsActive = parameterFromProcess.IsActive ? false : null; parameterFromProcess.IsActive = !parameterFromProcess.IsActive}"
+                          :style="parameterFromProcess.IsActive ? {color:parameterFromProcessColor}: {}"
+                          class="WorkflowDesignerParameterFromProcess">@
+                    </span>
+                </span>
+                <el-checkbox
+                        v-if="!parameterFromProcess.IsActive"
+                        v-model="FormData.IsActive"
+                        :disabled="readonly"
+                        style="width:150px">
+                </el-checkbox>
+                <el-input v-if="parameterFromProcess.IsActive" v-model="FormData.IsActive" :disabled="readonly" style="width:150px"></el-input>
+            </el-form-item>
+        </div>
+
+        <div class="el-form--inline el-form--label-top" style="display: flex">
+            <el-form-item
+                    v-if="FormData.ChangeDeadlineToStart"
+                    :label="customLabels.DeadlineToStart"
+                    :rules="getDateStepRules(deadlineToStart)"
+                    :prop="Field.DeadlineToStart.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input :readonly="readonly" v-model="deadlineToStart">
+                </el-input>
+            </el-form-item>
+
+            <el-form-item
+                    v-if="FormData.ChangeDeadlineToComplete"
+                    :label="customLabels.DeadlineToComplete"
+                    :rules="getDateStepRules(deadlineToComplete)"
+                    :prop="Field.DeadlineToComplete.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-input :readonly="readonly" v-model="deadlineToComplete">
+                </el-input>
+            </el-form-item>
+        </div>
+
+        <div class="el-form--inline el-form--label-top" style="display: flex">
+            <el-form-item
+                    v-if="FormData.ChangeObservers"
+                    style="width:100%"
+                    :label="customLabels.Observers"
+                    :rules="getFieldRules(Field.Observers)"
+                    :prop="Field.Observers.Name">
+                <el-select
+                        @focus="onFocusSelectUser"
+                        style="width:100%"
+                        :readonly="readonly"
+                        v-model="observers"
+                        :disabled="readonly"
+                        multiple
+                        filterable
+                        remote
+                        reserve-keyword
+                        :remote-method="getUsers"
+                        :loading="loading">
+                    <el-option
+                            v-for="user in userIdentities"
+                            :key="user.value"
+                            :label="user.label"
+                            :value="{value:user.value, identity:user.value, userName: user.label}">
+                    </el-option>
+                </el-select>
+            </el-form-item>
+        </div>
+        <div class="el-form--inline el-form--label-top" style="display: flex">
+            <el-form-item
+                    v-if="FormData.ChangeTags"
+                    style="width:100%"
+                    :label="customLabels.Tags"
+                    :rules="getFieldRules(Field.Tags)"
+                    :prop="Field.Tags.Name">
+                <el-tag
+                        class="el-form-item"
+                        style="margin-right: 5px;flex-grow: 1;"
+                        :key="tag"
+                        v-for="tag in tags"
+                        :closable="!readonly"
+                        :disable-transitions="false"
+                        @close="handleClose(tags, tag)">
+                    {{tag}}
+                </el-tag>
+                <el-input
+                        :readonly="readonly"
+                        class="el-form-item"
+                        style="line-height:normal;width: 150px;flex-grow: 1;"
+                        v-if="inputTagVisible"
+                        v-model="inputTagValue"
+                        ref="saveTagInput"
+                        size="small"
+                        @blur="handleTagInputConfirm"
+                        @keyup.enter.native="handleTagInputConfirm">
+                </el-input>
+                <el-button v-if="!inputTagVisible && !readonly" class="el-form-item" size="small" @click="showTagInput">+ {{customLabels.NewTag}}</el-button>
+            </el-form-item>
+        </div>
+    </div>
+</el-form>
+
+<div class="WorkflowDesignerButtons">
+    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+
+<script type="application/javascript">
+    function customforms_assignmentplugin_assignmentchangeform_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            customTitle: undefined,
+            readonly: false,
+            FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
+            labels: WorkflowDesignerConstants.EditParametersFormlabel,
+            customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentChange,
+            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+            parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+            FormData: {},
+            Field: {},
+            parameterFromProcess:{
+                IsActive: false,
+                StatusState:false
+            },
+            deadlineToStart:'',
+            deadlineToComplete: '',
+            tags: [],
+            actors:[],
+            observers: [],
+            replacementExecutors:[],
+            inputTagVisible: false,
+            inputTagValue: '',
+            userIdentities: [],
+            loading: false,
+        });
+
+        me.VueConfig.methods.onUpdate = function(value){
+
+            me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+            if(me.options && me.options.customTitle){
+                me.VueConfig.data.customTitle = me.options.customTitle;
+            }
+
+            var fields = undefined;
+            var parameterDefinition = me.options.parameterDefinition;
+
+            if(parameterDefinition && parameterDefinition.name){
+                for(var i=0; i <= parameterDefinition.type.length; i++){
+                    fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
+                    if(fields && fields.length > 0)
+                        break;
+                }
+            }
+            else if(Array.isArray(me.options.parameterDefinition)){
+                fields = me.options.parameterDefinition;
+            }
+
+            if(fields && fields.length > 0){
+                fields.forEach(function (field) {
+                    field.Label = field.Title ? field.Title : field.Name;
+                    if (field.Comment && field.Comment !== '') {
+                        field.Label = field.Label +  ' (' + field.Comment + ')';
+                    }
+
+                    me.VueConfig.data.Field[field.Name] = field;
+                });
+
+                if(!value && !me.VueConfig.data.readonly){
+                    var tmp = {};
+
+                    fields.forEach(function(field)
+                    {
+                        if(field.Type === "Checkbox") {
+                            field.DefaultValue = field.DefaultValue !== null &&  field.DefaultValue !== undefined && field.DefaultValue.toString() === "true";
+                        }
+
+                        if(typeof field.DefaultValue != "undefined") {
+                            tmp[field.Name] = field.DefaultValue;
+                        }
+                        else {
+                            tmp[field.Name] = null;
+                        }
+                    });
+
+                    value = WorkflowDesignerCommon.toString(tmp);
+                }
+            }
+
+            me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+
+            if(!me.VueConfig.data.FormData)
+                me.VueConfig.data.FormData = {};
+
+            for (key in me.VueConfig.data.FormData) {
+                if(me.VueConfig.data.parameterFromProcess[key]!= undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
+                    me.VueConfig.data.parameterFromProcess[key] = true;
+                if (key !== "__customtype" && me.VueConfig.data.FormData.hasOwnProperty(key))
+                    if(!me.VueConfig.data.Field.hasOwnProperty(key))
+                        delete me.VueConfig.data.FormData[key];
+            }
+
+            me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+
+            me.VueConfig.methods.initializeData();
+        };
+
+
+        me.VueConfig.methods.initializeData = function() {
+            me.VueConfig.data.actors = me.graph.getActorNames();
+
+            me.VueConfig.data.deadlineToStart = me.VueConfig.data.FormData.DeadlineToStart;
+            me.VueConfig.data.deadlineToComplete = me.VueConfig.data.FormData.DeadlineToComplete;
+
+            if( me.VueConfig.data.FormData.Observers != null && me.VueConfig.data.FormData.Observers != undefined){
+                me.VueConfig.data.observers = JSON.parse(me.VueConfig.data.FormData.Observers);
+                me.VueConfig.data.observers.forEach(function (observer) {
+                    me.VueConfig.data.userIdentities.push({ value: observer.identity, label: observer.userName})
+                });
+            }
+
+            if( me.VueConfig.data.FormData.ReplacementExecutors != null && me.VueConfig.data.FormData.ReplacementExecutors != undefined){
+                me.VueConfig.data.replacementExecutors = JSON.parse(me.VueConfig.data.FormData.ReplacementExecutors);
+                me.VueConfig.data.replacementExecutors.forEach(function (obs) {
+                    if(!obs.oldExecutor.isActor && obs.oldExecutor.value!= null){
+                        me.VueConfig.data.userIdentities.push({ value: obs.oldExecutor.value, label: obs.oldExecutor.name});
+                    }
+                    me.VueConfig.data.userIdentities.push({ value: obs.newExecutor.identity, label: obs.newExecutor.userName});
+                });
+            }
+
+            if( me.VueConfig.data.FormData.Tags != null && me.VueConfig.data.FormData.Tags != undefined){
+                me.VueConfig.data.tags = JSON.parse(me.VueConfig.data.FormData.Tags);
+            }
+        };
+
+        me.VueConfig.methods.onFocusSelectUser = function(event) {
+            if(event.sourceCapabilities != null){
+                me.VueConfig.methods.getUsers("");
+            }
+        };
+
+        me.VueConfig.methods.getUsers = function(query) {
+            me.VueConfig.data.loading = true;
+            setTimeout(function (){
+                var users = me.graph.designer.getuseridentities(query, 1, 20);
+                me.VueConfig.data.userIdentities = users.map(function (user) {
+                    return { value: user.Identity, label: user.UserName };
+                });
+                me.VueConfig.data.loading = false;
+            }, 200);
+        };
+
+        me.VueConfig.methods.handleClose = function (items, item) {
+            items.splice(items.indexOf(item), 1);
+        };
+
+        me.VueConfig.methods.showTagInput = function () {
+            me.VueConfig.data.inputTagVisible = true;
+            this.$nextTick(function (_) {
+                this.$refs.saveTagInput.$refs.input.focus();
+            });
+        };
+
+        me.VueConfig.methods.handleTagInputConfirm = function () {
+            let inputValue = me.VueConfig.data.inputTagValue;
+            if (inputValue) {
+                me.VueConfig.data.tags.push(inputValue);
+            }
+            me.VueConfig.data.inputTagVisible = false;
+            me.VueConfig.data.inputTagValue = '';
+        };
+
+        me.VueConfig.methods.addValue = function(items){
+            items.push({ oldExecutor:{value:null, isActor:false}, newExecutor:"" });
+
+            setTimeout(function(){
+                var objDiv = document.getElementById("WorkflowDesignerParametersList");
+                objDiv.scrollTop = objDiv.scrollHeight;
+            },100);
+        };
+
+        me.VueConfig.methods.removeRow = function(items, index){
+            items.splice(index, 1);
+        };
+
+        me.VueConfig.methods.validateExecutorField = function (item) {
+            if (item == null || item.length == 0)
+                return WorkflowDesignerConstants.FieldIsRequired;
+        };
+
+        me.VueConfig.methods.getDateStepRules = function(interval){
+            var res =[];
+            var validator = function(rule, value, callback){
+                if(interval == null || interval == '' ||WorkflowDesignerCommon.containsAt(interval)){
+                    callback();
+                    return;
+                }
+
+                var isValid = true;
+                interval = interval.trim();
+                var stepArray = interval.split(/\s+/);
+                interval = stepArray.join(' ');
+
+                var yearsRegex = new RegExp("\d*\s*((years)|(year)|(y))(\W|\d|$)");
+                var monthsRegex = new RegExp("\d*\s*((months)|(month)|(mm))(\W|\d|$)");
+                var daysRegex = new RegExp("\d*\s*((days)|(day)|(d))(\W|\d|$)");
+                var hoursRegex = new RegExp("\d*\s*((hours)|(hour)|(h))(\W|\d|$)");
+                var minutesRegex = new RegExp("\d*\s*((minutes)|(minute)|(m))(\W|\d|$)");
+                var secondsRegex = new RegExp("\d*\s*((seconds)|(second)|(s))(\W|\d|$)");
+                var millisecondsRegex = new RegExp("\d*\s*((milliseconds)|(millisecond)|(ms))(\W|\d|$)");
+
+                var isCorrect = true;
+                stepArray.forEach(function (step) {
+                    isCorrect &= yearsRegex.test(step)
+                            || monthsRegex.test(step)
+                            || daysRegex.test(step)
+                            || hoursRegex.test(step)
+                            || minutesRegex.test(step)
+                            || secondsRegex.test(step)
+                            || millisecondsRegex.test(step);
+                });
+
+                if(!(interval && isCorrect)){
+                    isValid = false;
+                }
+
+                if(isValid){
+                    callback();
+                }
+                else{
+                    callback(new Error(rule.message));
+                }
+            };
+            res.push({ validator: validator, required: false, message: WorkflowDesignerConstants.FieldIsNotCorrected, trigger: 'blur'});
+            return res;
+        };
+
+        me.VueConfig.methods.getFieldRules  = function(field, parameterValue){
+            var rules = [];
+            if(field.IsRequired){
+                rules.push({ required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'});
+            }
+
+            if(me.VueConfig.data.parameterFromProcess[field.Name]){
+                var validator = function(rule, value, callback){
+                    if(WorkflowDesignerCommon.containsAt(parameterValue)){
+                        callback();
+                    }
+                    else{
+                        callback(new Error(rule.message));
+                    }
+                };
+                rules.push({ validator: validator, required: true, message: WorkflowDesignerConstants.FieldMustContainAt, trigger: 'blur'});
+            }
+
+            return rules;
+        };
+
+        me.VueConfig.methods.validate = function () {
+            const replacements = me.VueConfig.data.replacementExecutors;
+            for(var i =0; i < replacements.length; i++ ) {
+                if (replacements[i].newExecutor == null || replacements[i].newExecutor.length == 0 || replacements[i].oldExecutor == null){
+                    return false;
+                }
+            }
+            return true;
+        };
+
+        me.VueConfig.methods.onSave = function(){
+            me.VueConfig.data.FormData.Observers = JSON.stringify(me.VueConfig.data.observers);
+            me.VueConfig.data.FormData.ReplacementExecutors = JSON.stringify(me.VueConfig.data.replacementExecutors);
+            me.VueConfig.data.FormData.Tags = JSON.stringify(me.VueConfig.data.tags);
+
+            me.VueConfig.data.FormData.DeadlineToStart = me.VueConfig.data.deadlineToStart;
+            me.VueConfig.data.FormData.DeadlineToComplete = me.VueConfig.data.deadlineToComplete;
+
+            var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+
+            this.$refs.form.validate(function(valid) {
+                if (valid && me.VueConfig.methods.validate()) {
+                    me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
+                    me.onClose(true);
+                }
+            });
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>

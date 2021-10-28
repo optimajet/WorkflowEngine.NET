@@ -3,13 +3,13 @@
 </h3>
 <div id="WorkflowDesignerCodeActionsParametersList" class="WorkflowDesignerWindowForm">
     <table class="WorkflowDesignerTable">
-        <th>
-            <td v-if="isIE"></td>
-            <td>{{labels.InputParametersParameter}}</td>
-            <td>{{labels.InputParametersName}}</td>
-            <td>{{labels.InputParametersIsRequired}}</td>
-            <td>{{labels.InputParametersDefaultValue}}</td>
-        </th>
+        <tr>
+            <th></th>
+            <th>{{labels.InputParametersParameter}}</th>
+            <th>{{labels.InputParametersName}}</th>
+            <th>{{labels.InputParametersIsRequired}}</th>
+            <th>{{labels.InputParametersDefaultValue}}</th>
+        </tr>
         <tr v-for="(item, index) in items">
             <td></td>
             <td>
@@ -57,18 +57,6 @@
     <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
     <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
-<el-dialog
-    :title="confirmdialog.title"
-    :before-close="function() {confirmdialog.visible = false}"
-    :visible="confirmdialog.visible"
-    :modal-append-to-body="false"
-    width="30%">
-    <span>{{ confirmdialog.message }}</span>
-    <span slot="footer" class="dialog-footer">
-        <el-button type="primary" @click="confirmdialog.onSuccess">{{confirmdialog.yes}}</el-button>
-        <el-button @click="confirmdialog.visible = false">{{confirmdialog.no}}</el-button>
-    </span>
-</el-dialog> 
 <script type="application/javascript">
     function commandParameters_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
@@ -79,17 +67,6 @@
             ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            confirmdialog: {
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                visible: false,
-                yes: WorkflowDesignerConstants.ButtonTextYes,
-                no: WorkflowDesignerConstants.ButtonTextNo,
-                onSuccess: function(){
-                    me.VueConfig.data.confirmdialog.visible = false;
-                    me.onClose(true);
-                }
-            },
             parametersStore: me.graph.data.Parameters,
         });
 
@@ -166,10 +143,6 @@
             }
         };        
 
-        me.VueConfig.methods.onHideEvent = function(){
-            me.VueConfig.data.confirmdialog.visible = false;
-        }
-
         me.VueConfig.methods.validate = function(){
             var validateFunc = me.VueConfig.methods.validateField;
 
@@ -207,13 +180,26 @@
                 me.VueConfig.data.parentItem.InputParameters, 
                 me.VueConfig.data.items, 
                 ["Name", "IsRequired", "DefaultValue"])) {
-                
-                me.VueConfig.data.confirmdialog.visible = true;
+
+                me.showConfirm();
                 return false;
             }
             else{
                 me.onClose(true);
             }
         };
+
+        me.VueConfig.methods.onCloseSave = function(){
+            me.onClose(true);
+        };
+
+        me.showConfirm = function(){
+            me.VueConfig.methods.showConfirm({
+                title: WorkflowDesignerConstants.DialogConfirmText,
+                message: WorkflowDesignerConstants.CloseWithoutSaving,
+                onSuccess: function(){
+                    me.VueConfig.methods.onCloseSave();
+                }});
+        }
     };
 </script>

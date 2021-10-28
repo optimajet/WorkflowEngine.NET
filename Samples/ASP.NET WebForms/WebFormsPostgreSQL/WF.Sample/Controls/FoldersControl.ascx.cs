@@ -24,6 +24,14 @@ namespace WF.Sample.Controls
                 {
                     Folder = 2;
                 }
+                else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("assignments"))
+                {
+                    Folder = 3;
+                }
+                else if (HttpContext.Current.Request.RawUrl.ToLower().Contains("assignmentinfo"))
+                {
+                    Folder = 4;
+                }
             }
         }
     }

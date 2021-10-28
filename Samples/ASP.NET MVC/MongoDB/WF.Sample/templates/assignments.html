@@ -1,0 +1,214 @@
+<h3>{{labels.Title}}
+    <el-input
+            size="mini"
+            style="width: 300px; margin-left: 10px"
+            :placeholder="labels.TypeSomething"
+            prefix-icon="el-icon-search"
+            v-model="search">
+    </el-input>
+</h3>
+
+<el-table
+        :data="assignments.filter(function(row){ return checkMatch(row);})"
+        style="width: 100%"
+        fit
+        :row-style="tableRowStyle"
+        height="calc(100% - 100px)"
+        :default-sort="{prop: 'DateCreation', order: 'descending'}">
+    <el-table-column type="expand">
+        <template slot-scope="props">
+            <div style="padding-left: 10px;padding-right: 10px">
+                <el-row v-if ="props.row.Description != null" style="margin-bottom: 15px">
+                    <el-col>
+                        <span class="CustomLabel">{{labels.Description}}</span>
+                        <div>{{props.row.Description}}</div>
+                    </el-col>
+                </el-row>
+                <el-row style="width: 100%; margin-bottom: 15px">
+                    <el-col :span="6">
+                        <span class="CustomLabel">{{labels.DateStart}}</span>
+                        <div>{{props.row.DateStart != null ? getDate(props.row.DateStart) : '-'}}</div>
+                    </el-col>
+                    <el-col :span="6">
+                        <span class="CustomLabel">{{labels.DateFinish}}</span>
+                        <div>{{props.row.DateFinish != null ? getDate(props.row.DateFinish) : '-'}}</div>
+                    </el-col>
+                    <el-col :span="6" v-if ="props.row.DeadlineToStart != null">
+                        <span class="CustomLabel">{{labels.DeadlineToStart}}</span>
+                        <div>{{getDate(props.row.DeadlineToStart)}}</div>
+                    </el-col>
+                    <el-col :span="6" v-if ="props.row.DeadlineToComplete != null">
+                        <span class="CustomLabel">{{labels.DeadlineToFinish}}</span>
+                        <div>{{getDate(props.row.DeadlineToComplete)}}</div>
+                    </el-col>
+                </el-row>
+                <el-row v-if ="props.row.Observers != null && props.row.Observers.length > 0" style="width: 100%; margin-bottom: 15px">
+                    <el-col>
+                        <span class="CustomLabel">{{labels.Observers}}:</span>
+                        <el-tag size="small" style="margin-left:5px;" v-for="(observer, i) in props.row.Observers" :key="i" >
+                            <el-popover
+                                    :title="labels.ObserverId"
+                                    placement="bottom"
+                                    width="200"
+                                    trigger="hover">
+                                {{ observer.Identity }}
+                                <div style="white-space:nowrap" slot="reference">
+                                    {{ observer.UserName }}
+                                    <i class="el-icon-info"></i>
+                                </div>
+                            </el-popover>
+                        </el-tag>
+                    </el-col>
+                </el-row>
+                <el-row v-if ="props.row.Tags != null && props.row.Tags.length > 0" style="width: 100%; margin-bottom: 15px">
+                    <el-col>
+                        <span class="CustomLabel">{{labels.Tags}}:</span>
+                        <el-tag size="small" style="margin-left:5px;" v-for="(tag, i) in props.row.Tags" :key="i" >{{tag}}</el-tag>
+                    </el-col>
+                </el-row>
+                <el-row style="width: 100%;text-align: center">
+                    <el-col>
+                        <el-tag size="small" v-if="!props.row.IsActive" type="warning">{{labels.ProhibitedForExecution}}</el-tag>
+                        <el-tag size="small" v-if="props.row.IsDeleted"  type="danger">{{labels.AssignmentDeleted}}</el-tag>
+                    </el-col>
+                </el-row>
+            </div>
+        </template>
+    </el-table-column>
+
+    <el-table-column
+            :label="labels.Code"
+            prop="AssignmentCode">
+        <template slot-scope="scope">
+            <div style="white-space:nowrap" slot="reference">
+                <i v-if="!scope.row.IsActive" class="el-icon-lock"></i>
+                {{ scope.row.AssignmentCode }}
+            </div>
+        </template>
+    </el-table-column>
+
+    <el-table-column
+            :label="labels.Name"
+            prop="Name"
+            min-width="300">
+    </el-table-column>
+
+    <el-table-column
+            :label="labels.Executor"
+            prop="Executor"
+            min-width="150">
+        <template slot-scope="scope">
+            <div style="white-space:nowrap">
+                <el-popover
+                        :title="labels.ExecutorId"
+                        placement="bottom"
+                        width="200"
+                        trigger="hover">
+                    {{ scope.row.Executor.Identity }}
+                    <span slot="reference">
+                {{ scope.row.Executor.UserName}}
+                    </span>
+                </el-popover>
+                <i class="el-icon-info"></i>
+            </div>
+        </template>
+    </el-table-column>
+
+    <el-table-column
+            :filters="getStatuses()"
+            :filter-method="filterTag"
+            filter-placement="bottom-end"
+            :label="labels.Status"
+            prop="StatusState"
+            min-width="120">
+    </el-table-column>
+
+    <el-table-column
+            sortable
+            column-key="DateCreation"
+            width="145"
+            :label="labels.DateCreation"
+            :formatter="getFormatDate"
+            prop="DateCreation">
+    </el-table-column>
+</el-table>
+
+<div class="WorkflowDesignerButtons">
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<script type="application/javascript">
+    function assignments_Init(me){
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+            readonly: false,
+            labels: WorkflowDesignerConstants.AssignmentFormLabel,
+            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+            assignments:[],
+            statuses:[],
+            search: '',
+        });
+
+        me.VueConfig.created = function () {
+            var data = me.graph.designer.getprocessassignments();
+            me.VueConfig.data.assignments = data.Assignments;
+            me.VueConfig.data.statuses = data.Statuses;
+        };
+
+        me.VueConfig.methods.checkMatch = function (row){
+            var search = me.VueConfig.data.search.toLowerCase();
+            return !search
+                    || search.length == 0
+                    || row.Name.toLowerCase().includes(search)
+                    || row.Executor.UserName.toLowerCase().includes(search)
+                    || row.Executor.Identity.toLowerCase().includes(search)
+                    || me.VueConfig.methods.getDate(row.DateCreation).toLowerCase().includes(search)
+        };
+
+        me.VueConfig.methods.getStatuses = function() {
+            var statuses = [];
+            me.VueConfig.data.statuses.forEach(function (st) {
+                statuses.push({text:st, value: st});
+            });
+            return statuses;
+        };
+
+        me.VueConfig.methods.onUpdate = function(){
+        };
+
+        me.VueConfig.methods.filterTag = function (value, row) {
+            return row.StatusState == value;
+        };
+
+        me.VueConfig.methods.getFormatDate = function (a, b, stringDate, d) {
+            return me.VueConfig.methods.getDate(stringDate);
+        };
+
+        me.VueConfig.methods.getDate = function ( stringDate) {
+            let date = new Date(stringDate);
+            let options = {
+                hour12: false,
+                month: '2-digit',
+                day: '2-digit',
+                year: '2-digit',
+                hour: '2-digit',
+                minute: '2-digit',
+                second: '2-digit',
+            };
+
+            return date.toLocaleString("en-US", options);
+        };
+
+        me.VueConfig.methods.tableRowStyle = function (data) {
+            let row = data.row;
+            let rowStyle = {};
+
+            if (row["IsDeleted"]) {
+                rowStyle.background = 'rgba(245,108,108,0.1)';
+            }
+            return rowStyle;
+        };
+
+        me.VueConfig.methods.onClose = function(){
+            me.onClose(true);
+        };
+    };
+</script>

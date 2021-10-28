@@ -1,0 +1,175 @@
+﻿@{
+    ViewBag.Title = "Vacation requests";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+@using Microsoft.AspNetCore.Mvc.Rendering
+@model WF.Sample.Models.AssignmentListModel
+
+@{
+
+    var htmlAtt = new Dictionary<string, object>();
+    htmlAtt.Add("class", "ui dropdown");
+}
+
+<script>
+    function getPage(pageIndex)
+    {
+        document.getElementById('pageChanged').value = 1;
+        document.getElementById('page').value = pageIndex;
+        document.getElementById('formFilter').submit();
+    }
+    
+    function DeleteSelected() {
+        var data = new Array();
+        var selectedValues = $('.selectedValues:checked');
+    
+        if (selectedValues.length < 1) {
+            alert('Please, select rows for deleting!');
+            return;
+        }
+    
+        for (var i = 0; i < selectedValues.length; i++) {
+            data.push({ name: 'ids', value: selectedValues[i].value });
+        }
+    
+        $.ajax({
+            type: "POST",
+            url:  "@Url.Action("DeleteAssignments", "Assignment")",
+            data: data,
+            success: function(msg) {
+                alert("Deleted");
+                   location.reload();
+                },
+            error: function (){
+                alert("error");
+                }
+        });
+    }
+        
+</script>
+
+<div class="wfe-application-toolbar">
+    <div class="ui form" style="min-width: 300px; width: 300px; display: flex">
+        @using (Html.BeginForm("AssignmentsFilter", "Assignment", FormMethod.Post,
+            new {style = "display: flex", id = "formFilter"}))
+        {
+            <div style="min-width: 300px; margin-right: 10px">
+                <label>Filters</label><br/>
+                <div class="field">
+                    @Html.DropDownList("FilterName",
+                        Model.Filters.Select(f => new SelectListItem()
+                        {
+                            Text = f.Key,
+                            Value = f.Key,
+                            Selected = f.Key == Model.CustomFilter.FilterName
+                        }).ToList(), htmlAtt)
+                </div>
+            </div>
+            <div style="min-width:150px;margin-right: 10px">
+                <label>Document number</label><br/>
+                <input type="number" class="ui" value="@Model.CustomFilter.DocumentNumber" name="documentNumber"/><br/>
+            </div>
+            <div style="min-width:150px;margin-right: 10px">
+                <label>Assignment code</label><br/>
+                <input type="text" class="ui" value="@Model.CustomFilter.AssignmentCode" name="assignmentCode"/><br/>
+            </div>
+            <div style="min-width: 150px; margin-right: 10px">
+                <label>Status</label><br/>
+                <div class="field">
+                    @Html.DropDownList("StatusState",
+                        Model.Statuses.Select(s => new SelectListItem()
+                        {
+                            Text = s,
+                            Value = s,
+                            Selected = s == Model.CustomFilter.StatusState
+                        }).ToList(), htmlAtt)
+                </div>
+            </div>
+
+            <input type="text" style="display: none" id="page" value="@Model.CustomFilter.Page" name="page"/>
+            <br/>
+            <input type="number" style="display: none" id="pageChanged" value="@Model.CustomFilter.PageChanged" name="pageChanged"/>
+            <br/>
+
+            <input type="submit" class="ui primary button" style="margin-top: 20px; margin-right: 10px" value="Find"/>
+            <button type="button" onclick="DeleteSelected()" style="margin-top: 20px" class="ui secondary button">Delete</button>
+        }
+    </div>
+</div>
+<table class="grid">
+    <tbody>
+    <tr class="grid-header">
+        <th style="width: 20px"></th>
+        <th style="min-width: 40px">Number-Code</th>
+        <th>Name</th>
+        <th>Status</th>
+        <th>Executor</th>
+        <th>Date creation</th>
+        <th>State</th>
+    </tr>
+    @foreach (var item in Model.Assignments)
+    {
+        <tr>
+            <td>
+                <div class="ui checkbox">
+                    <input type="checkbox" name="checkedbox" class="selectedValues" value="@item.AssignmentId"/>
+                    <label></label>
+                </div> 
+            </td>
+            <td><a href=@Url.Action("AssignmentInfo", "Assignment", new{id = item.AssignmentId})>@item.DocumentNumber-@item.AssignmentCode</a></td>
+            <td style="max-width: 500px; overflow: hidden; text-overflow: ellipsis; white-space: nowrap">@item.Name</td>
+            <td>@item.StatusState</td>
+            <td>@item.ExecutorName</td>
+            <td>@item.DateCreation</td>
+            <td style="width: 100px">
+                @if (item.IsDeleted)
+                {
+                    <span style="color: red">Deleted</span>
+                }
+                else if(item.IsActive){
+                    <span style="color: green">Active</span>
+                }
+                else
+                {
+                    <span style="color: orange">Not Active</span>
+                }
+            </td>
+        </tr>
+    }
+</table>
+
+@{
+    var lastPage = (int) Math.Ceiling((double) Model.Count / Model.PageSize);
+    if (lastPage <1)
+    {
+        lastPage = 1;
+    }
+}
+
+Current Page: @Html.Raw(Model.CustomFilter.Page)<br/>
+Items count: @Model.Count <br/>
+
+@if (Model.CustomFilter.Page != 1)
+{
+    <a style="cursor: pointer" onclick="getPage(1)">fist page</a> 
+    <a>|</a>
+}
+
+@if (Model.CustomFilter.Page > 1)
+{
+    <a style="cursor: pointer" onclick="getPage(@(Model.CustomFilter.Page - 1))">prev page</a>
+    <a>|</a>
+}
+
+@if (Model.CustomFilter.Page < lastPage)
+{
+    <a style="cursor: pointer" onclick="getPage(@(Model.CustomFilter.Page + 1))">next page</a>
+    <a>|</a>
+}
+
+@if (Model.CustomFilter.Page!=lastPage)
+{
+    <a style="cursor: pointer" onclick="getPage(@lastPage)">last page</a>
+}
+
