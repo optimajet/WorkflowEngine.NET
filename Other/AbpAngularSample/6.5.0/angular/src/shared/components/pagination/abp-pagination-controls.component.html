@@ -1,0 +1,59 @@
+<pagination-template
+  #p="paginationApi"
+  [id]="id"
+  [maxSize]="maxSize"
+  (pageChange)="pageChange.emit($event)"
+>
+  <nav>
+    <ul *ngIf="!(autoHide && p.pages.length <= 1)" class="pagination m-0">
+      <li
+        *ngIf="directionLinks"
+        class="page-item"
+        [class.disabled]="p.isFirstPage()"
+      >
+        <a
+          *ngIf="!p.isFirstPage()"
+          class="page-link"
+          href="javascript:;"
+          (click)="p.previous()"
+        >
+          <i class="fas fa-chevron-left"></i>
+        </a>
+        <a *ngIf="p.isFirstPage()" class="page-link" href="javascript:;">
+          <i class="fas fa-chevron-left"></i>
+        </a>
+      </li>
+      <li
+        *ngFor="let page of p.pages"
+        class="page-item"
+        [class.active]="p.getCurrent() === page.value"
+        [style.z-index]="p.getCurrent() === page.value ? '0' : ''"
+      >
+        <a
+          class="page-link"
+          href="javascript:;"
+          (click)="p.setCurrent(page.value)"
+        >
+          {{ page.label }}
+        </a>
+      </li>
+      <li
+        *ngIf="directionLinks"
+        class="page-item"
+        [class.disabled]="p.isLastPage()"
+      >
+        <a
+          *ngIf="!p.isLastPage()"
+          class="page-link"
+          href="javascript:;"
+          (click)="p.next()"
+        >
+          <i class="fas fa-chevron-right"></i>
+        </a>
+        <a *ngIf="p.isLastPage()" class="page-link" href="javascript:;">
+          <i class="fas fa-chevron-right"></i>
+        </a>
+      </li>
+    </ul>
+  </nav>
+</pagination-template>

@@ -1,0 +1,83 @@
+﻿<div [@routerTransition]>
+  <h4 class="text-center mb-3">{{ "LogIn" | localize }}</h4>
+  <form novalidate autocomplete="off" #loginForm="ngForm" (ngSubmit)="login()">
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="text"
+          class="form-control"
+          name="userNameOrEmailAddress"
+          [(ngModel)]="authService.authenticateModel.userNameOrEmailAddress"
+          [placeholder]="'UserNameOrEmail' | localize"
+          required
+          maxlength="256"
+          #userNameOrEmailAddressModel="ngModel"
+          #userNameOrEmailAddressEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-user"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="userNameOrEmailAddressModel"
+        [controlEl]="userNameOrEmailAddressEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group">
+      <div class="input-group">
+        <input
+          type="password"
+          class="form-control"
+          name="password"
+          [(ngModel)]="authService.authenticateModel.password"
+          [placeholder]="'Password' | localize"
+          required
+          maxlength="32"
+          #passwordModel="ngModel"
+          #passwordEl
+        />
+        <div class="input-group-append">
+          <div class="input-group-text">
+            <span class="fas fa-lock"></span>
+          </div>
+        </div>
+      </div>
+      <abp-validation-summary
+        [control]="passwordModel"
+        [controlEl]="passwordEl"
+      ></abp-validation-summary>
+    </div>
+    <div class="form-group row">
+      <div class="col-md-8">
+        <div class="custom-control custom-checkbox">
+          <input
+            type="checkbox"
+            class="custom-control-input"
+            id="rememberMe"
+            name="rememberMe"
+            [(ngModel)]="authService.rememberMe"
+          />
+          <label for="rememberMe" class="custom-control-label">
+            {{ "RememberMe" | localize }}
+          </label>
+        </div>
+      </div>
+      <div class="col-md-4">
+        <button
+          type="submit"
+          class="btn btn-primary btn-block"
+          [disabled]="!loginForm.form.valid || submitting"
+        >
+          {{ "LogIn" | localize }}
+        </button>
+      </div>
+    </div>
+  </form>
+  <p *ngIf="isSelfRegistrationAllowed" class="mb-1">
+    <a [routerLink]="['../register']">
+      <i class="fa fa-plus-circle"></i> {{ "Register" | localize }}
+    </a>
+  </p>
+</div>

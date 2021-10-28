@@ -1,0 +1,87 @@
+﻿<!-- WorkflowEngineSampleCode -->
+<form
+  class="form-horizontal"
+  autocomplete="off"
+  #createDocumentModal="ngForm"
+  (ngSubmit)="save()"
+>
+  <abp-modal-header
+    [title]="'Create a Document' | localize"
+    (onCloseClick)="bsModalRef.hide()"
+  ></abp-modal-header>
+  <div class="modal-body">
+    <div class="form-group row required">
+        <label class="col-md-3 col-form-label" for="title">
+            {{ "Title" | localize }}
+        </label>
+        <div class="col-md-9">
+            <input
+              type="text"
+              class="form-control"
+              name="title"
+              id="title"
+              required
+              minlength="2"
+              maxlength="32"
+              [(ngModel)]="document.title"
+              #titleModel="ngModel"
+              #titleEl
+            />
+            <abp-validation-summary
+              [control]="titleModel"
+              [controlEl]="titleEl"
+            ></abp-validation-summary>
+        </div>
+    </div>
+    <div class="form-group row required">
+        <label class="col-md-3 col-form-label" for="scheme">
+            {{ "Scheme" | localize }}
+        </label>
+        <div class="col-md-9">    
+            <select 
+              id="scheme" 
+              type="text" 
+              name="scheme" 
+              [(ngModel)]="document.scheme" 
+              required 
+              class="validate form-control"
+              #schemeModel="ngModel"
+              #schemeEl>
+                <ng-template ngFor let-scheme [ngForOf]="schemes" let-roleIndex="index">
+                    <option value="{{scheme.scheme}}">{{scheme.scheme}}</option>                                                    
+                </ng-template>
+            </select>
+            <abp-validation-summary
+              [control]="schemeModel"
+              [controlEl]="schemeEl"
+            ></abp-validation-summary>
+        </div>
+    </div>
+    <div class="form-group row">
+        <label class="col-md-3 col-form-label" for="description">
+            {{ "Description" | localize }}
+        </label>
+        <div class="col-md-9">
+            <textarea
+              type="text"
+              class="form-control"
+              name="description"
+              id="description"
+              [(ngModel)]="document.description"
+              #descriptionModel="ngModel"
+              #descriptionEl
+            >
+            </textarea>
+            <abp-validation-summary
+              [control]="descriptionModel"
+              [controlEl]="descriptionEl"
+            ></abp-validation-summary>
+        </div>
+    </div>
+  </div>
+  <abp-modal-footer
+    [cancelDisabled]="saving"
+    [saveDisabled]="!createDocumentModal.form.valid || saving"
+    (onCancelClick)="bsModalRef.hide()"
+  ></abp-modal-footer>
+</form>

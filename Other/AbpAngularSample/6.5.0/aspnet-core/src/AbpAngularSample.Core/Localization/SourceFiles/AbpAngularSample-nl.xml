@@ -1,0 +1,88 @@
+﻿<?xml version="1.0" encoding="utf-8" ?>
+<localizationDictionary culture="nl">
+  <texts>
+    <text name="HomePage" value="Startpagina" />
+    <text name="About" value="Over" />
+    <text name="WelcomeMessage" value="Welkom bij AbpAngularSample!" />
+
+    <text name="FormIsNotValidMessage" value="Formulier is onjuist ingevuld. Controleer en herstel de fouten." />
+    <text name="TenantNameCanNotBeEmpty" value="Naam van de huurder mag niet leeg zijn" />
+
+    <text name="InvalidUserNameOrPassword" value="Onjuiste gebruikersnaam en/of wachtwoord" />
+    <text name="ThereIsNoTenantDefinedWithName{0}" value="Er is geen huurder met de naam {0}" />
+    <text name="TenantIsNotActive" value="Huurder {0} is niet actief." />
+    <text name="UserIsNotActiveAndCanNotLogin" value="Gebruiker {0} is niet actief en kan niet inloggen." />
+    <text name="UserEmailIsNotConfirmedAndCanNotLogin">Uw email adres is nog niet bevestigd. U kan niet inloggen.</text>
+    <text name="UserLockedOutMessage">De gebruikersaccount is geblokkeerd. Gelieve later opnieuw te proberen.</text>
+    <text name="PleaseEnterLoginInformation" value="Vul gebruikersnaam en wachtwoord in" />
+    <text name="TenancyName" value="Naam huurder" />
+    <text name="UserNameOrEmail" value="Gebruikersnaam of e-mail" />
+    <text name="Password" value="Wachtwoord" />
+    <text name="RememberMe" value="Onthoud mij" />
+    <text name="LogIn" value="Log in" />
+
+    <text name="LoginFailed" value="Inloggen mislukt!" />
+
+    <text name="NameSurname" value="Naam achternaam" />
+    <text name="UserName" value="Gebruikersnaam" />
+    <text name="Name" value="Naam" />
+    <text name="Surname" value="Achternaam" />
+    <text name="EmailAddress" value="E-mailadres" />
+
+    <text name="Tenants" value="Huurders" />
+    <text name="SavedSuccessfully" value="Correct opgeslagen" />
+    <text name="CreateNewTenant" value="Huurder aanmaken" />
+    <text name="AdminEmailAddress" value="E-mailadres beheerder" />
+    <text name="Save" value="Opslaan" />
+    <text name="Cancel" value="Annuleer" />
+    <text name="TenantName_Regex_Description" value="De naam van de huurder dient minimaal 2 tekens te hebben en moet beginnen met een letter en kan daarnaast nog letters, nummers en een (liggend) streepje bevatten." />
+    <text name="DefaultPasswordIs" value="Standaard wachtwoord is {0}" />
+    <text name="CanBeEmptyToLoginAsHost" value="Kan leeggelaten worden indien je als host in wilt loggen." />
+    <text name="Register" value="Registreer" />
+    <text name="OrLoginWith" value="Of log in met" />
+    <text name="WaitingForActivationMessage" value="Je account dient nog te worden geactiveerd door de beheerder." />
+    <text name="TenantSelection" value="Huurder selectie" />
+    <text name="TenantSelection_Detail" value="Selecteer één van onderstaande huurders." />
+    <text name="Logout" value="Uitloggen" />
+
+    <text name="RegisterFormUserNameInvalidMessage">Voer a.u.b. geen e-mailadres in als gebruikersnaam.</text>
+
+    <text name="DatabaseConnectionString" value="Database connectie string" />
+    <text name="Users" value="Gebruikers" />
+    <text name="IsActive" value="Is actief" />
+    <text name="FullName" value="Volledige naam" />
+    <text name="CreateNewUser" value="Gebruiker aanmaken" />
+    <text name="Yes" value="Ja" />
+    <text name="No" value="Nee" />
+    <text name="Optional" value="Optioneel" />
+    <text name="LeaveEmptyToSwitchToHost">Laat leeg om naar de host te gaan</text>
+
+    <text name="CurrentTenant">Huidige huurder</text>
+    <text name="NotSelected">Niet geselecteerd</text>
+    <text name="Change">Wijzig</text>
+    <text name="ChangeTenant">Wijzig huurder</text>
+
+    <text name="MultiLevelMenu">Multi Level Menu</text>
+    <text name="Back">Terug</text>
+    <text name="SuccessfullyRegistered">Met success geregistreerd</text>
+    <text name="WaitingForEmailActivation">Uw email adres moet geactiveerd worden</text>
+    <text name="Roles">Rollen</text>
+    <text name="DisplayName">Weergavenaam</text>
+
+    <text name="Edit">Bewerk</text>
+    <text name="Delete">Verwijder</text>
+
+    <text name="CreateNewRole">Maak nieuwe rol</text>
+    <text name="RoleName">Rol Naam</text>
+    <text name="Actions">Acties</text>
+
+    <text name="CouldNotCompleteLoginOperation">De login operatie kon niet afgewerkt worden. Gelieve later opnieuw te proberen.</text>
+
+    <text name="CouldNotValidateExternalUser">De externe gebruiker kon niet gevalideerd worden</text>
+    <text name="EditRole">Bewerk rol</text>
+    <text name="EditTenant">Bewerk huurder</text>
+    <text name="EditUser">Bewerk gebruiker</text>
+    <text name="TenantIdIsNotActive{0}">HuurderId {0} is niet actief</text>
+    <text name="UnknownTenantId{0}">Onbekend huurderId {0}</text>
+  </texts>
+</localizationDictionary>
