@@ -1,8 +1,8 @@
 <h3>{{ labels.Title }}</h3>
 <el-form class="WorkflowDesignerWindowForm"
-    :model="FormData" 
-    ref="form" 
-    label-position="top" 
+    :model="FormData"
+    ref="form"
+    label-position="top"
     label-width="150px">
     <div class="SettingsWithPadding">
         <div class="el-form--inline el-form--label-top">
@@ -17,9 +17,9 @@
             <el-checkbox v-model="FormData.IsInitial" @change="onInitialChange" :label="labels.IsInitial" name="type" :disabled="readonly"></el-checkbox>
             <el-checkbox v-model="FormData.IsForSetState" :label="labels.IsForSetState" name="type" :disabled="readonly"></el-checkbox>
             <el-checkbox v-model="FormData.IsAutoSchemeUpdate" :label="labels.IsAutoSchemeUpdate" name="type" :disabled="readonly"></el-checkbox>
-        </el-form-item>  
+        </el-form-item>
     </div>
-    
+
     <div style="margin-bottom: 10px">
         <h4 class="SettingsHeader"  style="margin-bottom: 17px;">
             <span >{{ labels.Transition  + (!readonly ? "  |  " : "")}}</span>
@@ -32,7 +32,10 @@
                     <th style="width: 160px;">{{labels.ConditionType}}</th>
                     <th style="flex-grow: 1;">{{labels.Condition}}</th>
                     <th style="flex-grow: 1;"></th>
-                    <td v-if="expertMode">{{labels.ResultOnPreExecution}}</td>
+                    <template v-if="expertMode">
+                        <th style="width: 100px;" v-if="expertMode">{{labels.ResultOnPreExecution}}</th>
+                        <th style="width: 150px;" v-if="expertMode">{{labels.Classifier}}</th>
+                    </template>
                     <th style="width: 180px;">{{labels.To}}</th>
                 </tr>
                 <tr v-for="(transition, index) in Transitions.all">
@@ -64,7 +67,7 @@
                     </td>
                     <td v-if="transition.condition.Type == 'Action'">
                         <el-autocomplete style="width: 100%;" v-model="transition.condition.Action.ActionParameter" :disabled="readonly" :fetch-suggestions="querySearch"
-                                             @focus="setCurrentItem(transition)" 
+                                             @focus="setCurrentItem(transition)"
                                              :placeholder="labels.Parameters"></el-autocomplete>
                     </td>
                     <td v-if="transition.condition.Type == 'Expression'" colspan="2">
@@ -76,18 +79,28 @@
                             style="width: 100%;">
                         </el-input>
                     </td>
-                    <td v-if="expertMode && (transition.condition.Type == 'Action' || transition.condition.Type == 'Expression')">
-                        <el-select
-                                v-model="transition.condition.ResultOnPreExecution"
-                                style="width: 100%;"
-                                :disabled="readonly"
-                                filterable
-                                clearable
-                                placeholder="">
-                            <el-option key="True" label="True" :value="true"></el-option>
-                            <el-option key="False" label="False" :value="false"></el-option>
-                        </el-select>
-                    </td>
+                    <template v-if="expertMode">
+                        <td>
+                            <el-select
+                                    v-model="transition.condition.ResultOnPreExecution"
+                                    style="width: 100%;"
+                                    :disabled="readonly"
+                                    filterable
+                                    placeholder="">
+                                <el-option key="True" label="True" :value="true"></el-option>
+                                <el-option key="False" label="False" :value="false"></el-option>
+                            </el-select>
+                        </td>
+                        <td>
+                            <el-select
+                                    v-model="transition.Classifier"
+                                    style="width: 100%;"
+                                    :disabled="readonly">
+                                <el-option v-for="val in labels.ClassifierValues"
+                                           :key="val" :label="val" :value="val"></el-option>
+                            </el-select>
+                        </td>
+                    </template>
                     <td>
                         <el-select
                                 v-model="transition.activity"
@@ -110,17 +123,26 @@
                 <tr>
                     <td></td>
                     <td>
-                        <el-button 
-                            @click="EnableOtherwise()"
+                        <el-button
+                            @click="EnableOtherwise"
                             style="text-align: left; padding-left: 15px; padding-right: 35px;"
                             type="primary" :plain="FormData.EnableOtherwise"
                             :style="FormData.EnableOtherwise ? 'opacity: 1;' : 'opacity: 0.5;'">
-                            Otherwise <el-checkbox v-model="FormData.EnableOtherwise"></el-checkbox>
+                            Otherwise <el-checkbox :value="FormData.EnableOtherwise"></el-checkbox>
                         </el-button>
                     </td>
                     <td></td>
                     <td></td>
                     <td v-if="expertMode"></td>
+                    <td v-if="expertMode">
+                        <el-select
+                                v-model="Transitions.otherwise.Classifier"
+                                style="width: 100%;"
+                                :disabled="readonly">
+                            <el-option v-for="val in labels.ClassifierValues"
+                                       :key="val" :label="val" :value="val"></el-option>
+                        </el-select>
+                    </td>
                     <td>
                         <el-select
                                 v-model="Transitions.otherwise.activity"
@@ -160,7 +182,10 @@
     function decisiontable_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
-            labels: WorkflowDesignerConstants.DecisionTable,
+            labels: Object.assign(
+                WorkflowDesignerConstants.ActivityFormLabel,
+                WorkflowDesignerConstants.TransitionFormLabel,
+                WorkflowDesignerConstants.DecisionTable),
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
             ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
@@ -177,9 +202,9 @@
             editItem: null,
             itemHasComment: false,
             FormData: {},
-        });   
+        });
         me.transitionManager = me.graph.GetComponentByType('WorkflowDesignerTransitionManager');
-        me.activityManager = me.graph.GetComponentByType('WorkflowDesignerActivityManager');   
+        me.activityManager = me.graph.GetComponentByType('WorkflowDesignerActivityManager');
 
         me.VueConfig.methods.GetTransitionsFrom = function (activityName) {
             var transitions = {
@@ -193,19 +218,30 @@
                 var condition = item.Conditions ? item.Conditions[0] : null;
                 if (condition) {
                     if (condition.Type.toLowerCase() === 'otherwise') {
-                        transitions.otherwise = {condition: WorkflowDesignerCommon.clone(condition), activity: ToName};
+                        transitions.otherwise = {
+                            condition: WorkflowDesignerCommon.clone(condition),
+                            Classifier: item.Classifier,
+                            activity: ToName};
                     } else {
-                        transitions.all.push({condition: WorkflowDesignerCommon.clone(condition), activity: ToName});
+                        transitions.all.push({
+                            condition: WorkflowDesignerCommon.clone(condition),
+                            Classifier: item.Classifier,
+                            activity: ToName});
                     }
                 }
             });
 
+            var labels = me.VueConfig.data.labels;
+
             if (!transitions.all.length) {
-                transitions.all.push({condition: {Action: {ActionParameter:null},Expression:null, Type: 'Expression'}});
+                transitions.all.push({condition: {Action: {ActionParameter:null},Expression:null, Type: 'Expression'}, Classifier: labels.ClassifierValues[0]});
             }
 
             if (!transitions.otherwise) {
-                transitions.otherwise = {condition: {Action: {}, Type: 'otherwise'}};
+                transitions.otherwise = {
+                    condition: {Action: {}, Type: 'otherwise'},
+                    Classifier: labels.ClassifierValues[0]
+                };
             }
 
             return transitions;
@@ -221,14 +257,14 @@
         }
 
         me.VueConfig.watch = {
-            conditionsStore:function(val) {            
+            conditionsStore:function(val) {
                     me.VueConfig.data.conditions = me.graph.getConditionNames();
             },
-            activitiesStore:function(val) {                    
+            activitiesStore:function(val) {
                     me.VueConfig.methods.updateActivitiesList();
             },
         }
-               
+
         me.VueConfig.methods.onUpdate = function(item){
             var transitions = me.VueConfig.methods.GetTransitionsFrom(item.Name);
             me.VueConfig.data.transitions = transitions;
@@ -257,29 +293,30 @@
             me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
             me.VueConfig.data.prevName = item.Name;
             me.VueConfig.data.readonly = me.graph.Settings.readonly;
-            me.VueConfig.data.actions = me.graph.getActionNames(); 
+            me.VueConfig.data.actions = me.graph.getActionNames();
             me.VueConfig.methods.updateActivitiesList();
             me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
 
 
-            var objectCorrect = me.VueConfig.methods.objectCorrect;     
+            var objectCorrect = me.VueConfig.methods.objectCorrect;
         };
 
         me.VueConfig.methods.showUserComment = function (){
             me.VueConfig.data.itemHasComment = true;
         }
 
-        me.VueConfig.methods.EnableOtherwise = function(){
+        me.VueConfig.methods.EnableOtherwise = function(e){
             var formdata = me.VueConfig.data.FormData;
+            e.preventDefault();
             formdata.EnableOtherwise = !formdata.EnableOtherwise;
-        };   
+        };
 
         me.VueConfig.methods.onInitialChange = function(){
             var formdata = me.VueConfig.data.FormData;
             formdata.IsFinal = formdata.IsInitial ? false : formdata.IsFinal;
         };
-        
-        me.VueConfig.methods.onFinalChange = function(){            
+
+        me.VueConfig.methods.onFinalChange = function(){
             var formdata = me.VueConfig.data.FormData;
             formdata.IsInitial = formdata.IsFinal ? false : formdata.IsInitial;
         };
@@ -290,7 +327,7 @@
         me.VueConfig.methods.querySearch = function(queryString, cb) {
             if(me.VueConfig.data.readonly)
                 return cb([]);
-                
+
             var res = me.graph.getAutoCompleteSuggestions2("actionparameter", this.currentItem.ActionName, queryString);
             cb(res);
         };
@@ -350,18 +387,18 @@
         me.VueConfig.methods.ActivityRules = function(res)
         {
             //validate on unique Activity name
-            var validator = function(rule, value, callback){ 
+            var validator = function(rule, value, callback){
                 var isValid = true;
                 me.graph.data.Activities.forEach(function (a) {
                     if (a != me.linkItem && a.Name == value) {
                         isValid = false;
                     }
                 });
-                
+
                 if(isValid){
                     callback();
                 }
-                else{                    
+                else{
                     callback(new Error(rule.message));
                 }
             };
@@ -424,7 +461,7 @@
 
         me.VueConfig.methods.saveTransition =  function() {
                 var FormData = me.VueConfig.data.FormData;
-                var transitions = me.VueConfig.data.Transitions;                
+                var transitions = me.VueConfig.data.Transitions;
                 var originalTransitions = me.VueConfig.data.originalTransitions;
                 var originalName = me.VueConfig.data.originalName;
 
@@ -459,8 +496,10 @@
                     if (!controls || !controls.length) {
                         var newTransition = me.transitionManager.CreateNewTransition(me.activityControl, me.activityManager.find(item.activity));
                         newTransition.item.Conditions = [item.condition];
+                        newTransition.item.Classifier = item.Classifier;
                     } else {
                         controls[0].item.Conditions = [item.condition];
+                        controls[0].item.Classifier = item.Classifier;
                     }
                 });
 
@@ -487,8 +526,10 @@
                     if (!controls || !controls.length) {
                         var newTransition = me.transitionManager.CreateNewTransition(me.activityControl, me.activityManager.find(transitions.otherwise.activity));
                             newTransition.item.Conditions = [{Type: 'Otherwise'}];
-                    } else {                    
+                        newTransition.item.Classifier = transitions.otherwise.Classifier;
+                    } else {
                         controls[0].item.Conditions = [transitions.otherwise.condition];
+                        controls[0].item.Classifier = transitions.otherwise.Classifier;
                     }
                 }
         }

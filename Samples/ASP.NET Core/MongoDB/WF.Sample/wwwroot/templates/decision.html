@@ -118,27 +118,45 @@
             <a v-if="!readonly" style="cursor:pointer" @click="addRow(FormData.Conditions, {Action:{}})"></a>
         </h4>
         <form class="el-form--inline el-form--label-top SettingsWithPadding" style="display: flex;">
-            <div style="width: 100%;" class="el-form--inline el-form--label-top">
-                <el-form-item style="width: 48%;" :label="labels.WhenTrue" :rules="getFieldRules('WhenTrueTo')" prop="WhenTrueTo" :readonly="readonly">
-                    <el-select
-                            v-model="FormData.WhenTrueTo"
-                            style="width: 100%;"
-                            :disabled="readonly"
-                            filterable
-                            placeholder="">
-                        <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
-                    </el-select>
-                </el-form-item>
-                <el-form-item style="width: 49%;" :label="labels.WhenFalse" :rules="getFieldRules('WhenFalseTo')" prop="WhenFalseTo" :readonly="readonly">
-                    <el-select
-                            v-model="FormData.WhenFalseTo"
-                            style="width: 100%;"
-                            :disabled="readonly"
-                            filterable
-                            placeholder="">
-                        <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
-                    </el-select>
-                </el-form-item>
+            <div class="el-form--label-top TwoItemRow">
+                    <el-form-item :label="labels.WhenTrue" :rules="getFieldRules('WhenTrueTo')" prop="WhenTrueTo" :readonly="readonly">
+                        <el-select
+                                v-model="FormData.WhenTrueTo"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                placeholder="">
+                            <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="expertMode" :label="labels.Classifier" :readonly="readonly">
+                        <el-select
+                                v-model="FormData.WhenTrueClassifier"
+                                :disabled="readonly"
+                                style="width: 100%;">
+                            <el-option v-for="val in labels.ClassifierValues"
+                                       :key="val" :label="val" :value="val"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item :label="labels.WhenFalse" :rules="getFieldRules('WhenFalseTo')" prop="WhenFalseTo" :readonly="readonly">
+                        <el-select
+                                v-model="FormData.WhenFalseTo"
+                                style="width: 100%;"
+                                :disabled="readonly"
+                                filterable
+                                placeholder="">
+                            <el-option v-for="item in activities" :key="item.Name" :label="item.Name" :value="item.Name"></el-option>
+                        </el-select>
+                    </el-form-item>
+                    <el-form-item v-if="expertMode" :label="labels.Classifier" :readonly="readonly">
+                        <el-select v-if="expertMode"
+                                   v-model="FormData.WhenFalseClassifier"
+                                   :disabled="readonly"
+                                   style="width: 100%;">
+                            <el-option v-for="val in labels.ClassifierValues"
+                                       :key="val" :label="val" :value="val"></el-option>
+                        </el-select>
+                    </el-form-item>
             </div>
         </form>
     </div>
@@ -164,7 +182,10 @@
     function decision_Init(me){
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
-            labels: WorkflowDesignerConstants.Decision,
+            labels: Object.assign(
+                WorkflowDesignerConstants.ActivityFormLabel,
+                WorkflowDesignerConstants.TransitionFormLabel,
+                WorkflowDesignerConstants.Decision),
             ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
             ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
             ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
@@ -221,6 +242,7 @@
         me.VueConfig.methods.onUpdate = function(item){
             var transitions = me.VueConfig.methods.GetTransitionsFrom(item.Name);
             me.VueConfig.data.transitions = transitions;
+            var labels = me.VueConfig.data.labels;
             var formdata = me.VueConfig.data.FormData;
             formdata.Name = item.Name;
             formdata.ExecutionTimeout = item.ExecutionTimeout ? WorkflowDesignerCommon.clone(item.ExecutionTimeout) : {RetryCount:"1"};
@@ -241,6 +263,8 @@
             });
             formdata.WhenTrueTo = transitions.true ? transitions.true.to.GetName() : '';
             formdata.WhenFalseTo = transitions.false ? transitions.false.to.GetName() : '';
+            formdata.WhenTrueClassifier = transitions.true ? transitions.true.item.Classifier : labels.ClassifierValues[0];
+            formdata.WhenFalseClassifier = transitions.false ? transitions.false.item.Classifier : labels.ClassifierValues[0];
 
             me.linkItem = item;
             me.activityControl = me.activityManager.find(item.Name);
@@ -404,12 +428,14 @@
                     transitions.true = me.transitionManager.CreateNewTransition(me.activityControl, targetActivities.true);
                 }
                 transitions.true.item.Conditions = FormData.Conditions;
+                transitions.true.item.Classifier = FormData.WhenTrueClassifier;
 
                 if (transitions.false) {
                     transitions.false.setTo(targetActivities.false);
                 } else  {
                     transitions.false = me.transitionManager.CreateNewTransition(me.activityControl, targetActivities.false);
                 }
+                transitions.false.item.Classifier = FormData.WhenFalseClassifier;
         }
 
         me.VueConfig.methods.validate = function () {

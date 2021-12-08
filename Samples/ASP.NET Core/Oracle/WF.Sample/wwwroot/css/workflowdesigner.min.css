@@ -687,6 +687,16 @@ button.WorkflowDesignerToolbarButtonActive.el-button:focus {
   padding-left: 26px;
 }
 
+.TwoItemRow {
+    display: flex;
+    width: 100%;
+}
+
+.TwoItemRow > * {
+    flex: 1;
+    min-width: 40%;
+}
+
 .SpacedRow {
   display: flex;
   flex-wrap: wrap;

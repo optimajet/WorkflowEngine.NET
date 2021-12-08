@@ -1,5 +1,11 @@
 # Workflow Engine: Release Notes
 
+## 5.2.1 {#5.2.1}
+
+## Designer
+
+- Added the ability to change the transition classifier in the Decision and Decision Table elements in expert mode.
+
 ## 5.2 {#5.2}
 
 ## Designer
@@ -19,7 +25,7 @@
 ## Plugins
 
 - The Basic Plugin provides actions/activities to set states and execute commands in another process.
-- The SetParameter action/activity from the Basic Pugin now accepts expressions as the parameter value, i.e. you can set any parameter with expression based on other parameters, for example:
+- The SetParameter action/activity from the Basic Plugin now accepts expressions as the parameter value, i.e. you can set any parameter with expression based on other parameters, for example:
     
     ```csharp
     @Amount * 2 + 100
@@ -135,7 +141,7 @@
 - Methods for manipulating Inbox, Outbox and the history of document changes are added to *Persistence Providers*. The history of document changes, Inbox and Outbox are only filled when *Approved Plugin* is connected.
 - The ability to register Actors predefined on the server is added in the Basic Plugin. The `basicPlugin.WithActors` method and two delegates: `basicPlugin.CheckPredefinedActorAsync` and `basicPlugin.GetPredefinedIdentitiesAsync` are used for this.
 - You can now specify a delegate to update the status(state) of the document - `basicPlugin.UpdateDocumentStateAsync` in the *Basic Plugin*.
-- A *DeleteSubprocesess* action is added to the *Basic Plugin*, this action deletes all subprocesses.
+- A *DeleteSubprocesses* action is added to the *Basic Plugin*, this action deletes all subprocesses.
 - Added the ability to customize HTTP requests headers in the *Basic Plugin’s* *CheckHTTPRequest and HTTPRequest* methods.
 - The ability to specify a username and password for all the methods that make HTTP requests has been added to the *Basic Plugin*.  
 - The ability to download files by HTTP has been added to the *File Plugin*.
@@ -147,7 +153,7 @@
 - Added process log. The sequence of actions that occurs during the execution of the process is now added to a process log. The log can be enabled for all processes created for a specific scheme or for a specific process. **Attention: The Workflow Engine package includes a logger that stores the log in the memory. This is enough for debugging processes but if you want to make the log persistent, you have to implement the `IProcessLogProvider` and connect it to the Workflow Runtime by calling the `runtime.WithProcessLogger(…)` method**.
 - `GetProcessInstancesAsync(...)` and `GetSchemesAsync(...)` methods that accept sorting and paging are added  to the Persistence Provider. With their help you can access the list of schemes and processes.
 - The *Activity* in *Expert mode* in the *Designer* now has the ability to set the *Execution Timeout*, meaning it limits the execution time of all *Actions of this Activity*. **Attention: This timeout with only work for asynchronous Actions that process the Cancellation Token passed to them.** The timeout value is the same as the [interval timer value](/documentation/scheme/timers/#general). Possible reactions to timeout: *Set Activity*, *Set State*, *Retry*.
-- The *Activity* in *Expert mode* in the *Designer* now has the ability to set *Idle Timeout*, meaning it limits the time a process can be in this *Activity* without doing anything (i.e Idled or Finalized status of the process). The timeout value is the same as the [interval timer value](/documentation/scheme/timers/#general). Possible reactions to timeout: *Set Activity*, *Set State*.
+- The *Activity* in *Expert mode* in the *Designer* now has the ability to set *Idle Timeout*, meaning it limits the time a process can be in this *Activity* without doing anything (i.e. Idled or Finalized status of the process). The timeout value is the same as the [interval timer value](/documentation/scheme/timers/#general). Possible reactions to timeout: *Set Activity*, *Set State*.
 - The *Activity* in *Expert mode* in the *Designer* now has the ability to set *Error handling* by listing the names of the exceptions that need to be handled. Possible reactions to the exception: *Set Activity*, *Set State*, *Retry*, *Ignore*.
 - The *Activity* in *Expert mode* in the *Designer* now has the ability to disable saving process state. This setting is called *Disable persist*.
 - Process Instance is passed to the `HasExternalParameter`,` IsGetExternalParameterAsync`, `IsSetExternalParameterAsync` of `IWorkflowExternalParametersProvider` methods.
@@ -196,8 +202,8 @@
   - transfer all parameters
   - only copy indicated parameters
   - ignore indicated parameters.
-- New feature to cleary indicate whether a particular transition starts a sub-process or finalizes it; previously identified automatically, the transition can be now obviously set.
-- New feature to specify a sub-process name which can be represented as a simple string or a calculated expression; expressions can consume parameters (this is syntactically similar to conditional expressions). In this way, new sub-processes can be created simply by changing paramater values used when a sub-process name is generated.  As an example, consider creating an invoice approval scheme where the invoice will contain several product items. It is now possible to design a scheme in which approval of the items will be represented by a sub-process. Furthermore, by combining loops (in the plugin) and sub-process naming calculations a sub-process for each product item can be created.
+- New feature to clearly indicate whether a particular transition starts a sub-process or finalizes it; previously identified automatically, the transition can be now obviously set.
+- New feature to specify a sub-process name which can be represented as a simple string or a calculated expression; expressions can consume parameters (this is syntactically similar to conditional expressions). In this way, new sub-processes can be created simply by changing parameter values used when a sub-process name is generated.  As an example, consider creating an invoice approval scheme where the invoice will contain several product items. It is now possible to design a scheme in which approval of the items will be represented by a sub-process. Furthermore, by combining loops (in the plugin) and sub-process naming calculations a sub-process for each product item can be created.
 - New feature to specify a sub-process id, or calculate it based on the parameters; herein, substitutions are used - not expressions.
 
 ### Persistence Providers
@@ -207,20 +213,20 @@
 
 ### Workflow Runtime
 
-- Method *Resume* is added to API Workflow Runtime. Contrary to the *SetSatate* method, it does not execute a current activity, or a set one, but rather attempts to continue execution of the process.
+- Method *Resume* is added to API Workflow Runtime. Contrary to the *SetState* method, it does not execute a current activity, or a set one, but rather attempts to continue execution of the process.
 This method can be used to go on with a process execution after a failure, or in the case of changes in external conditions.
 - Restorer Restore Decision *Resume* added.
 - New in the ProcessInstance class:
-  - Indexer for getting and setting paramater values
+  - Indexer for getting and setting parameter values
   - Methods to manipulate root process parameters from within a sub-process.
   - For all standard events, now exist their asynchronous counterparts.
 
 ### Plugins
 
-- FTP и SFTP support added to the File Plugin. **Attention. File Plugin is supplied as a seperate Nuget package/dll**
+- FTP и SFTP support added to the File Plugin. **Attention. File Plugin is supplied as a separate Nuget package/dll**
 - New plugin, *Loops Plugin*, added for simple implementation of the *for* and *foreach*.
-- Within the action *BasicPlugin.HttpRequest* you can specify the name of the paramater which is to hold the result.
-- Within the action *BasicPlugin.SetParameter*, and the *BasicPlugin.CheckParameter* condition, you can set and verify the root process' paramaters.
+- Within the action *BasicPlugin.HttpRequest* you can specify the name of the parameter which is to hold the result.
+- Within the action *BasicPlugin.SetParameter*, and the *BasicPlugin.CheckParameter* condition, you can set and verify the root process' parameters.
 - Many new conditions added to *BasicPlugin.CheckParameter* и *BasicPlugin.CheckHTTPRequest*.
 - New plugins added for interaction with Slack, Telegram, Twilio, Nexmo are provided as Nuget packages (dlls).
 
@@ -241,8 +247,8 @@ This method can be used to go on with a process execution after a failure, or in
   - workflowdesigner.min.js
   - jquery
 
-  All the other javascript libraries previously required, do not need a separate attachement for they are now compiled inside workflowdesigner.min.js.
-- Pay attention to the new way of initializating a WorkflowDesigner object instance.
+  All the other javascript libraries previously required, do not need a separate attachment for they are now compiled inside workflowdesigner.min.js.
+- Pay attention to the new way of initialization a WorkflowDesigner object instance.
 
   ```javascript
   wfdesigner = new WorkflowDesigner({
@@ -258,9 +264,9 @@ This method can be used to go on with a process execution after a failure, or in
   - Indicating the path to the images folder is no longer required and the folder can be deleted.
   - Yet, the path to the templates folder must be specified as it contains templates for all the forms and the library of schemes.
   - It is advised to reimplement WorkflowDesigner initializations, as is shown [here]().
-- If you are using .NET Framework you may need to use `Request.Unvalidated[key]` instead of `context.Request.Form[key]` in the DesignerConroller.cs.
+- If you are using .NET Framework you may need to use `Request.Unvalidated[key]` instead of `context.Request.Form[key]` in the DesignerController.cs.
 
-- **Attention. Event handlers OnSchemaWasChanged and OnSchemaWasChangedAsync are now initialized inside a locked process. That is, prior to releasing the *Running* status. The code, [as described in the documentation](https://workflowengine.io/documentation/execution/scheme-update/#manual) will continue to work as expected without need to change it. Yet, if SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async] are called in these handlers, it should be done using this flag *doNotSetRunningStatus = true*. In turn, if you utilized methods ExecuteCommand, SetSatate and similar, be aware that there methods which lock the process. Therefore, is might be best to use methods: SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async]. If you have implemented a complicated logic for updating schemes which leads to a failed attempt at updating you WFE version because of this change, reach us at support@optimajet.com and we'll help you.**
+- **Attention. Event handlers OnSchemaWasChanged and OnSchemaWasChangedAsync are now initialized inside a locked process. That is, prior to releasing the *Running* status. The code, [as described in the documentation](https://workflowengine.io/documentation/execution/scheme-update/#manual) will continue to work as expected without need to change it. Yet, if SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async] are called in these handlers, it should be done using this flag *doNotSetRunningStatus = true*. In turn, if you utilized methods ExecuteCommand, SetState and similar, be aware that there methods which lock the process. Therefore, is might be best to use methods: SetActivityWithoutExecution[Async] or SetActivityWithExecution[Async]. If you have implemented a complicated logic for updating schemes which leads to a failed attempt at updating you WFE version because of this change, reach us at support@optimajet.com and we'll help you.**
 
 ## 4.2 {#4.2}
 
@@ -320,7 +326,7 @@ This method can be used to go on with a process execution after a failure, or in
 
   Here the 'ObjectParameter.BooleanProperty' and 'IntParameter' are *Process parameters*.
 
-- The parameters values ​​can be substituted into the values ​​of the *Actions*, *Conditions*, or *Rules*. The syntax is similar to the expressions:
+- The parameters values can be substituted into the values of the *Actions*, *Conditions*, or *Rules*. The syntax is similar to the expressions:
 
   ```javascript
   {
@@ -424,8 +430,8 @@ This method can be used to go on with a process execution after a failure, or in
     - *IsProcessFinalized* - checking the finalization of the current process or a process with the Id specified.
     - *CheckAllSubprocessesCompleted* - checking the finalization (completion) of all the subprocesses.
     - *CheckParameter* - checking if the parameter is consistent to the given value (so far, only strings are supported).
-    - *IsArrovedByUsers* - checking if the specified process was processed by all of the listed users.
-    - *IsArrovedByRoles* - checking if the specified process was processed by all of the listed roles.
+    - *IsApprovedByUsers* - checking if the specified process was processed by all of the listed users.
+    - *IsApprovedByRoles* - checking if the specified process was processed by all of the listed roles.
     - *CheckHTTPRequest* - conditional transition based on the result of a request to a third-party web service.
   - Authorization Rules (Security):
     - *CheckRole* - checking access to the command for a specific role.
@@ -683,7 +689,7 @@ The _update_3_1.sql_ script contains a change of index and size of certain colum
 - Parameter type names used to be stored as an assembly qualified name (by specifying the version of the build and the public key token), which resulted in troubles when migrating schemes from the .NET Framework environment to the .NET Core environment. Now a simplified type name - the one that is displayed in Designer - is stored in the scheme. Old schemes are loaded without changes; type names will be replaced after the first save of the scheme in the Designer.
 - Errors that occur when there's a '-' in CodeAction names have been fixed.
 
-**The following additional actions must be taken to uprgade to Workflow Engine 3.0:**
+**The following additional actions must be taken to upgrade to Workflow Engine 3.0:**
 
 - It is not necessary to update to the new version of the Designer; however, we strongly advise it. The old version of the Designer shall work with the new versions of the Workflow Engine at least within the next half a year. If you are updating to the new version of the Designer, introduce the following changes to the pages where Designer is displayed.
   - Delete links to **jquery-ui.min.css** and **jquery-ui.js**
@@ -724,7 +730,7 @@ runtime = runtime.SetIgnoreMissingExecutionItems(true);
 - Parameters conveyed to the process with the command no longer need to be described as command parameters. Iа such a parameter is described in the scheme, it will be a Temporary or a Persistence one, depending on which Purpose is specified in the scheme. If the parameter is not described in the scheme, it will be a Temporary one.
 - The `ExecuteCommand` and `ExecuteCommandAsync` methods return information on whether the command has been executed (it may not be executed under certain conditions) and the `ProcessInstance` state after the execution of a command.
 
-**The following additional actions must be taken to uprgade to Workflow Engine 2.2:**
+**The following additional actions must be taken to upgrade to Workflow Engine 2.2:**
 
 - If you use `IWorkflowActionProvider`, you will need to add 4 new methods to it: `IsActionAsync`, `IsConditionAsync`, `ExecuteActionAsync`, `ExecuteConditionAsync`. If you do not yet intend to use asynchronous Actions, then the `IsActionAsync` and `IsConditionAsync` methods should always return false, whereas `ExecuteActionAsync` and `ExecuteConditionAsync` can throw a NotImplementedException.
 
@@ -768,7 +774,7 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 - Ability to modify execution time for timers in running processes has been added. Use methods `_runtime.SetTimerValue(processId,timerName,newValue)` and `_runtime.ResetTimerValue(processId, timerName)` to change and reset timer values outside the process. Use methods `_runtime.SetTimerValue(processInstance,timerName,newValue)` and `_runtime.ResetTimerValue(processInstance, timerName)` to change and reset timer values from within your Actions.
 - Newtonsoft.Json version has been changed from 7.0.1 to 9.0.0.
 
-**The following additional actions must be taken to uprgade to Workflow Engine 2.0:**
+**The following additional actions must be taken to upgrade to Workflow Engine 2.0:**
 
 - Replace the link to KineticJS with the link to konva.min.js. Konva.js library is included in the ZIP archive and in `nuget package WorkflowEngine.NET-Designer`.
 - Update Newtonsoft.Json.dll to 9.0.0. The library is included in the ZIP archive and in `nuget package WorkflowEngine.NET-Core`.
@@ -778,9 +784,9 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 ## 1.5.6 {#1.5.6}
 
 - Two new persistence providers were added to WorkflowEngine.NET Redis Provider for [Redis](http://redis.io/) and Ignite Provider for [Apache Ignite](https://ignite.apache.org/)
-- notrendertoolbar property was added to the Designer object configuration (client side javascript). You can hide toobar in the workflow designer for end users.
+- notrendertoolbar property was added to the Designer object configuration (client side javascript). You can hide toolbar in the workflow designer for end users.
 - Second parameter which allow ignore AutoSchemeUpdate sign of Activity was added to the WorkflowRuntime.UpdateSchemeIfObsolete method.
-- Several redundat operations related to subprocess features were removed to increase performance.
+- Several redundant operations related to subprocess features were removed to increase performance.
 - Conditions are checked for transitions that creating subprocesses.
 
 ## 1.5.5 {#1.5.5}
@@ -788,14 +794,14 @@ public async Task ExecuteActionAsync(string name, ProcessInstance processInstanc
 In this release several features have been added to simplify the generation of forms based on commands.
 
 - The sign `IsRequired` for command parameter. You can take it into account when generating forms, also it is used in the command validation before the execution of command.
-- The `Default value` for command parameter. You can access it using `CommandParameter.DefaultValue` property, after you have received the list of available commands. You can set all command parameters to default value using `WorkflowCommand.SetAllParametersToDefault` or `WorkflowCommand.SetParameterToDefault` functions. The Default value must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string.
-- An `autocompete` was added in the field `Type of Parameter` (editing window Parameters). It makes a suugestions about types which can be used such as primitive types (Int32, String etc) or your custom types. Types from assemblies which was registerd using `_runtime.RegisterAssemblyForCodeActions` function are added in the autocomplete list. To prevent registration or filter the list you can use the last two optional parameters of \_runtime.RegisterAssemblyForCodeActions function - ignoreForDesigner and designerTypeFilter.
-- The `Initial values` were added for Parameters. You can yse Initial value only for Parameters which have Purpose = Persistence. This values must be a valid JSON (wich can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string. These values will be set to the process when it is created.
+- The `Default value` for command parameter. You can access it using `CommandParameter.DefaultValue` property, after you have received the list of available commands. You can set all command parameters to default value using `WorkflowCommand.SetAllParametersToDefault` or `WorkflowCommand.SetParameterToDefault` functions. The Default value must be a valid JSON (which can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string.
+- An `autocomplete` was added in the field `Type of Parameter` (editing window Parameters). It makes a suggestions about types which can be used such as primitive types (Int32, String etc.) or your custom types. Types from assemblies which was registered using `_runtime.RegisterAssemblyForCodeActions` function are added in the autocomplete list. To prevent registration or filter the list you can use the last two optional parameters of \_runtime.RegisterAssemblyForCodeActions function - ignoreForDesigner and designerTypeFilter.
+- The `Initial values` were added for Parameters. You can yse Initial value only for Parameters which have Purpose = Persistence. This values must be a valid JSON (which can be deserialized to type which is specified in the bond Parameter) or will be interpreted as a string. These values will be set to the process when it is created.
 - The JSON editor was added for edit `Parameter.InitialValue` (Parameters window), `Command.InputParameters.DefaultValue` (Commands window), `Actor.Value` (Actors window),
   `Activity.Implementation.ActionParameter` (Activity window), `Transition.Condition.ActionParameter` (Transition window). The JSON editor includes a syntax highlight and Format button. The Format button can be used to format your JSON. Please note that if you use JSON with unquoted property names, you must add reference on `json5.js` library on Designer page. For Parameter.InitialValue (Parameters window) and Command.InputParameters.DefaultValue (Commands window) the JSON editor aso includes Create button. This button can be used to create an empty object based on Parameter.Type. Designer (on server) uses only parameterless constructor to create the empty object.
-- There are two new events was added to `WorkflowRuntime`. Both are occured only in normal execution mode (not in pre-execution). `BeforeActivityExecution` - is occured after the Runtime has chosen an appropriate transition for execution but before Actions in an Activity were executed. `ProcessActivityChanged` - is occured after some Activity was executed. You can use `ProcessActivityChanged.TransitionalProcessWasCompleted` property to ensure that the command (or timer) execution was finished. Using of these events could be more convenient than `ProcessStatusChanged` in some cases.
+- There are two new events was added to `WorkflowRuntime`. Both are occurred only in normal execution mode (not in pre-execution). `BeforeActivityExecution` - is occurred after the Runtime has chosen an appropriate transition for execution but before Actions in an Activity were executed. `ProcessActivityChanged` - is occurred after some Activity was executed. You can use `ProcessActivityChanged.TransitionalProcessWasCompleted` property to ensure that the command (or timer) execution was finished. Using of these events could be more convenient than `ProcessStatusChanged` in some cases.
 - `GetAllActorsForCommandTransitions(ProcessInstance)` method was added to `WorkflowRuntime`. You can use this method to get next potential approvers for current state.
-- You can change the JSON Serializer settings for Parameters derialization using SetParameterSerializerSettings configuration method.
+- You can change the JSON Serializer settings for Parameters deserialization using SetParameterSerializerSettings configuration method.
 
 ## 1.5.4 {#1.5.4}
 
@@ -807,14 +813,14 @@ In this release several features have been added to simplify the generation of f
 
 - The JSON serializer used by the engine was changed from `ServiceStack.Text to Newtonsoft.JSON`. 1.5.3 version of WFE was built with the `verion 7.0 of Newtonsoft.JSON`.
 - _MSSQL provider_ was rewritten from LINQtoSQL to ordinary SQL queries.
-- The _Parameter_ window in the designer was implroved. Now you can hide System parameters. They are hidden by default.
-- Working with types in the _Parameter_ window in the designer was improved. Now you are able to use short type's names such as String, Guid, Int32 etc for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc)- Also you are able to use <> for generic types and [] for arrays.
+- The _Parameter_ window in the designer was improved. Now you can hide System parameters. They are hidden by default.
+- Working with types in the _Parameter_ window in the designer was improved. Now you are able to use short type's names such as String, Guid, Int32 etc. for primitive types. The type names including namespace for custom types (OptimaJet.Workflow.Core.Model.ActivityDefinition, Business.Approvers etc.)- Also you are able to use <> for generic types and [] for arrays.
 - Fixed a bug in the timers for their correct restart after restart of the workflow runtime.
 
 ## 1.5.2 {#1.5.2}
 
 - `ExecutedActivity` and `ExecutedTransition` properties added in `ProcessInstance` class. Via them, you can access executed transition and activity during a transitional process.
-- A scheme of a process downloaded from the designer with not ecoded _Code Actions_. You can upload a scheme with encoded or not encoded code actions.
+- A scheme of a process downloaded from the designer with not encoded _Code Actions_. You can upload a scheme with encoded or not encoded code actions.
 - The algorithm of sub-process scheme separation improved for it to work properly with the different schemes.
 - `GetAvailableCommands` method returns distinct commands.
 - Fixed parsing of the values of the _Timers_ in different cultures

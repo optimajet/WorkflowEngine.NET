@@ -35,9 +35,11 @@
         
         <el-form-item :label="labels.Classifier" prop="Classifier" :readonly="readonly">
             <el-button-group>
-                <el-button :style=" (FormData.Classifier, 'NotSpecified')" :disabled="readonly" @click="FormData.Classifier = 'NotSpecified'">NotSpecified</el-button>
-                <el-button :style="getClassifierStyle(FormData.Classifier, 'Direct')" :disabled="readonly" @click="FormData.Classifier = 'Direct'">Direct</el-button>
-                <el-button :style="getClassifierStyle(FormData.Classifier, 'Reverse')" :disabled="readonly" @click="FormData.Classifier = 'Reverse'">Reverse</el-button>
+                <el-button v-for="val in labels.ClassifierValues"
+                        :style="getClassifierStyle(FormData.Classifier, val)"
+                        :disabled="readonly" @click="FormData.Classifier = val">
+                    {{ val }}
+                </el-button>
             </el-button-group>
         </el-form-item>
     </div>
