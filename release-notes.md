@@ -1,5 +1,15 @@
 # Workflow Engine: Release Notes
 
+## 5.2.2 {#5.2.2}
+
+## Designer
+
+- Removed some global styles.
+
+## Core
+
+- Fixed rule exclusion.
+
 ## 5.2.1 {#5.2.1}
 
 ## Designer
