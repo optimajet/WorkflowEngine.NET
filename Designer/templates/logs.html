@@ -17,8 +17,9 @@
 
 <el-table
         :data="tableData"
+        class="infinite-loading__table"
         row-key="id"
-        style="width: 100%"
+        style="height: 100%; width: 100%"
         :row-style="tableRowStyle"
         @cell-mouse-enter="onHoveringRow"
         :cell-style="tableCellStyle"

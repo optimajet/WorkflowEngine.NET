@@ -8,7 +8,7 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <AssemblyVersion>5.2.0</AssemblyVersion>
     <FileVersion>5.2.0</FileVersion>
-    <Version>5.2.2</Version>
+    <Version>5.2.3</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>
@@ -20,7 +20,7 @@ DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
 
 Steps for workflow runtime configuration with DbPersistenceProvider: http://workflowenginenet.com/Documentation/Detail/howtoconnect in 
 Create WorkflowRuntime section.</Description>
-    <Copyright>OptimaJet Workflow Engine 2021</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2022</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <PackageId>WorkflowEngine.NETCore-ProviderForMSSQL</PackageId>

@@ -5861,6 +5861,11 @@
             Max number of activities that can be executed. Use this to protect your application from infinite loops. Any value less than 1 means unlimited. Unlimited by default.
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeSettings.MaxPreExecutionTransitions">
+            <summary>
+            Maximum number of transitions during pre-execution
+            </summary>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeSettings.LicenseSemaphoreTimeout">
             <summary>
             This settings work only for licenses with thread limit
