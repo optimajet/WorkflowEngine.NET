@@ -1,0 +1,1 @@
+﻿CREATE INDEX IX_ProcessId ON WorkflowProcessTimer (ProcessId)

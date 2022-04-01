@@ -178,7 +178,7 @@ The SOFTWARE DEVELOPMENT PRODUCT(S) is protected by copyright laws and internati
 The SOFTWARE DEVELOPMENT PRODUCT(S) will be made available for download from workflowengine.io exclusively.
 
 10. EXPORT RESTRICTIONS
-OPTIMAJET expressly complies with all export restrictions imposed by the government of the Russian Federation. You, as Developer End User, must agree not to export or re-export the SOFTWARE DEVELOPMENT PRODUCT(S) within any created application to any country, person, entity or end user subject to Russian Federation export restrictions.
+You, as Developer End User, must agree not to export or re-export the SOFTWARE DEVELOPMENT PRODUCT(S) within any created application to any country, person, entity or end user subject to Russian Federation.
 
 11. DISCLAIMER OF WARRANTY
 OPTIMAJET expressly disclaims any warranty for the SOFTWARE DEVELOPMENT PRODUCT(S). THE SOFTWARE DEVELOPMENT PRODUCT(S) AND ANY RELATED DOCUMENTATION IS PROVIDED “AS IS” WITHOUT WARRANTY OF ANY KIND, EITHER EXPRESS OR IMPLIED, INCLUDING, WITHOUT LIMITATION, THE IMPLIED WARRANTIES OF MERCHANTABILITY, FITNESS FOR A PARTICULAR PURPOSE, OR NONINFRINGEMENT. OPTIMAJET DOES NOT WARRANT, GUARANTEE, OR MAKE ANY REPRESENTATIONS REGARDING THE USE, OR THE RESULTS OF THE USE, OF THE SOFTWARE DEVELOPMENT PRODUCT(S) IN TERMS OF CORRECTNESS, ACCURACY, RELIABILITY, OR OTHERWISE. THE ENTIRE RISK ARISING OUT OF USE OR PERFORMANCE OF THE SOFTWARE DEVELOPMENT PRODUCT(S) REMAINS WITH YOU. No oral or written information or advice given by OPTIMAJET or its employees shall create a warranty or in any way increase the scope of this warranty.

@@ -262,6 +262,7 @@ BEGIN
 		)
 
 	CREATE CLUSTERED INDEX IX_NextExecutionDateTime_Clustered ON WorkflowProcessTimer (NextExecutionDateTime)
+    CREATE INDEX IX_ProcessId ON WorkflowProcessTimer (ProcessId)
 
 	PRINT 'WorkflowProcessTimer CREATE TABLE'
 END

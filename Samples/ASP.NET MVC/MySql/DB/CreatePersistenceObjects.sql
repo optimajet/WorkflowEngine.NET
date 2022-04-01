@@ -94,6 +94,8 @@ CREATE TABLE IF NOT EXISTS `workflowprocesstimer` (
   KEY `NextExecutionDateTime` (`NextExecutionDateTime`)
 );
 
+CREATE INDEX `ix_workflowprocesstimer_processId` ON `workflowprocesstimer` (`ProcessId`);
+
 CREATE TABLE IF NOT EXISTS `workflowprocessassignment` (
     `Id` binary(16) NOT NULL,
     `AssignmentCode` varchar(256) NOT NULL,
