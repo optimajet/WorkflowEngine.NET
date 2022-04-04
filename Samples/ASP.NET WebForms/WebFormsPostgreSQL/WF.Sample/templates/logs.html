@@ -1,19 +1,21 @@
-<h3>{{ header }}
-    <el-switch v-model="this.logEnabled" @change="changeLogEnabled"></el-switch>
-</h3>
-<el-button-group size="small" style="margin-top: -1px;display: flex">
-    <el-checkbox-group v-model="autoRefresh" size="small"  >
-        <el-button :disabled="!this.logEnabled" icon="el-icon-refresh" size="small" @click="onRefresh"
-                   style="vertical-align: middle; height: 32px;">
+<h3 style="display: flex; align-items: baseline; justify-content: space-between;">
+    <div>
+        {{ header }}
+        <el-switch v-model="this.logEnabled" @change="changeLogEnabled" style="margin-left: 5px"></el-switch>
+    </div>
+    <div style="display: flex; gap: 10px; margin-right: 30px;">
+        <el-button :disabled="!this.logEnabled" type="primary" plain style="padding: 6px" icon="el-icon-refresh" @click="onRefresh"> {{ labels.Refresh }}
         </el-button>
-        <el-checkbox-button :disabled="!this.logEnabled" v-model="autoRefresh" @change="onAutoRefresh" :label="labels.AutoRefresh"></el-checkbox-button>
-    </el-checkbox-group>
-    <el-input-number v-if="autoRefresh"
-                     v-model="speedOfRefresh"
-                     :precision="1" :step="0.1" controls-position="right" size="small"
-                     :min="0.3" :max="10" style="width: 95px; margin-left: 5px">
-    </el-input-number>
-</el-button-group>
+        <el-checkbox :disabled="!this.logEnabled" border v-model="autoRefresh" @change="onAutoRefresh" :label="labels.AutoRefresh"
+                     style="padding: 4px 10px; border-radius: 6px; height: 30.4px;"></el-checkbox>
+
+        <el-input-number v-if="autoRefresh"
+                         v-model="speedOfRefresh"
+                         :precision="1" :step="0.1" controls-position="right" size="small"
+                         :min="0.3" :max="10" style="width: 95px; height: 30.4px;">
+        </el-input-number>
+    </div>
+</h3>
 
 <el-table
         :data="tableData"
@@ -24,8 +26,7 @@
         @cell-mouse-enter="onHoveringRow"
         :cell-style="tableCellStyle"
         fit
-        height="calc(100% - 75px)"
-        :tree-props="{children: 'children', hasChildren: 'hasChildren'}">
+        height="calc(100% - 75px)">
     <el-table-column
             :label="labels.Timestamp"
             prop="Timestamp"
@@ -40,7 +41,6 @@
                 <el-popover
                         placement="bottom"
                         trigger="hover">
-
                     <el-row
                             style="width: 560px"
                             v-for="(key) in Object.keys(scope.row.Properties).filter(function(x) {if (scope.row.Properties[x]) return x;})">
@@ -49,8 +49,8 @@
                     </el-row>
 
                     <span slot="reference">
-                <i class="el-icon-info"></i>
-              </span>
+                        <i class="el-icon-info"></i>
+                    </span>
                 </el-popover>
                 {{ scope.row.Message}}
             </div>
@@ -171,19 +171,10 @@
                 }
             },
             onRefresh: function () {
-                var additionalLogs;
-                if (this.tableData.length === 0) {
-                    additionalLogs = this.designer.getprocesslogs({suboperation: "Last", count: this.count});
-                } else {
-                    var dateTime = this.findMaxDateTime(this.tableData)
-                    additionalLogs = this.designer.getprocesslogs({suboperation: "Last", dateTime: dateTime});
-                }
+                var additionalLogs = this.designer.getprocesslogs({suboperation: "Last", count: this.count});
                 if (additionalLogs.length) {
-                    additionalLogs.map(function (item) {
-                        item.isNew = true;
-                    })
-                    this.tableDataSource = this.tableDataSource.concat(additionalLogs)
-                    this.tableData = this.convertTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
+                    this.tableDataSource = additionalLogs;
+                    this.tableData = this.sortTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
                 }
             },
             infiniteHandler: function ($state) {
@@ -192,15 +183,20 @@
                     $state.complete();
                     return;
                 }
-                var dateTime = this.findMinDateTime(this.tableDataSource)
+                var dateTime = this.findMinDateTime(this.tableDataSource);
                 var additionalLogs = this.designer.getprocesslogs({
                     suboperation: "Early",
                     dateTime: dateTime,
                     count: this.count
                 });
-                if (additionalLogs.length) {
+
+                var lastSourceItem = JSON.stringify(this.tableDataSource[this.tableDataSource.length - 1]);
+                var lastNewItem = JSON.stringify(additionalLogs[additionalLogs.length - 1]);
+                var isEqualLastItems = lastSourceItem === lastNewItem;
+
+                if (additionalLogs.length && !isEqualLastItems) {
                     this.tableDataSource = this.tableDataSource.concat(additionalLogs)
-                    this.tableData = this.convertTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
+                    this.tableData = this.sortTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
                     if (additionalLogs.length < this.count)
                         $state.complete();
                     else
@@ -231,60 +227,10 @@
                 let date = new Date(stringDate);
                 return date.toLocaleString() + ". " + date.getMilliseconds()
             },
-            convertTableData: function (data) {
-                data.sort(function (a, b) {
+            sortTableData: function (data) {
+                return data.sort(function (a, b) {
                     return me.VueConfig.methods.compareDatesWithMicroseconds(a.Timestamp, b.Timestamp)
                 })
-
-                var pushLog = function (resultList, currentLevel, valueObject, level, startId){
-                    if(currentLevel == level){
-                        if( me.VueConfig.data.maxLevel < level){
-                            me.VueConfig.data.maxLevel = level;
-                        }
-                        var item = Object.assign(valueObject, {id: startId.toString(), level:level});
-                        resultList.push(item)
-                        return;
-                    }
-                    else{
-                        if(resultList[resultList.length-1].children == undefined){
-                            resultList[resultList.length-1].children = [];
-                        }
-
-
-                        if(currentLevel+1 == level){
-                            startId = startId + ":" + (resultList[resultList.length-1].children.length +1).toString();
-                        }
-                        else{
-                            startId = startId + ":" + (resultList[resultList.length-1].children.length).toString();
-                        }
-
-
-                        return pushLog(resultList[resultList.length-1].children,++currentLevel, valueObject, level, startId)
-                    }
-                }
-                var result = [];
-                var level = 0;
-                var nres = 0;
-                for (var i = 0; i < data.length; i++) {
-                    if (data[i].Properties != null && data[i].Properties.EventType == "EndExecution") {
-                        if(level == 0){
-                            nres++;
-                        }
-
-                        pushLog(result, 0, data[i], level, nres.toString());
-                        level++;
-                        continue;
-                    } else if (data[i].Properties != null && data[i].Properties.EventType == "StartExecution") {
-                        level--;
-                    }
-
-                    if(level == 0){
-                        nres++;
-                    }
-                    pushLog(result, 0, data[i], level, nres.toString());
-                }
-
-                return result;
             },
             compareDatesWithMicroseconds: function (a, b) {
                 var dateA = new Date(a).getTime();
@@ -311,11 +257,10 @@
             }
         }
 
-
         me.VueConfig.created = function () {
             var dataSource = this.designer.getprocesslogs({suboperation: "Last", count: this.count});
             this.tableDataSource = dataSource;
-            this.tableData = this.convertTableData(JSON.parse(JSON.stringify(dataSource)));
+            this.tableData = this.sortTableData(JSON.parse(JSON.stringify(dataSource)));
             this.logEnabled = Boolean(this.designer.getlogenabledstate());
         }
     }

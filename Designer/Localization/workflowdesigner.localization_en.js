@@ -518,6 +518,7 @@ var WorkflowDesignerConstants = {
     Label: "Logs",
     ParamName: "LogEnabled",
     Description: "This parameter is the default value for logging processes based on this scheme",
+    Refresh: "Refresh",
     AutoRefresh: "Auto refresh",
     Empty: "Empty",
     Timestamp: "Timestamp",

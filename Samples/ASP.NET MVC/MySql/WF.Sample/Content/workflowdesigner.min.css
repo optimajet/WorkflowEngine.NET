@@ -929,3 +929,7 @@ table .el-form-item {
 .infinite-loading__table .el-table__body-wrapper {
     height: 100%;
 }
+
+.el-input--small .el-input__inner {
+    height: 30px !important;
+}
