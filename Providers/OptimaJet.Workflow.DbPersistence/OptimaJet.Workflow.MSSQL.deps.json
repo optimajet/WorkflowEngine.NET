@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MSSQL/5.2.5": {
+      "OptimaJet.Workflow.MSSQL/5.2.6": {
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.0.1",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "5.2.5"
+          "WorkflowEngine.NETCore-Core": "5.2.6"
         },
         "runtime": {
           "OptimaJet.Workflow.MSSQL.dll": {}
@@ -1428,7 +1428,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/5.2.5": {
+      "WorkflowEngine.NETCore-Core/5.2.6": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "3.4.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "3.4.0",
@@ -1448,7 +1448,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MSSQL/5.2.5": {
+    "OptimaJet.Workflow.MSSQL/5.2.6": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2230,7 +2230,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/5.2.5": {
+    "WorkflowEngine.NETCore-Core/5.2.6": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

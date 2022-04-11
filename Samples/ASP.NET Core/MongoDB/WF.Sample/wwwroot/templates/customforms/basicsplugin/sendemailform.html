@@ -38,7 +38,7 @@
                     :rules="getFieldRules(Field.MailServer)"
                     :prop="Field.MailServer.Name"
                     class="el-form-item"
-                    style="flex-grow: 3;">
+                    style="flex-grow: 1;">
                 <el-input v-model="FormData.MailServer" :readonly="readonly"></el-input>
             </el-form-item>
 
@@ -54,7 +54,7 @@
                           class="WorkflowDesignerParameterFromProcess">@
                     </span>
                 </span>
-                <el-input-number v-if="!parameterFromProcess.MailServerPort" controls-position="right" v-model="FormData.MailServerPort" :disabled="readonly" style="width:180px"></el-input-number>
+                <el-input type="number" v-if="!parameterFromProcess.MailServerPort"  v-model="FormData.MailServerPort" :disabled="readonly"></el-input>
                 <el-input v-if="parameterFromProcess.MailServerPort" v-model="FormData.MailServerPort" :disabled="readonly" style="width:180px"></el-input>
             </el-form-item>
         </div>
@@ -78,6 +78,54 @@
                 <el-input v-model="FormData.To" :readonly="readonly"></el-input>
             </el-form-item>
         </div>
+
+        <div class="el-form--inline el-form--label-top"  >
+            <el-form-item
+                    :label="customLabels.CcList"
+                    :rules="getFieldRules(Field.CcList)"
+                    :prop="Field.CcList.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-select
+                        :readonly="readonly"
+                        v-model="FormData.CcList"
+                        filterable
+                        multiple
+                        allow-create
+                        style="width: 100%">
+                </el-select>
+            </el-form-item>
+            <el-form-item
+                    :label="customLabels.BccList"
+                    :rules="getFieldRules(Field.BccList)"
+                    :prop="Field.BccList.Name"
+                    class="el-form-item"
+                    style="flex-grow: 1;">
+                <el-select
+                        :readonly="readonly"
+                        v-model="FormData.BccList"
+                        filterable
+                        multiple
+                        allow-create
+                        style="width: 100%">
+                </el-select>
+            </el-form-item>
+        </div>
+
+        <el-form-item
+                :label="customLabels.ReplyToList"
+                :rules="getFieldRules(Field.ReplyToList)"
+                :prop="Field.ReplyToList.Name"
+                class="el-form-item"
+                style="flex-grow: 1;">
+            <el-select
+                    :readonly="readonly"
+                    v-model="FormData.ReplyToList"
+                    filterable
+                    multiple
+                    allow-create>
+            </el-select>
+        </el-form-item>
 
         <el-form-item
                 :label="customLabels.Subject"
@@ -186,7 +234,9 @@
                 MailServerSsl: false,
                 IsHTML: false
             },
-            FormData: {},
+            FormData: {
+
+            },
             Field:{},
             useAuth: false
         });
@@ -256,6 +306,10 @@
                         delete me.VueConfig.data.FormData[key];
             }
 
+            me.VueConfig.data.FormData.CcList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.CcList);
+            me.VueConfig.data.FormData.BccList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.BccList);
+            me.VueConfig.data.FormData.ReplyToList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.ReplyToList);
+
             me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
 
             me.VueConfig.data.useAuth = me.VueConfig.data.FormData.MailServerPass != null || me.VueConfig.data.FormData.MailServerLogin != null
@@ -284,16 +338,20 @@
         };
 
         me.VueConfig.methods.onSave = function(){
-            if(!me.VueConfig.data.useAuth){
-                me.VueConfig.data.FormData.MailServerLogin = null;
-                me.VueConfig.data.FormData.MailServerPass = null;
-            }
-
-            var value = undefined;
-            value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
-
             this.$refs.form.validate(function(valid) {
                 if (valid) {
+                    if(!me.VueConfig.data.useAuth){
+                        me.VueConfig.data.FormData.MailServerLogin = null;
+                        me.VueConfig.data.FormData.MailServerPass = null;
+                    }
+
+                    var FormData = me.VueConfig.data.FormData;
+
+                    FormData.CcList = WorkflowDesignerCommon.toString(FormData.CcList);
+                    FormData.BccList = WorkflowDesignerCommon.toString(FormData.BccList);
+                    FormData.ReplyToList = WorkflowDesignerCommon.toString(FormData.ReplyToList);
+
+                    var value = WorkflowDesignerCommon.toString(FormData);
                     me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
                     me.onClose(true);
                 }

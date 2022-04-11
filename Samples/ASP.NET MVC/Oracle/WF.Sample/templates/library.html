@@ -49,18 +49,16 @@
                 return items;
         };
 
-        if(window.WFE_WITH_TEMPLATES){
-            me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(Array.from(WFELibrary));
+        const url = me.VueConfig.data.folder + "library.json";
+        const onLoad = data => {
+            me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(data);
             me.VueConfig.data.loading = false;
         }
-        else{
-            var libraryUrl = me.VueConfig.data.folder + "library.json";
-            $.ajax({url: libraryUrl, async: true}).done(function(result) 
-            {
-                me.VueConfig.data.items = me.VueConfig.methods.ValidateItems(result);
-                me.VueConfig.data.loading = false;
-            });
-        }
+
+        me.graph.designer.loadFile(url,
+            () => onLoad(Array.from(WFELibrary)),
+            () => $.ajax({url, async: true}).done(onLoad)
+        );
 
 
         me.VueConfig.methods.onUpdate = function(){
