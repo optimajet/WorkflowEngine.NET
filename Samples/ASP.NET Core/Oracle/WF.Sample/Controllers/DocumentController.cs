@@ -158,7 +158,7 @@ namespace WF.Sample.Controllers
             }
             catch (Exception ex)
             {
-                var sb = new StringBuilder("Ошибка сохранения. " + ex.Message);
+                var sb = new StringBuilder("Save error. " + ex.Message);
                 if (ex.InnerException != null)
                     sb.AppendLine(ex.InnerException.Message);
                 ModelState.AddModelError("", sb.ToString());

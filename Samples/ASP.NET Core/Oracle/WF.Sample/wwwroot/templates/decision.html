@@ -35,18 +35,18 @@
                     <th>{{labels.ConditionInversion}}</th>
                     <th v-if="expertMode">{{labels.ResultOnPreExecution}}</th>
                 </tr>
-                <tr v-for="(сondition, index) in FormData.Conditions" 
-                    :class="dragOverIndex == index && dragOverBlock  == сondition ? 'dragOver' : ''"
+                <tr v-for="(condition, index) in FormData.Conditions" 
+                    :class="dragOverIndex == index && dragOverBlock  == condition ? 'dragOver' : ''"
                     @dragstart="dragstart(index, $event, FormData.Conditions)" @dragend="dragend($event)"
-                    @dragover="dragover(сondition, index, $event)">
+                    @dragover="dragover(condition, index, $event)">
                     <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" >
                         <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
                     </td>
                     <td>
                         <el-select
-                                v-model="сondition.Type"
-                                :title="validateField('Type', сondition)"
-                                :class="validateField('Type', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                v-model="condition.Type"
+                                :title="validateField('Type', condition)"
+                                :class="validateField('Type', condition) ? 'WorkflowDesignerInputError' : ''"
                                 style="width: 100%;"
                                 :disabled="readonly"
                                 filterable
@@ -56,11 +56,11 @@
                             <el-option key="Expression" :label="labels.ExpressionLabel" value="Expression"></el-option>
                         </el-select>
                     </td>
-                    <td v-if="сondition.Type == 'Action'">
+                    <td v-if="condition.Type == 'Action'">
                         <el-select
-                                v-model="сondition.Action.ActionName"
-                                :title="validateField('Action.ActionName', сondition)"
-                                :class="validateField('Action.ActionName', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                v-model="condition.Action.ActionName"
+                                :title="validateField('Action.ActionName', condition)"
+                                :class="validateField('Action.ActionName', condition) ? 'WorkflowDesignerInputError' : ''"
                                 style="width: 100%;"
                                 :disabled="readonly"
                                 filterable
@@ -69,30 +69,30 @@
                             <el-option v-for="item in conditions" :key="item" :label="item" :value="item"></el-option>
                         </el-select>
                     </td>
-                    <td v-if="сondition.Type == 'Action'">
+                    <td v-if="condition.Type == 'Action'">
                         <div style="flex-flow: nowrap; display: flex;align-items: center;">
-                            <el-autocomplete style="margin-right: 5px;" v-model="сondition.Action.ActionParameter" :disabled="readonly" :fetch-suggestions="querySearch"
-                                             @focus="setCurrentItem(сondition)"></el-autocomplete>
+                            <el-autocomplete style="margin-right: 5px;" v-model="condition.Action.ActionParameter" :disabled="readonly" :fetch-suggestions="querySearch"
+                                             @focus="setCurrentItem(condition)"></el-autocomplete>
                         </div>
                     </td>
-                    <td v-if="сondition.Type == 'Expression'">
+                    <td v-if="condition.Type == 'Expression'">
                         <div style="flex-flow: nowrap; display: flex;align-items: center;">
                             <el-input
-                                    v-model="сondition.Expression"
-                                    :title="validateField('Expression', сondition)"
-                                    :class="validateField('Expression', сondition) ? 'WorkflowDesignerInputError' : ''"
+                                    v-model="condition.Expression"
+                                    :title="validateField('Expression', condition)"
+                                    :class="validateField('Expression', condition) ? 'WorkflowDesignerInputError' : ''"
                                     :readonly="readonly">
                             </el-input>
                         </div>
                     </td>
-                    <td v-if="сondition.Type == 'Expression' && hasConditionAnyAction()"></td>
+                    <td v-if="condition.Type == 'Expression' && hasConditionAnyAction()"></td>
 
-                    <td v-if="сondition.Type == 'Action' || сondition.Type == 'Expression'">
-                        <el-checkbox v-model="сondition.ConditionInversion" :disabled="readonly"></el-checkbox>
+                    <td v-if="condition.Type == 'Action' || condition.Type == 'Expression'">
+                        <el-checkbox v-model="condition.ConditionInversion" :disabled="readonly"></el-checkbox>
                     </td>
-                    <td v-if="expertMode && (сondition.Type == 'Action' || сondition.Type == 'Expression')">
+                    <td v-if="expertMode && (condition.Type == 'Action' || condition.Type == 'Expression')">
                         <el-select
-                                v-model="сondition.ResultOnPreExecution"
+                                v-model="condition.ResultOnPreExecution"
                                 style="width: 100%;"
                                 :disabled="readonly"
                                 filterable
@@ -104,7 +104,7 @@
                     </td>
                     <td :style="!readonly ? 'width: 94px;' : 'width: 42px;'">
                         <el-button-group>
-                            <el-button @click="сondition.Type == 'Action' ? showjson('Action.ActionParameter', сondition, {name: сondition.Action.ActionName ,type: ['Condition']}) : showjson('Expression', сondition, {expression: true})" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == сondition ? 'is-active' : '')"></el-button>
+                            <el-button @click="condition.Type == 'Action' ? showjson('Action.ActionParameter', condition, {name: condition.Action.ActionName ,type: ['Condition']}) : showjson('Expression', condition, {expression: true})" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == condition ? 'is-active' : '')"></el-button>
                             <el-button v-if="!readonly" :disabled="FormData.Conditions.length == 1" @click="removeRow(FormData.Conditions, index)" class="WorkflowDesignerTableDeleteButton"></el-button>
                         </el-button-group>
                     </td>

@@ -1559,7 +1559,7 @@
             <summary>If true specifies that the activity is not save state in database (WorkflowProcessInstancePersistence)</summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.UserComment">
-            <summary> Сustom comment </summary>
+            <summary> Custom comment </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.HaveImplementation">
             <summary>
@@ -3549,7 +3549,7 @@
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.UserComment">
-            <summary> Сustom comment </summary>
+            <summary> Custom comment </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.TransitionDefinition.WasInlined">
             <summary>
@@ -6067,7 +6067,7 @@
         <!-- Badly formed XML comment ignored for member "P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.CancellationTokenHandling" -->
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.StartInternalAsync(System.Boolean)">
             <summary>
-            Start all workflow runtime services аnd compile global code actions
+            Start all workflow runtime services and compile global code actions
             </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ColdStartInternalAsync(System.Boolean)">
@@ -7986,21 +7986,21 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.StartAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
             <summary>
-            Start all workflow runtime services аnd compile global code actions
+            Start all workflow runtime services and compile global code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.Start(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
             <summary>
-            Start all workflow runtime services аnd compile global code actions
+            Start all workflow runtime services and compile global code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.StartAsync(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean)">
             <summary>
-            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services аnd compile global code actions
+            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services and compile global code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="ignoreNotCompiledGlobalActions">if true all compillation errors in the global codeactions will be ignored</param>
@@ -8009,7 +8009,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.Start(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean,System.Collections.Generic.Dictionary{System.String,System.String}@)">
             <summary>
-            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services аnd compile global code actions
+            System use only. The signature of this method can be changed without any notification. Start all workflow runtime services and compile global code actions
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="ignoreNotCompiledGlobalActions">if true all compillation errors in the global codeactions will be ignored</param>
@@ -8050,7 +8050,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithCache(OptimaJet.Workflow.Core.Builder.IWorkflowBuilder,OptimaJet.Workflow.Core.Cache.IParsedProcessCache)">
             <summary>
-            Сonfigures the workflow builder with specified cache for parced processes <see cref="T:OptimaJet.Workflow.Core.Cache.IParsedProcessCache"/>
+            Configures the workflow builder with specified cache for parced processes <see cref="T:OptimaJet.Workflow.Core.Cache.IParsedProcessCache"/>
             </summary>
             <param name="bulder">The instance of the workflow builder</param>
             <param name="cache">The instance of the cache for parced processes <see cref="T:OptimaJet.Workflow.Core.Cache.IParsedProcessCache"/></param>
@@ -8058,14 +8058,14 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDefaultCache(OptimaJet.Workflow.Core.Builder.IWorkflowBuilder)">
             <summary>
-            Сonfigures the workflow builder with default in memory cache for parced processes <see cref="T:OptimaJet.Workflow.Core.Cache.IParsedProcessCache"/>
+            Configures the workflow builder with default in memory cache for parced processes <see cref="T:OptimaJet.Workflow.Core.Cache.IParsedProcessCache"/>
             </summary>
             <param name="bulder">The instance of the workflow builder</param>
             <returns>Configured instance of the workflow builder</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithGenerator``1(OptimaJet.Workflow.Core.Builder.WorkflowBuilder{``0},OptimaJet.Workflow.Core.Generator.IWorkflowGenerator{``0})">
             <summary>
-            Сonfigures the workflow builder with specified workflow scheme generator<see cref="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1"/>
+            Configures the workflow builder with specified workflow scheme generator<see cref="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1"/>
             </summary>
             <param name="bulder">The instance of the workflow builder</param>
             <param name="generator">The instance of the workflow scheme generator <see cref="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1"/></param>
@@ -8073,7 +8073,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithParser``1(OptimaJet.Workflow.Core.Builder.WorkflowBuilder{``0},OptimaJet.Workflow.Core.Parser.IWorkflowParser{``0})">
             <summary>
-            Сonfigures the workflow builder with specified workflow scheme parser<see cref="T:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1"/>
+            Configures the workflow builder with specified workflow scheme parser<see cref="T:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1"/>
             </summary>
             <param name="bulder">The instance of the workflow builder</param>
             <param name="parser">The instance of the workflow scheme parser <see cref="T:OptimaJet.Workflow.Core.Parser.IWorkflowParser`1"/></param>
@@ -8081,7 +8081,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithShemePersistenceProvider``1(OptimaJet.Workflow.Core.Builder.WorkflowBuilder{``0},OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider{``0})">
             <summary>
-            Сonfigures the workflow builder with specified scheme persistence provider<see cref="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1"/>
+            Configures the workflow builder with specified scheme persistence provider<see cref="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1"/>
             </summary>
             <param name="builder">The instance of the workflow builder</param>
             <param name="schemePersistenceProvider">The instance of the scheme persistence provider <see cref="T:OptimaJet.Workflow.Core.Persistence.ISchemePersistenceProvider`1"/></param>
@@ -8089,7 +8089,7 @@
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithTimerManager(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.ITimerManager)">
             <summary>
-            Сonfigures the runtime with specified timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/>
+            Configures the runtime with specified timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/>
             </summary>
             <param name="runtime">The instance of the runtime</param>
             <param name="timerManager">The instance of the timer manager <see cref="T:OptimaJet.Workflow.Core.Runtime.ITimerManager"/></param>

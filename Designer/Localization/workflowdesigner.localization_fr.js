@@ -86,7 +86,7 @@ var WorkflowDesignerConstants = {
     AnnotationName: "Name",
     AnnotationValue: "Value",
     Scheme: "Inline scheme",
-    UserComment: "Сommenter",
+    UserComment: "Commenter",
     AlwaysConditionShouldBeSingle: "Toujours condition devrait être célibataire",
     OtherwiseConditionShouldBeSingle: "Sinon, la condition devrait être unique"
   },
@@ -187,7 +187,7 @@ var WorkflowDesignerConstants = {
     ActionLabel: "Action",
     ExpressionLabel: "Expression",
     OtherwiseLabel: "Otherwise",
-    UserComment: "Сommenter",
+    UserComment: "Commenter",
     Subprocess: "Subprocess",
     SubprocessNone: "None",
     SubprocessStart: "Start",

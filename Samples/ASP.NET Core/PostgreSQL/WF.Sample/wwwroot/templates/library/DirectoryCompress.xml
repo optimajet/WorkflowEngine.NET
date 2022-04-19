@@ -25,7 +25,7 @@
     </Activity>
     <Activity Name="FileUncompress" State="FileUncompress" IsInitial="False" IsFinal="False" IsForSetState="True" IsAutoSchemeUpdate="True" WasInlined="true" OriginalName="FileUncompress" OriginalSchemeCode="DirectoryCompress">
       <Implementation>
-        <ActionRef Order="1" NameRef="FileUnсompress">
+        <ActionRef Order="1" NameRef="FileUncompress">
           <ActionParameter><![CDATA[{"ArchiveType":"ZIP","ArchivePath":"Test","DirectoryPath":"Test2"}]]></ActionParameter>
         </ActionRef>
       </Implementation>

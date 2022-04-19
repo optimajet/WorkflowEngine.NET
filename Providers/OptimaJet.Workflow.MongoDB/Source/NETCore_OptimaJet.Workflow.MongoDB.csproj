@@ -6,9 +6,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>WorkflowEngine.NETCore-ProviderForMongoDB</PackageId>
-    <Version>5.2.6</Version>
-    <AssemblyVersion>5.2.0</AssemblyVersion>
-    <FileVersion>5.2.0</FileVersion>
+    <Version>5.3.0</Version>
+    <AssemblyVersion>5.3.0</AssemblyVersion>
+    <FileVersion>5.3.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Product>Workflow Engine</Product>
     <Description>Contains dlls for MongoDB Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
