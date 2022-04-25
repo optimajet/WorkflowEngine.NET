@@ -4416,6 +4416,88 @@
             Set tags to scheme with the given schemeCode
             </summary>
         </member>
+        <member name="T:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider">
+            <summary>
+            Allows to thread-safely control collections of actors grouped by schemes.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.GetAllActors">
+            <summary>
+            Returns a collection of all actors grouped by schemes.
+            </summary>
+            <returns>
+            Collection of all actors grouped by schemes.
+            The keys in a KeyValuePair are scheme сodes and the values are collections of actors.
+            </returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.SetAllActors(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Collections.Generic.IEnumerable{System.String}}})">
+            <summary>
+            Replaces all actors grouped by schemes with a new ones.
+            </summary>
+            <param name="schemeActorsPairs">
+            Collection of all actors grouped by schemes.
+            The keys in a KeyValuePair are scheme сodes and the values are collections of actors.
+            </param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.UnionAllActors(System.Collections.Generic.IEnumerable{System.Collections.Generic.KeyValuePair{System.String,System.Collections.Generic.IEnumerable{System.String}}})">
+            <summary>
+            Unions actors for each scheme with specified actors from schemaActorsPairs.
+            </summary>
+            <param name="schemeActorsPairs">
+            Collection of all actors grouped by schemes.
+            The keys in a KeyValuePair are scheme сodes and the values are collections of actors.
+            </param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.GetActors(System.String)">
+            <summary>
+            Returns a collection of actors bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <returns>Collection of actor names for the specified schemeCode.</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.SetActors(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Replaces the existing collection of actors bound to the specified schemeCode with a new one.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actors">Collection of actors names.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.AddActor(System.String,System.String)">
+            <summary>
+            Adds an actor to the collection bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actor">Actor name.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.AddActors(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Adds an actors to the collection bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actors">Collection of actors names.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.RemoveActor(System.String,System.String)">
+            <summary>
+            Removes an actor from the collection bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actor">Actor name.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.RemoveActors(System.String,System.Collections.Generic.IEnumerable{System.String})">
+            <summary>
+            Removes an actors from the collection bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actors">Collection of actors names.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Plugins.BasicsPlugin.ActorProviders.IActorProvider.IsActorExist(System.String,System.String)">
+            <summary>
+            Checks if there is an actor in the collection bound to the schemeCode.
+            </summary>
+            <param name="schemeCode">The code of the scheme to which the collection of actors is bound.</param>
+            <param name="actor">Actor name.</param>
+            <returns>Is actor exist in the collection bound to the schemeCode.</returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.PredefinedActions.PredefinedActions">
             <summary>
             Contains all predefined actions
@@ -8867,6 +8949,27 @@
             
             </summary>
             <returns></returns>
+        </member>
+        <member name="F:OptimaJet.Workflow.Plugins.BasicPlugin.PredefinedActorProvider">
+            <summary>
+            Allows to thread-safely control collections of predefined actors.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Plugins.BasicPlugin.WithActor(System.String,System.Collections.Generic.List{System.String})">
+            <summary>
+            Adds an actor to the collection of predefined actors in all schemes specified in the collection.
+            It is supposed to be used before plugin initialization.
+            </summary>
+            <param name="actor">Actor name.</param>
+            <param name="schemes">Collection of scheme codes for adding an actor.</param>
+        </member>
+        <member name="M:OptimaJet.Workflow.Plugins.BasicPlugin.WithActors(System.Collections.Generic.List{System.String},System.Collections.Generic.List{System.String})">
+            <summary>
+            Adds an actors collection to the collection of predefined actors in all schemes specified in the collection.
+            It is supposed to be used before plugin initialization.
+            </summary>
+            <param name="actors">Collection of actors names.</param>
+            <param name="schemes">Collection of scheme codes for adding an actor.</param>
         </member>
         <member name="P:OptimaJet.Workflow.Plugins.BasicPlugin.Setting_DontCompileExpressions">
             <summary>
