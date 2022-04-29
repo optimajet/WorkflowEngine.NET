@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MySQL/5.3.1": {
+      "OptimaJet.Workflow.MySQL/5.3.2": {
         "dependencies": {
           "MySql.Data": "8.0.11",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "5.3.1"
+          "WorkflowEngine.NETCore-Core": "5.3.2"
         },
         "runtime": {
           "OptimaJet.Workflow.MySQL.dll": {}
@@ -1032,7 +1032,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/5.3.1": {
+      "WorkflowEngine.NETCore-Core/5.3.2": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1052,7 +1052,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MySQL/5.3.1": {
+    "OptimaJet.Workflow.MySQL/5.3.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1652,7 +1652,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/5.3.1": {
+    "WorkflowEngine.NETCore-Core/5.3.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
