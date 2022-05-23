@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.Redis/5.3.3": {
+      "OptimaJet.Workflow.Redis/5.3.4": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
           "StackExchange.Redis": "2.0.601",
-          "WorkflowEngine.NETCore-Core": "5.3.3"
+          "WorkflowEngine.NETCore-Core": "5.3.4"
         },
         "runtime": {
           "OptimaJet.Workflow.Redis.dll": {}
@@ -1017,7 +1017,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/5.3.3": {
+      "WorkflowEngine.NETCore-Core/5.3.4": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1037,7 +1037,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.Redis/5.3.3": {
+    "OptimaJet.Workflow.Redis/5.3.4": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1623,7 +1623,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/5.3.3": {
+    "WorkflowEngine.NETCore-Core/5.3.4": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
