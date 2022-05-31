@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.Oracle/5.3.4": {
+      "OptimaJet.Workflow.Oracle/5.3.5": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
           "Oracle.ManagedDataAccess.Core": "2.19.120",
-          "WorkflowEngine.NETCore-Core": "5.3.4"
+          "WorkflowEngine.NETCore-Core": "5.3.5"
         },
         "runtime": {
           "OptimaJet.Workflow.Oracle.dll": {}
@@ -966,7 +966,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/5.3.4": {
+      "WorkflowEngine.NETCore-Core/5.3.5": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -986,7 +986,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.Oracle/5.3.4": {
+    "OptimaJet.Workflow.Oracle/5.3.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1544,7 +1544,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/5.3.4": {
+    "WorkflowEngine.NETCore-Core/5.3.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
