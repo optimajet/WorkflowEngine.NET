@@ -1,89 +1,88 @@
 <h3>{{ labels.Title }}</h3>
 <div :id="editor_container" class="WorkflowDesignerJsonEditor"></div>
 <div class="WorkflowDesignerButtons">
-    <el-button @click="onValidate" type="info">{{ labels.Validate }}</el-button>
-    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
-    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+  <el-button type="info" @click="onValidate">{{ labels.Validate }}</el-button>
+  <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
+  <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <el-dialog
-    :title="infodialog.title"
-    :before-close="function() {infodialog.visible = false}"
-    :visible="infodialog.visible"
-    :modal-append-to-body="false"
-    width="50%">
-    <span v-html="infodialog.message"></span>
-    <span slot="footer" class="dialog-footer">
-        <el-button @click="infodialog.visible = false">{{labels.OK}}</el-button>
+  :before-close="function() {infodialog.visible = false}"
+  :modal-append-to-body="false"
+  :title="infodialog.title"
+  :visible="infodialog.visible"
+  width="50%">
+  <span v-html="infodialog.message"></span>
+  <span slot="footer" class="dialog-footer">
+        <el-button @click="infodialog.visible = false">{{ labels.OK }}</el-button>
     </span>
 </el-dialog>
 <script type="application/javascript">
-    function expressionform_Init(me){
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            editor_container: me.id + "_editor",
-            readonly: false,
-            labels: WorkflowDesignerConstants.EditExpressionLabel,
-            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-            infodialog: {
-                title: "",
-                message: "",
-                visible: false,
-                onSuccess: function(){
-                    me.VueConfig.data.infodialog.visible = false;
-                    me.onClose(true);
-                }
-            },
-        });
-
-        me.VueConfig.methods.onUpdate = function(value){
-            me.VueConfig.data.readonly = me.graph.Settings.readonly;
-            
-            setTimeout(function(){
-               me.VueConfig.methods.renderEditor(value);
-            }, 1);
-        };
-
-        me.VueConfig.methods.renderEditor = function(value){
-            if(!me.editor){
-                me.editor = ace.edit(me.VueConfig.data.editor_container);
-                var session = me.editor.getSession();
-                session.setMode("ace/mode/text");
-            }
-
-            me.editor.setValue(value ? value : "");
-            me.editor.clearSelection();
-        };
-
-        me.VueConfig.methods.onSave = function(){
-            var value = me.editor.getValue().replace(/(?:\n)/g, '\\n');
-            me.onSuccess(value);
-            me.onClose(true);
-        };
-
-        me.VueConfig.methods.onClose = function(){
-            me.VueConfig.data.infodialog.visible = false;
-            me.onClose(true);
-        };
-
-        me.VueConfig.methods.onHideEvent = function(){
-            if(me.editor){
-                me.editor.destroy();
-                delete me.editor;
-            }
+  function expressionform_Init(me) {
+    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+      editor_container: me.id + '_editor',
+      readonly: false,
+      labels: WorkflowDesignerConstants.EditExpressionLabel,
+      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      infodialog: {
+        title: '',
+        message: '',
+        visible: false,
+        onSuccess: function () {
+          me.VueConfig.data.infodialog.visible = false;
+          me.onClose(true);
         }
+      },
+    });
 
-        me.VueConfig.methods.onValidate = function(){
-            var expression = me.editor.getValue().replace(/(?:\n)/g, '\\n');
-            var params = new Object();
-            params.expression = expression; 
-            var callbackfn = function (response)
-            {
-                var infodialog = me.VueConfig.data.infodialog;
-                infodialog.title = response.Success ? WorkflowDesignerConstants.EditExpressionLabel.Success : WorkflowDesignerConstants.EditExpressionLabel.Error;
-                infodialog.message = response.Success ? WorkflowDesignerConstants.EditExpressionLabel.Succeeded : response.Message;
-                infodialog.visible = true;
-            }
-            me.graph.designer.perform(params, callbackfn, callbackfn );
-        };
+    me.VueConfig.methods.onUpdate = function (value) {
+      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+
+      setTimeout(function () {
+        me.VueConfig.methods.renderEditor(value);
+      }, 1);
     };
+
+    me.VueConfig.methods.renderEditor = function (value) {
+      if (!me.editor) {
+        me.editor = ace.edit(me.VueConfig.data.editor_container);
+        var session = me.editor.getSession();
+        session.setMode('ace/mode/text');
+      }
+
+      me.editor.setValue(value ? value : '');
+      me.editor.clearSelection();
+    };
+
+    me.VueConfig.methods.onSave = function () {
+      var value = me.editor.getValue().replace(/(?:\n)/g, '\\n');
+      me.onSuccess(value);
+      me.onClose(true);
+    };
+
+    me.VueConfig.methods.onClose = function () {
+      me.VueConfig.data.infodialog.visible = false;
+      me.onClose(true);
+    };
+
+    me.VueConfig.methods.onHideEvent = function () {
+      if (me.editor) {
+        me.editor.destroy();
+        delete me.editor;
+      }
+    }
+
+    me.VueConfig.methods.onValidate = function () {
+      var expression = me.editor.getValue().replace(/(?:\n)/g, '\\n');
+      var params = {};
+      params.expression = expression;
+      var callbackfn = function (response) {
+        var infodialog = me.VueConfig.data.infodialog;
+        infodialog.title = response.Success ? WorkflowDesignerConstants.EditExpressionLabel.Success : WorkflowDesignerConstants.EditExpressionLabel.Error;
+        infodialog.message = response.Success ? WorkflowDesignerConstants.EditExpressionLabel.Succeeded : response.Message;
+        infodialog.visible = true;
+      }
+      me.graph.designer.perform(params, callbackfn, callbackfn);
+    };
+  }
 </script>

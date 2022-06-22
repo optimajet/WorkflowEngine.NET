@@ -1,170 +1,238 @@
-<h3>{{ labels.Title  + (!readonly ? "  |  " : "")}}
-    <a v-if="!readonly" style="cursor:pointer" @click="add()">{{ ButtonTextCreate }}</a>
+<h3 class="WorkflowDesignerTitleWithCreate">
+  {{ labels.Title }}
+  <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerLocalizationList" class="WorkflowDesignerWindowForm">
-    <table class="WorkflowDesignerTable">
-        <tr>
-            <th></th>
-            <th>{{labels.ObjectName}}</th>
-            <th style="width: 15%;">{{labels.Type}}</th>
-            <th>{{labels.IsDefault}}</th>
-            <th style="width: 9%;">{{labels.Culture}}</th>
-            <th style="width: 25%;">{{labels.Value}}</th>
-        </tr>
-        <tr v-for="(item, index) in items"
-            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
-            @dragstart="dragstart(index, $event)" @dragend="dragend($event)"
-            @dragover="dragover(item, index, $event)">
-            <td class='WorkflowDesignerTableMoveCol' :draggable="!readonly" ><div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div></td>
-            <td>
-                <el-input
-                    v-model="item.ObjectName" 
-                    :title="validateField('ObjectName', item)" 
-                    :class="validateField('ObjectName', item) ? 'WorkflowDesignerInputError' : ''"
-                    :readonly="readonly"
-                ></el-input>
-            </td>
-            <td>
-                <el-select 
-                    v-model="item.Type" 
-                    style="width: 100%;" 
-                    :disabled="readonly"
-                    filterable clearable 
-                    placeholder="" 
-                    :title="validateField('Type', item)" 
-                    :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''">
-                    <el-option key="Command" :label="labels.Types[0]" value="Command"></el-option>
-                    <el-option key="State" :label="labels.Types[1]" value="State"></el-option>
-                    <el-option key="Parameter" :label="labels.Types[2]" value="Parameter"></el-option>
-                </el-select>
-            </td>
-            <td>
-                <el-checkbox v-model="item.IsDefault" :disabled="readonly"></el-checkbox>
-            </td>
-            <td>
-                <el-input
-                    v-model="item.Culture" 
-                    :title="validateField('Culture', item)" 
-                    :class="validateField('Culture', item) ? 'WorkflowDesignerInputError' : ''"
-                    :readonly="readonly"
-                ></el-input>
-            </td>
-            <td>
-                <el-input
-                    v-model="item.Value" 
-                    :title="validateField('Value', item)" 
-                    :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-                    :readonly="readonly"
-                ></el-input>
-            </td>
-            <td v-if="!readonly"><el-button @click="remove(index)" class="WorkflowDesignerTableDeleteButton"></el-button>
-        </tr>
-    </table>
+  <div v-if="predefined" style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
+    <el-switch v-model="showPredefined" :active-text="labels.ShowPredefined"></el-switch>
+  </div>
+  <table class="WorkflowDesignerTable">
+    <tr>
+      <th></th>
+      <th style="flex-grow: 1">{{ labels.ObjectName }}</th>
+      <th style="width: 140px">{{ labels.Type }}</th>
+      <th style="width: 60px">{{ labels.IsDefault }}</th>
+      <th style="width: 100px">{{ labels.Culture }}</th>
+      <th style="flex-grow: 1">{{ labels.Value }}</th>
+    </tr>
+
+    <tr v-if="showPredefined" v-for="(item, index) in predefined">
+      <td class='WorkflowDesignerTableMoveCol' :draggable="false">
+        <div v-if="false" class='WorkflowDesignerTableMoveButton'></div>
+      </td>
+      <td>
+        <el-input
+          v-model="item.ObjectName"
+          :title="validateField('ObjectName', item)"
+          :class="validateField('ObjectName', item) ? 'WorkflowDesignerInputError' : ''"
+          :disabled="true"
+        ></el-input>
+      </td>
+      <td>
+        <el-select
+          v-model="item.Type"
+          style="width: 100%;"
+          :disabled="true"
+          filterable clearable
+          placeholder=""
+          :title="validateField('Type', item)"
+          :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''">
+          <el-option key="Command" :label="labels.Types[0]" value="Command"></el-option>
+          <el-option key="State" :label="labels.Types[1]" value="State"></el-option>
+          <el-option key="Parameter" :label="labels.Types[2]" value="Parameter"></el-option>
+          <el-option key="Action" :label="labels.Types[3]" value="Action"></el-option>
+          <el-option key="Condition" :label="labels.Types[4]" value="Condition"></el-option>
+          <el-option key="Scheme" :label="labels.Types[5]" value="Scheme"></el-option>
+        </el-select>
+      </td>
+      <td>
+        <el-checkbox v-model="item.IsDefault" :disabled="true"></el-checkbox>
+      </td>
+      <td>
+        <el-input
+          v-model="item.Culture"
+          :title="validateField('Culture', item)"
+          :class="validateField('Culture', item) ? 'WorkflowDesignerInputError' : ''"
+          :disabled="true"
+        ></el-input>
+      </td>
+      <td>
+        <el-input
+          v-model="item.Value"
+          :title="validateField('Value', item)"
+          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+          :disabled="true"
+        ></el-input>
+      </td>
+      <td v-if="!readonly">
+        <el-button class="WorkflowDesignerTableDeleteButton" style="opacity: 0" :disabled="true"></el-button>
+      </td>
+    </tr>
+
+    <tr v-for="(item, index) in items" :key="index"
+        :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+        @dragend="dragend($event)" @dragover="dragover(item, index, $event)"
+        @dragstart="dragstart(index, $event)">
+      <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+      </td>
+      <td>
+        <el-input
+          v-model="item.ObjectName"
+          :class="validateField('ObjectName', item) ? 'WorkflowDesignerInputError' : ''"
+          :readonly="readonly"
+          :title="validateField('ObjectName', item)"
+        ></el-input>
+      </td>
+      <td>
+        <el-select
+          v-model="item.Type"
+          :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
+          :disabled="readonly"
+          @change="onChangeType(item)"
+          :title="validateField('Type', item)" clearable
+          filterable
+          placeholder=""
+          style="width: 100%;">
+          <el-option v-for="key in Object.keys(labels.Types)"
+                     :key="key" :label="labels.Types[key]" :value="key"></el-option>
+        </el-select>
+      </td>
+      <td>
+        <el-checkbox v-model="item.IsDefault" :disabled="readonly"></el-checkbox>
+      </td>
+      <td>
+        <el-input
+          v-model="item.Culture"
+          :class="validateField('Culture', item) ? 'WorkflowDesignerInputError' : ''"
+          :readonly="readonly"
+          :title="validateField('Culture', item)"
+        ></el-input>
+      </td>
+      <td>
+        <el-input
+          v-model="item.Value"
+          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+          :readonly="readonly"
+          :title="validateField('Value', item)"
+        ></el-input>
+      </td>
+      <td v-if="!readonly">
+        <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
+      </td>
+    </tr>
+  </table>
 </div>
 <div class="WorkflowDesignerButtons">
-    <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
-    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+  <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
+  <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function localization_Init(me){
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            labels: WorkflowDesignerConstants.LocalizationFormLabel,
-            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
-
-        me.VueConfig.methods.onUpdate = function(){
-            me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.Localization);
-            me.VueConfig.data.readonly = me.graph.Settings.readonly;
-        };
-
-        me.VueConfig.methods.add = function(){
-            me.VueConfig.data.items.push({ObjectName:"", Type:"", Culture:"", Value:"", IsDefault:false});
-
-            setTimeout(function(){
-                var objDiv = document.getElementById("WorkflowDesignerLocalizationList");
-                objDiv.scrollTop = objDiv.scrollHeight;
-            },10);
-        };
-
-        me.VueConfig.methods.remove = function(index){
-            me.VueConfig.data.items.splice(index, 1);
-        };
-
-        me.VueConfig.methods.showjson = function(name, item) {
-            me.VueConfig.data.editItem = item;
-            me.editItem = item;
-            me.VueConfig.data.jsonform = me.showjson(item[name], function(value){
-                if(me.editItem){
-                    me.editItem[name] = value;
-                    me.VueConfig.data.editItem = undefined;
-                    delete me.editItem;
-                }
-            })
-        };
-
-        me.VueConfig.methods.validateField = function(name, item){
-            if(name != 'ObjectName' && name != 'Type' && name != 'Culture' && name != 'Value')
-                return;
-
-            if(!item[name]){
-                return WorkflowDesignerConstants.FieldIsRequired;
-            }
-        };
-
-        me.VueConfig.methods.validate = function(){
-            var validateFunc = me.VueConfig.methods.validateField;
-            var items = me.VueConfig.data.items;
-            for(var i=0; i < items.length; i++){
-                var item = items[i];
-                if(validateFunc('ObjectName', item) || validateFunc('Type', item) || validateFunc('Culture', item) || validateFunc('Value', item))
-                    return false;
-            }
-
-            return true;
-        };
-
-        me.VueConfig.methods.onSave = function(){
-            if(me.VueConfig.methods.validate && me.VueConfig.methods.validate()){
-                me.graph.UpdateData(me.graph.data.Localization, me.VueConfig.data.items);
-                me.onClose(true);
-            }
-        };
-
-        me.VueConfig.methods.onClose = function(){
-            
-            if(me.VueConfig.data.readonly){
-                me.onClose(true);
-                return;
-            }
-
-            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
-                me.graph.data.Localization, 
-                me.VueConfig.data.items, 
-                ["ObjectName", "Type", "Culture", "Value", "IsDefault"])) {
-                
-                me.showConfirm();
-                return false;
-            }
-            else{
-                me.onClose(true);
-            }
-        };
-
-        me.VueConfig.methods.onCloseSave = function(){
-            me.onClose(true);
-        };
-
-        me.showConfirm = function(){
-            me.VueConfig.methods.showConfirm({
-                title: WorkflowDesignerConstants.DialogConfirmText,
-                message: WorkflowDesignerConstants.CloseWithoutSaving,
-                onSuccess: function(){
-                    me.VueConfig.methods.onCloseSave();
-                }});
-        }
+  function localization_Init(me) {
+    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+      readonly: false,
+      labels: WorkflowDesignerConstants.LocalizationFormLabel,
+      ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+      ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      showPredefined: false,
+      predefined: me.graph.data.AdditionalParams.PredefinedLocalization
+    });
+    me.VueConfig.methods.onUpdate = function () {
+      me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.Localization);
+      me.VueConfig.data.readonly = me.graph.Settings.readonly;
     };
+
+    me.VueConfig.methods.add = function () {
+      me.VueConfig.data.items.push({ObjectName: '', Type: '', Culture: '', Value: '', IsDefault: false});
+
+      setTimeout(function () {
+        var objDiv = document.getElementById('WorkflowDesignerLocalizationList');
+        objDiv.scrollTop = objDiv.scrollHeight;
+      }, 10);
+    };
+
+    me.VueConfig.methods.remove = function (index) {
+      me.VueConfig.data.items.splice(index, 1);
+    };
+
+    me.VueConfig.methods.showjson = function (name, item) {
+      me.VueConfig.data.editItem = item;
+      me.editItem = item;
+      me.VueConfig.data.jsonform = me.showjson(item[name], function (value) {
+        if (me.editItem) {
+          me.editItem[name] = value;
+          me.VueConfig.data.editItem = undefined;
+          delete me.editItem;
+        }
+      })
+    };
+
+    me.VueConfig.methods.validateField = function (name, item) {
+      if (name != 'ObjectName' && name != 'Type' && name != 'Culture' && name != 'Value')
+        return;
+
+      if (!item[name]) {
+        return WorkflowDesignerConstants.FieldIsRequired;
+      }
+    };
+
+    me.VueConfig.methods.validate = function () {
+      var validateFunc = me.VueConfig.methods.validateField;
+      var items = me.VueConfig.data.items;
+      for (var i = 0; i < items.length; i++) {
+        var item = items[i];
+        if (validateFunc('ObjectName', item) || validateFunc('Type', item) || validateFunc('Culture', item) || validateFunc('Value', item))
+          return false;
+      }
+
+      return true;
+    };
+
+    me.VueConfig.methods.onSave = function () {
+      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
+        me.graph.UpdateData(me.graph.data.Localization, me.VueConfig.data.items);
+        me.onClose(true);
+      }
+    };
+
+    me.VueConfig.methods.onClose = function () {
+
+      if (me.VueConfig.data.readonly) {
+        me.onClose(true);
+        return;
+      }
+
+      if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
+        me.graph.data.Localization,
+        me.VueConfig.data.items,
+        ['ObjectName', 'Type', 'Culture', 'Value', 'IsDefault'])) {
+        me.showConfirm();
+        return false;
+      } else {
+        me.onClose(true);
+      }
+    };
+
+    me.VueConfig.methods.onChangeType = function (item) {
+      if (item.Type === 'Scheme') {
+        item.ObjectName = me.graph.data.Name;
+      }
+    };
+
+    me.VueConfig.methods.onCloseSave = function () {
+      me.onClose(true);
+    };
+
+    me.showConfirm = function () {
+      me.VueConfig.methods.showConfirm({
+        title: WorkflowDesignerConstants.DialogConfirmText,
+        message: WorkflowDesignerConstants.CloseWithoutSaving,
+        onSuccess: function () {
+          me.VueConfig.methods.onCloseSave();
+        }
+      });
+    }
+  }
 </script>

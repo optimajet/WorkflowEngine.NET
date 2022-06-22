@@ -1,15 +1,29 @@
-<svg width="{item.TextWidth + 22}" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="2" y="2" width="{item.TextWidth + 14}" height="56" rx="10"  ry="10" fill="{Color}" stroke="{item.Selected ? '#F39C12' : (item.IsInline? '#CECECE' : item.Color)}" stroke-width="3" stroke-linejoin="round" stroke-dasharray="{item.IsInline? '8 4': 'none'}"/>
-    <path 
-            transform="translate({(item.TextWidth) / 2} 28)"
-            d="M14.7387 15.8284L16.6304 13.9142L14.7387 12V13H7.90588V10H14.7387V10.8284L16.6304 8.91424L14.7387 7V8H7.90588V5H14.7387V5.82843L16.6304 3.91422L14.7387 2V3H7.90588V1H3.68853C3.34678 0.402198 2.70805 0 1.97647 0C0.884896 0 0 0.895432 0 2C0 3.10457 0.884896 4 1.97647 4C2.70805 4 3.34678 3.5978 3.68853 3H5.92941V8V10V16H7.90588V15H14.7387V15.8284Z"
-            fill="{TextColor}"/>
-    <text x="9" y="19" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">{Name}</text>
-    <text x="9" y="49" visibility="{item.IsInitial ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{IsInitialLabel}</text>
-    <text x="9" y="49" visibility="{item.IsFinal ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{IsFinalLabel}</text>
-    <text x="204" y="19" visibility="{item.IsInline ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">I</text>
-    <text x="169" y="49" visibility="{Array.isArray(item.PreExecutionImplementation) && item.PreExecutionImplementation.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">P</text>
-    <text x="179" y="49" visibility="{Array.isArray(item.Implementation) && item.Implementation.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">E</text>
-    <text x="{9 + ((item.IsInitial || item.IsFinal)?30:0) }" y="49" visibility="{item.IsForSetState ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="{TextColor}">{((item.IsInitial || item.IsFinal)?" - ":"") + item.IsForSetStateLabel}</text>
-
+<svg direction="{BiDi}" width="{item.svgWidth = item.TextWidth + 22}" height="60" fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="2" y="2" width="{item.TextWidth + 14}" height="56" rx="10" ry="10" fill="{Color}"
+          stroke="{item.Selected ? '#F39C12' : (item.IsInline? '#CECECE' : item.Color)}" stroke-width="3" stroke-linejoin="round"
+          stroke-dasharray="{item.IsInline? '8 4': 'none'}"/>
+    <path transform="translate({(item.TextWidth) / 2 + (item.BiDi === 'rtl' ? 33/2:0)} 28) scale({item.BiDi === 'rtl' ? -1:1} 1)"
+          d="M14.7387 15.8284L16.6304 13.9142L14.7387 12V13H7.90588V10H14.7387V10.8284L16.6304 8.91424L14.7387 7V8H7.90588V5H14.7387V5.82843L16.6304 3.91422L14.7387 2V3H7.90588V1H3.68853C3.34678 0.402198 2.70805 0 1.97647 0C0.884896 0 0 0.895432 0 2C0 3.10457 0.884896 4 1.97647 4C2.70805 4 3.34678 3.5978 3.68853 3H5.92941V8V10V16H7.90588V15H14.7387V15.8284Z"
+          fill="{TextColor}"/>
+    <text x="{item.mirrorX(9 )}" y="19" font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">{Name}</text>
+    <text x="{item.mirrorX(9 )}" y="49" visibility="{item.IsInitial ? 'visible' : 'hidden'}" font-family="Arial" font-size="12"
+          fill="{TextColor}">{IsInitialLabel}
+    </text>
+    <text x="{item.mirrorX(9 )}" y="49" visibility="{item.IsFinal ? 'visible' : 'hidden'}" font-family="Arial" font-size="12"
+          fill="{TextColor}">{IsFinalLabel}
+    </text>
+    <text x="{item.mirrorX(item.TextWidth + 5)}" y="19" visibility="{item.IsInline ? 'visible' : 'hidden'}" font-family="Arial"
+          font-size="12" font-weight="600" fill="{TextColor}">I
+    </text>
+    <text x="{item.mirrorX(item.TextWidth - 3)}" y="49"
+          visibility="{Array.isArray(item.PreExecutionImplementation) && item.PreExecutionImplementation.length > 0 ? 'visible' : 'hidden'}"
+          font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">P
+    </text>
+    <text x="{item.mirrorX(item.TextWidth + 5)}" y="49"
+          visibility="{Array.isArray(item.Implementation) && item.Implementation.length > 0 ? 'visible' : 'hidden'}"
+          font-family="Arial" font-size="12" font-weight="600" fill="{TextColor}">E
+    </text>
+    <text x="{item.mirrorX(9 + ((item.IsInitial || item.IsFinal)?30:0))}" y="49" visibility="{item.IsForSetState ? 'visible' : 'hidden'}"
+          font-family="Arial" font-size="12" fill="{TextColor}">{((item.IsInitial || item.IsFinal)?" - ":"") + item.IsForSetStateLabel}
+    </text>
 </svg>

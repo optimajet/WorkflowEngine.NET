@@ -1,68 +1,70 @@
-<div v-if="!settings.hideInfoBlock" style="display: flex;" class="WorkflowDesignerToolbarBlock Horizontal">    
+<div v-if="!settings.hideInfoBlock" class="WorkflowDesignerToolbarBlock Horizontal" style="display: flex; min-width: 276px; justify-content: space-between">
+  <el-tooltip :content="labels.ActivitiesCount">
     <div class="WorkflowDesignerToolbarInfoItem">
-        <span :style="info.activity > info.activityLimit ? 'color:red' : ''" style="margin-right: 10px;">
-            {{ info.activity }}
-            {{ info.activityLimit ? (" / " +  info.activityLimit) : "" }}
-        </span>
-        <div class="WorkflowDesignerToolbarIcon ActivityCount"></div>
+      <div class="WorkflowDesignerToolbarIcon ActivityCount RTLIcon"></div>
+      <span :style="info.activity > info.activityLimit ? 'color:red' : ''">
+          {{ info.activity }}
+          {{ info.activityLimit ? (" / " + info.activityLimit) : "" }}
+      </span>
     </div>
+  </el-tooltip>
 
-    <div class="WorkflowDesignerToolbarInfoItemDivider"></div>
-
+  <el-tooltip :content="labels.TransitionsCount">
     <div class="WorkflowDesignerToolbarInfoItem">
-        <span :style="info.transition > info.transitionLimit ? 'color:red' : ''" style="margin-right: 10px;">
-            {{ info.transition }}
-            {{ info.transitionLimit ? (" / " +  info.transitionLimit) : "" }}
-        </span>
-        <div class="WorkflowDesignerToolbarIcon TransitionCount"></div>
+      <div class="WorkflowDesignerToolbarIcon TransitionCount RTLIcon"></div>
+      <span :style="info.transition > info.transitionLimit ? 'color:red' : ''">
+          {{ info.transition }}
+          {{ info.transitionLimit ? (" / " + info.transitionLimit) : "" }}
+      </span>
     </div>
+  </el-tooltip>
 
-    <div class="WorkflowDesignerToolbarInfoItemDivider"></div>
-
+  <el-tooltip :content="labels.CommandsCount">
     <div class="WorkflowDesignerToolbarInfoItem">
-        <span :style="info.command > info.commandLimit ? 'color:red' : ''" style="margin-right: 10px;">
-            {{ info.command }}
-            {{ info.commandLimit ? (" / " +  info.commandLimit) : "" }}
-        </span>
-        <div class="WorkflowDesignerToolbarIcon CommandsCount"></div>
+      <div class="WorkflowDesignerToolbarIcon CommandsCount"></div>
+      <span :style="info.command > info.commandLimit ? 'color:red' : ''">
+          {{ info.command }}
+          {{ info.commandLimit ? (" / " + info.commandLimit) : "" }}
+      </span>
     </div>
+  </el-tooltip>
 </div>
 <script type="application/javascript">
     function toolbarinfo_Init(me){
         var data = me.VueConfig.data;
         data.labels = WorkflowDesignerConstants.ToolbarLabel;
-            
+
         me.VueConfig.methods.onUpdate = function(){
             data.settings = me.graph.Settings;
             data.info = {
                 activity: 0,
                 transition: 0,
-                command: 0,            
+                command: 0,
                 activityLimit: undefined,
                 transitionLimit: undefined,
                 commandLimit: undefined,
             };
-      
+
             if (me.graph.data != undefined) {
                 data.info.activity = me.graph.data.Activities.length;
                 data.info.transition = me.graph.data.Transitions.length;
                 data.info.command = me.graph.data.Commands.length;
 
-                if(me.graph.data.AdditionalParams != undefined){
-                    var addparams = me.graph.data.AdditionalParams;
-                    if(addparams.MaxNumberOfActivities != undefined && addparams.MaxNumberOfActivities != -1){
-                        data.info.activityLimit = addparams.MaxNumberOfActivities;
-                    }
+        if (me.graph.data.AdditionalParams != undefined) {
+          var addparams = me.graph.data.AdditionalParams;
+          if (addparams.MaxNumberOfActivities != undefined && addparams.MaxNumberOfActivities != -1) {
+            data.info.activityLimit = addparams.MaxNumberOfActivities;
+          }
 
-                    if(addparams.MaxNumberOfTransitions != undefined && addparams.MaxNumberOfTransitions != -1){
-                        data.info.transitionLimit = addparams.MaxNumberOfTransitions;
-                    }
+          if (addparams.MaxNumberOfTransitions != undefined && addparams.MaxNumberOfTransitions != -1) {
+            data.info.transitionLimit = addparams.MaxNumberOfTransitions;
+          }
 
-                    if(addparams.MaxNumberOfCommands != undefined && addparams.MaxNumberOfCommands != -1){
-                        data.info.commandLimit = addparams.MaxNumberOfCommands;
-                    }
-                }
-            }
-        };
+          if (addparams.MaxNumberOfCommands != undefined && addparams.MaxNumberOfCommands != -1) {
+            data.info.commandLimit = addparams.MaxNumberOfCommands;
+          }
+        }
+      }
     };
+  }
 </script>

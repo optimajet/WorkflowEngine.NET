@@ -11,9 +11,9 @@
     <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.1" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="2.2.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.3.5" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="5.3.5" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMSSQL" Version="5.3.5" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="6.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="6.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMSSQL" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />

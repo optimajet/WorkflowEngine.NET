@@ -1,14 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <LangVersion>8</LangVersion>
+    <LangVersion>10</LangVersion>
     <TargetFrameworks>netstandard2.0;</TargetFrameworks>
     <RootNamespace>OptimaJet.Workflow.MSSQL</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MSSQL</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>5.3.0</AssemblyVersion>
-    <FileVersion>5.3.0</FileVersion>
-    <Version>5.3.5</Version>
+    <AssemblyVersion>6.0.0</AssemblyVersion>
+    <FileVersion>6.0.0</FileVersion>
+    <Version>6.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>

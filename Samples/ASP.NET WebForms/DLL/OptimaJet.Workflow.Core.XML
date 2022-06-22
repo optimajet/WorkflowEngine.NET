@@ -765,6 +765,24 @@
             Exception which occured in time of execution
             </summary>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Extensions.Append``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Appends a value to the end of the sequence. 
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source">A sequence of values.</param>
+            <param name="element">The value to append to source.</param>
+            <returns>A new sequence that ends with element.</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Extensions.Prepend``1(System.Collections.Generic.IEnumerable{``0},``0)">
+            <summary>
+            Adds a value to the beginning of the sequence.
+            </summary>
+            <typeparam name="T"></typeparam>
+            <param name="source">A sequence of values.</param>
+            <param name="element">The value to prepend to source.</param>
+            <returns>A new sequence that begins with element</returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Generator.IWorkflowGenerator`1">
             <summary>
             Interface of a workflow generator, which generates not parsed process scheme <see cref="T:OptimaJet.Workflow.Core.Model.SchemeDefinition`1"/> 
@@ -2387,65 +2405,70 @@
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.LocalizeType.State">
             <summary>
-            Command <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.State"/>
+            Name of <see cref="P:OptimaJet.Workflow.Core.Model.ActivityDefinition.State"/>
             </summary>
         </member>
         <member name="F:OptimaJet.Workflow.Core.Model.LocalizeType.Parameter">
             <summary>
-            Command <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.Name"/>
+            Parameter <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinitionReference.Name"/>
             </summary>
         </member>
-        <member name="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition">
+        <member name="F:OptimaJet.Workflow.Core.Model.LocalizeType.Action">
+            <summary>
+            Action <see cref="!:CodeActionDefinition.Name"/> with type <see cref="F:OptimaJet.Workflow.Core.Model.CodeActionType.Action"/>
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.LocalizeType.Condition">
+            <summary>
+            Action <see cref="!:CodeActionDefinition.Name"/> with type <see cref="F:OptimaJet.Workflow.Core.Model.CodeActionType.Condition"/>
+            </summary>
+        </member>
+        <member name="F:OptimaJet.Workflow.Core.Model.LocalizeType.Scheme">
+            <summary>
+            <see cref="!:ProcessDefinition.Name"/> of scheme
+            </summary>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Model.Translation">
             <summary>
             Represent a localization record in a process scheme
             </summary>
         </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.LocalizeDefinition.Type">
-            <summary>
-            Type of localized resource <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeType"/>
-            </summary>
+        <member name="P:OptimaJet.Workflow.Core.Model.Translation.ObjectName">
+            <summary> System name </summary>
         </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.LocalizeDefinition.IsDefault">
+        <member name="P:OptimaJet.Workflow.Core.Model.Translation.Value">
+            <summary> Localized name </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.Translation.Type">
+            <summary> Type of localized resource <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeType"/> </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.Translation.Culture">
+            <summary> Culture name </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.Translation.IsDefault">
             <summary>
             If true specifies that the record will be used by default in case of absence of a record with specific culture
             </summary>
         </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.LocalizeDefinition.ObjectName">
+        <member name="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,System.String,System.String,System.String,System.String)">
             <summary>
-            System name
+            Create Translation object
             </summary>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.LocalizeDefinition.Culture">
-            <summary>
-            Culture name
-            </summary>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.LocalizeDefinition.Value">
-            <summary>
-            Localized name
-            </summary>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.LocalizeDefinition.Create(System.String,System.String,System.String,System.String,System.String)">
-            <summary>
-            Create LocalizeDefinition object
-            </summary>
-            <param name="objectName">System name</param>
+            <param name="name">System name</param>
             <param name="type">Type of localized resource <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeType"/></param>
             <param name="culture">Culture name</param>
             <param name="value">Localized name</param>
             <param name="isDefault">If true specifies that the record will be used by default in case of absence of a record with specific culture</param>
-            <returns>LocalizeDefinition object</returns>
+            <returns>Translation object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.LocalizeDefinition.Create(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.String,System.String,System.Boolean)">
-            <summary>
-            Create LocalizeDefinition object
-            </summary>
-            <param name="objectName">System name</param>
-            <param name="type">Type of localized resource <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeType"/></param>
-            <param name="culture">Culture name</param>
-            <param name="value">Localized name</param>
-            <param name="isDefault">If true specifies that the record will be used by default in case of absence of a record with specific culture</param>
-            <returns>LocalizeDefinition object</returns>
+        <member name="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.String,System.String,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,System.String,System.String,System.String,System.String)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo,System.String,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,System.String,System.String,System.String,System.String)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.Translation.#ctor(System.String,System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.String,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.Translation.Create(System.String,System.String,System.String,System.String,System.String)"/>
         </member>
         <member name="T:OptimaJet.Workflow.Core.Model.ParameterDefinition">
             <summary>
@@ -2718,7 +2741,12 @@
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.Localization">
             <summary>
-            List of localization items <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/>
+            List of localization items <see cref="T:OptimaJet.Workflow.Core.Model.Translation"/>
+            </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.Localizer">
+            <summary>
+            Provides localized strings. For search used <see cref="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.Localization"/> property.
             </summary>
         </member>
         <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.CodeActions">
@@ -2776,6 +2804,31 @@
             Returns all persisted parameter definitions <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.Purpose"/> 
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.ActorsForSerialize">
+            <summary>
+            Returns all parameter definitions except system <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.Purpose"/>
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.Create(System.String,System.Boolean,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActorDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CommandDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TimerDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActivityDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.Translation},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CodeActionDefinition},OptimaJet.Workflow.Core.Model.DesignerSettings,System.Collections.Generic.List{System.String},System.Boolean,System.String)">
+            <summary>
+            Create ProcessDefinition object
+            </summary>
+            <param name="name">Name of the scheme</param>
+            <param name="canBeInlined">Sign that the scheme can be inlined into another schemes</param>
+            <param name="actors">List of actors <see cref="T:OptimaJet.Workflow.Core.Model.ActorDefinition"/></param>
+            <param name="parameters">List of parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinition"/></param>
+            <param name="commands">List of commands <see cref="T:OptimaJet.Workflow.Core.Model.CommandDefinition"/></param>
+            <param name="timers">List of timers <see cref="T:OptimaJet.Workflow.Core.Model.TimerDefinition"/></param>
+            <param name="activities">List of activities <see cref="T:OptimaJet.Workflow.Core.Model.ActivityDefinition"/></param>
+            <param name="transitions">List of transitions <see cref="T:OptimaJet.Workflow.Core.Model.TransitionDefinition"/></param>
+            <param name="localization">List of localization items <see cref="T:OptimaJet.Workflow.Core.Model.Translation"/></param>
+            <param name="codeActions"> List of code actions <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionDefinition"/></param>
+            <param name="designerSettings">Designer settings</param>
+            <param name="tags">scheme tags</param>
+            <param name="logEnabled">Sign that the <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/> will be logging after create</param>
+            <param name="commonUsings">List of common usings separated by ;</param>
+            <returns>ProcessDefinition object</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.FindActivity(System.String)">
             <summary>
             Returns activity with specific name
@@ -2803,11 +2856,6 @@
             </summary>
             <param name="name">Name of the actor <see cref="!:ActorDefinition.Name"/></param>
             <returns>ActorDefinition object</returns>
-        </member>
-        <member name="P:OptimaJet.Workflow.Core.Model.ProcessDefinition.ActorsForSerialize">
-            <summary>
-            Returns all parameter definitions except system <see cref="P:OptimaJet.Workflow.Core.Model.ParameterDefinition.Purpose"/>
-            </summary>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.FindParameterDefinition(System.String)">
             <summary>
@@ -2872,49 +2920,52 @@
             <param name="forkTransitionSearch">Search filter for fork transitions</param>
             <returns>List of all outgoing timer transitions</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.Create(System.String,System.Boolean,System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActorDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ParameterDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CommandDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TimerDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.ActivityDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.TransitionDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.LocalizeDefinition},System.Collections.Generic.List{OptimaJet.Workflow.Core.Model.CodeActionDefinition},OptimaJet.Workflow.Core.Model.DesignerSettings,System.Collections.Generic.List{System.String},System.Boolean,System.String)">
-            <summary>
-            Create ProcessDefinition object
-            </summary>
-            <param name="name">Name of the scheme</param>
-            <param name="canBeInlined">Sign that the scheme can be inlined into another schemes</param>
-            <param name="actors">List of actors <see cref="T:OptimaJet.Workflow.Core.Model.ActorDefinition"/></param>
-            <param name="parameters">List of parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinition"/></param>
-            <param name="commands">List of commands <see cref="T:OptimaJet.Workflow.Core.Model.CommandDefinition"/></param>
-            <param name="timers">List of timers <see cref="T:OptimaJet.Workflow.Core.Model.TimerDefinition"/></param>
-            <param name="activities">List of activities <see cref="T:OptimaJet.Workflow.Core.Model.ActivityDefinition"/></param>
-            <param name="transitions">List of transitions <see cref="T:OptimaJet.Workflow.Core.Model.TransitionDefinition"/></param>
-            <param name="localization">List of localization items <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/></param>
-            <param name="codeActions"> List of code actions <see cref="T:OptimaJet.Workflow.Core.Model.CodeActionDefinition"/></param>
-            <param name="designerSettings">Designer settings</param>
-            <param name="tags">scheme tags</param>
-            <param name="logEnabled">Sign that the <see cref="T:OptimaJet.Workflow.Core.Model.ProcessInstance"/> will be logging after create</param>
-            <param name="commonUsings">List of common usings separated by ;</param>
-            <returns>ProcessDefinition object</returns>
-        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedStateName(System.String,System.Globalization.CultureInfo)">
             <summary>
             Returns localized state name in specific culture
             </summary>
-            <param name="stateName">System state name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized state name</returns>
+            <param name="name">System state name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized state name if exists, else input <paramref name="name"/></returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedCommandName(System.String,System.Globalization.CultureInfo)">
             <summary>
             Returns localized command name in specific culture
             </summary>
-            <param name="commandName">System command name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized command name</returns>
+            <param name="name">System command name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized command name if exists, else input <paramref name="name"/></returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedParameterName(System.String,System.Globalization.CultureInfo)">
             <summary>
             Returns localized parameter name in specific culture
             </summary>
-            <param name="parameterName">System parameter name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized parameter name</returns>
+            <param name="name">System parameter name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized parameter name if exists, else input <paramref name="name"/></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedActionName(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Returns localized action name in specific culture
+            </summary>
+            <param name="name">System action name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized action name if exists, else input <paramref name="name"/></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedConditionName(System.String,System.Globalization.CultureInfo)">
+            <summary>
+            Returns localized condition name in specific culture
+            </summary>
+            <param name="name">System condition name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized condition name if exists, else input <paramref name="name"/></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedSchemeName(System.Globalization.CultureInfo)">
+            <summary>
+            Returns localized scheme name in specific culture
+            </summary>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized condition name if exists, else just <see cref="!:ProcessDefinition.Name"/></returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.Clone(System.Boolean,System.Boolean,System.Boolean)">
             <summary>
@@ -2979,6 +3030,7 @@
             <summary>
             Create ProcessInstance object
             </summary>
+            <param name="runtime">The instance of the runtime</param>
             <param name="schemeId">Id of the scheme of the process</param>
             <param name="processId">Id of the process</param>
             <param name="processScheme">Parsed scheme of the process</param>
@@ -3181,6 +3233,11 @@
             Returns the list of process parameters <see cref="T:OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue"/> from a subprocess which was merged with current process. 
             </summary>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Model.ProcessInstance.Localizer">
+            <summary>
+            Provides localized strings. For search used sources from runtime owner and <see cref="P:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessScheme"/>
+            </summary>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.AddParameter(OptimaJet.Workflow.Core.Model.ParameterDefinitionWithValue)">
             <summary>
             Adds parameter to process parameters collection
@@ -3303,28 +3360,22 @@
             <param name="parameter">Additional action parameter</param>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedStateName(System.String,System.Globalization.CultureInfo)">
-            <summary>
-            Returns localized state name in specific culture
-            </summary>
-            <param name="stateName">System state name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized state name</returns>
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedStateName(System.String,System.Globalization.CultureInfo)"/>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedCommandName(System.String,System.Globalization.CultureInfo)">
-            <summary>
-            Returns localized command name in specific culture
-            </summary>
-            <param name="commandName">System command name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized command name</returns>
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedCommandName(System.String,System.Globalization.CultureInfo)"/>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedParameterName(System.String,System.Globalization.CultureInfo)">
-            <summary>
-            Returns localized parameter name in specific culture
-            </summary>
-            <param name="parameterName">System parameter name</param>
-            <param name="culture">Culture</param>
-            <returns>Localized parameter name</returns>
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedParameterName(System.String,System.Globalization.CultureInfo)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedActionName(System.String,System.Globalization.CultureInfo)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedActionName(System.String,System.Globalization.CultureInfo)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedConditionName(System.String,System.Globalization.CultureInfo)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedConditionName(System.String,System.Globalization.CultureInfo)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.GetLocalizedSchemeName(System.Globalization.CultureInfo)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Model.ProcessDefinition.GetLocalizedSchemeName(System.Globalization.CultureInfo)"/>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Model.ProcessInstance.ProcessParametersToString(OptimaJet.Workflow.Core.Model.ParameterPurpose)">
             <summary>
@@ -5016,6 +5067,22 @@
             </summary>
             <returns></returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider.Get(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo)">
+            <summary>
+            Get the localized string.
+            </summary>
+            <param name="name">System name</param>
+            <param name="type">Localize type of name</param>
+            <param name="culture">Culture</param>
+            <returns>Localized string if exists, else null</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider.GetAll(System.String)">
+            <summary>
+            Get all localized strings for specific scheme. Used in the designer with predefined mark.
+            </summary>
+            <param name="schemeCode"> Scheme code</param>
+            <returns></returns>
+        </member>
         <member name="T:OptimaJet.Workflow.Core.Runtime.ResumeParams">
             <summary>
              Represents parameters for resume the process
@@ -6382,22 +6449,6 @@
             <param name="culture">Culture to localize command and command parameter names</param>
             <returns>List of <see cref="T:OptimaJet.Workflow.Core.Runtime.WorkflowCommand"/> commands</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameAsync(System.Guid,System.String)">
-            <summary>
-            Get localized command name for specified process in current culture (async version)
-            </summary>
-            <param name="processId">Process id</param>
-            <param name="commandName">Command name to localize</param>
-            <returns>Localized command name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameBySchemeIdAsync(System.Guid,System.String)">
-            <summary>
-            Get localized command name for specified scheme in current culture (async version)
-            </summary>
-            <param name="schemeId">Id of the scheme</param>
-            <param name="commandName">Command name to localize</param>
-            <returns>Localized command name</returns>
-        </member>
         <member name="E:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.OnNeedDeterminingParameters">
             <summary>
             Raises when runtime need to obtain parameters for creating the scheme of the process
@@ -6605,6 +6656,70 @@
             <param name="processId">Id of the process</param>
             <returns></returns>
         </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExternalLocalization">
+            <summary> Instance of the <see cref="T:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider"/> </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Localizer">
+            <summary>
+            Provides localized strings. For search used <see cref="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.ExternalLocalization"/> property by default.
+            </summary>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateName(System.Guid,System.String)">
+            <summary>
+            Get localized state name for specified process in current culture
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="stateName">State name to localize</param>
+            <returns>Localized state name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameAsync(System.Guid,System.String)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateName(System.Guid,System.String)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeId(System.Guid,System.String)">
+            <summary>
+            Get localized state name for specified scheme in current culture
+            </summary>
+            <param name="schemeId">Id of the scheme</param>
+            <param name="stateName">State name to localize</param>
+            <returns>Localized state name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeIdAsync(System.Guid,System.String)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeId(System.Guid,System.String)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeCode(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <summary>
+            Get localized state name for specified scheme in current culture
+            </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="stateName">State name to localize</param>
+            <param name="parameters">The parameters for creating scheme of process</param>
+            <returns>Localized state name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeCodeAsync(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeCode(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandName(System.Guid,System.String)">
+            <summary>
+            Get localized command name for specified process in current culture
+            </summary>
+            <param name="processId">Process id</param>
+            <param name="commandName">Command name to localize</param>
+            <returns>Localized command name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameAsync(System.Guid,System.String)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandName(System.Guid,System.String)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameBySchemeId(System.Guid,System.String)">
+            <summary>
+            Get localized command name for specified scheme in current culture
+            </summary>
+            <param name="schemeId">Id of the scheme</param>
+            <param name="commandName">Command name to localize</param>
+            <returns>Localized command name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameBySchemeIdAsync(System.Guid,System.String)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameBySchemeId(System.Guid,System.String)"/>
+        </member>
         <member name="P:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.Logger">
             <summary> Instance of the logger <see cref="T:OptimaJet.Workflow.Core.Logging.ILogger"/> </summary>
         </member>
@@ -6804,31 +6919,6 @@
             <param name="resumeParams"></param>
             <param name="token"></param>
             <returns></returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeIdAsync(System.Guid,System.String)">
-            <summary>
-            Get localized state name for specified scheme in current culture (async version)
-            </summary>
-            <param name="schemeId">Id of the scheme</param>
-            <param name="stateName">State name to localize</param>
-            <returns>Localized state name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameAsync(System.Guid,System.String)">
-            <summary>
-            Get localized state name for specified process in current culture (async version)
-            </summary>
-            <param name="processId">Process id</param>
-            <param name="stateName">State name to localize</param>
-            <returns>Localized state name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeCodeAsync(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Get localized state name for specified scheme in current culture (async version)
-            </summary>
-            <param name="schemeCode">Code of the scheme</param>
-            <param name="stateName">State name to localize</param>
-            <param name="parameters">The parameters for creating </param>
-            <returns>Localized state name</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetCurrentStateNameAsync(System.Guid)">
             <summary>
@@ -7293,53 +7383,12 @@
             <param name="processId">Process id</param>
             <returns><see cref="T:OptimaJet.Workflow.Core.Model.ProcessDefinition"/> object</returns>
         </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeCode(System.String,System.String,System.Collections.Generic.IDictionary{System.String,System.Object})">
-            <summary>
-            Get localized state name for specified scheme in current culture
-            </summary>
-            <param name="schemeCode">Code of the scheme</param>
-            <param name="stateName">State name to localize</param>
-            <param name="parameters">The parameters for creating scheme of process</param>
-            <returns>Localized state name</returns>
-        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessStatus(System.Guid)">
             <summary>
             Get status of specified process
             </summary>
             <param name="processId">Process id</param>
             <returns><see cref="T:OptimaJet.Workflow.Core.Persistence.ProcessStatus"/> object</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateNameBySchemeId(System.Guid,System.String)">
-            <summary>
-            Get localized state name for specified scheme in current culture
-            </summary>
-            <param name="schemeId">Id of the scheme</param>
-            <param name="stateName">State name to localize</param>
-            <returns>Localized state name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedStateName(System.Guid,System.String)">
-            <summary>
-            Get localized state name for specified process in current culture
-            </summary>
-            <param name="processId">Process id</param>
-            <param name="stateName">State name to localize</param>
-            <returns>Localized state name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandName(System.Guid,System.String)">
-            <summary>
-            Get localized command name for specified process in current culture
-            </summary>
-            <param name="processId">Process id</param>
-            <param name="commandName">Command name to localize</param>
-            <returns>Localized command name</returns>
-        </member>
-        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetLocalizedCommandNameBySchemeId(System.Guid,System.String)">
-            <summary>
-            Get localized command name for specified scheme in current culture
-            </summary>
-            <param name="schemeId">Id of the scheme</param>
-            <param name="commandName">Command name to localize</param>
-            <returns>Localized command name</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntime.GetProcessInstanceAndFillProcessParameters(System.Guid)">
             <summary>
@@ -8279,6 +8328,21 @@
             <param name="runtime">Configured instance of the workflow runtime</param>
             <returns>Configured instance of the workflow runtime</returns>
         </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithLocalizationProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.ILocalizationProvider)">
+            <summary>
+            Adds specified <see cref="T:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider"/> in the runtime
+            </summary>
+            <param name="runtime">The instance of the runtime</param>
+            <param name="provider">The instance of the implemented <see cref="T:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider"/></param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.ClearLocalizationProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime)">
+            <summary>
+            Resets <see cref="T:OptimaJet.Workflow.Core.Runtime.ILocalizationProvider"/> to default value (null)
+            </summary>
+            <param name="runtime">Configured instance of the workflow runtime</param>
+            <returns>Configured instance of the workflow runtime</returns>
+        </member>
         <member name="M:OptimaJet.Workflow.Core.Runtime.WorkflowRuntimeConfigurationExtension.WithDesignerAutocompleteProvider(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider,System.Collections.Generic.List{System.String})">
             <summary>
             Adds specified autocomplete provider (only for the Designer) <see cref="T:OptimaJet.Workflow.Core.Runtime.IDesignerAutocompleteProvider"/> in the runtime
@@ -8596,7 +8660,7 @@
             Parses localization items from not parsed scheme in theirs object model
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
-            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/> objects</returns>
+            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.Translation"/> objects</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.WorkflowParser`1.ParseParameters(`0,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
@@ -8755,7 +8819,7 @@
             Parses localization items from not parsed scheme in theirs object model
             </summary>
             <param name="schemeMedium">Not parsed scheme</param>
-            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.LocalizeDefinition"/> objects</returns>
+            <returns>List of <see cref="T:OptimaJet.Workflow.Core.Model.Translation"/> objects</returns>
         </member>
         <member name="M:OptimaJet.Workflow.Core.Parser.XmlWorkflowParser.ParseParameters(System.Xml.Linq.XElement,OptimaJet.Workflow.Core.Builder.SchemeParsingType)">
             <summary>
@@ -8874,6 +8938,62 @@
         <member name="M:OptimaJet.Workflow.Core.Utils.DisposableStopwatch.SetAction(System.Action{OptimaJet.Workflow.Core.Utils.DisposableStopwatchArgs})">
             <summary> Set action which invoke on dispose. Removes others if they were. </summary>
             <param name="action"></param>
+        </member>
+        <member name="T:OptimaJet.Workflow.Core.Utils.Localizer">
+            <summary> Helper for work with localization. </summary>
+        </member>
+        <member name="P:OptimaJet.Workflow.Core.Utils.Localizer.Item(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo)">
+            <summary> Get the localized name in specific culture from bound sources. </summary>
+            <param name="name">System name. See <see cref="P:OptimaJet.Workflow.Core.Model.Translation.ObjectName"/></param>
+            <param name="type">Localize type of name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Localized name if exists, else input <paramref name="name"/></returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.GetLocalizedName(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo)">
+            <inheritdoc cref="P:OptimaJet.Workflow.Core.Utils.Localizer.Item(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.GetTranslation(System.String,OptimaJet.Workflow.Core.Model.LocalizeType,System.Globalization.CultureInfo)">
+            <summary> Get the localize in specific culture from bound sources. </summary>
+            <param name="name">System name. See <see cref="P:OptimaJet.Workflow.Core.Model.Translation.ObjectName"/></param>
+            <param name="type">Localize type of name</param>
+            <param name="culture">Desired culture. If null then used <see cref="P:System.Globalization.CultureInfo.CurrentCulture"/></param>
+            <returns>Return one of: first non default localize; default first value of localization; null</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromScheme(System.String,System.Boolean)">
+            <summary> Bind scheme for getting to inner scheme localization source. </summary>
+            <param name="schemeCode">Code of the scheme</param>
+            <param name="isAppend"> Appends a value to the end of the sequence</param>
+            <returns>New localizer with expanded source for search a localized name</returns>
+            <exception cref="T:System.ArgumentNullException"> Runtime is null </exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromScheme(System.Guid,System.Boolean)">
+            <summary> Bind scheme for getting to inner scheme localization source. </summary>
+            <param name="schemeId">Id of the scheme</param>
+            <param name="isAppend"> Appends a value to the end of the sequence</param>
+            <returns>New localizer with expanded source for search a localized name</returns>
+            <exception cref="T:System.ArgumentNullException"> Runtime is null </exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromProcess(System.Guid,System.Boolean)">
+            <summary> Bind process for getting to inner scheme localization source. </summary>
+            <param name="processId">Id of the process instance</param>
+            <param name="isAppend"> Appends a value to the end of the sequence</param>
+            <returns>New localizer with expanded source for search a localized name</returns>
+            <exception cref="T:System.ArgumentNullException"> Runtime is null </exception>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromRuntime(OptimaJet.Workflow.Core.Runtime.WorkflowRuntime,System.Boolean)">
+            <summary> Bind process for getting to inner scheme localization source. </summary>
+            <param name="runtime">Workflow runtime instance</param>
+            <param name="isAppend"> Appends a value to the end of the sequence</param>
+            <returns>New localizer with expanded source for search a localized name</returns>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromSchemeAsync(System.String,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Utils.Localizer.FromScheme(System.String,System.Boolean)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromSchemeAsync(System.Guid,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Utils.Localizer.FromScheme(System.String,System.Boolean)"/>
+        </member>
+        <member name="M:OptimaJet.Workflow.Core.Utils.Localizer.FromProcessAsync(System.Guid,System.Boolean)">
+            <inheritdoc cref="M:OptimaJet.Workflow.Core.Utils.Localizer.FromProcess(System.Guid,System.Boolean)"/>
         </member>
         <member name="T:OptimaJet.Workflow.Designer">
             <summary>

@@ -1,9 +1,20 @@
-<svg width="{item.CommonTextWidth - 0}" height="103" viewBox="0 0 {item.CommonTextWidth - 0} 103"  fill="none" xmlns="http://www.w3.org/2000/svg">
-    <rect x="{(item.CommonTextWidth - item.TextWidth - 4) / 2}" y="1" width="{item.TextWidth + 4}" height="13" rx="4" fill="white" visibility="{item.TextWidth > 0 ? 'visible' : 'hidden'}"/>
-    <text x="{(item.CommonTextWidth - item.TextWidth) / 2}" y="11.1016" font-family="Arial" font-size="12" font-weight="600" fill="black">{Name}</text>
-    <rect x="{item.CommonTextWidth / 2}" y="22.2" width="41.719" height="41.719" rx="2" transform="rotate(45 {(item.CommonTextWidth / 2)} 22.2)" fill="{Color}" stroke="{item.Selected ? '#F39C12' : (item.IsInline? '#CECECE' : item.Color)}" stroke-width="3" stroke-linejoin="round" stroke-dasharray="{item.IsInline? '8 4': 'none'}"/>
-    <rect x="{(item.CommonTextWidth - item.conditionTextWidth - 4) / 2}" y="90" width="{item.conditionTextWidth + 4}" height="13" rx="4" fill="white" visibility="{item.conditionTextWidth > 0 ? 'visible' : 'hidden'}"/>
-    <text x="{(item.CommonTextWidth - item.conditionTextWidth) / 2}" y="100.102" visibility="{conditionText.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="black">{conditionText}</text>
-    <path transform="translate({(item.CommonTextWidth + 24)/ 2} 62) rotate(180 0 0)"
-        fill="{TextColor}" d="M14,4L16.29,6.29L13.41,9.17L14.83,10.59L17.71,7.71L20,10V4M10,4H4V10L6.29,7.71L11,12.41V20H13V11.59L7.71,6.29"/>
+<svg direction="{BiDi}" width="{item.svgWidth = item.CommonTextWidth - 0}" height="103" viewBox="0 0 {item.CommonTextWidth - 0} 103"
+     fill="none" xmlns="http://www.w3.org/2000/svg">
+    <rect x="{(item.CommonTextWidth - item.TextWidth - 4) / 2}" y="1" width="{item.TextWidth + 4}" height="13" rx="4" fill="white"
+          visibility="{item.TextWidth > 0 ? 'visible' : 'hidden'}"/>
+    <text x="{item.mirrorX((item.CommonTextWidth - item.TextWidth) / 2)}" y="11.1016" font-family="Arial" font-size="12" font-weight="600"
+          fill="black">{Name}
+    </text>
+    <rect x="{item.CommonTextWidth / 2}" y="22.2" width="41.719" height="41.719" rx="2"
+          transform="rotate(45 {(item.CommonTextWidth / 2)} 22.2)" fill="{Color}"
+          stroke="{item.Selected ? '#F39C12' : (item.IsInline? '#CECECE' : item.Color)}" stroke-width="3" stroke-linejoin="round"
+          stroke-dasharray="{item.IsInline? '8 4': 'none'}"/>
+    <rect x="{(item.CommonTextWidth - item.conditionTextWidth - 4) / 2}" y="90" width="{item.conditionTextWidth + 4}" height="13" rx="4"
+          fill="white" visibility="{item.conditionTextWidth > 0 ? 'visible' : 'hidden'}"/>
+    <text x="{item.mirrorX((item.CommonTextWidth - item.conditionTextWidth) / 2)}" y="100.102"
+          visibility="{conditionText.length > 0 ? 'visible' : 'hidden'}" font-family="Arial" font-size="12" fill="black">{conditionText}
+    </text>
+    <path transform="translate({(item.CommonTextWidth + (item.BiDi === 'rtl' ? -24:24))/ 2} 62) scale({item.BiDi === 'rtl' ? 1:-1} -1)"
+          fill="{TextColor}"
+          d="M14,4L16.29,6.29L13.41,9.17L14.83,10.59L17.71,7.71L20,10V4M10,4H4V10L6.29,7.71L11,12.41V20H13V11.59L7.71,6.29"/>
 </svg>

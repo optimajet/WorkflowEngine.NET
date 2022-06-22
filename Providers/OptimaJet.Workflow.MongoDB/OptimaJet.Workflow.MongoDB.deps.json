@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/5.3.5": {
+      "OptimaJet.Workflow.MongoDB/6.0.0": {
         "dependencies": {
           "MongoDB.Driver.signed": "2.10.4",
           "NETStandard.Library": "2.0.3",
           "System.Linq.Dynamic.Core": "1.0.6.8",
-          "WorkflowEngine.NETCore-Core": "5.3.5"
+          "WorkflowEngine.NETCore-Core": "6.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -1461,7 +1461,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/5.3.5": {
+      "WorkflowEngine.NETCore-Core/6.0.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1481,7 +1481,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/5.3.5": {
+    "OptimaJet.Workflow.MongoDB/6.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1489,42 +1489,42 @@
     "DnsClient/1.3.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-b9XczgqSjs3dd+OlV799jn+LXxdfirln1q36GKjs3QwWBhjhgIvgHLEG5s2VrBLcP4ogQjtA0PZ5+AmRJ35Vhg==",
+      "sha512": "sha512-TliUsT4ur+VJPCk3g3nYh01+GsGjuRX+PCjh7ARxmAuq+WvNWTtB84gCIEZXLtDUsfOO+InTWHIscpUG/6zZeQ==",
       "path": "dnsclient/1.3.1",
       "hashPath": "dnsclient.1.3.1.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Analyzers/3.3.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-j/rOZtLMVJjrfLRlAMckJLPW/1rze9MT1yfWqSIbUPGRu1m1P0fuo9PmqapwsmePfGB5PJrudQLvmUOAMF0DqQ==",
+      "sha512": "sha512-DUiW24r/nXMcWxyPc6SzdGDD8ICA++rA7PFpq/W9/5yamUd49FOBa4iOk52dDWFSRckaLkujH4XS6o3iInZxBA==",
       "path": "microsoft.codeanalysis.analyzers/3.3.3",
       "hashPath": "microsoft.codeanalysis.analyzers.3.3.3.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Common/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bNzTyxP3iD5FPFHfVDl15Y6/wSoI7e3MeV0lOaj9igbIKTjgrmuw6LoVJ06jUNFA7+KaDC/OIsStWl/FQJz6sQ==",
+      "sha512": "sha512-AG8QD58rHOZ2uo/+xu7lAZzroOzQ/cEJ/pJYSgaX661Y51ujyWreYphIdYjF1mqiSuYZURj0i7nxbifkLD3SmQ==",
       "path": "microsoft.codeanalysis.common/4.1.0",
       "hashPath": "microsoft.codeanalysis.common.4.1.0.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.CSharp/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sbu6kDGzo9bfQxuqWpeEE7I9P30bSuZEnpDz9/qz20OU6pm79Z63+/BsAzO2e/R/Q97kBrpj647wokZnEVr97w==",
+      "sha512": "sha512-/PigHctQlzkNTXVAXeP2NzVrqay0vSCKwr8o4BwU/u0JodK4TIAaWd9rlM8OOG+6KGVymxwzm8KTgeHvHwbY6g==",
       "path": "microsoft.codeanalysis.csharp/4.1.0",
       "hashPath": "microsoft.codeanalysis.csharp.4.1.0.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.CSharp.Scripting/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-G3HBl6t7p8azLZS67jxUdYQhd/M00IQMag3wNkOK5qAWgEX+QSOmzWiG7GjTp84HbviFCqZplZbCNzDc5gGsBw==",
+      "sha512": "sha512-5KM/HOzCUGsXM+zU6hl6r95ULfNELdWaFPtgNEAcgA+ED9Kg9DM8qaD7smgIgKG//N3Pra5Teic3gz6MPDbsYg==",
       "path": "microsoft.codeanalysis.csharp.scripting/4.1.0",
       "hashPath": "microsoft.codeanalysis.csharp.scripting.4.1.0.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Scripting.Common/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lRjDlFhq4HllCNFaWvfSRGr9JYyFlkR0fW7a8+7bBjybBTi2WqTZr4/pJCd4iPrSS+zSI6EdgnrEF+xNEsZHrQ==",
+      "sha512": "sha512-VNb0cMt1qX8/9KrjEI9AMKhSOtcmmoGoEmogr7nF7fp+nX+E7FW+Tdvs5Vr5wk3+g2pm/PYkFlvKwVV1LytTZg==",
       "path": "microsoft.codeanalysis.scripting.common/4.1.0",
       "hashPath": "microsoft.codeanalysis.scripting.common.4.1.0.nupkg.sha512"
     },
@@ -1580,28 +1580,28 @@
     "MongoDB.Bson.signed/2.10.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hhH23PMnz1opALEos550qLQV++Pl4MdyCkxolUZykD1A9arzgbHEeXAtK8jZR1rllx5W0AtQOqWIoYsbeRazDA==",
+      "sha512": "sha512-0eJu9FR2nCIKMYUOMjAoN6cb+ELHoeTrHqF0qveBks4R9Wq/s7BVTt0tncOCo6YgQzC0vpMKltLdYfRsB7UYDg==",
       "path": "mongodb.bson.signed/2.10.4",
       "hashPath": "mongodb.bson.signed.2.10.4.nupkg.sha512"
     },
     "MongoDB.Driver.Core.signed/2.10.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-W+viMV/sadtUxM9Nc/LeMrXumVW4lboM6sJFVKR8q2IUAwkjDEcMsGqz9HwzCLvT6G4z8CVOeUXrWWcDXOcxNA==",
+      "sha512": "sha512-H+d7qjlHN2mt8r7YZfbYP6hRY6TC5Fhmk0wn0VLBLRjjCM0aZnhqOTM0mE/5G/I5jhYOL+I87WFCszPM9PC/xw==",
       "path": "mongodb.driver.core.signed/2.10.4",
       "hashPath": "mongodb.driver.core.signed.2.10.4.nupkg.sha512"
     },
     "MongoDB.Driver.signed/2.10.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-lEY7Zm+FDseaSP8dtpO6AuMlYdQceERcS5jRpYd2NAw1K6GfWO5nGG8TdKn4aui9XeLVRnQHmkjW17/alYpP1A==",
+      "sha512": "sha512-qg0oCsr0ixN2LT6KzKTIlEzrvuGFVLqhhmrVlgjkU8QxW+jEmctRq1E4F4xhY7E+YRdMtkf7rM0rDyBkSpLYtg==",
       "path": "mongodb.driver.signed/2.10.4",
       "hashPath": "mongodb.driver.signed.2.10.4.nupkg.sha512"
     },
     "MongoDB.Libmongocrypt.signed/1.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-KhrCRAOk44qXNGWUxoNvzoG3Fq9AT0F6SB9uA+h/M+Kb+MNIxN7eG7+RKPT3/vMuuldQM4XhGLz05ZsvTKGodw==",
+      "sha512": "sha512-YFTUd6ROHagn6jT9bQMTHIWD+J6ZTuWiSAZfQkFKn8nJ2z6TetWoMxR9gH3ZFmiPuQPBz0c3331jlScpnPrPSg==",
       "path": "mongodb.libmongocrypt.signed/1.0.0",
       "hashPath": "mongodb.libmongocrypt.signed.1.0.0.nupkg.sha512"
     },
@@ -1734,7 +1734,7 @@
     "SharpCompress/0.23.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-HBbT47JHvNrsZX2dTBzUBOSzBt+EmIRGLIBkbxcP6Jef7DB4eFWQX5iHWV3Nj7hABFPCjISrZ8s0z72nF2zFHQ==",
+      "sha512": "sha512-ZZs8x6IKEJSvy+YJP3ypKy++sL5DjkNL1QIqq++1wqz8wVi2loNXbmiTzqApRKCMpBxZShyq+hwjrf+EHuvVDg==",
       "path": "sharpcompress/0.23.0",
       "hashPath": "sharpcompress.0.23.0.nupkg.sha512"
     },
@@ -1776,7 +1776,7 @@
     "System.Collections.Immutable/5.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-FXkLXiK0sVVewcso0imKQoOxjoPAj42R8HtjjbSjVPAzwDfzoyoznWxgA3c38LDbN9SJux1xXoXYAhz98j7r2g==",
+      "sha512": "sha512-cm+Nt9F5cUzw7+sPwC/OvntHVXYpAuOR53z3hnHdXV82THz0zjVFtRzH83Mn0S0VALoZ9Lk08Oi7aaajR8C7/Q==",
       "path": "system.collections.immutable/5.0.0",
       "hashPath": "system.collections.immutable.5.0.0.nupkg.sha512"
     },
@@ -1804,14 +1804,14 @@
     "System.ComponentModel.Primitives/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sc/7eVCdxPrp3ljpgTKVaQGUXiW05phNWvtv/m2kocXqrUQvTVWKou1Edas2aDjTThLPZOxPYIGNb/HN0QjURg==",
+      "sha512": "sha512-1BmB/TKuTTc5CsBkUThXO+z625L95Cw3PO1cBk0YrJSEDAoAhSl4k7sZREFpuQptyPkQaEbrvj5oMF6uCbn/tQ==",
       "path": "system.componentmodel.primitives/4.1.0",
       "hashPath": "system.componentmodel.primitives.4.1.0.nupkg.sha512"
     },
     "System.ComponentModel.TypeConverter/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-MnDAlaeJZy9pdB5ZdOlwdxfpI+LJQ6e0hmH7d2+y2LkiD8DRJynyDYl4Xxf3fWFm7SbEwBZh4elcfzONQLOoQw==",
+      "sha512": "sha512-Y24ZvtV/jtVzpTPxXuJiZaJrVLH4jUQH0S0xiXocXG5+ITIekCmSeNVCxH4a7NRhGp9VqPuCy/XPY1N6BIJNoA==",
       "path": "system.componentmodel.typeconverter/4.1.0",
       "hashPath": "system.componentmodel.typeconverter.4.1.0.nupkg.sha512"
     },
@@ -1832,14 +1832,14 @@
     "System.Diagnostics.TextWriterTraceListener/4.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-w36Dr8yKy8xP150qPANe7Td+/zOI3G62ImRcHDIEW+oUXUuTKZHd4DHmqRx5+x8RXd85v3tXd1uhNTfsr+yxjA==",
+      "sha512": "sha512-oRsXCz76GDDMrwjMjH6keR9erFIofhGaIMc2d4NykI4rdBEuUP5ZswYA30LGPdyCK7DV4bMBEJL3nJFyAJoS/g==",
       "path": "system.diagnostics.textwritertracelistener/4.0.0",
       "hashPath": "system.diagnostics.textwritertracelistener.4.0.0.nupkg.sha512"
     },
     "System.Diagnostics.TraceSource/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VnYp1NxGx8Ww731y2LJ1vpfb/DKVNKEZ8Jsh5SgQTZREL/YpWRArgh9pI8CDLmgHspZmLL697CaLvH85qQpRiw==",
+      "sha512": "sha512-BlWWL9q/HKM0KBzuOSOqchFga5MqnvkK5mb+IU7f4ecInSyghlswR3ib3nww1ruBmLrtdI5coCBB2H2AltTFyA==",
       "path": "system.diagnostics.tracesource/4.3.0",
       "hashPath": "system.diagnostics.tracesource.4.3.0.nupkg.sha512"
     },
@@ -1909,7 +1909,7 @@
     "System.Linq.Dynamic.Core/1.0.6.8": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-u1DrK0pBff/hoZddYGeQoStOf05TVfQx4W0PSTVvLPRm12qZ2Vp4EXby9NbigHNIPuQN2SytweFSVyEsf/HlPQ==",
+      "sha512": "sha512-GXQtzDwL1IaGPEyiSDAvoyjkEgiYgeVPC0GsnOlPTN/NysZeo99/cdhWKoeggiZU/1Y+FZU6fNDqiCsf0HYyGA==",
       "path": "system.linq.dynamic.core/1.0.6.8",
       "hashPath": "system.linq.dynamic.core.1.0.6.8.nupkg.sha512"
     },
@@ -1958,7 +1958,7 @@
     "System.Numerics.Vectors/4.4.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-UiLzLW+Lw6HLed1Hcg+8jSRttrbuXv7DANVj0DkL9g6EnnzbL75EB7EWsw5uRbhxd/4YdG8li5XizGWepmG3PQ==",
+      "sha512": "sha512-gdRrUJs1RrjW3JB5p82hYjA67xoeFLvh0SdSIWjTiN8qExlbFt/RtXwVYNc5BukJ/f9OKzQQS6gakzbJeHTqHg==",
       "path": "system.numerics.vectors/4.4.0",
       "hashPath": "system.numerics.vectors.4.4.0.nupkg.sha512"
     },
@@ -2007,7 +2007,7 @@
     "System.Reflection.Metadata/5.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-5NecZgXktdGg34rh1OenY1rFNDCI8xSjFr+Z4OU4cU06AQHUdRnIIEeWENu3Wl4YowbzkymAIMvi3WyK9U53pQ==",
+      "sha512": "sha512-O3Tj5JHu6HqEEPW5ouVWIz2ZGSZ/agVNp6TJw0tpFrB8d+qe+MzrW3wzYec5TlAsw8mgkkfGoGu1hQnoJVTlJw==",
       "path": "system.reflection.metadata/5.0.0",
       "hashPath": "system.reflection.metadata.5.0.0.nupkg.sha512"
     },
@@ -2042,7 +2042,7 @@
     "System.Runtime.CompilerServices.Unsafe/5.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
+      "sha512": "sha512-IyJsUDsGq+zuWpYEpuTdPavN+SH1XWqm2tK6scoSoAHHhmr1pt4BzJtKzlTlyO4dXC/Sndnf1+2j7Yb5s1+lnw==",
       "path": "system.runtime.compilerservices.unsafe/5.0.0",
       "hashPath": "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
     },
@@ -2175,7 +2175,7 @@
     "System.Security.SecureString/4.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-sqzq9GD6/b0yqPuMpgIKBuoLf4VKAj8oAfh4kXSzPaN6eoKY3hRi9C5L27uip25qlU+BGPfb0xh2Rmbwc4jFVA==",
+      "sha512": "sha512-7TGOnj9Lr8ljCJbMHjZC34hEw3Z+zRPp7eNhLBg22mbSqO8gQMGLJ/vQkWv8HFYG0t2i53ZulKZ8NNho+jVK7Q==",
       "path": "system.security.securestring/4.0.0",
       "hashPath": "system.security.securestring.4.0.0.nupkg.sha512"
     },
@@ -2263,7 +2263,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/5.3.5": {
+    "WorkflowEngine.NETCore-Core/6.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

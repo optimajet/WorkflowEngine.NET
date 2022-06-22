@@ -19,7 +19,7 @@
     <PackageReference Include="Microsoft.Extensions.DependencyModel" Version="2.1.0" />
     <PackageReference Include="Microsoft.NET.Sdk.Razor" Version="3.1.20" />
     <PackageReference Include="Newtonsoft.Json" Version="12.0.3" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="5.3.5" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="6.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.*\*.csproj" />

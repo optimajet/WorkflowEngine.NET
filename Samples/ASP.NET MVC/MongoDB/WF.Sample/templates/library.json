@@ -1,127 +1,127 @@
 [
-    {
-        "Header": "Base"
-    },
-    {
-        "Title": "AutoTransitions",
-        "Description": "Simple scheme with three elements connected by auto transitions.",
-        "File": "library/AutoTransitions.xml"
-    },
-    {
-        "Title": "DirectTransitionsWithApproval",
-        "Description": "Simple scheme with three elements (incl. approval command) connected by direct transitions.",
-        "File": "library/DirectTransitionsWithApproval.xml"
-    },
-    {
-        "Title": "DirectAndReverseTransitionsWithApprovalAndDeny",
-        "Description": "Simple scheme with three elements(incl. approval and deny commands) connected by direct and reverse transitions.",
-        "File": "library/DirectAndReverseTransitionsWithApprovalAndDeny.xml"
-    },
-    {
-        "Title": "Timer",
-        "Description": "Simple scheme with two elements connected by transitions with timers.",
-        "File": "library/Timer.xml"
-    },
-    {
-        "Title": "ExpressionOtherwise",
-        "Description": "Simple scheme with three elements connected by transitions with expressions and otherwise conditions.",
-        "File": "library/ExpressionOtherwise.xml"
-    },
-    {
-        "Title": "ExpressionConditionOtherwise",
-        "Description": "Simple scheme with four elements connected by transitions with expressions, action and otherwise condisions.",
-        "File": "library/ExpressionConditionOtherwise.xml"
-    },
-    {
-        "Header": "ParallelProcesses"
-    },
-    {
-        "Title": "ParallelProcessesWithoutWaiting",
-        "Description": "Simple scheme with parallel processes without waiting all branches.",
-        "File": "library/ParallelProcessesWithoutWaiting.xml"
-    },
-    {
-        "Title": "ParallelProcessesWithWaiting",
-        "Description": "Simple scheme with parallel processes that waiting all branches.",
-        "File": "library/ParallelProcessesWithWaiting.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Header": "ApprovalPlugin"
-    },
-    {
-        "Title": "ParallelApprovalWithoutBranches",
-        "Description": "Simple scheme with three elements for demonstration approval with 2 stages.",
-        "File": "library/ParallelApprovalWithoutBranches.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Header": "BasicPlugin"
-    },
-    {
-        "Title": "ParametersAndExpressions",
-        "Description": "A simple scheme for demonstration work with parameters and expressions. In Parameter written number 5, if the parameter value is less than 10 the parameter is incremented. When the parameter is equal 10 the work ends.",
-        "File": "library/ParametersAndExpressions.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Title": "HTTPRequest",
-        "Description": "Simple scheme for demonstration work with http requset. Scheme contains action for send http requst and conditon for check http requst.",
-        "File": "library/HTTPRequest.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Title": "ParameterExpressionOtherwise",
-        "Description": "Simple scheme for with three elements (incl. action for work with parameters) connected by transitions with expressions and otherwise conditions.",
-        "File": "library/ParameterExpressionOtherwise.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Title": "ParameterExpressionConditionOtherwise",
-        "Description": "Simple scheme for with three elements (incl. action for work with parameters) connected by transitions with expressions, action and otherwise conditions.",
-        "File": "library/ParameterExpressionConditionOtherwise.xml",
-        "Plugins": "BasicPlugin"
-    },
-    {
-        "Header": "FilePlugin"
-    },
-    {
-        "Title": "FileWriteRead",
-        "Description": "A simple scheme to demonstrate create, read, and write operations with files.",
-        "File": "library/FileWriteRead.xml",
-        "Plugins": "FilePlugin"
-    },  
-    {
-        "Title": "DirectoryCompress",
-        "Description": "A simple scheme to demonstrate work with directory and compress, uncompress operations with the archive.",
-        "File": "library/DirectoryCompress.xml",
-        "Plugins": "FilePlugin"
-    },
-    {
-        "Header": "LoopPlugin"
-    },
-    {
-        "Title": "LoopForInt",
-        "Description": "Simple scheme for demonstration loop for numbers 1-10.",
-        "File": "library/LoopForInt.xml",
-        "Plugins": "LoopPlugin"
-    },   
-    {
-        "Title": "LoopForDateTime",
-        "Description": "Simple scheme for demonstration loop for one month.",
-        "File": "library/LoopForDateTime.xml",
-        "Plugins": "LoopPlugin"
-    },
-    {
-        "Title": "LoopForeach",
-        "Description": "Simple scheme for demonstration loop foreach for collection  \"one, two, three, four, five \".",
-        "File": "library/LoopForeach.xml",
-        "Plugins": "LoopPlugin"
-    },
-    {
-        "Title": "LoopForeachFromParameter",
-        "Description": "Simple scheme for demonstration loop foreach for values from parameter.",
-        "File": "library/LoopForeachFromParameter.xml",
-        "Plugins": "LoopPlugin"
-    }
+  {
+    "Header": "Base"
+  },
+  {
+    "Title": "Auto transitions",
+    "Description": "Simple scheme with three elements connected by auto transitions.",
+    "File": "library/AutoTransitions.xml"
+  },
+  {
+    "Title": "Direct transitions with approval",
+    "Description": "Simple scheme with three elements (incl. approval command) connected by direct transitions.",
+    "File": "library/DirectTransitionsWithApproval.xml"
+  },
+  {
+    "Title": "Direct and reverse transitions with approval and deny",
+    "Description": "Simple scheme with three elements(incl. approval and deny commands) connected by direct and reverse transitions.",
+    "File": "library/DirectAndReverseTransitionsWithApprovalAndDeny.xml"
+  },
+  {
+    "Title": "Timer",
+    "Description": "Simple scheme with two elements connected by transitions with timers.",
+    "File": "library/Timer.xml"
+  },
+  {
+    "Title": "Expression otherwise",
+    "Description": "Simple scheme with three elements connected by transitions with expressions and otherwise conditions.",
+    "File": "library/ExpressionOtherwise.xml"
+  },
+  {
+    "Title": "Expression condition otherwise",
+    "Description": "Simple scheme with four elements connected by transitions with expressions, action and otherwise condisions.",
+    "File": "library/ExpressionConditionOtherwise.xml"
+  },
+  {
+    "Header": "Parallel processes"
+  },
+  {
+    "Title": "Parallel processes without waiting",
+    "Description": "Simple scheme with parallel processes without waiting all branches.",
+    "File": "library/ParallelProcessesWithoutWaiting.xml"
+  },
+  {
+    "Title": "Parallel processes with waiting",
+    "Description": "Simple scheme with parallel processes that waiting all branches.",
+    "File": "library/ParallelProcessesWithWaiting.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Header": "Approval plugin"
+  },
+  {
+    "Title": "Parallel approval without branches",
+    "Description": "Simple scheme with three elements for demonstration approval with 2 stages.",
+    "File": "library/ParallelApprovalWithoutBranches.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Header": "Basic plugin"
+  },
+  {
+    "Title": "Parameters and expressions",
+    "Description": "A simple scheme for demonstration work with parameters and expressions. In Parameter written number 5, if the parameter value is less than 10 the parameter is incremented. When the parameter is equal 10 the work ends.",
+    "File": "library/ParametersAndExpressions.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Title": "HTTP request",
+    "Description": "Simple scheme for demonstration work with http requset. Scheme contains action for send http requst and conditon for check http requst.",
+    "File": "library/HTTPRequest.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Title": "Parameter expression otherwise",
+    "Description": "Simple scheme for with three elements (incl. action for work with parameters) connected by transitions with expressions and otherwise conditions.",
+    "File": "library/ParameterExpressionOtherwise.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Title": "Parameter expression condition otherwise",
+    "Description": "Simple scheme for with three elements (incl. action for work with parameters) connected by transitions with expressions, action and otherwise conditions.",
+    "File": "library/ParameterExpressionConditionOtherwise.xml",
+    "Plugins": "BasicPlugin"
+  },
+  {
+    "Header": "File plugin"
+  },
+  {
+    "Title": "File write read",
+    "Description": "A simple scheme to demonstrate create, read, and write operations with files.",
+    "File": "library/FileWriteRead.xml",
+    "Plugins": "FilePlugin"
+  },
+  {
+    "Title": "Directory compress",
+    "Description": "A simple scheme to demonstrate work with directory and compress, uncompress operations with the archive.",
+    "File": "library/DirectoryCompress.xml",
+    "Plugins": "FilePlugin"
+  },
+  {
+    "Header": "Loop plugin"
+  },
+  {
+    "Title": "Loop for int",
+    "Description": "Simple scheme for demonstration loop for numbers 1-10.",
+    "File": "library/LoopForInt.xml",
+    "Plugins": "LoopPlugin"
+  },
+  {
+    "Title": "Loop for date time",
+    "Description": "Simple scheme for demonstration loop for one month.",
+    "File": "library/LoopForDateTime.xml",
+    "Plugins": "LoopPlugin"
+  },
+  {
+    "Title": "Loop foreach",
+    "Description": "Simple scheme for demonstration loop foreach for collection  \"one, two, three, four, five \".",
+    "File": "library/LoopForeach.xml",
+    "Plugins": "LoopPlugin"
+  },
+  {
+    "Title": "Loop foreach from parameter",
+    "Description": "Simple scheme for demonstration loop foreach for values from parameter.",
+    "File": "library/LoopForeachFromParameter.xml",
+    "Plugins": "LoopPlugin"
+  }
 ]
