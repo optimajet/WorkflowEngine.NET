@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.Oracle/6.0.0": {
+      "OptimaJet.Workflow.Oracle/6.0.1": {
         "dependencies": {
           "NETStandard.Library": "2.0.3",
           "Oracle.ManagedDataAccess.Core": "2.19.120",
-          "WorkflowEngine.NETCore-Core": "6.0.0"
+          "WorkflowEngine.NETCore-Core": "6.0.1"
         },
         "runtime": {
           "OptimaJet.Workflow.Oracle.dll": {}
@@ -264,7 +264,7 @@
       "Microsoft.Extensions.DependencyModel/1.1.1": {
         "dependencies": {
           "Microsoft.DotNet.PlatformAbstractions": "1.1.1",
-          "Newtonsoft.Json": "12.0.3",
+          "Newtonsoft.Json": "13.0.1",
           "System.Diagnostics.Debug": "4.3.0",
           "System.Dynamic.Runtime": "4.0.11",
           "System.Linq": "4.3.0"
@@ -283,11 +283,11 @@
           "Microsoft.NETCore.Platforms": "1.1.0"
         }
       },
-      "Newtonsoft.Json/12.0.3": {
+      "Newtonsoft.Json/13.0.1": {
         "runtime": {
           "lib/netstandard2.0/Newtonsoft.Json.dll": {
-            "assemblyVersion": "12.0.0.0",
-            "fileVersion": "12.0.3.23909"
+            "assemblyVersion": "13.0.0.0",
+            "fileVersion": "13.0.1.25517"
           }
         }
       },
@@ -966,12 +966,12 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/6.0.0": {
+      "WorkflowEngine.NETCore-Core/6.0.1": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
           "Microsoft.Extensions.DependencyModel": "1.1.1",
-          "Newtonsoft.Json": "12.0.3",
+          "Newtonsoft.Json": "13.0.1",
           "SharpZipLib": "1.2.0",
           "System.Collections.Specialized": "4.3.0",
           "System.Runtime.Loader": "4.3.0",
@@ -986,7 +986,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.Oracle/6.0.0": {
+    "OptimaJet.Workflow.Oracle/6.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1029,21 +1029,21 @@
     "Microsoft.CSharp/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-pTj+D3uJWyN3My70i2Hqo+OXixq3Os2D1nJ2x92FFo6sk8fYS1m1WLNTs0Dc1uPaViH0YvEEwvzddQ7y4rhXmA==",
+      "sha512": "sha512-LJaYhRX5VxTUuD9WUPGD3GpWTgs89SVfoOPvSEdt66tL3lQvny9sR/ZiC3px1qUV5EFebS44i2CBeiliHVaQ3w==",
       "path": "microsoft.csharp/4.7.0",
       "hashPath": "microsoft.csharp.4.7.0.nupkg.sha512"
     },
     "Microsoft.DotNet.PlatformAbstractions/1.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-m+IIxUg8Ev+g34H7CIcuILm3ZWWJNclsgYqc/j5n/QCKhcvRAeAn0byDI7zCqlDUwn6byXYrJxuZpuZh/5C/6g==",
+      "sha512": "sha512-djiojrRhnA7aGYvHarwcDW2/pQ46bxmhDVhPW0kg7+3JcImP18PFSN1E2ULGuJpmRQU1TxIOFu1mQiPOIMOeOw==",
       "path": "microsoft.dotnet.platformabstractions/1.1.1",
       "hashPath": "microsoft.dotnet.platformabstractions.1.1.1.nupkg.sha512"
     },
     "Microsoft.Extensions.DependencyModel/1.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-aeaSE99QKSh84KMnM0toUbzpSXU6KonpgAo+MV+5z4XtZk1ssrn5JfRHdUPfzb9RLU4cYS/VLzStD97YuMGlbg==",
+      "sha512": "sha512-TROfwT8cl9D00eQm8P5vUuewWQcFbB4kiIXg0SpksflkqaLxRfEjrerof5wT8MJiWIwXjIt3VNrifG8IDKOh6g==",
       "path": "microsoft.extensions.dependencymodel/1.1.1",
       "hashPath": "microsoft.extensions.dependencymodel.1.1.1.nupkg.sha512"
     },
@@ -1068,17 +1068,17 @@
       "path": "netstandard.library/2.0.3",
       "hashPath": "netstandard.library.2.0.3.nupkg.sha512"
     },
-    "Newtonsoft.Json/12.0.3": {
+    "Newtonsoft.Json/13.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-6mgjfnRB4jKMlzHSl+VD+oUc1IebOZabkbyWj2RiTgWwYPPuaK1H97G1sHqGwPlS5npiF5Q0OrxN1wni2n5QWg==",
-      "path": "newtonsoft.json/12.0.3",
-      "hashPath": "newtonsoft.json.12.0.3.nupkg.sha512"
+      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
+      "path": "newtonsoft.json/13.0.1",
+      "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
     "Oracle.ManagedDataAccess.Core/2.19.120": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-bwekBNH4CZq3qolK7VYBNJ7pUX9nocnqTvY3KXMreQ6hl22lmk6fi40aGb95/ieVBTmHrcEkOan1WFzy450O4A==",
+      "sha512": "sha512-JsIXhikAQw3wpAy2ukjzUARRRI9BnQw2Pfk118ysH6BiQeHvFbGfFJ3qXYsvRZOw5U2Pb2IHiu+6t6cUdPkLhg==",
       "path": "oracle.manageddataaccess.core/2.19.120",
       "hashPath": "oracle.manageddataaccess.core.2.19.120.nupkg.sha512"
     },
@@ -1435,7 +1435,7 @@
     "System.Runtime.Loader/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-DHMaRn8D8YCK2GG2pw+UzNxn/OHVfaWx7OTLBD/hPegHZZgcZh3H6seWegrC4BYwsfuGrywIuT+MQs+rPqRLTQ==",
+      "sha512": "sha512-G6WmvAI9yOEi5GOWtZT3+pJWHXGaat59qZKQ7Z75fGpacllPmLizNFZvZXj3CysSyMkQBsm50b9xTM/x9L3yCQ==",
       "path": "system.runtime.loader/4.3.0",
       "hashPath": "system.runtime.loader.4.3.0.nupkg.sha512"
     },
@@ -1484,7 +1484,7 @@
     "System.Text.Encoding.CodePages/4.5.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-4J2JQXbftjPMppIHJ7IC+VXQ9XfEagN92vZZNoG12i+zReYlim5dMoXFC1Zzg7tsnKDM7JPo5bYfFK4Jheq44w==",
+      "sha512": "sha512-Eu3dyUUqDFkuskrrK54VLWC41EVANJNo5vzjojnGAphH+FV63NJg3zs5x0TvRaYDTZ2y+86eIOK43Hg2NXiw7w==",
       "path": "system.text.encoding.codepages/4.5.1",
       "hashPath": "system.text.encoding.codepages.4.5.1.nupkg.sha512"
     },
@@ -1544,7 +1544,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/6.0.0": {
+    "WorkflowEngine.NETCore-Core/6.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
