@@ -6,7 +6,7 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>6.0.1</Version>
+    <Version>6.0.2</Version>
     <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
     <Authors>OptimaJet, LLC</Authors>
     <Company>OptimaJet, LLC</Company>

@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/6.0.1": {
+      "OptimaJet.Workflow.MongoDB/6.0.2": {
         "dependencies": {
           "MongoDB.Driver.signed": "2.10.4",
           "NETStandard.Library": "2.0.3",
           "System.Linq.Dynamic.Core": "1.0.6.8",
-          "WorkflowEngine.NETCore-Core": "6.0.1"
+          "WorkflowEngine.NETCore-Core": "6.0.2"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -1461,7 +1461,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/6.0.1": {
+      "WorkflowEngine.NETCore-Core/6.0.2": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1481,7 +1481,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/6.0.1": {
+    "OptimaJet.Workflow.MongoDB/6.0.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1615,7 +1615,7 @@
     "Newtonsoft.Json/13.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ppPFpBcvxdsfUonNcvITKqLl3bqxWbDCZIzDWHzjpdAHRFfZe0Dw9HmA0+za13IdyrgJwpkDTDA9fHaxOrt20A==",
+      "sha512": "sha512-g3MbZi6vBTeaI/hEbvR7vBETSd1DWLe9i1E4P+nPY34v5i94zqUqDXvdWC3G+7tYN9SnsdU9zzegrnRz4h7nsQ==",
       "path": "newtonsoft.json/13.0.1",
       "hashPath": "newtonsoft.json.13.0.1.nupkg.sha512"
     },
@@ -1741,7 +1741,7 @@
     "SharpZipLib/1.2.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-zvWa/L02JHNatdtjya6Swpudb2YEHaOLHL1eRrqpjm71iGRNUNONO5adUF/9CHbSJbzhELW1UoH4NGy7n7+3bQ==",
+      "sha512": "sha512-h2nY8FjSsc8YRQmucUYS+uTDrMSNOH7Y3JVVxjJeWUrk9TkgnYXoD5Fys+elUIPGCOtIJqM6czDxjEukefWwGA==",
       "path": "sharpziplib/1.2.0",
       "hashPath": "sharpziplib.1.2.0.nupkg.sha512"
     },
@@ -1755,7 +1755,7 @@
     "System.Buffers/4.5.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Rw7ijyl1qqRS0YQD/WycNst8hUUMgrMH4FCn1nNm27M4VxchZ1js3fVjQaANHO5f3sN4isvP4a+Met9Y4YomAg==",
+      "sha512": "sha512-gNphWOVbm89+C15jebnPRaYykU8De1PFv1YJV24814IfeGGVa3PXRHDS0MLlbdI1pe9Mpv/n4ZK4INwtAjqv8g==",
       "path": "system.buffers/4.5.1",
       "hashPath": "system.buffers.4.5.1.nupkg.sha512"
     },
@@ -1930,7 +1930,7 @@
     "System.Memory/4.5.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-1MbJTHS1lZ4bS4FmsJjnuGJOu88ZzTT2rLvrhW7Ygic+pC0NWA+3hgAen0HRdsocuQXCkUTdFn9yHJJhsijDXw==",
+      "sha512": "sha512-js5UkesP4zK8GQ9Az3azvu4MX5ljJQNIYb4iH9sP8C/Vnk9wILPEofKaRX92/3bEyV1G04VV5PSMejvxcth5Zg==",
       "path": "system.memory/4.5.4",
       "hashPath": "system.memory.4.5.4.nupkg.sha512"
     },
@@ -2224,7 +2224,7 @@
     "System.Threading.Tasks.Extensions/4.5.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-zteT+G8xuGu6mS+mzDzYXbzS7rd3K6Fjb9RiZlYlJPam2/hU7JCBZBVEcywNuR+oZ1ncTvc/cq0faRr3P01OVg==",
+      "sha512": "sha512-aAUghud9PHGYc3o9oWPWd0C3xE+TJQw5ZZs78htlR6mr9ky/QEgfXHjyQ2GvOq9H1S0YizcVVKCSin92ZcH8FA==",
       "path": "system.threading.tasks.extensions/4.5.4",
       "hashPath": "system.threading.tasks.extensions.4.5.4.nupkg.sha512"
     },
@@ -2259,11 +2259,11 @@
     "ThomasLevesque.WeakEvent/4.1.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mcp8UoYXWvPmud7UJmREULQLxLmX6SYet2pyZUHpcmIiku3JoqEilPUu9QeUZrV7fOCp0Pfva/VDhG+n3afGyg==",
+      "sha512": "sha512-eHnMyYr7429yL6u7Baaj3hynavHZNScHXJxzz2BSgCxrbYhogcGRqATIX/qq9keAUMHIV8EyNuav06Dea7ZHzQ==",
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/6.0.1": {
+    "WorkflowEngine.NETCore-Core/6.0.2": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

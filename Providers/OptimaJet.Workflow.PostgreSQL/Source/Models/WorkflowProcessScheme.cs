@@ -174,8 +174,12 @@ namespace OptimaJet.Workflow.PostgreSQL
                 await connection.OpenAsync().ConfigureAwait(false);
             }
             
-            var transaction = connection.BeginTransaction();
-
+#if !NETCOREAPP
+            using NpgsqlTransaction transaction = connection.BeginTransaction();
+#else
+            await using NpgsqlTransaction transaction = connection.BeginTransaction();
+#endif
+            
             using var command = new NpgsqlCommand("SELECT \"DropUnusedWorkflowProcessScheme\"()", connection)
             {
                 Transaction = transaction

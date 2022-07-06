@@ -174,8 +174,7 @@ namespace OptimaJet.Workflow.Oracle
                 await connection.OpenAsync().ConfigureAwait(false);
             }
 
-            var transaction = connection.BeginTransaction();
-            
+            using var transaction = connection.BeginTransaction();
             using var cmd = new OracleCommand("DropUnusedWorkflowProcessScheme", connection)
             {
                 CommandType = CommandType.StoredProcedure,

@@ -176,8 +176,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 await connection.OpenAsync().ConfigureAwait(false);
             }
             
-            var transaction = connection.BeginTransaction();
-            
+            using var transaction = connection.BeginTransaction();
             using var cmd = new SqlCommand("dbo.DropUnusedWorkflowProcessScheme", connection)
             {
                 CommandType = CommandType.StoredProcedure,

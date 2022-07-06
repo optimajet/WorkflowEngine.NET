@@ -173,8 +173,7 @@ namespace OptimaJet.Workflow.MySQL
                 await connection.OpenAsync().ConfigureAwait(false);
             }
             
-            var transaction = await connection.BeginTransactionAsync().ConfigureAwait(false);
-            
+            using var transaction = await connection.BeginTransactionAsync().ConfigureAwait(false);
             using var command =  new MySqlCommand("SELECT DropUnusedWorkflowProcessScheme()", connection)
             {
                 Transaction = transaction
