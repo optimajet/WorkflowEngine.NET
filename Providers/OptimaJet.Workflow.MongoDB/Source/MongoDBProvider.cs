@@ -477,11 +477,7 @@ namespace OptimaJet.Workflow.MongoDB
 
         private async Task SaveAsync<T>(IMongoCollection<T> collection, T obj, Expression<Func<T, bool>> filter)
         {
-#if !NETCOREAPP
-            await collection.ReplaceOneAsync<T>(filter, obj,new UpdateOptions() { IsUpsert = true }).ConfigureAwait(false);
-#else
             await collection.ReplaceOneAsync<T>(filter, obj, new ReplaceOptions() { IsUpsert = true }).ConfigureAwait(false);
-#endif
         }
 
         public virtual async Task FillProcessParametersAsync(ProcessInstance processInstance)
@@ -786,18 +782,16 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             WorkflowProcessInstance instance = await (await dbcoll.FindAsync(x => x.Id == processId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
-            if (instance == null)
+            WorkflowProcessInstanceStatus instanceStatus = instance.Status;
+            
+            if (instanceStatus == null)
             {
                 return ProcessStatus.NotFound;
             }
 
-            ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status?.Status);
-            if (status == null)
-            {
-                return ProcessStatus.Unknown;
-            }
-
-            return status;
+            ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instanceStatus.Status);
+            
+            return status ?? ProcessStatus.Unknown;
         }
         
         //todo review
@@ -1637,29 +1631,19 @@ namespace OptimaJet.Workflow.MongoDB
         public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
         {
             IMongoCollection<WorkflowScheme> dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
-            WorkflowScheme wfScheme = await (await dbcoll.FindAsync(c => c.Code == schemaCode).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
+            
+            var filter = Builders<WorkflowScheme>.Filter
+                .Eq(scheme => scheme.Code, schemaCode);
 
-            if (wfScheme == null)
-            {
-                wfScheme = new WorkflowScheme
-                {
-                    Id = schemaCode,
-                    Code = schemaCode,
-                    Scheme = scheme,
-                    InlinedSchemes = inlinedSchemes,
-                    CanBeInlined = canBeInlined,
-                    Tags = tags
-                };
-                await dbcoll.InsertOneAsync(wfScheme).ConfigureAwait(false);
-            }
-            else
-            {
-                wfScheme.Scheme = scheme;
-                wfScheme.InlinedSchemes = inlinedSchemes;
-                wfScheme.CanBeInlined = canBeInlined;
-                wfScheme.Tags = tags;
-                await SaveAsync(dbcoll, wfScheme, doc => doc.Id == wfScheme.Id).ConfigureAwait(false);
-            }
+            var update = Builders<WorkflowScheme>.Update
+                .Set(scheme => scheme.Id, schemaCode)
+                .Set(scheme => scheme.Code, schemaCode)
+                .Set(scheme => scheme.Scheme, scheme)
+                .Set(scheme => scheme.CanBeInlined, canBeInlined)
+                .Set(scheme => scheme.InlinedSchemes, inlinedSchemes)
+                .Set(scheme => scheme.Tags, tags);
+
+            await dbcoll.UpdateOneAsync(filter, update, new UpdateOptions { IsUpsert = true }).ConfigureAwait(false);
         }
 
         public virtual async Task<XElement> GetSchemeAsync(string code)

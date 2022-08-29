@@ -660,7 +660,7 @@ header.doc-header p {
 .cbp-af-header {
   position: fixed;
   width: 100%;
-  z-index: 9999;
+  z-index: 100;
   height: 86px;
 }
 

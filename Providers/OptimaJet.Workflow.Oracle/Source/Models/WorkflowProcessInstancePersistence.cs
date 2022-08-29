@@ -3,81 +3,41 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Entities;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
-    public class WorkflowProcessInstancePersistence : DbObject<WorkflowProcessInstancePersistence>
+    public class WorkflowProcessInstancePersistence : DbObject<ProcessInstancePersistenceEntity>
     {
-        public Guid Id { get; set; }
-        public Guid ProcessId { get; set; }
-        public string ParameterName { get; set; }
-        public string Value { get; set; }
-
-        static WorkflowProcessInstancePersistence()
-        {
-            DbTableName = "WorkflowProcessInstanceP";
-        }
-
-        public WorkflowProcessInstancePersistence()
+        public WorkflowProcessInstancePersistence(string schemaName, int commandTimeout) 
+            : base(schemaName, "WorkflowProcessInstanceP", commandTimeout)
         {
             DBColumns.AddRange(new[]
             {
-                new ColumnInfo {Name = "Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo {Name = "ProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo {Name = "ParameterName"},
-                new ColumnInfo {Name = "Value", Type = OracleDbType.Clob}
+                new ColumnInfo {Name = nameof(ProcessInstancePersistenceEntity.Id), IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = nameof(ProcessInstancePersistenceEntity.ProcessId), Type = OracleDbType.Raw},
+                new ColumnInfo {Name = nameof(ProcessInstancePersistenceEntity.ParameterName)},
+                new ColumnInfo {Name = nameof(ProcessInstancePersistenceEntity.Value), Type = OracleDbType.NClob}
             });
         }
 
-        public override object GetValue(string key)
+        public async Task<ProcessInstancePersistenceEntity[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            switch (key)
-            {
-                case "Id":
-                    return Id.ToByteArray();
-                case "ProcessId":
-                    return ProcessId.ToByteArray();
-                case "ParameterName":
-                    return ParameterName;
-                case "Value":
-                    return Value;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case "Id":
-                    Id = new Guid((byte[]) value);
-                    break;
-                case "ProcessId":
-                    ProcessId = new Guid((byte[]) value);
-                    break;
-                case "ParameterName":
-                    ParameterName = value as string;
-                    break;
-                case "Value":
-                    Value = value as string;
-                    break;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public static async Task<WorkflowProcessInstancePersistence[]> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
-        {
-            string selectText = $"SELECT * FROM {ObjectName}  WHERE ProcessId = :processid";
+            string selectText = $"SELECT * FROM {ObjectName} " + 
+                                $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId)} = :processid";
+            
             return await SelectAsync(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
-        public static async Task<WorkflowProcessInstancePersistence> SelectByNameAsync(OracleConnection connection, Guid processId, string parameterName)
+
+        public async Task<ProcessInstancePersistenceEntity> SelectByNameAsync(OracleConnection connection,
+            Guid processId, string parameterName)
         {
-            string selectText = $"SELECT * FROM {ObjectName}  WHERE ProcessId = :processid AND ParameterName = :parameterName";
+            string selectText = $"SELECT * FROM {ObjectName} " + 
+                                $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId)} = :processid " + 
+                                $"AND {nameof(ProcessInstancePersistenceEntity.ParameterName)} = :parameterName";
 
             var parameters = new List<OracleParameter>
             {
@@ -87,22 +47,31 @@ namespace OptimaJet.Workflow.Oracle
             return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
         }
 
-        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId)
+        public async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId, OracleTransaction transaction)
         {
-            return await ExecuteCommandNonQueryAsync(connection,
-                $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
-                new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)
-            ).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(
+                    connection,
+                    $"DELETE FROM {ObjectName} " + 
+                    $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId).ToUpperInvariant()} = :processid",
+                    transaction,
+                    new OracleParameter(
+                        "processid",
+                        OracleDbType.Raw,
+                        processId.ToByteArray(),
+                        ParameterDirection.Input))
+                .ConfigureAwait(false);
         }
 
-        public static async Task<int> DeleteByNameAsync(OracleConnection connection, Guid processId, string parameterName)
+        public async Task<int> DeleteByNameAsync(OracleConnection connection, Guid processId, string parameterName)
         {
             List<OracleParameter> parameters = new List<OracleParameter>();
             parameters.Add(new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
             parameters.Add(new OracleParameter("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input));
 
-            return await ExecuteCommandNonQueryAsync(connection,
-                $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid",
+            return await ExecuteCommandNonQueryAsync(
+                connection,
+                $"DELETE FROM {ObjectName} " + 
+                $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId).ToUpperInvariant()} = :processid",
                 parameters.ToArray()).ConfigureAwait(false);
         }
     }

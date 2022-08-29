@@ -1,11 +1,10 @@
 <el-form class="mx-auto" class="WorkflowDesignerWindowForm" style="height: calc(100% - 10px);" @drop="drop($event)">
-  <el-tabs v-model="activeTab" stretch style="height: 100%; display: flex; flex-direction: column">
+  <el-tabs v-model="activeTab" id="ElementsTabs" style="height: 100%; display: flex; flex-direction: column">
     <el-input clearable v-model="search" prefix-icon="el-icon-search" size="medium"
               style="margin-bottom: 15px"
               @input="onSearch"
     ></el-input>
     <el-tab-pane :label="labels.Activities" name="Activities">
-      <div></div>
       <div v-for="(item, index) in activities" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
         flex: 1;" @dblclick="createActivity(item)"
            @dragend="dragend($event)" @dragstart="dragstart(item, $event, 'activity')" @drop="drop($event)">
@@ -55,6 +54,10 @@
       loading: true,
       folder: me.graph.Settings.templatefolder,
     });
+
+    me.VueConfig.mounted = function () {
+      me.addMoveHandlers($.find('#ElementsTabs > .el-tabs__header')[0]);
+    }
 
     me.VueConfig.methods.onUpdate = function () {
       data.search = '';
@@ -106,12 +109,24 @@
         Class: 'Inline'
       });
 
+      data.activities.push({
+        Title: data.labels.Comment.Title,
+        Description: data.labels.Comment.Description,
+        DefaultValues: {
+          Name: 'Comment',
+          State: 'Comment',
+        },
+        Template: 'comment',
+        SVGTemplate: 'comment',
+        Class: 'Custom',
+        Type: 'Comment'
+      });
       if (me.graph.data?.AdditionalParams) {
         const {CustomActivities, InlinedSchemeCodes} = me.graph.data.AdditionalParams;
 
         CustomActivities?.forEach?.(item => {
-            item.Class = 'Custom';
-            data.activities.push(item);
+          item.Class = 'Custom';
+          data.activities.push(item);
         });
 
         InlinedSchemeCodes?.forEach?.(item => {
@@ -199,13 +214,12 @@
         activity.IsForSetState = false;
       }
 
-      if (item.DefaultValues) {
-        for (p in item.DefaultValues) {
-          if (item.DefaultValues[p]) {
-            activity[p] = item.DefaultValues[p];
-          }
-        }
+      const setValue = (key, value) => {
+        if (value) activity[key] = value;
       }
+
+      item.Parameters?.forEach(({Name, DefaultValue}) => setValue(Name, DefaultValue));
+      for (const key in item.DefaultValues) setValue(key, item.DefaultValues[key]);
 
       me.graph.CreateActivity(pos, activity);
     }

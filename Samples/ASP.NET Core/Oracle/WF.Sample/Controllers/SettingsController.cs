@@ -1,7 +1,8 @@
-﻿using Microsoft.AspNetCore.Mvc;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
+using Microsoft.AspNetCore.Mvc;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
 using WF.Sample.Models;
@@ -17,18 +18,16 @@ namespace WF.Sample.Controllers
             _settingsProvider = settingsProvider;
         }
 
-        public ActionResult Edit()
+        public Task<ActionResult> Edit()
         {
-            return View(GetModel());
+            return Task.FromResult<ActionResult>(View(GetModel()));
         }
 
         #region Other
         private SettingsModel GetModel()
         {
-            var model = new SettingsModel
-            {
-                SchemeName = "SimpleWF"
-            };
+            var model = new SettingsModel();
+            model.SchemeName = "SimpleWF";
 
             var config = _settingsProvider.GetSettings();
             model.Employees = config.Employees;

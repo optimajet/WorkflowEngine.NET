@@ -3,99 +3,60 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
+using OptimaJet.Workflow.Core.Entities;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
 {
-    public class WorkflowProcessInstanceStatus : DbObject<WorkflowProcessInstanceStatus>
+    public class WorkflowProcessInstanceStatus : DbObject<ProcessInstanceStatusEntity>
     {
-        public Guid Id { get; set; }
-        public Guid Lock { get; set; }
-        public byte Status { get; set; }
-
-        public string RuntimeId { get; set; }
-
-        public DateTime SetTime { get; set; }
-
-        static WorkflowProcessInstanceStatus()
+        public WorkflowProcessInstanceStatus(int commandTimeout) : base("workflowprocessinstancestatus", commandTimeout)
         {
-            DbTableName = "workflowprocessinstancestatus";
-        }
-
-        public WorkflowProcessInstanceStatus()
-        {
-            DBColumns.AddRange(new[]{
-                new ColumnInfo {Name="Id", IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo {Name="Lock", Type = MySqlDbType.Binary},
-                new ColumnInfo {Name="Status", Type = MySqlDbType.Byte},
-                new ColumnInfo {Name = "RuntimeId", Type = MySqlDbType.VarChar},
-                new ColumnInfo {Name = "SetTime", Type = MySqlDbType.DateTime}
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Id), IsKey = true, Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Lock), Type = MySqlDbType.Binary},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Status), Type = MySqlDbType.Byte},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.RuntimeId), Type = MySqlDbType.VarChar},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.SetTime), Type = MySqlDbType.DateTime}
             });
         }
 
-        public override object GetValue(string key)
+        public async Task<List<Guid>> GetProcessesByStatusAsync(MySqlConnection connection, byte status, string runtimeId = null)
         {
-            switch (key)
-            {
-                case "Id":
-                   return Id.ToByteArray();
-                case "Lock":
-                   return Lock.ToByteArray();
-                case "Status":
-                    return Status.ToString();
-                case "RuntimeId":
-                    return RuntimeId;
-                case "SetTime":
-                    return SetTime;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case "Id":
-                    Id = new Guid((byte[])value);
-                    break;
-                case "Lock":
-                    Lock = new Guid((byte[])value);
-                    break;
-                case "Status":
-                    Status = (byte)(sbyte)value;
-                    break;
-                case "RuntimeId":
-                    RuntimeId = (string)value;
-                    break;
-                case "SetTime":
-                    SetTime = (DateTime)value;
-                    break;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public static async Task<List<Guid>> GetProcessesByStatusAsync(MySqlConnection connection, byte status, string runtimeId = null)
-        {
-            string command = $"SELECT `Id` FROM {DbTableName} WHERE `Status` = @status";
+            string command = $"SELECT `{nameof(ProcessInstanceStatusEntity.Id)}` FROM {DbTableName} " + 
+                             $"WHERE `{nameof(ProcessInstanceStatusEntity.Status)}` = @status";
+            
             var p = new List<MySqlParameter>();
 
             if (!String.IsNullOrEmpty(runtimeId))
             {
-                command += " AND `RuntimeId` = @runtime";
+                command += $" AND `{nameof(ProcessInstanceStatusEntity.RuntimeId)}` = @runtime";
                 p.Add(new MySqlParameter("runtime", MySqlDbType.VarChar) { Value = runtimeId });
             }
 
-            p.Add(new MySqlParameter("status", MySqlDbType.Byte) { Value = status });
+            p.Add(new MySqlParameter("status", MySqlDbType.Byte)
+            {
+                Value = ToDbValue(status, MySqlDbType.Byte)
+            });
+            
             return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static async Task<int> ChangeStatusAsync(MySqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
+        public async Task<int> ChangeStatusAsync(MySqlConnection connection, ProcessInstanceStatusEntity status, Guid oldLock)
         {
-            string command = $"UPDATE {DbTableName} SET `Status` = @newstatus, `Lock` = @newlock, `SetTime` = @settime, `RuntimeId` = @runtimeid WHERE `Id` = @id AND `Lock` = @oldlock";
-            var p1 = new MySqlParameter("newstatus", MySqlDbType.Byte) { Value = status.Status };
+            string command = $"UPDATE {DbTableName} SET " + 
+                             $"`{nameof(ProcessInstanceStatusEntity.Status)}` = @newstatus, " + 
+                             $"`{nameof(ProcessInstanceStatusEntity.Lock)}` = @newlock, " + 
+                             $"`{nameof(ProcessInstanceStatusEntity.SetTime)}` = @settime, " + 
+                             $"`{nameof(ProcessInstanceStatusEntity.RuntimeId)}` = @runtimeid " + 
+                             $"WHERE `{nameof(ProcessInstanceStatusEntity.Id)}` = @id " + 
+                             $"AND `{nameof(ProcessInstanceStatusEntity.Lock)}` = @oldlock";
+            
+            var p1 = new MySqlParameter("newstatus", MySqlDbType.Byte) 
+            {
+                Value = ToDbValue(status.Status, MySqlDbType.Byte)
+            };
             var p2 = new MySqlParameter("newlock", MySqlDbType.Binary) { Value = status.Lock.ToByteArray() };
             var p3 = new MySqlParameter("id", MySqlDbType.Binary) { Value = status.Id.ToByteArray() };
             var p4 = new MySqlParameter("oldlock", MySqlDbType.Binary) { Value = oldLock.ToByteArray() };

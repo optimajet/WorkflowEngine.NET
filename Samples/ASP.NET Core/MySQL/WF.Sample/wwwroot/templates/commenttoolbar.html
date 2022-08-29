@@ -1,0 +1,71 @@
+<div style="display: flex;" class="WorkflowDesignerToolbarBlock Horizontal WorkflowDesignerElementToolbarBlock">
+  <el-tooltip v-if="!graph.Settings.notshowwindows" content="ShowProperties">
+    <div class="WorkflowDesignerElementToolbarIconContainer">
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon ShowProperties "
+                 @click="activity.ShowProperties()"></el-button>
+    </div>
+  </el-tooltip>
+  <el-tooltip v-if="!graph.Settings.readonly" content="Clone">
+    <div class="WorkflowDesignerElementToolbarIconContainer">
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Clone"
+                 @click="activity.Clone()"></el-button>
+    </div>
+  </el-tooltip>
+  <el-tooltip v-if="!graph.Settings.readonly" content="Color">
+    <div class="WorkflowDesignerElementToolbarIconContainer">
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Color"></el-button>
+    </div>
+  </el-tooltip>
+  <el-tooltip v-if="!graph.Settings.readonly" content="Text color">
+    <el-color-picker v-if="!graph.Settings.readonly" v-model="Color" :predefine="predefineColors" size="mini"
+                     style="opacity: 0; margin-left: -25px;max-width: 20px; max-height: 20px;"
+                     @change="activity.UpdateColor(Color)">
+    </el-color-picker>
+  </el-tooltip>
+  <el-tooltip v-if="!graph.Settings.readonly" content="Delete">
+    <div class="WorkflowDesignerElementToolbarIconContainer">
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Delete "
+                 @click="activity._onDelete()"></el-button>
+    </div>
+  </el-tooltip>
+</div>
+<script type="application/javascript">
+  function commenttoolbar_Init(me) {
+    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+      activity: undefined,
+      Color: '',
+      readonly: false,
+      predefineColors: [
+        '#f44336',
+        '#e91e63',
+        '#9c27b0',
+        '#673ab7',
+        '#3f51b5',
+        '#2196f3',
+        '#03a9f4',
+        '#00bcd4',
+        '#009688',
+        '#4caf50',
+        '#8bc34a',
+        '#cddc39',
+        '#ffeb3b',
+        '#ffc107',
+        '#ff9800',
+        '#ff5722',
+        '#795548',
+        '#9e9e9e',
+        '#607d8b'
+      ],
+      graph: me.value.graph
+    });
+    me.VueConfig.methods.onUpdate = function (activity) {
+      var data = me.VueConfig.data;
+      data.activity = activity;
+      data.Color = activity.Color;
+    };
+    me.VueConfig.methods.preventMakeNewTansition = function () {
+      var f = me.VueConfig.data.activity.preventMakeNewTansition;
+      return !!(f && f());
+    };
+  };
+</script>

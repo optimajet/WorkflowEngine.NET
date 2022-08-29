@@ -2,11 +2,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using System.Data;
-#if NETCOREAPP
 using Microsoft.Data.SqlClient;
-#else
-using System.Data.SqlClient;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 using Newtonsoft.Json;
@@ -15,60 +11,61 @@ using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.DbPersistence;
+using OptimaJet.Workflow.Core.Entities;
 
 namespace OptimaJet.Workflow.MSSQL.Models
 {
-    public class WorkflowProcessAssignment : DbObject<WorkflowProcessAssignment>
+    public class WorkflowProcessAssignment : DbObject<ProcessAssignmentEntity>
     {
         static WorkflowProcessAssignment()
         {
-            DbTableName = "WorkflowProcessAssignment";
             DBColumnsStatic.AddRange(new[]
             {
-                new ColumnInfo {Name = nameof(Id), IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = nameof(AssignmentCode)},
-                new ColumnInfo {Name = nameof(ProcessId), Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = nameof(Name)},
-                new ColumnInfo {Name = nameof(Description)},
-                new ColumnInfo {Name = nameof(StatusState)},
-                new ColumnInfo {Name = nameof(IsActive), Type = SqlDbType.Bit},
-                new ColumnInfo {Name = nameof(IsDeleted), Type = SqlDbType.Bit},
-                new ColumnInfo {Name = nameof(DateCreation), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(DateStart), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(DateFinish), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(DeadlineToStart), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(DeadlineToComplete), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(Executor)},
-                new ColumnInfo {Name = nameof(Observers)},
-                new ColumnInfo {Name = nameof(Tags)}
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Id), IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.AssignmentCode)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.ProcessId), Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Name)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Description)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.StatusState)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.IsActive), Type = SqlDbType.Bit},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.IsDeleted), Type = SqlDbType.Bit},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.DateCreation), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.DateStart), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.DateFinish), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.DeadlineToStart), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.DeadlineToComplete), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Executor)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Observers)},
+                new ColumnInfo {Name = nameof(ProcessAssignmentEntity.Tags)}
             });
         }
         
-        public WorkflowProcessAssignment()
+        public WorkflowProcessAssignment(string schemaName, int commandTimeout) 
+            : base(schemaName, "WorkflowProcessAssignment", commandTimeout)
         {
             DBColumns = DBColumnsStatic;
         }
         
-        public Assignment ConvertToAssignment()
+        public Assignment ConvertToAssignment(ProcessAssignmentEntity assigment)
         {
             return new Assignment()
             {
-                AssignmentId = Id,
-                AssignmentCode = AssignmentCode,
-                Name = Name,
-                ProcessId = ProcessId,
-                StatusState = StatusState,
-                IsDeleted = IsDeleted,
-                IsActive = IsActive,
-                DateCreation = DateCreation,
-                DateFinish = DateFinish,
-                DateStart = DateStart,
-                DeadlineToStart =  DeadlineToStart,
-                DeadlineToComplete = DeadlineToComplete,
-                Description = Description,
-                Executor = Executor,
-                Tags = JsonConvert.DeserializeObject<List<string>>(Tags),
-                Observers = JsonConvert.DeserializeObject<List<string>>(Observers)
+                AssignmentId = assigment.Id,
+                AssignmentCode = assigment.AssignmentCode,
+                Name = assigment.Name,
+                ProcessId = assigment.ProcessId,
+                StatusState = assigment.StatusState,
+                IsDeleted = assigment.IsDeleted,
+                IsActive = assigment.IsActive,
+                DateCreation = assigment.DateCreation,
+                DateFinish = assigment.DateFinish,
+                DateStart = assigment.DateStart,
+                DeadlineToStart =  assigment.DeadlineToStart,
+                DeadlineToComplete = assigment.DeadlineToComplete,
+                Description = assigment.Description,
+                Executor = assigment.Executor,
+                Tags = JsonConvert.DeserializeObject<List<string>>(assigment.Tags),
+                Observers = JsonConvert.DeserializeObject<List<string>>(assigment.Observers)
             };
         }
         
@@ -76,126 +73,27 @@ namespace OptimaJet.Workflow.MSSQL.Models
         {
             return  propertyName switch
             {
-                nameof(Assignment.AssignmentId) => DBColumnsStatic.Find(c=>c.Name == nameof(Id)),
-                nameof(Assignment.AssignmentCode) => DBColumnsStatic.Find(c=>c.Name == nameof(AssignmentCode)),
-                nameof(Assignment.Name) => DBColumnsStatic.Find(c=>c.Name == nameof(Name)),
-                nameof(Assignment.ProcessId) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessId)),
-                nameof(Assignment.StatusState) => DBColumnsStatic.Find(c=>c.Name == nameof(StatusState)),
-                nameof(Assignment.IsDeleted) => DBColumnsStatic.Find(c=>c.Name == nameof(IsDeleted)),
-                nameof(Assignment.IsActive) => DBColumnsStatic.Find(c=>c.Name == nameof(IsActive)),
-                nameof(Assignment.DateCreation) => DBColumnsStatic.Find(c=>c.Name == nameof(DateCreation)),
-                nameof(Assignment.DateFinish) => DBColumnsStatic.Find(c=>c.Name == nameof(DateFinish)),
-                nameof(Assignment.DateStart) => DBColumnsStatic.Find(c=>c.Name == nameof(DateStart)),
-                nameof(Assignment.DeadlineToStart) => DBColumnsStatic.Find(c=>c.Name == nameof(DeadlineToStart)),
-                nameof(Assignment.DeadlineToComplete) => DBColumnsStatic.Find(c=>c.Name == nameof(DeadlineToComplete)),
-                nameof(Assignment.Description) => DBColumnsStatic.Find(c=>c.Name == nameof(Description)),
-                nameof(Assignment.Executor) => DBColumnsStatic.Find(c=>c.Name == nameof(Executor)),
-                nameof(Assignment.Tags) => DBColumnsStatic.Find(c=>c.Name == nameof(Tags)),
-                nameof(Assignment.Observers) => DBColumnsStatic.Find(c=>c.Name == nameof(Observers)),
+                nameof(Assignment.AssignmentId) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Id)),
+                nameof(Assignment.AssignmentCode) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.AssignmentCode)),
+                nameof(Assignment.Name) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Name)),
+                nameof(Assignment.ProcessId) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.ProcessId)),
+                nameof(Assignment.StatusState) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.StatusState)),
+                nameof(Assignment.IsDeleted) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.IsDeleted)),
+                nameof(Assignment.IsActive) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.IsActive)),
+                nameof(Assignment.DateCreation) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.DateCreation)),
+                nameof(Assignment.DateFinish) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.DateFinish)),
+                nameof(Assignment.DateStart) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.DateStart)),
+                nameof(Assignment.DeadlineToStart) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.DeadlineToStart)),
+                nameof(Assignment.DeadlineToComplete) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.DeadlineToComplete)),
+                nameof(Assignment.Description) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Description)),
+                nameof(Assignment.Executor) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Executor)),
+                nameof(Assignment.Tags) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Tags)),
+                nameof(Assignment.Observers) => DBColumnsStatic.Find(c=>c.Name == nameof(ProcessAssignmentEntity.Observers)),
                 _ => throw new Exception(string.Format("Column {0} is not exists", propertyName))
             };
         }
-
-        public Guid Id { get; set; }
-        public string AssignmentCode { get; set; }
-        public string Name { get; set; }
-        public Guid ProcessId { get; set; }
-        public string Description { get; set; }
-        public DateTime DateCreation { get; set; }
-        public DateTime? DateStart { get; set; }
-        public DateTime? DateFinish { get; set; }
-        public DateTime? DeadlineToStart { get; set; }
-        public DateTime? DeadlineToComplete { get; set; }
-        public string Executor { get; set; }
-        public string Observers { get; set; }
-        public string Tags { get; set; }
-        public string StatusState { get; set; }
-        public bool IsActive { get; set; }
-        public bool IsDeleted { get; set; }
         
-
-        public override object GetValue(string key)
-        {
-            return key switch
-            {
-                nameof(Id) => Id,
-                nameof(AssignmentCode) => AssignmentCode,
-                nameof(ProcessId) => ProcessId,
-                nameof(Description) => Description,
-                nameof(DateCreation) => DateCreation,
-                nameof(DateStart) => DateStart,
-                nameof(DateFinish) => DateFinish,
-                nameof(Name) => Name,
-                nameof(DeadlineToStart) => DeadlineToStart,
-                nameof(DeadlineToComplete) => DeadlineToComplete,
-                nameof(Executor) => Executor,
-                nameof(Observers) => Observers,
-                nameof(Tags) => Tags,
-                nameof(IsDeleted) => IsDeleted,
-                nameof(IsActive) => IsActive,
-                nameof(StatusState) => StatusState,
-                _ => throw new Exception(string.Format("Column {0} is not exists", key))
-            };
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case nameof(Id):
-                    Id = (Guid) value;
-                    break;
-                case nameof(AssignmentCode):
-                    AssignmentCode = (string) value;
-                    break;
-                case nameof(ProcessId):
-                    ProcessId = (Guid) value;
-                    break;
-                case nameof(Name):
-                    Name = (string) value;
-                    break;
-                case nameof(Description):
-                    Description = (string) value;
-                    break;
-                case nameof(StatusState):
-                    StatusState = (string) value;
-                    break;
-                case nameof(IsActive):
-                    IsActive = (bool) value;
-                    break;
-                case nameof(IsDeleted):
-                    IsDeleted = (bool) value;
-                    break;
-                case nameof(DateCreation):
-                    DateCreation = (DateTime) value;
-                    break;
-                case nameof(DateStart):
-                    DateStart = (DateTime?) value;
-                    break;
-                case nameof(DateFinish):
-                    DateFinish = (DateTime?) value;
-                    break;
-                case nameof(DeadlineToStart):
-                    DeadlineToStart = (DateTime?) value;
-                    break;
-                case nameof(DeadlineToComplete):
-                    DeadlineToComplete = (DateTime?) value;
-                    break;
-                case nameof(Executor):
-                    Executor = (string) value;
-                    break;
-                case nameof(Observers):
-                    Observers = (string) value;
-                    break;
-                case nameof(Tags):
-                    Tags = (string) value;
-                    break;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public static async Task<int> GetAssignmentCountAsync(SqlConnection connection, List<FilterParameter> parameters )
+        public async Task<int> GetAssignmentCountAsync(SqlConnection connection, List<FilterParameter> parameters )
         {
             string selectText = $"SELECT COUNT(*) FROM {ObjectName} ";
 
@@ -207,7 +105,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
             return Convert.ToInt32(result);
         }
         
-        public static async Task<IEnumerable<WorkflowProcessAssignment>> SelectByFilterAsync(
+        public async Task<IEnumerable<ProcessAssignmentEntity>> SelectByFilterAsync(
             SqlConnection connection,
             List<FilterParameter> parameters ,
             List<(string parameterName,SortDirection sortDirection)> orderParameters = null,
@@ -225,7 +123,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
                 //default sort for paging
                 if (orderParameters.Count < 1)
                 {
-                    orderParameters.Add((nameof(DateCreation),SortDirection.Desc));
+                    orderParameters.Add((nameof(ProcessAssignmentEntity.DateCreation),SortDirection.Desc));
                 }
                 
                 pagingText = $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
@@ -242,12 +140,14 @@ namespace OptimaJet.Workflow.MSSQL.Models
             return await SelectAsync(connection, updatedSelectText, sqlParams).ConfigureAwait(false);
         }
         
-        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
+        public async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
             var pProcessId = new SqlParameter("processId", SqlDbType.UniqueIdentifier) {Value = processId};
             try
             {
-                return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processId", transaction, pProcessId).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE [" + 
+                                                                     nameof(ProcessAssignmentEntity.ProcessId) +
+                                                                     "] = @processId", transaction, pProcessId).ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -295,6 +195,7 @@ namespace OptimaJet.Workflow.MSSQL.Models
 
         private static string GetSqlExpression(FilterParameter filterParameter, int i, int n )
         {
+            // ReSharper disable once RedundantAssignment
             var result = "";
             var parameterName = "";
             var expression = "";

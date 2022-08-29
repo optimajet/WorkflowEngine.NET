@@ -12,9 +12,9 @@ namespace OptimaJet.Workflow.DbPersistence
         private readonly string _storePath;
         private SchemeFilePersistence _schemeFilePersistence;
 
-        public FileSchemePersistenceMSSQLProvider(string storePath, string connectionString, string schema = "dbo", 
+        public FileSchemePersistenceMSSQLProvider(string storePath, string connectionString, string schemaName = "dbo", 
             bool writeToHistory = true, bool writeSubProcessToRoot = true)
-            : base(connectionString, schema, writeToHistory, writeSubProcessToRoot)
+            : base(connectionString, schemaName, writeToHistory, writeSubProcessToRoot)
         {
             _storePath = storePath;
         }

@@ -45,10 +45,11 @@
                     :readonly="readonly"
                 ></el-input>
             </td>
-            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Triple">
                 <el-button-group>
           <el-button :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"
                      @click="showjson('DefaultValue', item)"></el-button>
+          <el-button class="WorkflowDesignerTableCommentButton el-icon-" v-on:click="showComment(item)"></el-button>
           <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
         </el-button-group>
       </td>
@@ -132,6 +133,27 @@
       me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
+    me.VueConfig.methods.showComment = function (item) {
+      const name = "Comment";
+      const title = "Edit comment";
+      const type = WorkflowDesignerConstants.ParameterTypes.TextArea;
+
+      me.editItem = item;
+
+      me.showJsonForm(item[name], {
+        customTitle: title,
+        parameterDefinition: {type},
+        onSuccess: function (value) {
+          if (me.editItem) {
+            me.editItem[name] = value;
+          }
+        },
+        onClose: function () {
+          delete me.editItem;
+        }
+      })
+    };
+
     me.VueConfig.methods.validateField = function (name, item) {
       if (name !== 'Name' && name !== 'Parameter')
         return;
@@ -180,7 +202,7 @@
             if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
                 me.VueConfig.data.parentItem.InputParameters,
                 me.VueConfig.data.items,
-        ['Name', 'IsRequired', 'DefaultValue'])) {
+        ['Name', 'IsRequired', 'DefaultValue', 'Comment'])) {
 
         me.showConfirm();
         return false;

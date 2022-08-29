@@ -3,15 +3,10 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Linq.Expressions;
-#if NETCOREAPP
 using Microsoft.Data.SqlClient;
-#else
-using System.Data.SqlClient;
-#endif
 using System.Reflection;
 using System.Threading.Tasks;
-using System.Xml.Linq;
-using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Persistence;
 
@@ -26,14 +21,14 @@ namespace OptimaJet.Workflow.DbPersistence
         public int Size = 256;
         public bool IsVirtual = false;
     }
-    
+
     public static class DBColumnsExtensions
     {
         public static void AddColumn(this Dictionary<string, ColumnInfo> dbColumns, ColumnInfo column)
         {
             dbColumns.Add(column.Name, column);
         }
-        
+
         public static void AddColumns(this Dictionary<string, ColumnInfo> dbColumns, List<ColumnInfo> columns)
         {
             foreach (var column in columns)
@@ -41,7 +36,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 dbColumns.Add(column.Name, column);
             }
         }
-        
+
         public static void AddColumns(this Dictionary<string, ColumnInfo> dbColumns, ColumnInfo[] columns)
         {
             foreach (var column in columns)
@@ -51,124 +46,162 @@ namespace OptimaJet.Workflow.DbPersistence
         }
     }
 
-    public abstract class DbObject
+    public class DbObject<TEntity> where TEntity : IEntity, new()
     {
-        public static string SchemaName { get; set; }
-    }
-
-    public class DbObject<T> : DbObject where T : DbObject<T>, new()
-    {
-        // ReSharper disable once StaticMemberInGenericType
-        public static string DbTableName;
-
-        public static string ObjectName
+        public DbObject(string schemaName, string dbTableName, int commandTimeout)
         {
-            get
-            {
-                if (!String.IsNullOrWhiteSpace(SchemaName))
-                    return $"[{SchemaName}].[{DbTableName}]";
-                return $"[{DbTableName}]";
-            }
+            SchemaName = schemaName;
+            DbTableName = dbTableName;
+            CommandTimeout = commandTimeout;
         }
 
+        public int CommandTimeout { get; }
+        public string SchemaName { get; }
+        public string DbTableName { get; }
+        public string ObjectName =>
+            !String.IsNullOrWhiteSpace(SchemaName)
+                ? $"[{SchemaName}].[{DbTableName}]"
+                : $"[{DbTableName}]";
+
+        // ReSharper disable once StaticMemberInGenericType
         public static List<ColumnInfo> DBColumnsStatic = new List<ColumnInfo>();
-        
+
         public List<ColumnInfo> DBColumns = new List<ColumnInfo>();
 
-        public virtual object GetValue(string key)
-        {
-            return null;
-        }
-
-        public virtual void SetValue(string key, object value)
-        {
-            
-        }
-      
         #region Command Insert/Update/Delete/Commit
-        
-        public async Task<int> InsertAsync(SqlConnection connection, SqlTransaction transaction = null)
+
+        public async Task<int> InsertAsync(SqlConnection connection, TEntity entity, SqlTransaction transaction = null)
         {
             var commandText =
-                $"INSERT INTO {ObjectName} ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => $"[{c.Name}]"))}) VALUES ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => "@" + c.Name))})";
-            var parameters = DBColumns.Select(CreateParameter).ToArray();
+                $"INSERT INTO {ObjectName} (" +
+                String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => $"[{c.Name}]")) +
+                $") VALUES ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => "@" + c.Name))})";
+
+            var parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
+
             return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, parameters)
                 .ConfigureAwait(false);
         }
-        
-        
-        public async Task<int> UpdateAsync(SqlConnection connection, SqlTransaction transaction = null)
+
+        public async Task<int> UpsertAsync(SqlConnection connection, TEntity entity, SqlTransaction transaction = null)
+        {
+            if (transaction != null)
+            {
+                return await UpsertInternalAsync(connection, entity, transaction).ConfigureAwait(false);
+            }
+
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+            }
+                
+            using var tnxInternal = connection.BeginTransaction();
+                
+            int rowcount = await UpsertInternalAsync(connection, entity, tnxInternal).ConfigureAwait(false);
+                
+            tnxInternal.Commit();
+                
+            return rowcount;
+        }
+
+        private async Task<int> UpsertInternalAsync(SqlConnection connection, TEntity entity, SqlTransaction transaction = null)
+        {
+            var parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
+            
+            string command =
+                $@"UPDATE {ObjectName} WITH (UPDLOCK, SERIALIZABLE) SET " +
+                String.Join(",",DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name))) +
+                $" WHERE {String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name)))}";
+
+            int rowcount = await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters).ConfigureAwait(false);
+
+            if (rowcount == 0)
+            {
+                rowcount = await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
+            }
+
+            return rowcount;
+        } 
+
+        public async Task<int> UpdateAsync(SqlConnection connection, TEntity entity, SqlTransaction transaction = null)
         {
             string command =
-                $@"UPDATE {ObjectName} SET {String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name)))} WHERE {String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name)))}";
+                $@"UPDATE {ObjectName} SET " +
+                String.Join(",",
+                    DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name))) +
+                $" WHERE {String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => String.Format("[{0}] = @{0}", c.Name)))}";
 
-            var parameters = DBColumns.Select(CreateParameter).ToArray();
+            var parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
 
             return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters)
                 .ConfigureAwait(false);
         }
 
-        public static async Task<T[]> SelectAllAsync(SqlConnection connection)
+        public async Task<TEntity[]> SelectAllAsync(SqlConnection connection)
         {
             return await SelectAsync(connection, $"SELECT * FROM {ObjectName}").ConfigureAwait(false);
         }
-        public static async Task<T[]> SelectAllWithPagingAsync(SqlConnection connection, List<(string parameterName,SortDirection sortDirection)> orderParameters, Paging paging)
+
+        public async Task<TEntity[]> SelectAllWithPagingAsync(SqlConnection connection,
+            List<(string parameterName, SortDirection sortDirection)> orderParameters, Paging paging)
         {
             orderParameters ??= new List<(string parameterName, SortDirection sortDirection)>();
-            
+
             string pagingText = String.Empty;
             string orderText = String.Empty;
-            
+
             if (paging != null)
             {
                 //default sort for paging
                 if (orderParameters.Count < 1)
                 {
-                    orderParameters.Add((GetKeyOrFirstColumn(),SortDirection.Asc));
+                    orderParameters.Add((GetKeyOrFirstColumn(), SortDirection.Asc));
                 }
-                
+
                 pagingText = $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
             }
-            
+
             if (orderParameters.Any())
             {
                 orderText = $" ORDER BY {GetOrderParameters(orderParameters)}";
             }
-            
+
             string selectText = $"SELECT * FROM {ObjectName}{orderText}{pagingText}";
 
             return await SelectAsync(connection, selectText).ConfigureAwait(false);
         }
-        
-        public static async Task<T[]> SelectByAsync<TSelect>(SqlConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value)
+
+        public async Task<TEntity[]> SelectByAsync<TSelect>(SqlConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value)
         {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"_{propertyName}";
             string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE [{propertyName}] = @{paramName}");
-            
-            var param = new SqlParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type) { Value = value };
-            
+
+            var param = new SqlParameter(paramName, DBColumns.Find(x => x.Name == propertyName).Type) {Value = value};
+
             return await SelectAsync(connection, selectText, param).ConfigureAwait(false);
         }
-        
-        public static async Task<int> DeleteByAsync<TSelect>(SqlConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value, SqlTransaction transaction = null)
+
+        public async Task<int> DeleteByAsync<TSelect>(SqlConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value, SqlTransaction transaction = null)
         {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"_{propertyName}";
             string selectText = String.Format($"Delete FROM {ObjectName} WHERE [{propertyName}] = @{paramName}");
-            
-            var param = new SqlParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type) { Value = value };
-            
+
+            var param = new SqlParameter(paramName, DBColumns.Find(x => x.Name == propertyName).Type) {Value = value};
+
             return await ExecuteCommandNonQueryAsync(connection, selectText, transaction, param).ConfigureAwait(false);
         }
 
-        public static async Task<T[]> SelectByWithPagingAsync<TSelect, TSort>(SqlConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value, Expression<Func<T, TSort>> sortLambda, SortDirection sortDirection, Paging paging)
+        public async Task<TEntity[]> SelectByWithPagingAsync<TSelect, TSort>(SqlConnection connection,
+            Expression<Func<TEntity, TSelect>> selectorLambda, TSelect value, Expression<Func<TEntity, TSort>> sortLambda,
+            SortDirection sortDirection,
+            Paging paging)
         {
-            var t = new T();
-            string selectorProperty = (selectorLambda.Body as MemberExpression).Member.Name;
-            string sortProperty =(sortLambda.Body as MemberExpression).Member.Name;
+            string selectorProperty = (selectorLambda.Body as MemberExpression)?.Member.Name;
+            string sortProperty = (sortLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"_{selectorProperty}";
             string pagingText = String.Empty;
 
@@ -176,21 +209,21 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 pagingText = $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
             }
-            
-            string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE [{selectorProperty}] = @{paramName} ORDER BY [{sortProperty}] {sortDirection.UpperName()}{pagingText}");
-            
-            var param = new SqlParameter(paramName, t.DBColumns.Find(x=>x.Name == selectorProperty).Type) { Value = value };
-            
+
+            string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE [{selectorProperty}] = @{paramName}" +
+                                              $" ORDER BY [{sortProperty}] {sortDirection.UpperName()}{pagingText}");
+
+            var param = new SqlParameter(paramName, DBColumns.Find(x => x.Name == selectorProperty).Type) {Value = value};
+
             return await SelectAsync(connection, selectText, param).ConfigureAwait(false);
         }
-        
-        
-        public static async Task<T> SelectByKeyAsync(SqlConnection connection, object id)
-        {
-            var t = new T();
 
-            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
-            if(key == null)
+
+        public async Task<TEntity> SelectByKeyAsync(SqlConnection connection, object id)
+        {
+            var key = DBColumns.FirstOrDefault(c => c.IsKey);
+
+            if (key == null)
             {
                 throw new Exception($"Key for table {ObjectName} isn't defined.");
             }
@@ -201,37 +234,38 @@ namespace OptimaJet.Workflow.DbPersistence
             return (await SelectAsync(connection, selectText, pId).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static async Task<int> GetCountAsync(SqlConnection connection)
+        public async Task<int> GetCountAsync(SqlConnection connection)
         {
             var result = await ExecuteCommandScalarAsync(connection, $"SELECT Count(*) FROM {ObjectName}")
                 .ConfigureAwait(false);
-            
+
             result = (result == DBNull.Value) ? null : result;
             return Convert.ToInt32(result);
         }
-        
-        public static async Task<int> GetCountByAsync<TSelect>(SqlConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value, SqlTransaction transaction = null)
+
+        public async Task<int> GetCountByAsync<TSelect>(SqlConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value, SqlTransaction transaction = null)
         {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"_{propertyName}";
             string selectText = String.Format($"SELECT COUNT(*) FROM {ObjectName} WHERE [{propertyName}] = @{paramName}");
-            
-            var param = new SqlParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type) { Value = value };
+
+            var param = new SqlParameter(paramName, DBColumns.Find(x => x.Name == propertyName).Type) {Value = value};
             var result = await ExecuteCommandScalarAsync(connection, selectText, transaction, param).ConfigureAwait(false);
-            
+
             result = (result == DBNull.Value) ? null : result;
             return Convert.ToInt32(result);
-
         }
 
 
-        public static async Task<int> DeleteAsync(SqlConnection connection, object id, SqlTransaction transaction = null)
+        public async Task<int> DeleteAsync(SqlConnection connection, object id, SqlTransaction transaction = null)
         {
-            var t = new T();
-            var key = t.DBColumns.FirstOrDefault(c => c.IsKey);
+            var key = DBColumns.FirstOrDefault(c => c.IsKey);
+
             if (key == null)
+            {
                 throw new Exception($"Key for table {ObjectName} isn't defined.");
+            }
 
             var pId = new SqlParameter("p_id", key.Type) {Value = ConvertToDbCompatibilityType(id)};
 
@@ -240,7 +274,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 .ConfigureAwait(false);
         }
 
-        private static async Task<int> ExecuteCommandInternalAsync(SqlConnection connection, string commandText, SqlTransaction transaction, SqlParameter[] parameters)
+        private async Task<int> ExecuteCommandInternalAsync(SqlConnection connection, string commandText, SqlTransaction transaction,
+            SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -255,6 +290,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     command.Transaction = transaction;
                 }
 
+                command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
@@ -263,7 +299,7 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static async Task<T[]> SelectAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+        public async Task<TEntity[]> SelectAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
         {
             try
             {
@@ -274,8 +310,9 @@ namespace OptimaJet.Workflow.DbPersistence
                 throw e.ToQueryException();
             }
         }
-        
-        public static async Task<List<Dictionary<string, object>>> SelectAsDictionaryAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+
+        public async Task<List<Dictionary<string, object>>> SelectAsDictionaryAsync(SqlConnection connection, string commandText,
+            params SqlParameter[] parameters)
         {
             try
             {
@@ -286,13 +323,15 @@ namespace OptimaJet.Workflow.DbPersistence
                 throw e.ToQueryException();
             }
         }
-        
-        public static async Task<int> ExecuteCommandNonQueryAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+
+        public async Task<int> ExecuteCommandNonQueryAsync(SqlConnection connection, string commandText,
+            params SqlParameter[] parameters)
         {
             return await ExecuteCommandNonQueryAsync(connection, commandText, null, parameters).ConfigureAwait(false);
         }
 
-        public static async Task<int> ExecuteCommandNonQueryAsync(SqlConnection connection, string commandText, SqlTransaction transaction = null,  params SqlParameter[] parameters)
+        public async Task<int> ExecuteCommandNonQueryAsync(SqlConnection connection, string commandText,
+            SqlTransaction transaction = null, params SqlParameter[] parameters)
         {
             try
             {
@@ -304,12 +343,14 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static async Task<object> ExecuteCommandScalarAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+        public async Task<object> ExecuteCommandScalarAsync(SqlConnection connection, string commandText,
+            params SqlParameter[] parameters)
         {
             return await ExecuteCommandScalarAsync(connection, commandText, null, parameters).ConfigureAwait(false);
         }
 
-        public static async Task<object> ExecuteCommandScalarAsync(SqlConnection connection, string commandText, SqlTransaction transaction = null, params SqlParameter[] parameters)
+        public async Task<object> ExecuteCommandScalarAsync(SqlConnection connection, string commandText,
+            SqlTransaction transaction = null, params SqlParameter[] parameters)
         {
             try
             {
@@ -321,7 +362,8 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        private static async Task<object> ExecuteCommandScalarInternalAsync(SqlConnection connection, string commandText, SqlTransaction transaction, params SqlParameter[] parameters)
+        private async Task<object> ExecuteCommandScalarInternalAsync(SqlConnection connection, string commandText,
+            SqlTransaction transaction, params SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -335,15 +377,16 @@ namespace OptimaJet.Workflow.DbPersistence
                 {
                     command.Transaction = transaction;
                 }
-                
+
+                command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-                return  await command.ExecuteScalarAsync().ConfigureAwait(false);
+                return await command.ExecuteScalarAsync().ConfigureAwait(false);
             }
         }
-        
-        private static async Task<T[]> SelectInternalAsync(SqlConnection connection, string commandText, SqlParameter[] parameters)
+
+        private async Task<TEntity[]> SelectInternalAsync(SqlConnection connection, string commandText, SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -353,35 +396,41 @@ namespace OptimaJet.Workflow.DbPersistence
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-                var res = new List<T>();
-                
-                using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
+
+                var entities = new List<TEntity>();
+
+                using (SqlDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync().ConfigureAwait(false))
                     {
-                        T item = new T();
+                        var entity = new TEntity();
+
                         for (int i = 0; i < reader.FieldCount; i++)
                         {
                             var name = reader.GetName(i);
-                            var column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                            var column = DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
                             if (column != null)
                             {
-                                item.SetValue(column.Name, reader.IsDBNull(i) ? null : reader.GetValue(i));
+                                var value = reader.IsDBNull(i) ? null : reader.GetValue(i);
+                                entity.SetValue(column.Name, value);
                             }
                         }
 
-                        res.Add(item);
+                        entities.Add(entity);
                     }
                 }
 
-                return res.ToArray();
+                return entities.ToArray();
             }
         }
-        
-        private static async Task<List<Dictionary<string, object>>> SelectInternalAsDictionaryAsync(SqlConnection connection, string commandText, SqlParameter[] parameters)
+
+        private async Task<List<Dictionary<string, object>>> SelectInternalAsDictionaryAsync(SqlConnection connection,
+            string commandText, SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -391,11 +440,12 @@ namespace OptimaJet.Workflow.DbPersistence
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
                 var res = new List<Dictionary<string, object>>();
-                
+
                 using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync().ConfigureAwait(false))
@@ -414,10 +464,10 @@ namespace OptimaJet.Workflow.DbPersistence
                 return res;
             }
         }
-        
+
         #endregion Command Insert/Update/Delete/Commit
 
-        public static async Task<int> InsertAllAsync(SqlConnection connection, T[] values, SqlTransaction transaction = null)
+        public async Task<int> InsertAllAsync(SqlConnection connection, TEntity[] values, SqlTransaction transaction = null)
         {
             if (values.Length < 1)
             {
@@ -429,13 +479,15 @@ namespace OptimaJet.Workflow.DbPersistence
 
             for (int i = 0; i < values.Length; i++)
             {
-                names.Add("("+String.Join(",", values[i].DBColumns.Select(c => "@" + i + c.Name))+")");
-                parameters.AddRange(values[i].DBColumns.Select(c => values[i].CreateParameter(c, i.ToString())).ToArray());
+                var i1 = i;
+                names.Add("(" + String.Join(",", DBColumns.Select(c => "@" + i1 + c.Name)) + ")");
+                parameters.AddRange(DBColumns.Select(c => CreateParameter(values[i], c, i.ToString())).ToArray());
             }
 
             string command =
-                $"INSERT INTO {ObjectName} ({String.Join(",", values.First().DBColumns.Select(c => $"[{c.Name}]"))}) VALUES {String.Join(",", names)}";
-
+                $"INSERT INTO {ObjectName} (" +
+                String.Join(",", DBColumns.Select(c => $"[{c.Name}]")) +
+                $") VALUES {String.Join(",", names)}";
 
             return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters.ToArray()).ConfigureAwait(false);
         }
@@ -445,9 +497,9 @@ namespace OptimaJet.Workflow.DbPersistence
             return obj;
         }
 
-        public virtual SqlParameter CreateParameter(ColumnInfo c)
+        public virtual SqlParameter CreateParameter(TEntity entity, ColumnInfo column, string namePrefix = "")
         {
-            var value = GetValue(c.Name);
+            var value = entity.GetValue(column.Name);
 
             var isNullable = IsNullable(value);
 
@@ -456,46 +508,29 @@ namespace OptimaJet.Workflow.DbPersistence
                 value = DBNull.Value;
             }
 
-            var p = new SqlParameter(c.Name, c.Type) {Value = value, IsNullable = isNullable};
+            var p = new SqlParameter(namePrefix + column.Name, column.Type) {Value = value, IsNullable = isNullable};
             return p;
         }
-        
-        public virtual SqlParameter CreateParameter(ColumnInfo c, string namePrefix)
-        {
-            var value = GetValue(c.Name);
 
-            var isNullable = IsNullable(value);
-
-            if (isNullable && value == null)
-            {
-                value = DBNull.Value;
-            }
-
-            var p = new SqlParameter(namePrefix + c.Name, c.Type) {Value = value, IsNullable = isNullable};
-            return p;
-        }
-        
         private static bool IsNullable<T1>(T1 obj)
         {
-            if (obj == null) return true;  //-V3111
-            Type type = typeof (T1);
+            if (obj == null) return true; //-V3111
+            Type type = typeof(T1);
             if (!type.GetTypeInfo().IsValueType) return true;
-            if (Nullable.GetUnderlyingType(type) != null) return true; 
+            if (Nullable.GetUnderlyingType(type) != null) return true;
             return false;
         }
 
-        private static string GetOrderParameters(List<(string parameterName,SortDirection sortDirection)> orderParameters)
+        private static string GetOrderParameters(List<(string parameterName, SortDirection sortDirection)> orderParameters)
         {
             string result = String.Join(", ",
                 orderParameters.Select(x => $"[{x.parameterName}] {x.sortDirection.UpperName()}"));
             return result;
         }
-        
-        public static string GetKeyOrFirstColumn()
+
+        public string GetKeyOrFirstColumn()
         {
-            var t = new T();
-            ColumnInfo column = t.DBColumns.FirstOrDefault(c => c.IsKey) ?? t.DBColumns.First();
-            return column.Name;
+            return DBColumns.FirstOrDefault(c => c.IsKey)?.Name ?? DBColumns.First().Name;
         }
     }
 }

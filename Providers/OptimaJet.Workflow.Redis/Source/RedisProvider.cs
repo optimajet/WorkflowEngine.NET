@@ -28,9 +28,6 @@ namespace OptimaJet.Workflow.Redis
         public RedisProvider(ConnectionMultiplexer connector, string providerNamespace = "wfe", bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
             _connector = connector;
-#if !NETCOREAPP
-            if (_connector != null) _connector.PreserveAsyncOrder = false;
-#endif
             _providerNamespace = providerNamespace;
             _writeToHistory = writeToHistory;
             _writeSubProcessToRoot = writeSubProcessToRoot;

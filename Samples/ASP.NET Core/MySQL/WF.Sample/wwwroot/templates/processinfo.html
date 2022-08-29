@@ -324,6 +324,7 @@
 </div>
 <script type="application/javascript">
   function processinfo_Init(me) {
+    const designer = me.graph.designer;
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       readonly: false,
       labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
@@ -336,7 +337,7 @@
       FormData: {},
       Tags: [],
       CanBeInlined: null,
-      LogEnabled: false,
+      LogEnabled: me.graph.designer.LogEnabled,
       IsObsolete: false,
       DefiningParameters: undefined,
       ProcessTimers: [],
@@ -351,11 +352,12 @@
       Id: undefined,
       SubprocessInfo: undefined,
     });
+
     me.VueConfig.methods.onUpdate = function () {
       var data = me.VueConfig.data;
       data.Tags = WorkflowDesignerCommon.clone(me.graph.data.Tags);
       data.CanBeInlined = me.graph.data.CanBeInlined;
-      data.LogEnabled = me.graph.data.LogEnabled;
+      data.LogEnabled = me.graph.designer.LogEnabled;
       data.Name = me.graph.data.Name;
       if (me.graph.data.Id && me.graph.data.Id !== '00000000-0000-0000-0000-000000000000') {
         data.Id = me.graph.data.Id
@@ -430,9 +432,8 @@
       var data = me.graph.data;
       data.Tags = WorkflowDesignerCommon.clone(me.VueConfig.data.Tags);
       data.CanBeInlined = me.VueConfig.data.CanBeInlined;
-      data.LogEnabled = me.VueConfig.data.LogEnabled;
       me.graph.setInlinedFlag(data.CanBeInlined);
-      me.graph.setLogEnabled(data.LogEnabled);
+      if (this.LogEnabled !== designer.LogEnabled) designer.changelogenabled();
       me.onClose(true);
     };
 

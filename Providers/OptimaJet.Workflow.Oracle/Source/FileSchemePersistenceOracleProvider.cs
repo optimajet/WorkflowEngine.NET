@@ -15,9 +15,9 @@ namespace OptimaJet.Workflow.Oracle
         private readonly string _storePath;
         private SchemeFilePersistence _schemeFilePersistence;
 
-        public FileSchemePersistenceOracleProvider(string storePath, string connectionString, string schema = null,
+        public FileSchemePersistenceOracleProvider(string storePath, string connectionString, string schemaName = null,
             bool writeToHistory = true, bool writeSubProcessToRoot = true)
-            : base(connectionString, schema, writeToHistory, writeSubProcessToRoot)
+            : base(connectionString, schemaName, writeToHistory, writeSubProcessToRoot)
         {
             _storePath = storePath;
         }

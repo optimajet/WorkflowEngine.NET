@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using AutoMapper;
+using System.Threading.Tasks;
 using Microsoft.AspNetCore.Mvc;
 using WF.Sample.Business.Model;
 using OptimaJet.Workflow.Core.Model;
@@ -24,7 +24,7 @@ namespace WF.Sample.Controllers
             _employeeRepository = employeeRepository;
         }
         
-        public ActionResult Assignments(AssignmentFilterModel model = null)
+        public async Task<ActionResult> Assignments(AssignmentFilterModel model = null)
         {
             var identityId = CurrentUserSettings.GetCurrentUser(HttpContext).ToString();
 
@@ -63,7 +63,7 @@ namespace WF.Sample.Controllers
                 model = new AssignmentFilterModel(){Page = model?.Page ?? 1, PageChanged = 0};
             }
             
-            int count = WorkflowInit.Runtime.PersistenceProvider.GetAssignmentCountAsync(customFilter).Result;
+            int count = await WorkflowInit.Runtime.PersistenceProvider.GetAssignmentCountAsync(customFilter);
 
             model.Page = model?.Page ?? 1;
             var maxPage = Math.Ceiling(count / (decimal)pageSize);
@@ -72,7 +72,7 @@ namespace WF.Sample.Controllers
                 model.Page = (int)maxPage;
             }
             
-            List<Assignment> assignments = WorkflowInit.Runtime.AssignmentApi.GetAssignmentsAsync(customFilter,new Paging(model.Page, pageSize)).Result;
+            List<Assignment> assignments = await WorkflowInit.Runtime.AssignmentApi.GetAssignmentsAsync(customFilter,new Paging(model.Page, pageSize));
 
             var statuses = WorkflowInit.Runtime.AssignmentApi.GetAssignmentStatuses();
             statuses.Add("Any");
@@ -88,26 +88,26 @@ namespace WF.Sample.Controllers
             });
         }
         
-        public ActionResult AssignmentInfo(Guid id)
+        public async Task<ActionResult> AssignmentInfo(Guid id)
         {
-            var assignment = WorkflowInit.Runtime.PersistenceProvider.GetAssignmentAsync(id).Result;
+            var assignment = await WorkflowInit.Runtime.PersistenceProvider.GetAssignmentAsync(id);
             
-            return View("AssignmentInfo", GetAssignmentInfoModel(assignment, false) );
+            return View("AssignmentInfo", await GetAssignmentInfoModel(assignment, false) );
         }
         
-        public ActionResult AssignmentCreate(Guid processid)
+        public async Task<ActionResult> AssignmentCreate(Guid processid)
         {
             var assignment = new Assignment()
             {
                 ProcessId = processid
             };
 
-            var a = GetAssignmentInfoModel(assignment, true);
+            var a = await GetAssignmentInfoModel(assignment, true);
             return View("AssignmentInfo", a );
         }
         
         [HttpPost]
-        public ActionResult AssignmentCreateOrUpdate(AssignmentInfoModel am)
+        public async Task<ActionResult> AssignmentCreateOrUpdate(AssignmentInfoModel am)
         {
             if (am.FormAction == "Create")
             {
@@ -126,12 +126,12 @@ namespace WF.Sample.Controllers
                     Tags = am.Tags ?? new List<string>()
                 };
 
-                bool result = WorkflowInit.Runtime.AssignmentApi.CreateAssignmentAsync(am.ProcessId, form).Result;
+                bool result = await WorkflowInit.Runtime.AssignmentApi.CreateAssignmentAsync(am.ProcessId, form);
                 return RedirectToAction("AssignmentInfo",new {id = id} );
             }
             else
             {
-                var a = WorkflowInit.Runtime.PersistenceProvider.GetAssignmentAsync((Guid)am.AssignmentId).Result;
+                var a = await WorkflowInit.Runtime.PersistenceProvider.GetAssignmentAsync((Guid)am.AssignmentId);
             
                 a.Description = am.Description;
                 a.Executor = am.Executor.ToString();
@@ -140,13 +140,13 @@ namespace WF.Sample.Controllers
                 a.DeadlineToComplete = am.DeadlineToComplete;
                 a.DeadlineToStart = am.DeadlineToStart;
 
-                bool result = WorkflowInit.Runtime.AssignmentApi.UpdateAssignmentAsync(a).Result;
+                bool result = await WorkflowInit.Runtime.AssignmentApi.UpdateAssignmentAsync(a);
 
                 return RedirectToAction("AssignmentInfo",new {id = a.AssignmentId} );
             }
         }
         
-        public ActionResult DeleteAssignments(Guid[] ids)
+        public async Task<ActionResult> DeleteAssignments(Guid[] ids)
         {
             if (ids == null || ids.Length == 0)
                 return Content("Items not selected");
@@ -155,7 +155,7 @@ namespace WF.Sample.Controllers
             {
                 foreach (var id in ids)
                 {
-                    var result = WorkflowInit.Runtime.AssignmentApi.DeleteAssignmentAsync(id).Result;
+                    var result = await WorkflowInit.Runtime.AssignmentApi.DeleteAssignmentAsync(id);
                 }
             }
             catch (Exception ex)
@@ -233,7 +233,7 @@ namespace WF.Sample.Controllers
             return assignmentModels;
         }
         
-        private AssignmentInfoModel GetAssignmentInfoModel(Assignment assignment, bool forCreate)
+        private Task<AssignmentInfoModel> GetAssignmentInfoModel(Assignment assignment, bool forCreate)
         {
             var document = _documentRepository.Get(assignment.ProcessId);
             var employees = _employeeRepository.GetAll();
@@ -279,7 +279,7 @@ namespace WF.Sample.Controllers
                 am.FormAction = "Update";
             }
             
-            return am;
+            return Task.FromResult(am);
         }
     }
 }

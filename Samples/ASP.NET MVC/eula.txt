@@ -58,7 +58,6 @@ OptimaJet.Workflow.MongoDB.dll
 OptimaJet.Workflow.MySQL.dll
 OptimaJet.Workflow.Oracle.dll
 OptimaJet.Workflow.PostgreSQL.dll
-OptimaJet.Workflow.RavenDB.dll
 OptimaJet.Workflow.Redis.dll
 JavaScript Designer library:
 
@@ -84,7 +83,6 @@ WorkflowEngine.NET-ProviderForMSSQL
 WorkflowEngine.NET-ProviderForMySQL
 WorkflowEngine.NET-ProviderForOracle
 WorkflowEngine.NET-ProviderForPostgreSQL
-WorkflowEngine.NET-ProviderForRavenDB
 WorkflowEngine.NET-ProviderForRedis
 Public GitHub repository:
 
@@ -148,9 +146,6 @@ DnsClient (Apache license)
 The following license applies only to the Redis provider:
 
 StackExchange.Redis (MIT License)
-The following license applies only to the RavenDB provider:
-
-RavenDB.Client (MIT License)
 The following licenses apply only to the Ignite provider:
 
 Remotion.Linq (Apache license)

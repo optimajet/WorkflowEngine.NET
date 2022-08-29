@@ -1,4 +1,10 @@
 {
+  "LangInfo": {
+    "code": "en",
+    "dialect": "US",
+    "name": "English",
+    "description": "American English"
+  },
   "DeleteConfirm": "Are you sure you want to delete selected item(s)?",
   "DeleteConfirmCurrent": "Are you sure you want to delete this item?",
   "EscapeConfirm": "There are unsaved changes. Do you want to save the schema?",
@@ -21,6 +27,7 @@
   "TransitionAuto": "Auto",
   "DialogConfirmText": "Question",
   "AlertTitle": "Warning",
+  "ReadMore": "Read more.",
   "None": "None",
   "Warning": "Warning",
   "SwitchToExpertMode": "Switch To Expert Mode",
@@ -210,11 +217,12 @@
     "Value": "Value",
     "ShowPredefined": "Show predefined",
     "Types": {
-      "Command": "Command",
       "State": "State",
       "Parameter": "Parameter",
       "Action": "Action",
       "Condition": "Condition",
+      "Command": "Command",
+      "Comment": "Comment",
       "Scheme": "Scheme"
     }
   },
@@ -320,6 +328,7 @@
     "IsGlobal": "Is global",
     "IsAsync": "Async",
     "Type": "Type",
+    "CustomTypeHint": "To use a custom type, add its name here and add its implementation to the jsonform template.",
     "GlobalDeleteMessage": "If you've delete the Global CodeAction - <br/><b>other schemes won't be able to call it!</b>",
     "UnGlobalMessage": "You've changed the state of the global flag.<br/>There will be created a Local CodeAction based on this Global CodeAction after saving this scheme.",
     "EditParameters": "Edit parameters",
@@ -528,6 +537,9 @@
     "Library": "Library",
     "Language": "Language",
     "File": "File",
+    "SaveToImage": "Save to image",
+    "ShowGrid": "Show grid",
+    "ImageQuality": "Quality (pixel aspect ratio):",
     "ResetSettings": "Reset settings",
     "Clear": "Clear",
     "ActivitiesCount": "Activities count / Limit",
@@ -603,6 +615,15 @@
     "SetLoopState": {
       "Title": "Set loop state",
       "Description": "The action for set loop state"
+    },
+    "Comment": {
+      "Title": "Comment",
+      "Description": "Place a comment on the scheme",
+      "Name": "Name",
+      "CommentText": "Comment text",
+      "Alignment": "Alignment",
+      "FontSize": "Font size",
+      "TextFormatting": "Text formatting"
     },
     "Header": "Elements"
   },

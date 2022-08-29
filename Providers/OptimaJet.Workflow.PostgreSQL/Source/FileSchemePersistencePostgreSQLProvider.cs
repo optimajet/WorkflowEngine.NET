@@ -15,9 +15,9 @@ namespace OptimaJet.Workflow.PostgreSQL
         private readonly string _storePath;
         private SchemeFilePersistence _schemeFilePersistence;
 
-        public FileSchemePersistencePostgreSQLProvider(string storePath, string connectionString, string schema = "public",
+        public FileSchemePersistencePostgreSQLProvider(string storePath, string connectionString, string schemaName = "public",
             bool writeToHistory = true, bool writeSubProcessToRoot = true)
-            : base(connectionString, schema, writeToHistory, writeSubProcessToRoot)
+            : base(connectionString, schemaName, writeToHistory, writeSubProcessToRoot)
         {
             _storePath = storePath;
         }

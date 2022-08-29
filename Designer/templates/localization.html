@@ -37,12 +37,12 @@
           placeholder=""
           :title="validateField('Type', item)"
           :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''">
-          <el-option key="Command" :label="labels.Types[0]" value="Command"></el-option>
-          <el-option key="State" :label="labels.Types[1]" value="State"></el-option>
-          <el-option key="Parameter" :label="labels.Types[2]" value="Parameter"></el-option>
-          <el-option key="Action" :label="labels.Types[3]" value="Action"></el-option>
-          <el-option key="Condition" :label="labels.Types[4]" value="Condition"></el-option>
-          <el-option key="Scheme" :label="labels.Types[5]" value="Scheme"></el-option>
+          <el-option
+            v-for="[value, label] of Object.entries(labels.Types)"
+            :key="value"
+            :label="label"
+            :value="value">
+          </el-option>
         </el-select>
       </td>
       <td>
@@ -94,8 +94,12 @@
           filterable
           placeholder=""
           style="width: 100%;">
-          <el-option v-for="key in Object.keys(labels.Types)"
-                     :key="key" :label="labels.Types[key]" :value="key"></el-option>
+          <el-option
+            v-for="[value, label] of Object.entries(labels.Types)"
+            :key="value"
+            :label="label"
+            :value="value">
+          </el-option>
         </el-select>
       </td>
       <td>

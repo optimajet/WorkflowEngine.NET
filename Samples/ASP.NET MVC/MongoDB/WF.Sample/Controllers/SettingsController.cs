@@ -1,6 +1,7 @@
 ﻿using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using WF.Sample.Business.DataAccess;
 using WF.Sample.Business.Model;
@@ -17,9 +18,9 @@ namespace WF.Sample.Controllers
             _settingsProvider = settingsProvider;
         }
 
-        public ActionResult Edit()
+        public Task<ActionResult> Edit()
         {
-            return View(GetModel());
+            return Task.FromResult<ActionResult>(View(GetModel()));
         }
 
         #region Other

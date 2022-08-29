@@ -8,8 +8,8 @@ using System.Xml.Linq;
 using Newtonsoft.Json;
 using Npgsql;
 using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
-using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
@@ -21,54 +21,117 @@ namespace OptimaJet.Workflow.PostgreSQL
 {
     public class PostgreSQLProvider : IWorkflowProvider
     {
-        public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
-        private readonly bool _writeToHistory;
-        private readonly bool _writeSubProcessToRoot;
+        
+        private PersistenceProviderOptions Options { get; }
+
+        /// <summary>Database schema name for workflow persistence objects</summary>
+        public string SchemaName => Options.SchemaName;
+
+        /// <summary>Global timeout for executing commands on the database</summary>
+        public int GlobalCommandTimeout => Options.GlobalCommandTimeout;
+
+        /// <summary> Connection string to the database </summary>
+        public string ConnectionString => Options.ConnectionString;
+
+        //Entity Providers (DbObject<TEntity>)
+        public WorkflowProcessInstance WorkflowProcessInstance { get; }
+        public WorkflowProcessInstanceStatus WorkflowProcessInstanceStatus { get; }
+        public WorkflowProcessInstancePersistence WorkflowProcessInstancePersistence { get; }
+        public WorkflowProcessTransitionHistory WorkflowProcessTransitionHistory { get; }
+        public WorkflowProcessTimer WorkflowProcessTimer { get; }
+        public WorkflowInbox WorkflowInbox { get; }
+        public WorkflowApprovalHistory WorkflowApprovalHistory { get; }
+        public WorkflowProcessAssignment WorkflowProcessAssignment { get; }
+        public WorkflowGlobalParameter WorkflowGlobalParameter { get; }
+        public WorkflowProcessScheme WorkflowProcessScheme { get; }
+        public PostgreSQL.Models.WorkflowRuntime WorkflowRuntime { get; }
+        public WorkflowScheme WorkflowScheme { get; }
+        public WorkflowSync WorkflowSync { get; }
+        public ProcessInstanceTree ProcessInstanceTree { get; }
 
         public virtual void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public PostgreSQLProvider(string connectionString, string schema = "public", bool writeToHistory = true, bool writeSubProcessToRoot = false)
+        public PostgreSQLProvider(string connectionString, string schemaName = "public", bool writeToHistory = true,
+            bool writeSubProcessToRoot = false) : this(new PersistenceProviderOptions(connectionString)
+            {
+                SchemaName = schemaName, WriteToHistory = writeToHistory, WriteSubProcessToRoot = writeSubProcessToRoot
+            }) {}
+        
+        public PostgreSQLProvider(PersistenceProviderOptions options)
         {
-            DbObject.SchemaName = schema;
-            ConnectionString = connectionString;
-            _writeToHistory = writeToHistory;
-            _writeSubProcessToRoot = writeSubProcessToRoot;
+            if (options == null)
+            {
+                throw new ArgumentException("PersistenceProviderOptions are null");
+            }
+            
+            options.SchemaName ??= "public";
+            Options = options;
+
+            //Creating DbObjects
+            WorkflowProcessInstance = new WorkflowProcessInstance(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessInstanceStatus = new WorkflowProcessInstanceStatus(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessInstancePersistence = new WorkflowProcessInstancePersistence(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessTransitionHistory = new WorkflowProcessTransitionHistory(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessTimer = new WorkflowProcessTimer(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowInbox = new WorkflowInbox(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowApprovalHistory = new WorkflowApprovalHistory(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessAssignment = new WorkflowProcessAssignment(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowGlobalParameter = new WorkflowGlobalParameter(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessScheme = new WorkflowProcessScheme(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowRuntime = new Models.WorkflowRuntime(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowScheme = new WorkflowScheme(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowSync = new WorkflowSync(Options.SchemaName, Options.GlobalCommandTimeout);
+            ProcessInstanceTree = new ProcessInstanceTree(Options.SchemaName, Options.GlobalCommandTimeout);
+        }
+
+        /// <summary> Opens a new database connection </summary>
+        /// <returns>A new database connection</returns>
+        public NpgsqlConnection OpenConnection()
+        {
+            return new NpgsqlConnection(Options.ConnectionString);
         }
 
         #region IPersistenceProvider
-        
+
         #region IAssignmentProvider
+
         public async Task DeleteAssignmentAsync(Guid assignmentId)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
+            await using var connection = OpenConnection();
             await WorkflowProcessAssignment.DeleteAsync(connection, assignmentId).ConfigureAwait(false);
         }
 
-        public async Task<List<Assignment>> GetAssignmentsAsync(AssignmentFilter filter, List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public async Task<List<Assignment>> GetAssignmentsAsync(AssignmentFilter filter,
+            List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
-            var assignments = await WorkflowProcessAssignment.SelectByFilterAsync(connection, filter.Parameters, orderParameters,  paging).ConfigureAwait(false);
+            await using var connection = OpenConnection();
             
-            return assignments.Select(a => a.ConvertToAssignment()).ToList();
+            var assignments = await WorkflowProcessAssignment.SelectByFilterAsync(connection,
+                    filter.Parameters,
+                    orderParameters,
+                    paging)
+                .ConfigureAwait(false);
+
+            return assignments.Select(a => WorkflowProcessAssignment.ConvertToAssignment(a)).ToList();
         }
 
         public async Task<int> GetAssignmentCountAsync(AssignmentFilter filter)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
-            return  await WorkflowProcessAssignment.GetAssignmentCountAsync(connection, filter.Parameters).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowProcessAssignment.GetAssignmentCountAsync(connection, filter.Parameters).ConfigureAwait(false);
         }
 
         public async Task CreateAssignmentAsync(Guid processId, AssignmentCreationForm form)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
+            await using var connection = OpenConnection();
             form.Observers ??= new List<string>();
             form.Tags ??= new List<string>();
-            
-            var assignment = new WorkflowProcessAssignment
+
+            var assignment = new ProcessAssignmentEntity
             {
                 Id = form.Id ?? Guid.NewGuid(),
                 AssignmentCode = form.AssignmentCode,
@@ -86,22 +149,22 @@ namespace OptimaJet.Workflow.PostgreSQL
                 DateCreation = _runtime.RuntimeDateTimeNow
             };
 
-            await assignment.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessAssignment.InsertAsync(connection, assignment).ConfigureAwait(false);
         }
 
         public virtual async Task<Assignment> GetAssignmentAsync(Guid assignmentId)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
+            await using var connection = OpenConnection();
             var assignment = await WorkflowProcessAssignment.SelectByKeyAsync(connection, assignmentId).ConfigureAwait(false);
-            
-            return assignment.ConvertToAssignment();
+
+            return WorkflowProcessAssignment.ConvertToAssignment(assignment);
         }
-        
+
         public async Task UpdateAssignmentAsync(Assignment a)
         {
-            using var connection = new NpgsqlConnection(ConnectionString);
+            await using var connection = OpenConnection();
             var assignment = await WorkflowProcessAssignment.SelectByKeyAsync(connection, a.AssignmentId).ConfigureAwait(false);
-            
+
             assignment.Name = a.Name;
             assignment.Description = a.Description;
             assignment.Executor = a.Executor;
@@ -115,130 +178,111 @@ namespace OptimaJet.Workflow.PostgreSQL
             assignment.DeadlineToStart = a.DeadlineToStart;
             assignment.Observers = JsonConvert.SerializeObject(a.Observers ?? new List<string>());
             assignment.Tags = JsonConvert.SerializeObject(a.Tags ?? new List<string>());
-            
-            await assignment.UpdateAsync(connection).ConfigureAwait(false);
+
+            await WorkflowProcessAssignment.UpdateAsync(connection, assignment).ConfigureAwait(false);
         }
+
         #endregion
 
         public virtual async Task DeleteInactiveTimersByProcessIdAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteInactiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
         }
 
         public virtual async Task DeleteTimerAsync(Guid timerId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteAsync(connection, timerId).ConfigureAwait(false);
         }
 
         public virtual async Task<List<Guid>> GetRunningProcessesAsync(string runtimeId = null)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await WorkflowProcessInstanceStatus.GetProcessesByStatusAsync(connection, ProcessStatus.Running.Id, runtimeId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowProcessInstanceStatus.GetProcessesByStatusAsync(connection, ProcessStatus.Running.Id, runtimeId)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task<WorkflowRuntimeModel> CreateWorkflowRuntimeAsync(string runtimeId, RuntimeStatus status)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            var runtime = new Models.WorkflowRuntime() {RuntimeId = runtimeId, Lock = Guid.NewGuid(), Status = status};
+            await using var connection = OpenConnection();
+            var runtime = new RuntimeEntity
+            {
+                RuntimeId = runtimeId,
+                Lock = Guid.NewGuid(),
+                Status = status
+            };
 
-            await runtime.InsertAsync(connection).ConfigureAwait(false);
+            await  WorkflowRuntime.InsertAsync(connection, runtime).ConfigureAwait(false);
 
-            return new WorkflowRuntimeModel {Lock = runtime.Lock, RuntimeId = runtimeId, Status = status};
+            return new WorkflowRuntimeModel
+            {
+                Lock = runtime.Lock,
+                RuntimeId = runtimeId,
+                Status = status
+            };
         }
 
         public virtual async Task DeleteWorkflowRuntimeAsync(string name)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            await Models.WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            await WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
         }
 
         public virtual async Task DropUnusedWorkflowProcessSchemeAsync()
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessScheme.DeleteUnusedAsync(connection).ConfigureAwait(false);
         }
 
-        public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(
+            List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
-           
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-           
-            WorkflowProcessInstance[] processInstances = await WorkflowProcessInstance.SelectAllWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+
+            ProcessInstanceEntity[] processInstances = await WorkflowProcessInstance
+                .SelectAllWithPagingAsync(
+                    connection,
+                    orderParameters,
+                    paging)
+                .ConfigureAwait(false);
 
             return processInstances.Select(pi => new ProcessInstanceItem()
             {
-                ActivityName  = pi.ActivityName,
-                Id  = pi.Id,
-                IsDeterminingParametersChanged  = pi.IsDeterminingParametersChanged,
-                PreviousActivity  = pi.PreviousActivity,
-                PreviousActivityForDirect  = pi.PreviousActivityForDirect,
-                PreviousActivityForReverse  = pi.PreviousActivityForReverse,
-                PreviousState  = pi.PreviousState,
-                PreviousStateForDirect  = pi.PreviousStateForDirect,
-                PreviousStateForReverse  = pi.PreviousStateForReverse,
-                SchemeId  = pi.SchemeId,
-                StateName  = pi.StateName,
-                ParentProcessId  = pi.ParentProcessId,
-                RootProcessId  = pi.RootProcessId,
-                TenantId  = pi.TenantId,
-                StartingTransition  = pi.StartingTransition,
-                SubprocessName  = pi.SubprocessName,
-                CreationDate  = pi.CreationDate,
-                LastTransitionDate  = pi.LastTransitionDate,
+                ActivityName = pi.ActivityName,
+                Id = pi.Id,
+                IsDeterminingParametersChanged = pi.IsDeterminingParametersChanged,
+                PreviousActivity = pi.PreviousActivity,
+                PreviousActivityForDirect = pi.PreviousActivityForDirect,
+                PreviousActivityForReverse = pi.PreviousActivityForReverse,
+                PreviousState = pi.PreviousState,
+                PreviousStateForDirect = pi.PreviousStateForDirect,
+                PreviousStateForReverse = pi.PreviousStateForReverse,
+                SchemeId = pi.SchemeId,
+                StateName = pi.StateName,
+                ParentProcessId = pi.ParentProcessId,
+                RootProcessId = pi.RootProcessId,
+                TenantId = pi.TenantId,
+                StartingTransition = pi.StartingTransition,
+                SubprocessName = pi.SubprocessName,
+                CreationDate = pi.CreationDate,
+                LastTransitionDate = pi.LastTransitionDate,
             }).ToList();
         }
 
         public async Task<int> GetProcessInstancesCountAsync()
         {
-           
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-           
+            await using var connection = OpenConnection();
+
             return await WorkflowProcessInstance.GetCountAsync(connection).ConfigureAwait(false);
         }
 
-        public async Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public async Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, 
+            Paging paging = null)
         {
-           
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowScheme[] schemes = await WorkflowScheme.SelectAllWorkflowSchemesWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            SchemeEntity[] schemes = await WorkflowScheme.SelectAllWorkflowSchemesWithPagingAsync(connection, orderParameters, paging)
+                .ConfigureAwait(false);
 
             return schemes.Select(sc => new SchemeItem()
             {
@@ -249,22 +293,19 @@ namespace OptimaJet.Workflow.PostgreSQL
                 Tags = TagHelper.FromTagString(sc.Tags),
             }).ToList();
         }
-       
+
         public async Task<int> GetSchemesCountAsync()
         {
-           
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-           
+            await using var connection = OpenConnection();
+
             return await WorkflowScheme.GetCountAsync(connection).ConfigureAwait(false);
         }
-        
+
         public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
-            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.Status = status, Models.WorkflowRuntime.UpdateStatusAsync).ConfigureAwait(false);
+            Tuple<int, WorkflowRuntimeModel> res =
+                await UpdateWorkflowRuntimeAsync(runtime, x => x.Status = status, WorkflowRuntime.UpdateStatusAsync)
+                    .ConfigureAwait(false);
 
             if (res.Item1 != 1)
             {
@@ -274,47 +315,41 @@ namespace OptimaJet.Workflow.PostgreSQL
             return res.Item2;
         }
 
-        public virtual async Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(WorkflowRuntimeModel runtime, string restorerId)
+        public virtual async Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(
+            WorkflowRuntimeModel runtime, 
+            string restorerId)
         {
-            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.RestorerId = restorerId, Models.WorkflowRuntime.UpdateRestorerAsync).ConfigureAwait(false);
+            Tuple<int, WorkflowRuntimeModel> res =
+                await UpdateWorkflowRuntimeAsync(runtime, x => x.RestorerId = restorerId, WorkflowRuntime.UpdateRestorerAsync)
+                    .ConfigureAwait(false);
 
             return (res.Item1 == 1, res.Item2);
         }
 
         public virtual async Task<bool> MultiServerRuntimesExistAsync()
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await Models.WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
         }
 
         public virtual async Task<int> ActiveMultiServerRuntimesCountAsync(string currentRuntimeId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await Models.WorkflowRuntime.GetActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowRuntime.GetActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
         }
 
         public virtual async Task InitializeProcessAsync(ProcessInstance processInstance)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
+                .ConfigureAwait(false);
+            
             if (oldProcess != null)
             {
                 throw new ProcessAlreadyExistsException(processInstance.ProcessId);
             }
 
-            var newProcess = new WorkflowProcessInstance
+            var newProcess = new ProcessInstanceEntity()
             {
                 Id = processInstance.ProcessId,
                 SchemeId = processInstance.SchemeId,
@@ -327,7 +362,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 SubprocessName = processInstance.SubprocessName,
                 CreationDate = processInstance.CreationDate
             };
-            await newProcess.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessInstance.InsertAsync(connection, newProcess).ConfigureAwait(false);
         }
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
@@ -337,12 +372,10 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
+                .ConfigureAwait(false);
+            
             if (oldProcess == null)
             {
                 throw new ProcessNotFoundException(processInstance.ProcessId);
@@ -350,28 +383,34 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             oldProcess.SchemeId = processInstance.SchemeId;
             oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
+            
             if (resetIsDeterminingParametersChanged)
             {
                 oldProcess.IsDeterminingParametersChanged = false;
             }
 
-            await oldProcess.UpdateAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessInstance.UpdateAsync(connection, oldProcess).ConfigureAwait(false);
         }
 
         public virtual async Task FillProcessParametersAsync(ProcessInstance processInstance)
         {
-            processInstance.AddParameters(await GetProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+            processInstance.AddParameters(await GetProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
+                .ConfigureAwait(false));
         }
 
         public virtual async Task FillPersistedProcessParametersAsync(ProcessInstance processInstance)
         {
-            processInstance.AddParameters(await GetPersistedProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+            processInstance.AddParameters(await GetPersistedProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
+                .ConfigureAwait(false));
         }
 
         public virtual async Task FillPersistedProcessParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-            ParameterDefinitionWithValue persistedProcessParameter =
-                await GetPersistedProcessParameterAsync(processInstance.ProcessId, processInstance.ProcessScheme, parameterName).ConfigureAwait(false);
+            var persistedProcessParameter = await GetPersistedProcessParameterAsync(processInstance.ProcessId,
+                    processInstance.ProcessScheme,
+                    parameterName)
+                .ConfigureAwait(false);
+            
             if (persistedProcessParameter == null)
             {
                 return;
@@ -382,7 +421,8 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task FillSystemProcessParametersAsync(ProcessInstance processInstance)
         {
-            processInstance.AddParameters(await GetSystemProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
+            processInstance.AddParameters(await GetSystemProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
+                .ConfigureAwait(false));
         }
 
         public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
@@ -390,55 +430,61 @@ namespace OptimaJet.Workflow.PostgreSQL
             var parametersToPersistList = processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
                 .Select(ptp => ParameterDefinitionWithValueToDynamic(ptp)).ToList();
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
 
-            var persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processInstance.ProcessId).ConfigureAwait(false)).ToList();
+            var persistedParameters = (await WorkflowProcessInstancePersistence
+                .SelectByProcessIdAsync(connection, processInstance.ProcessId).ConfigureAwait(false)).ToList();
 
             foreach (dynamic parameterDefinitionWithValue in parametersToPersistList)
             {
-                WorkflowProcessInstancePersistence persistence = persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
+                var persistence = persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
 
-                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence).ConfigureAwait(false);
+                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence)
+                    .ConfigureAwait(false);
             }
         }
 
         public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-            dynamic parameter = ParameterDefinitionWithValueToDynamic(processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
+            dynamic parameter = ParameterDefinitionWithValueToDynamic(
+                processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
 
-            WorkflowProcessInstancePersistence persistedParameter =
-                await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            var persistedParameter = await WorkflowProcessInstancePersistence
+                .SelectByNameAsync(
+                    connection,
+                    processInstance.ProcessId,
+                    parameterName)
+                .ConfigureAwait(false);
 
             await InsertOrUpdateParameterAsync(connection, processInstance, parameter, persistedParameter).ConfigureAwait(false);
         }
 
         private dynamic ParameterDefinitionWithValueToDynamic(ParameterDefinitionWithValue ptp)
         {
-            string serializedValue = ptp.Type == typeof(UnknownParameterType) ? (string)ptp.Value : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
+            string serializedValue = ptp.Type == typeof(UnknownParameterType)
+                ? (string)ptp.Value
+                : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
             return new {Parameter = ptp, SerializedValue = serializedValue};
         }
 
-        private async Task InsertOrUpdateParameterAsync(NpgsqlConnection connection, ProcessInstance processInstance, dynamic parameter, WorkflowProcessInstancePersistence persistence)
+        private async Task InsertOrUpdateParameterAsync(NpgsqlConnection connection, ProcessInstance processInstance, dynamic parameter,
+            ProcessInstancePersistenceEntity persistence)
         {
             if (persistence == null)
             {
                 if (parameter.SerializedValue != null)
                 {
-                    persistence = new WorkflowProcessInstancePersistence()
+                    persistence = new ProcessInstancePersistenceEntity
                     {
-                        Id = Guid.NewGuid(), ProcessId = processInstance.ProcessId, ParameterName = parameter.Parameter.Name, Value = parameter.SerializedValue
+                        Id = Guid.NewGuid(),
+                        ProcessId = processInstance.ProcessId,
+                        ParameterName = parameter.Parameter.Name,
+                        Value = parameter.SerializedValue
                     };
-                    await persistence.InsertAsync(connection).ConfigureAwait(false);
+                    
+                    await WorkflowProcessInstancePersistence.InsertAsync(connection, persistence).ConfigureAwait(false);
                 }
             }
             else
@@ -446,7 +492,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 if (parameter.SerializedValue != null)
                 {
                     persistence.Value = parameter.SerializedValue;
-                    await persistence.UpdateAsync(connection).ConfigureAwait(false);
+                    await WorkflowProcessInstancePersistence.UpdateAsync(connection, persistence).ConfigureAwait(false);
                 }
                 else
                 {
@@ -457,12 +503,9 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            await WorkflowProcessInstancePersistence.DeleteByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            await WorkflowProcessInstancePersistence.DeleteByNameAsync(connection, processInstance.ProcessId, parameterName)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus)
@@ -505,18 +548,14 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public async Task WriteInitialRecordToHistoryAsync(ProcessInstance processInstance)
         {
-            if (!_writeToHistory) { return; }
+            if (!Options.WriteToHistory) { return; }
 
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
 
-            var history = new WorkflowProcessTransitionHistory
+            var history = new ProcessTransitionHistoryEntity
             {
                 Id = Guid.NewGuid(),
-                ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess
+                ProcessId = Options.WriteSubProcessToRoot && processInstance.IsSubprocess
                     ? processInstance.RootProcessId
                     : processInstance.ProcessId,
                 FromActivityName = String.Empty,
@@ -530,25 +569,24 @@ namespace OptimaJet.Workflow.PostgreSQL
                 TransitionDuration = 0
             };
 
-            await history.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
         public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
         {
             DateTime startTransitionTime = processInstance.StartTransitionTime ?? _runtime.RuntimeDateTimeNow;
-            
-            ParameterDefinitionWithValue paramIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterIdentityId.Name).ConfigureAwait(false);
-            ParameterDefinitionWithValue paramImpIdentityId = await processInstance.GetParameterAsync(DefaultDefinitions.ParameterImpersonatedIdentityId.Name).ConfigureAwait(false);
+
+            ParameterDefinitionWithValue paramIdentityId =
+                await processInstance.GetParameterAsync(DefaultDefinitions.ParameterIdentityId.Name).ConfigureAwait(false);
+            ParameterDefinitionWithValue paramImpIdentityId = await processInstance
+                .GetParameterAsync(DefaultDefinitions.ParameterImpersonatedIdentityId.Name).ConfigureAwait(false);
 
             string identityId = paramIdentityId == null ? String.Empty : (string)paramIdentityId.Value;
             string impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstance inst = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var inst = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
+                .ConfigureAwait(false);
 
             if (!(inst == null || transition.To.DisablePersistState))
             {
@@ -587,10 +625,10 @@ namespace OptimaJet.Workflow.PostgreSQL
                 inst.RootProcessId = processInstance.RootProcessId;
                 inst.LastTransitionDate = processInstance.LastTransitionDate;
 
-                await inst.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessInstance.UpdateAsync(connection, inst).ConfigureAwait(false);
             }
 
-            if (!_writeToHistory || transition.To.DisablePersistTransitionHistory)
+            if (!Options.WriteToHistory || transition.To.DisablePersistTransitionHistory)
             {
                 return;
             }
@@ -599,17 +637,18 @@ namespace OptimaJet.Workflow.PostgreSQL
             string executorName = null;
             if (_runtime.GetUserByIdentityAsync != null)
             {
-                if (!String.IsNullOrEmpty(impIdentityId) )
+                if (!String.IsNullOrEmpty(impIdentityId))
                 {
                     actorName = await _runtime.GetUserByIdentityAsync(impIdentityId).ConfigureAwait(false);
                 }
+
                 if (!String.IsNullOrEmpty(identityId))
                 {
                     executorName = await _runtime.GetUserByIdentityAsync(identityId).ConfigureAwait(false);
                 }
             }
-            
-            var history = new WorkflowProcessTransitionHistory()
+
+            var history = new ProcessTransitionHistoryEntity
             {
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
@@ -617,62 +656,51 @@ namespace OptimaJet.Workflow.PostgreSQL
                 ExecutorName = executorName,
                 Id = Guid.NewGuid(),
                 IsFinalised = transition.To.IsFinal,
-                ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
+                ProcessId =
+                    Options.WriteSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
                 ToActivityName = transition.To.Name,
                 ToStateName = transition.To.State,
                 TransitionClassifier = transition.Classifier.ToString(),
                 TransitionTime = _runtime.RuntimeDateTimeNow,
-                TriggerName = String.IsNullOrEmpty(processInstance.ExecutedTimer) ? processInstance.CurrentCommand : processInstance.ExecutedTimer,
+                TriggerName =
+                    String.IsNullOrEmpty(processInstance.ExecutedTimer)
+                        ? processInstance.CurrentCommand
+                        : processInstance.ExecutedTimer,
                 StartTransitionTime = startTransitionTime,
                 TransitionDuration = (int)(_runtime.RuntimeDateTimeNow - startTransitionTime).TotalMilliseconds
             };
 
-            await history.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
         public virtual async Task<bool> IsProcessExistsAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false) != null;
         }
 
         public virtual async Task<ProcessStatus> GetInstanceStatusAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstanceStatus instance = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var instance = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (instance == null)
             {
                 return ProcessStatus.NotFound;
             }
 
             ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status);
-            if (status == null)
-            {
-                return ProcessStatus.Unknown;
-            }
-
-            return status;
+            
+            return status ?? ProcessStatus.Unknown;
         }
 
         private async Task SetRunningStatusAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
 
-            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            var instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
 
             if (instanceStatus == null)
             {
@@ -692,7 +720,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
             int cnt = await WorkflowProcessInstanceStatus.ChangeStatusAsync(connection, instanceStatus, oldLock).ConfigureAwait(false);
-            
+
             if (cnt == 0)
             {
                 instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
@@ -708,14 +736,12 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
+        // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
         private async Task SetCustomStatusAsync(Guid processId, ProcessStatus status, bool createIfNotDefined = false)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (instanceStatus == null)
             {
                 if (!createIfNotDefined)
@@ -723,7 +749,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     throw new StatusNotDefinedException();
                 }
 
-                instanceStatus = new WorkflowProcessInstanceStatus()
+                instanceStatus = new ProcessInstanceStatusEntity
                 {
                     Id = processId,
                     Lock = Guid.NewGuid(),
@@ -732,7 +758,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                     SetTime = _runtime.RuntimeDateTimeNow
                 };
 
-                await instanceStatus.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessInstanceStatus.InsertAsync(connection, instanceStatus).ConfigureAwait(false);
             }
             else
             {
@@ -744,7 +770,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
 
                 int cnt = await WorkflowProcessInstanceStatus.ChangeStatusAsync(connection, instanceStatus, oldLock).ConfigureAwait(false);
-                
+
                 if (cnt == 0)
                 {
                     instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
@@ -761,7 +787,8 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetProcessParametersAsync(Guid processId,
+            ProcessDefinition processDefinition)
         {
             var parameters = new List<ParameterDefinitionWithValue>(processDefinition.Parameters.Count);
             parameters.AddRange(await GetPersistedProcessParametersAsync(processId, processDefinition).ConfigureAwait(false));
@@ -769,9 +796,10 @@ namespace OptimaJet.Workflow.PostgreSQL
             return parameters;
         }
 
-        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId,
+            ProcessDefinition processDefinition)
         {
-            WorkflowProcessInstance processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
+            ProcessInstanceEntity processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
 
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
@@ -836,23 +864,21 @@ namespace OptimaJet.Workflow.PostgreSQL
             return parameters;
         }
 
-        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetPersistedProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
+        private async Task<IEnumerable<ParameterDefinitionWithValue>> GetPersistedProcessParametersAsync(Guid processId,
+            ProcessDefinition processDefinition)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
             var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count);
 
-            List<WorkflowProcessInstancePersistence> persistedParameters;
+            List<ProcessInstancePersistenceEntity> persistedParameters;
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             {
-                persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false)).ToList();
+                persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processId)
+                    .ConfigureAwait(false)).ToList();
             }
 
-            foreach (WorkflowProcessInstancePersistence persistedParameter in persistedParameters)
+            foreach (var persistedParameter in persistedParameters)
             {
                 parameters.Add(WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter));
             }
@@ -860,50 +886,44 @@ namespace OptimaJet.Workflow.PostgreSQL
             return parameters;
         }
 
-        private async Task<ParameterDefinitionWithValue> GetPersistedProcessParameterAsync(Guid processId, ProcessDefinition processDefinition, string parameterName)
+        private async Task<ParameterDefinitionWithValue> GetPersistedProcessParameterAsync(Guid processId,
+            ProcessDefinition processDefinition, string parameterName)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
-            WorkflowProcessInstancePersistence persistedParameter;
+            ProcessInstancePersistenceEntity persistedParameter;
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             {
-                persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processId, parameterName).ConfigureAwait(false);
+                persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processId, parameterName)
+                    .ConfigureAwait(false);
             }
 
-            if (persistedParameter == null)
-            {
-                return null;
-            }
-
-            return WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter);
+            return persistedParameter == null
+                ? null
+                : WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter);
         }
 
-        private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(List<ParameterDefinition> persistenceParameters,
-            WorkflowProcessInstancePersistence persistedParameter)
+        private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(
+            List<ParameterDefinition> persistenceParameters,
+            ProcessInstancePersistenceEntity persistedParameter)
         {
             ParameterDefinition parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
             if (parameterDefinition == null)
             {
-                parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType),
+                    ParameterPurpose.Persistence);
                 return ParameterDefinition.Create(parameterDefinition, persistedParameter.Value);
             }
 
-            return ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
+            return ParameterDefinition.Create(parameterDefinition,
+                ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
         }
 
-
-        private async Task<WorkflowProcessInstance> GetProcessInstanceAsync(Guid processId)
+        private async Task<ProcessInstanceEntity> GetProcessInstanceAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (processInstance == null)
             {
                 throw new ProcessNotFoundException(processId);
@@ -922,18 +942,10 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task DeleteProcessAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await connection.OpenAsync().ConfigureAwait(false);
 
-#if !NETCOREAPP
-            using NpgsqlTransaction transaction = connection.BeginTransaction();
-#else
             await using NpgsqlTransaction transaction = connection.BeginTransaction();
-#endif
             await WorkflowProcessInstance.DeleteAsync(connection, processId, transaction).ConfigureAwait(false);
             await WorkflowProcessInstanceStatus.DeleteAsync(connection, processId, transaction).ConfigureAwait(false);
             await WorkflowProcessInstancePersistence.DeleteByProcessIdAsync(connection, processId, transaction).ConfigureAwait(false);
@@ -945,17 +957,15 @@ namespace OptimaJet.Workflow.PostgreSQL
             await transaction.CommitAsync().ConfigureAwait(false);
         }
 
-        public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
+        public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime,
+            bool notOverrideIfExists)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessTimer timer = await WorkflowProcessTimer.SelectByProcessIdAndNameAsync(connection, processId, name).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var timer = await WorkflowProcessTimer.SelectByProcessIdAndNameAsync(connection, processId, name).ConfigureAwait(false);
+            
             if (timer == null)
             {
-                timer = new WorkflowProcessTimer
+                timer = new ProcessTimerEntity
                 {
                     Id = Guid.NewGuid(),
                     Name = name,
@@ -965,32 +975,24 @@ namespace OptimaJet.Workflow.PostgreSQL
                     Ignore = false
                 };
 
-                await timer.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessTimer.InsertAsync(connection, timer).ConfigureAwait(false);
             }
             else if (!notOverrideIfExists)
             {
                 timer.NextExecutionDateTime = nextExecutionDateTime;
-                await timer.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessTimer.UpdateAsync(connection, timer).ConfigureAwait(false);
             }
         }
 
         public virtual async Task ClearTimersAsync(Guid processId, List<string> timersIgnoreList)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteByProcessIdAsync(connection, processId, timersIgnoreList).ConfigureAwait(false);
         }
 
         public virtual async Task<int> SetTimerIgnoreAsync(Guid timerId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowProcessTimer.SetTimerIgnoreAsync(connection, timerId).ConfigureAwait(false);
         }
 
@@ -998,12 +1000,8 @@ namespace OptimaJet.Workflow.PostgreSQL
         {
             DateTime now = _runtime.RuntimeDateTimeNow;
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessTimer[] timers = await WorkflowProcessTimer.GetTopTimersToExecuteAsync(connection, top, now).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var timers = await WorkflowProcessTimer.GetTopTimersToExecuteAsync(connection, top, now).ConfigureAwait(false);
 
             if (timers.Length == 0)
             {
@@ -1022,53 +1020,46 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task SaveGlobalParameterAsync<T>(string type, string name, T value)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+            await using var connection = OpenConnection();
+            var parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false))
+                .FirstOrDefault();
 
             if (parameter == null)
             {
-                parameter = new WorkflowGlobalParameter() {Id = Guid.NewGuid(), Type = type, Name = name, Value = JsonConvert.SerializeObject(value)};
+                parameter = new GlobalParameterEntity
+                {
+                    Id = Guid.NewGuid(),
+                    Type = type,
+                    Name = name,
+                    Value = JsonConvert.SerializeObject(value)
+                };
 
-                await parameter.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowGlobalParameter.InsertAsync(connection, parameter).ConfigureAwait(false);
             }
             else
             {
-
                 parameter.Value = JsonConvert.SerializeObject(value);
 
-                await parameter.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowGlobalParameter.UpdateAsync(connection, parameter).ConfigureAwait(false);
             }
         }
 
         public virtual async Task<T> LoadGlobalParameterAsync<T>(string type, string name)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+            await using var connection = OpenConnection();
+            var parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false))
+                .FirstOrDefault();
 
-            if (parameter == null)
-            {
-                return default;
-            }
-
-            return JsonConvert.DeserializeObject<T>(parameter.Value);
+            return 
+                parameter == null 
+                    ? default 
+                    : JsonConvert.DeserializeObject<T>(parameter.Value);
         }
 
         public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowGlobalParameter[] parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
 
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
@@ -1078,37 +1069,25 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             return dict;
         }
-        
+
 
         public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowGlobalParameter[] parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
 
             return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
 
         public virtual async Task DeleteGlobalParametersAsync(string type, string name = null)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowGlobalParameter.DeleteByTypeAndNameAsync(connection, type, name).ConfigureAwait(false);
         }
 
-       public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
+        public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return (await WorkflowProcessTransitionHistory.SelectByProcessIdAsync(connection, processId, paging).ConfigureAwait(false))
                 .Select(hi => new ProcessHistoryItem
                 {
@@ -1131,99 +1110,65 @@ namespace OptimaJet.Workflow.PostgreSQL
                 .ToList();
         }
 
-       public async Task<int> GetProcessHistoryCountAsync(Guid processId)
-       {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-           await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-           return await WorkflowProcessTransitionHistory.GetCountByAsync(connection, x => x.ProcessId, processId)
-               .ConfigureAwait(false);
-       }
-
-       public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)
+        public async Task<int> GetProcessHistoryCountAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowProcessTransitionHistory.GetCountByAsync(connection, x => x.ProcessId, processId)
+                .ConfigureAwait(false);
+        }
+
+        public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)
+        {
+            await using var connection = OpenConnection();
+            var timers = await WorkflowProcessTimer.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false);
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
         public virtual async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await ProcessInstanceTree.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
         }
 
         public virtual async Task<List<ProcessTimer>> GetActiveTimersForProcessAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectActiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var timers = await WorkflowProcessTimer.SelectActiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
         public virtual async Task<WorkflowRuntimeModel> GetWorkflowRuntimeModelAsync(string runtimeId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await Models.WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
         }
 
         public virtual async Task<int> SendRuntimeLastAliveSignalAsync()
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return await Models.WorkflowRuntime.SendRuntimeLastAliveSignalAsync(connection, _runtime.Id, _runtime.RuntimeDateTimeNow).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            return await WorkflowRuntime.SendRuntimeLastAliveSignalAsync(connection, _runtime.Id, _runtime.RuntimeDateTimeNow)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task<DateTime?> GetNextTimerDateAsync(TimerCategory timerCategory, int timerInterval)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             string timerCategoryName = timerCategory.ToString();
-            WorkflowSync syncLock = await WorkflowSync.GetByNameAsync(connection, timerCategoryName).ConfigureAwait(false);
+            var syncLock = await WorkflowSync.GetByNameAsync(connection, timerCategoryName).ConfigureAwait(false);
 
             if (syncLock == null)
             {
                 throw new Exception($"Sync lock {timerCategoryName} not found");
             }
 
-            string nextTimeColumnName;
-
-            switch (timerCategory)
+            string nextTimeColumnName = timerCategory switch
             {
-                case TimerCategory.Timer:
-                    nextTimeColumnName = "NextTimerTime";
-                    break;
-                case TimerCategory.ServiceTimer:
-                    nextTimeColumnName = "NextServiceTimerTime";
-                    break;
-                default:
-                    throw new Exception($"Unknown sync lock name: {timerCategoryName}");
-            }
+                TimerCategory.Timer => "NextTimerTime",
+                TimerCategory.ServiceTimer => "NextServiceTimerTime",
+                _ => throw new Exception($"Unknown sync lock name: {timerCategoryName}")
+            };
 
-            DateTime? max = await Models.WorkflowRuntime.GetMaxNextTimeAsync(connection, _runtime.Id, nextTimeColumnName).ConfigureAwait(false);
+            DateTime? max = await WorkflowRuntime.GetMaxNextTimeAsync(connection, _runtime.Id, nextTimeColumnName).ConfigureAwait(false);
 
             DateTime result = _runtime.RuntimeDateTimeNow;
 
@@ -1234,16 +1179,15 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             result += TimeSpan.FromMilliseconds(timerInterval);
 
-#if !NETCOREAPP
-            using NpgsqlTransaction transaction = connection.BeginTransaction();
-#else
             await using NpgsqlTransaction transaction = connection.BeginTransaction();
-#endif
 
             var newLock = Guid.NewGuid();
 
-            await Models.WorkflowRuntime.UpdateNextTimeAsync(connection, _runtime.Id, nextTimeColumnName, result, transaction).ConfigureAwait(false);
-            int rowCount = await WorkflowSync.UpdateLockAsync(connection, timerCategoryName, syncLock.Lock, newLock, transaction).ConfigureAwait(false);
+            await WorkflowRuntime.UpdateNextTimeAsync(connection, _runtime.Id, nextTimeColumnName, result, transaction)
+                .ConfigureAwait(false);
+            
+            int rowCount = await WorkflowSync.UpdateLockAsync(connection, timerCategoryName, syncLock.Lock, newLock, transaction)
+                .ConfigureAwait(false);
 
             if (rowCount == 0)
             {
@@ -1258,15 +1202,11 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task<List<WorkflowRuntimeModel>> GetWorkflowRuntimesAsync()
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            return (await Models.WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
+            await using var connection = OpenConnection();
+            return (await WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
         }
 
-        private WorkflowRuntimeModel GetModel(Models.WorkflowRuntime result)
+        private WorkflowRuntimeModel GetModel(RuntimeEntity result)
         {
             return new WorkflowRuntimeModel
             {
@@ -1278,7 +1218,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 NextTimerTime = result.NextTimerTime
             };
         }
-        
+
         #endregion
 
         #region ISchemePersistenceProvider
@@ -1286,12 +1226,9 @@ namespace OptimaJet.Workflow.PostgreSQL
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeByProcessIdAsync(Guid processId)
 
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (processInstance == null)
             {
                 throw new ProcessNotFoundException(processId);
@@ -1302,19 +1239,16 @@ namespace OptimaJet.Workflow.PostgreSQL
                 throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
             }
 
-            SchemeDefinition<XElement> schemeDefinition = await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
+            SchemeDefinition<XElement> schemeDefinition =
+                await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
             schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
             return schemeDefinition;
         }
 
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeBySchemeIdAsync(Guid schemeId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessScheme processScheme = await WorkflowProcessScheme.SelectByKeyAsync(connection, schemeId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var processScheme = await WorkflowProcessScheme.SelectByKeyAsync(connection, schemeId).ConfigureAwait(false);
 
             if (processScheme == null || String.IsNullOrEmpty(processScheme.Scheme))
             {
@@ -1324,21 +1258,23 @@ namespace OptimaJet.Workflow.PostgreSQL
             return ConvertToSchemeDefinition(processScheme);
         }
 
-        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters,
+        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode,
+            string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes;
+            IEnumerable<ProcessSchemeEntity> processSchemes;
             string hash = HashHelper.GenerateStringHash(definingParameters);
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             {
-                processSchemes =
-                    await WorkflowProcessScheme.SelectAsync(connection, schemeCode, hash, ignoreObsolete ? false : (bool?)null,
-                        rootSchemeId).ConfigureAwait(false);
+                processSchemes = await WorkflowProcessScheme.SelectAsync(connection,
+                        schemeCode,
+                        hash,
+                        ignoreObsolete
+                            ? false
+                            : (bool?)null,
+                        rootSchemeId)
+                    .ConfigureAwait(false);
             }
 
             if (!processSchemes.Any())
@@ -1348,11 +1284,11 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             if (processSchemes.Count() == 1)
             {
-                WorkflowProcessScheme scheme = processSchemes.First();
+                var scheme = processSchemes.First();
                 return ConvertToSchemeDefinition(scheme);
             }
 
-            foreach (WorkflowProcessScheme processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
+            foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
                 return ConvertToSchemeDefinition(processScheme);
             }
@@ -1365,21 +1301,13 @@ namespace OptimaJet.Workflow.PostgreSQL
             string definingParameters = DefiningParametersSerializer.Serialize(parameters);
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, definingParametersHash).ConfigureAwait(false);
         }
 
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode).ConfigureAwait(false);
         }
 
@@ -1388,24 +1316,25 @@ namespace OptimaJet.Workflow.PostgreSQL
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowProcessScheme[] oldSchemes = await WorkflowProcessScheme.SelectAsync(connection, scheme.SchemeCode, definingParametersHash,
-                scheme.IsObsolete, scheme.RootSchemeId).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var oldSchemes = await WorkflowProcessScheme.SelectAsync(connection,
+                    scheme.SchemeCode,
+                    definingParametersHash,
+                    scheme.IsObsolete,
+                    scheme.RootSchemeId)
+                .ConfigureAwait(false);
 
             if (oldSchemes.Any())
             {
-                WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                var existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                
                 if (existing != null)
                 {
                     return ConvertToSchemeDefinition(existing);
                 }
             }
 
-            var newProcessScheme = new WorkflowProcessScheme
+            var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
                 DefiningParameters = definingParameters,
@@ -1419,17 +1348,17 @@ namespace OptimaJet.Workflow.PostgreSQL
                 IsObsolete = scheme.IsObsolete
             };
 
-            await newProcessScheme.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessScheme.InsertAsync(connection, newProcessScheme).ConfigureAwait(false);
 
             return ConvertToSchemeDefinition(newProcessScheme);
         }
-        
+
         public virtual async Task UpsertSchemeAsync(SchemeDefinition<XElement> scheme)
         {
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-            
-            var newProcessScheme = new WorkflowProcessScheme
+
+            var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
                 DefiningParameters = definingParameters,
@@ -1442,69 +1371,35 @@ namespace OptimaJet.Workflow.PostgreSQL
                 StartingTransition = scheme.StartingTransition,
                 IsObsolete = scheme.IsObsolete
             };
-            
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            try
-            {
-                await newProcessScheme.InsertAsync(connection).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                var existingSchemeCount = await WorkflowProcessScheme.GetCountByAsync(connection, s => s.Id, newProcessScheme.Id).ConfigureAwait(false);
 
-                if (existingSchemeCount == 1)
-                {
-                    await newProcessScheme.UpdateAsync(connection).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            await using var connection = OpenConnection();
+            await WorkflowProcessScheme.UpsertAsync(connection, newProcessScheme).ConfigureAwait(false);
         }
 
-        public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme, List<string> tags)
+        public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme,
+            List<string> tags)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowScheme wfScheme = await WorkflowScheme.SelectByKeyAsync(connection, schemaCode).ConfigureAwait(false);
-            if (wfScheme == null)
+            await using var connection = OpenConnection();
+            
+            var newScheme = new SchemeEntity
             {
-                wfScheme = new WorkflowScheme
-                {
-                    Code = schemaCode,
-                    Scheme = scheme,
-                    CanBeInlined = canBeInlined,
-                    InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null,
-                    Tags = TagHelper.ToTagStringForDatabase(tags)
-                };
-                await wfScheme.InsertAsync(connection).ConfigureAwait(false);
-            }
-            else
-            {
-                wfScheme.Scheme = scheme;
-                wfScheme.CanBeInlined = canBeInlined;
-                wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
-                wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
-                await wfScheme.UpdateAsync(connection).ConfigureAwait(false);
-            }
+                Code = schemaCode,
+                Scheme = scheme,
+                CanBeInlined = canBeInlined,
+                InlinedSchemes = inlinedSchemes.Any()
+                    ? JsonConvert.SerializeObject(inlinedSchemes)
+                    : null,
+                Tags = TagHelper.ToTagStringForDatabase(tags)
+            };
+
+            await WorkflowScheme.UpsertAsync(connection, newScheme).ConfigureAwait(false);
         }
 
         public virtual async Task<XElement> GetSchemeAsync(string code)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowScheme scheme = await WorkflowScheme.SelectByKeyAsync(connection, code).ConfigureAwait(false);
+            await using var connection = OpenConnection();
+            var scheme = await WorkflowScheme.SelectByKeyAsync(connection, code).ConfigureAwait(false);
+            
             if (scheme == null || String.IsNullOrEmpty(scheme.Scheme))
             {
                 throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowProcessScheme);
@@ -1515,66 +1410,46 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task<List<string>> GetInlinedSchemeCodesAsync()
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowScheme.GetInlinedSchemeCodesAsync(connection).ConfigureAwait(false);
         }
 
         public virtual async Task<List<string>> GetRelatedByInliningSchemeCodesAsync(string schemeCode)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowScheme.GetRelatedSchemeCodesAsync(connection, schemeCode).ConfigureAwait(false);
         }
 
-       public virtual async Task<List<string>> SearchSchemesByTagsAsync(params string[] tags)
+        public virtual async Task<List<string>> SearchSchemesByTagsAsync(params string[] tags)
         {
             return await SearchSchemesByTagsAsync(tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
         public virtual async Task<List<string>> SearchSchemesByTagsAsync(IEnumerable<string> tags)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowScheme.GetSchemeCodesByTagsAsync(connection, tags).ConfigureAwait(false);
         }
 
-       public virtual async Task AddSchemeTagsAsync(string schemeCode, params string[] tags)
+        public virtual async Task AddSchemeTagsAsync(string schemeCode, params string[] tags)
         {
             await AddSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
         public virtual async Task AddSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowScheme.AddSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
-       public virtual async Task RemoveSchemeTagsAsync(string schemeCode, params string[] tags)
+        public virtual async Task RemoveSchemeTagsAsync(string schemeCode, params string[] tags)
         {
             await RemoveSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
         public virtual async Task RemoveSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowScheme.RemoveSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
@@ -1585,11 +1460,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task SetSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowScheme.SetSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
@@ -1621,7 +1492,8 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
 
 #pragma warning disable 1998
-        public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
+        public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers,
+            ProcessStatus status, CancellationToken token)
 #pragma warning restore 1998
         {
             throw new NotImplementedException();
@@ -1629,7 +1501,7 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         #endregion
 
-        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(ProcessSchemeEntity workflowProcessScheme)
         {
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
@@ -1639,14 +1511,11 @@ namespace OptimaJet.Workflow.PostgreSQL
                 workflowProcessScheme.DefiningParameters);
         }
 
-        private async Task<Tuple<int, WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter,
+        private async Task<Tuple<int, WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime,
+            Action<WorkflowRuntimeModel> setter,
             Func<NpgsqlConnection, WorkflowRuntimeModel, Guid, Task<int>> updateMethod)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             Guid oldLock = runtime.Lock;
             setter(runtime);
             runtime.Lock = Guid.NewGuid();
@@ -1665,55 +1534,35 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public virtual async Task DropWorkflowInboxAsync(Guid processId)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowInbox.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
         }
 
         public virtual async Task InsertInboxAsync(List<InboxItem> newActors)
         {
-#if !NETCOREAPP
-            using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowInbox[] inboxItems = newActors.Select(ib => WorkflowInbox.ToDB(ib)).ToArray();
+            await using var connection = OpenConnection();
+            var inboxItems = newActors.Select(ib => WorkflowInbox.ToDB(ib)).ToArray();
             await WorkflowInbox.InsertAllAsync(connection, inboxItems).ConfigureAwait(false);
         }
 
         public async Task<int> GetInboxCountByProcessIdAsync(Guid processId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowInbox.GetCountByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public async Task<int> GetInboxCountByIdentityIdAsync(string identityId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowInbox.GetCountByAsync(connection, x => x.IdentityId, identityId)
                 .ConfigureAwait(false);
         }
 
         public async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging = null, CultureInfo culture = null)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowInbox[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
+            await using var connection = OpenConnection();
+            var inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
                     x => x.ProcessId, processId,
                     x => x.AddingDate, SortDirection.Desc,
                     paging)
@@ -1725,81 +1574,62 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public async Task<List<InboxItem>> GetInboxByIdentityIdAsync(string identityId, Paging paging = null, CultureInfo culture = null)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowInbox[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
+            await using var connection = OpenConnection();
+            var inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
                     x => x.IdentityId, identityId,
                     x => x.AddingDate, SortDirection.Desc,
                     paging)
                 .ConfigureAwait(false);
-           
+
             return await WorkflowInbox.FromDB(_runtime, inboxItems, culture ?? CultureInfo.CurrentCulture)
                 .ConfigureAwait(false);
         }
-       
+
         public async Task FillApprovalHistoryAsync(ApprovalHistoryItem approvalHistoryItem)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            WorkflowApprovalHistory historyItem = 
+            await using var connection = OpenConnection();
+            var historyEntity =
                 (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, approvalHistoryItem.ProcessId).ConfigureAwait(false))
-                .FirstOrDefault(h =>!h.TransitionTime.HasValue &&
-                                    h.InitialState == approvalHistoryItem.InitialState && h.DestinationState == approvalHistoryItem.DestinationState);
+                .FirstOrDefault(h => !h.TransitionTime.HasValue &&
+                                     h.InitialState == approvalHistoryItem.InitialState &&
+                                     h.DestinationState == approvalHistoryItem.DestinationState);
 
-            if (historyItem is null)
+            if (historyEntity is null)
             {
-                historyItem =  WorkflowApprovalHistory.ToDB(approvalHistoryItem);
+                historyEntity = WorkflowApprovalHistory.ToDB(approvalHistoryItem);
 
-                await historyItem.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowApprovalHistory.InsertAsync(connection, historyEntity).ConfigureAwait(false);
             }
             else
             {
-                historyItem.TriggerName = approvalHistoryItem.TriggerName;
-                historyItem.TransitionTime = approvalHistoryItem.TransitionTime;
-                historyItem.IdentityId = approvalHistoryItem.IdentityId;
-                historyItem.Commentary = approvalHistoryItem.Commentary;
-               
-                await historyItem.UpdateAsync(connection).ConfigureAwait(false);
+                historyEntity.TriggerName = approvalHistoryItem.TriggerName;
+                historyEntity.TransitionTime = approvalHistoryItem.TransitionTime;
+                historyEntity.IdentityId = approvalHistoryItem.IdentityId;
+                historyEntity.Commentary = approvalHistoryItem.Commentary;
+
+                await WorkflowApprovalHistory.UpdateAsync(connection, historyEntity).ConfigureAwait(false);
             }
         }
-       
+
 
         public async Task DropApprovalHistoryByProcessIdAsync(Guid processId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowApprovalHistory.DeleteByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public async Task DropApprovalHistoryByIdentityIdAsync(string identityId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             await WorkflowApprovalHistory.DeleteByAsync(connection, x => x.IdentityId, identityId)
                 .ConfigureAwait(false);
         }
-       
+
         public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-            foreach (WorkflowApprovalHistory record in (await WorkflowApprovalHistory
+            await using var connection = OpenConnection();
+            foreach (var record in (await WorkflowApprovalHistory
                     .SelectByProcessIdAsync(connection, processId)
                     .ConfigureAwait(false))
                 .Where(x => !x.TransitionTime.HasValue)
@@ -1811,76 +1641,53 @@ namespace OptimaJet.Workflow.PostgreSQL
 
         public async Task<int> GetApprovalHistoryCountByProcessIdAsync(Guid processId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetCountByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public async Task<int> GetApprovalHistoryCountByIdentityIdAsync(string identityId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetCountByAsync(connection, x => x.IdentityId, identityId)
                 .ConfigureAwait(false);
         }
 
         public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByProcessIdAsync(Guid processId, Paging paging = null)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return (await WorkflowApprovalHistory.SelectByWithPagingAsync(connection,
-                    x=>x.ProcessId, processId, 
-                    x=>x.Sort, SortDirection.Asc,
+                    x => x.ProcessId, processId,
+                    x => x.Sort, SortDirection.Asc,
                     paging)
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
 
         public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByIdentityIdAsync(string identityId, Paging paging = null)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
-           
+            await using var connection = OpenConnection();
+
             return (await WorkflowApprovalHistory.SelectByWithPagingAsync(connection,
-                    x=>x.IdentityId, identityId,
-                    x=>x.Sort, SortDirection.Asc,
+                    x => x.IdentityId, identityId,
+                    x => x.Sort, SortDirection.Asc,
                     paging)
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
 
         public async Task<int> GetOutboxCountByIdentityIdAsync(string identityId)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetOutboxCountByIdentityIdAsync(connection, identityId)
                 .ConfigureAwait(false);
         }
 
         public async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging = null)
         {
-#if !NETCOREAPP
-           using var connection = new NpgsqlConnection(ConnectionString);
-#else
-            await using var connection = new NpgsqlConnection(ConnectionString);
-#endif
+            await using var connection = OpenConnection();
             return await WorkflowApprovalHistory.SelectOutboxByIdentityIdAsync(connection, identityId, paging)
                 .ConfigureAwait(false);
         }
+
         #endregion IApprovalProvider
     }
 }

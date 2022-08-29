@@ -1,13 +1,14 @@
 <h3 style="display: flex; align-items: baseline; justify-content: space-between; margin-inline-end: 20px;">
   <div>
     {{ header }}
-    <el-switch v-model="this.logEnabled" style="margin-left: 5px" @change="changeLogEnabled"></el-switch>
+    <el-switch v-model="LogEnabled" style="margin-left: 5px" @change="designer.changelogenabled"></el-switch>
   </div>
   <div style="display: flex; gap: 10px;">
-    <el-button :disabled="!this.logEnabled" icon="el-icon-refresh" plain style="padding: 6px" type="primary" @click="onRefresh">
+    <el-button :disabled="!LogEnabled" icon="el-icon-refresh" plain style="padding: 6px" type="primary" @click="onRefresh">
       {{ labels.Refresh }}
     </el-button>
-    <el-checkbox v-model="autoRefresh" :disabled="!this.logEnabled" :label="labels.AutoRefresh" border style="padding: 4px 10px; border-radius: 6px; height: 30.4px;"
+    <el-checkbox v-model="autoRefresh" :disabled="!LogEnabled" :label="labels.AutoRefresh" border
+                 style="padding: 4px 10px; border-radius: 6px; height: 30.4px;"
                  @change="onAutoRefresh"></el-checkbox>
 
     <el-input-number v-if="autoRefresh"
@@ -91,7 +92,7 @@
 <script type="application/javascript">
 
   function logs_Init(me) {
-    this.designer = me.graph.designer;
+    const designer = me.graph.designer;
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       labels: WorkflowDesignerConstants.Logs,
       ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
@@ -104,7 +105,7 @@
       loading: true,
       autoRefresh: false,
       speedOfRefresh: 1,
-      logEnabled: false,
+      LogEnabled: designer.LogEnabled,
       maxLevel: 0,
       dialog: {
         visible: false,
@@ -115,17 +116,12 @@
     });
     me.VueConfig.methods = {
       onAutoRefresh: function () {
-        if (this.autoRefresh) {
+        if (this.autoRefresh && designer.LogEnabled) {
           this.onRefresh();
           setTimeout(this.onAutoRefresh, this.speedOfRefresh * 1000);
         }
       },
-      changeLogEnabled: function () {
-        this.logEnabled = Boolean(this.designer.changelogenabled());
-        if (!this.logEnabled) {
-          this.autoRefresh = false;
-        }
-      },
+
       handleDialogOpen: function (data) {
         this.dialog.data = data;
         this.dialog.visible = true;
@@ -170,7 +166,7 @@
         }
       },
       onRefresh: function () {
-        var additionalLogs = this.designer.getprocesslogs({suboperation: 'Last', count: this.count});
+        var additionalLogs = designer.getprocesslogs({suboperation: 'Last', count: this.count});
         if (additionalLogs.length) {
           this.tableDataSource = additionalLogs;
           this.tableData = this.sortTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
@@ -183,7 +179,7 @@
           return;
         }
         var dateTime = this.findMinDateTime(this.tableDataSource);
-        var additionalLogs = this.designer.getprocesslogs({
+        var additionalLogs = designer.getprocesslogs({
           suboperation: 'Early',
           dateTime: dateTime,
           count: this.count
@@ -256,10 +252,9 @@
     }
 
     me.VueConfig.created = function () {
-      var dataSource = this.designer.getprocesslogs({suboperation: 'Last', count: this.count});
+      var dataSource = designer.getprocesslogs({suboperation: 'Last', count: this.count});
       this.tableDataSource = dataSource;
       this.tableData = this.sortTableData(JSON.parse(JSON.stringify(dataSource)));
-      this.logEnabled = Boolean(this.designer.getlogenabledstate());
     }
   }
 

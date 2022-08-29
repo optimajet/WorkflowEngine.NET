@@ -9,7 +9,20 @@
       <th></th>
       <th>{{ labels.Name }}</th>
       <th>{{ labels.TitleField }}</th>
-      <th>{{ labels.Type }}</th>
+      <th>
+        <div>
+          {{ labels.Type }}
+          <el-tooltip :content="labels.CustomTypeHint" placement="right" effect="light">
+            <div slot="content" style="max-width: 300px">
+              {{labels.CustomTypeHint}}
+              <a target="_blank" href="https://workflowengine.io/documentation/designer-customization/custom-activity#custom-form">
+                {{ labels.ReadMore }}
+              </a>
+            </div>
+            <i class="el-icon-question header-info-icon"></i>
+          </el-tooltip>
+        </div>
+      </th>
       <th>{{ labels.IsRequired }}</th>
       <th>{{ labels.DefaultValue }}</th>
       <th>{{ showValuesLabel() ? labels.Values : '' }}</th>
@@ -21,37 +34,19 @@
       <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
         <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
       </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
-          :class="validateField('Name', item) && items.length > 1? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly"
-          :title="items.length > 1? validateField('Name', item):''"
-                ></el-input>
-            </td>
-            <td>
-                <el-input v-model="item.Title" :readonly="readonly"></el-input>
-            </td>
-            <td>
-                <el-select
-                    v-model="item.Type"
-          :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
-          :disabled="readonly"
-          :title="validateField('Type', item)"
-                    filterable
-                    placeholder=""
-          style="width: 100%;"
-          @change="typeOnChange(item)">
-          <el-option :key="labels.Text" :labels.Text="labels.Text" value="Text"></el-option>
-          <el-option :key="labels.TextArea" :labels.Text="labels.TextArea" value="TextArea"></el-option>
-          <el-option :key="labels.Number" :labels.Text="labels.Number" value="Number"></el-option>
-          <el-option :key="labels.Checkbox" :labels.Text="labels.Checkbox" value="Checkbox"></el-option>
-          <el-option :key="labels.Dropdown" :labels.Text="labels.Dropdown" value="Dropdown"></el-option>
-          <el-option :key="labels.MultiSelect" :labels.Text="labels.MultiSelect" value="MultiSelect"></el-option>
-          <el-option :key="labels.DateTime" :labels.Text="labels.DateTime" value="DateTime"></el-option>
-          <el-option :key="labels.Date" :labels.Text="labels.Date" value="Date"></el-option>
-          <el-option :key="labels.Time" :labels.Text="labels.Time" value="Time"></el-option>
-          <el-option :key="labels.Json" :labels.Text="labels.Text" value="Json"></el-option>
+      <td>
+        <el-input v-model="item.Name" :class="validateField('Name', item) && items.length > 1? 'WorkflowDesignerInputError' : ''" :readonly="readonly" :title="items.length > 1? validateField('Name', item):''"></el-input>
+      </td>
+      <td>
+        <el-input v-model="item.Title" :readonly="readonly"></el-input>
+      </td>
+      <td>
+        <el-select
+          v-model="item.Type" :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
+          :title="validateField('Type', item)" :disabled="readonly" filterable
+          @change="typeOnChange(item)" allow-create
+          placeholder="" style="width: 100%;">
+          <el-option v-for="type in types" :key="type" :label="labels[type]" :value="type"></el-option>
         </el-select>
       </td>
       <td>
@@ -61,7 +56,7 @@
         ></el-checkbox>
       </td>
       <td>
-        <el-input v-if="item.Type == 'Text' || item.Type == 'Json'" v-model="item.DefaultValue" :readonly="readonly"></el-input>
+        <el-input v-if="item.Type == 'Text' || item.Type == 'Json' || !types.includes(item.Type)" v-model="item.DefaultValue" :readonly="readonly"></el-input>
         <el-input-number v-if="item.Type == 'Number'" v-model="item.DefaultValue" :readonly="readonly"
                          controls-position="right"></el-input-number>
         <el-checkbox v-if="item.Type == 'Checkbox'" v-model="item.DefaultValue" :readonly="readonly"></el-checkbox>
@@ -128,16 +123,21 @@
 </div>
 <script type="application/javascript">
     function parametersform_Init(me){
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            labels: WorkflowDesignerConstants.CodeActionsFormLabel,
-            editParametersItem: undefined,
-            editItem: undefined,
-            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
+      const types = WorkflowDesignerConstants.ParameterTypes;
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        readonly: false,
+        labels: {
+          ReadMore: WorkflowDesignerConstants.ReadMore,
+          ...WorkflowDesignerConstants.CodeActionsFormLabel
+        },
+        editParametersItem: undefined,
+        editItem: undefined,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        types: Object.keys(types).filter(type => type !== types.Custom)
+      });
 
         me.VueConfig.methods.setCurrentItem = function(item) {
             this.currentItem = item;
@@ -151,10 +151,15 @@
       me.parentItem = parentItem;
       me.VueConfig.data.items = WorkflowDesignerCommon.clone(parentItem.ParameterDefinitions);
       me.VueConfig.data.items.forEach(function (item) {
-        if (item.Type === 'MultiSelect' && typeof item.DefaultValue === 'string') {
-          item.DefaultValue = WorkflowDesignerCommon.toJSON(item.DefaultValue);
-        } else if (item.Type === 'Dropdown' && item.DefaultValue !== null && typeof item.DefaultValue !== 'string') {
-          item.DefaultValue = WorkflowDesignerCommon.toString(item.DefaultValue);
+        const {DefaultValue, Type} = item;
+        if (Type === types.MultiSelect && typeof DefaultValue === 'string') {
+          item.DefaultValue = WorkflowDesignerCommon.toJSON(DefaultValue);
+        } else if (Type === types.Dropdown && DefaultValue !== null && typeof DefaultValue !== 'string') {
+          item.DefaultValue = WorkflowDesignerCommon.toString(DefaultValue);
+        }
+
+        if (Type === types.Custom) {
+          item.Type = item.CustomName;
         }
       });
 
@@ -163,7 +168,7 @@
     };
 
     me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({Name: '', Title: '', Type: 'Text', DropdownValues: [], IsRequired: false, DefaultValue: null});
+      me.VueConfig.data.items.push({Name: '', Title: '', Type: types.Text, DropdownValues: [], IsRequired: false, DefaultValue: null});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerCodeActionsParametersList');
@@ -177,9 +182,9 @@
 
     me.VueConfig.methods.showValuesLabel = function () {
       for (var i = 0; i < me.VueConfig.data.items.length; i++) {
-        if (me.VueConfig.data.items[i].Type == 'Dropdown'
-          || me.VueConfig.data.items[i].Type == 'MultiSelect'
-          || me.VueConfig.data.items[i].Type == 'Json') {
+        if (me.VueConfig.data.items[i].Type == types.Dropdown
+          || me.VueConfig.data.items[i].Type == types.MultiSelect
+          || me.VueConfig.data.items[i].Type == types.Json) {
           return true;
         }
       }
@@ -252,12 +257,18 @@
 
     me.VueConfig.methods.onSave = function () {
       me.VueConfig.data.items.forEach(function (item) {
-        if (item.DefaultValue != null && (item.Type == 'Date' || item.Type == 'Time')) {
-          item.DefaultValue = item.DefaultValue.toString();
-        } else if (item.Type == 'DateTime') {
-          if (typeof item.DefaultValue == 'object' && item.DefaultValue != null) {
-            item.DefaultValue = item.DefaultValue.toISOString();
+        const {DefaultValue, Type} = item;
+        if (DefaultValue) {
+          if (Type === types.Date || Type === types.Time) {
+            item.DefaultValue = DefaultValue.toString();
+          } else if (Type === types.DateTime) {
+            item.DefaultValue = DefaultValue.toISOString();
           }
+        }
+
+        if (!Object.keys(types).includes(Type)) {
+          item.CustomName = Type;
+          item.Type = types.Custom;
         }
       });
 

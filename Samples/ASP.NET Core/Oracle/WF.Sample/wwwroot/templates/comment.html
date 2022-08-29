@@ -1,0 +1,199 @@
+<h3>{{ labels.Title }}</h3>
+<el-form class="WorkflowDesignerWindowForm"
+         :model="FormData"
+         ref="form"
+         :inline="true"
+         label-position="top"
+         label-width="150px">
+  <div class="SettingsWithPadding">
+    <div class="el-form--label-top">
+      <el-form-item class="el-form-item" :label="labels.Name" prop="Name" style="flex-grow:1">
+        <el-input v-model="FormData.Name" :placeholder="labels.Name" :readonly="readonly"></el-input>
+      </el-form-item>
+    </div>
+    <div class="el-form--label-top">
+      <el-form-item :label="labels.CommentText" prop="CommentText" style="flex-grow: 1">
+        <div class="el-textarea">
+          <textarea v-model="FormData.Value"
+                    class="el-textarea__inner"
+                    :style="{ textAlign: FormData.Alignment,
+                                        fontSize: commentFontsize,
+                                        fontWeight: commentFontWeight,
+                                        fontStyle: commentFontStyle,
+                                        textDecoration: commentFontDecoration,
+                                        }"
+                    style="resize: none"
+                    :placeholder="labels.CommentText"
+                    :readonly="readonly"
+                    :rows="3">
+                    </textarea>
+        </div>
+      </el-form-item>
+    </div>
+    <el-form-item class="el-form-item" :label="labels.Alignment">
+      <el-radio-group v-model="FormData.Alignment" size="small">
+        <el-radio-button label="left">
+          <div class="WorkflowDesignerToolbarIcon AlignLeft"></div>
+        </el-radio-button>
+        <el-radio-button label="center">
+          <div class="WorkflowDesignerToolbarIcon AlignCenter"></div>
+        </el-radio-button>
+        <el-radio-button label="right">
+          <div class="WorkflowDesignerToolbarIcon AlignRight"></div>
+        </el-radio-button>
+      </el-radio-group>
+    </el-form-item>
+    <el-form-item class="el-form-item" :label="labels.FontSize">
+      <el-select v-model.number="FormData.FontSize"
+                 allow-create
+                 @change="onChangeSelect"
+                 style="width: 100px"
+                 filterable>
+        <el-option v-for="item in FontSizes"
+                   :key="item"
+                   :label="item"
+                   :value="item">
+        </el-option>
+      </el-select>
+    </el-form-item>
+    <el-form-item :label="labels.TextFormatting">
+      <el-checkbox-group size="mini" v-model="FormatText">
+        <el-checkbox-button v-for="(btn, index) in FormatTextButtons" :key="btn.icon + index" :label="btn.value">
+          <div class="WorkflowDesignerToolbarIcon" :class="btn.icon"></div>
+        </el-checkbox-button>
+      </el-checkbox-group>
+    </el-form-item>
+  </div>
+</el-form>
+<div class="WorkflowDesignerButtons">
+  <el-button v-if="!readonly" @click="onSave" type="primary">{{ ButtonTextSave }}</el-button>
+  <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+</div>
+<script type="application/javascript">
+  function comment_Init(me) {
+    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+      readonly: false,
+      labels: WorkflowDesignerConstants.Elements.Comment,
+      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      FormatText: [],
+      FormData: {
+        CommentDefinition: {},
+      },
+      FontSizes: [
+        8, 9, 10, 11, 12, 14, 16, 18, 20, 22, 24, 26, 28, 36, 48, 72
+      ],
+      FormatTextButtons: [
+        {icon: 'BoldText', value: 'bold'},
+        {icon: 'ItalicText', value: 'italic'},
+        {icon: 'UnderlineText', value: 'underline'},
+        {icon: 'LineThroughText', value: 'line-through'},
+      ]
+    });
+    me.VueConfig.computed = {
+      commentFontsize: function () {
+        return this.FormData.FontSize + 'px';
+      },
+      commentFontWeight: function () {
+        if (this.FormatText.includes('bold')) {
+          return 'bold';
+        }
+        return '';
+      },
+      commentFontStyle: function () {
+        if (this.FormatText.includes('italic')) {
+          return 'italic';
+        }
+        return '';
+      },
+      commentFontDecoration: function () {
+        let result = '';
+        if (this.FormatText.includes('underline')) {
+          result += 'underline';
+        }
+        if (this.FormatText.includes('line-through')) {
+          result += ' line-through';
+        }
+        return result;
+      },
+    }
+    me.VueConfig.methods.onChangeSelect = function (n) {
+      var regex = /[0-9]|\./;
+      if (!regex.test(n)) {
+        this.FontSize = 12;
+      }
+    }
+    me.VueConfig.methods.FormatTextToFormData = function(){
+      if(this.FormatText.includes('bold')){
+        this.FormData.BoldText = true;
+      } else {
+        delete this.FormData.BoldText
+      }
+      if(this.FormatText.includes('italic')){
+        this.FormData.ItalicText = true;
+      } else {
+        delete this.FormData.ItalicText
+      }
+      if(this.FormatText.includes('underline')){
+        this.FormData.UnderlineText = true;
+      } else {
+        delete this.FormData.UnderlineText
+      }
+      if(this.FormatText.includes('line-through')){
+        this.FormData.LineThroughText = true;
+      } else {
+        delete this.FormData.LineThroughText
+      }
+    }
+    me.VueConfig.methods.onUpdate = function (item) {
+      var formdata = me.VueConfig.data.FormData;
+
+      formdata.Name = item.Name;
+      formdata.Value = item.Value;
+      formdata.IsAutoSchemeUpdate = item.IsAutoSchemeUpdate;
+      formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
+      formdata.Alignment = item.Alignment ?? 'left';
+      formdata.FontSize = item.FontSize ?? 12;
+      item.BoldText ? me.VueConfig.data.FormatText.push('bold') : '';
+      item.ItalicText ? me.VueConfig.data.FormatText.push('italic') : '';
+      item.UnderlineText ? me.VueConfig.data.FormatText.push('underline') : '';
+      item.LineThroughText ? me.VueConfig.data.FormatText.push('line-through') : '';
+      formdata.Rotation = item.Rotation;
+      formdata.Width = item.Width;
+      me.linkItem = item;
+      me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
+      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    }
+    me.VueConfig.methods.onSave = function () {
+      this.FormatTextToFormData();
+      me.onSuccess(me.VueConfig.data.FormData);
+      me.onClose(true);
+    }
+    me.VueConfig.methods.onClose = function () {
+      if (me.VueConfig.data.readonly) {
+        me.onClose(true);
+        return;
+      }
+      var originalItem = me.VueConfig.data.originalItem;
+      var item = me.VueConfig.data.FormData;
+      if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
+        me.onClose(true);
+      } else {
+        me.showConfirm();
+        return false;
+      }
+    }
+    me.VueConfig.methods.onCloseSave = function () {
+      me.onClose(true);
+    }
+    me.showConfirm = function () {
+      me.VueConfig.methods.showConfirm({
+        title: WorkflowDesignerConstants.DialogConfirmText,
+        message: WorkflowDesignerConstants.CloseWithoutSaving,
+        onSuccess: function () {
+          me.VueConfig.methods.onCloseSave();
+        }
+      });
+    }
+  };
+</script>

@@ -2,11 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Data;
 using System.Globalization;
-#if NETCOREAPP
 using Microsoft.Data.SqlClient;
-#else
-using System.Data.SqlClient;
-#endif
 using System.Linq;
 using System.Threading;
 using System.Threading.Tasks;
@@ -18,32 +14,91 @@ using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Runtime.Timers;
+using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.MSSQL.Models;
 using OptimaJet.Workflow.Plugins;
 using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
 using WorkflowSync = OptimaJet.Workflow.MSSQL.Models.WorkflowSync;
 
+// ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
     public class MSSQLProvider : IWorkflowProvider
     {
-        public string ConnectionString { get; set; }
         private WorkflowRuntime _runtime;
-        private readonly bool _writeToHistory;
-        private readonly bool _writeSubProcessToRoot;
+        
+        private PersistenceProviderOptions Options { get; }
+
+        /// <summary>Database schema name for workflow persistence objects</summary>
+        public string SchemaName => Options.SchemaName;
+
+        /// <summary>Global timeout for executing commands on the database</summary>
+        public int GlobalCommandTimeout => Options.GlobalCommandTimeout;
+
+        /// <summary> Connection string to the database </summary>
+        public string ConnectionString => Options.ConnectionString;
+        
+        //Entity Providers (DbObject<TEntity>)
+        public WorkflowProcessInstance WorkflowProcessInstance { get; } 
+        public WorkflowProcessInstanceStatus WorkflowProcessInstanceStatus { get; }
+        public WorkflowProcessInstancePersistence WorkflowProcessInstancePersistence { get; }
+        public WorkflowProcessTransitionHistory WorkflowProcessTransitionHistory { get; }
+        public WorkflowProcessTimer WorkflowProcessTimer { get; }
+        public WorkflowInbox WorkflowInbox { get; }
+        public WorkflowApprovalHistory WorkflowApprovalHistory { get; } 
+        public WorkflowProcessAssignment WorkflowProcessAssignment { get; }
+        public WorkflowGlobalParameter WorkflowGlobalParameter { get; }
+        public WorkflowProcessScheme WorkflowProcessScheme { get; }
+        public MSSQL.Models.WorkflowRuntime WorkflowRuntime { get; }
+        public WorkflowScheme WorkflowScheme { get; }
+        public WorkflowSync WorkflowSync { get; }
+        public ProcessInstanceTree ProcessInstanceTree { get; }
+        
 
         public virtual void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
-        public MSSQLProvider(string connectionString, string schema = "dbo", bool writeToHistory = true, bool writeSubProcessToRoot = false)
-        {
-            ConnectionString = connectionString;
-            DbObject.SchemaName = schema;
 
-            _writeToHistory = writeToHistory;
-            _writeSubProcessToRoot = writeSubProcessToRoot;
+        public MSSQLProvider(string connectionString, string schemaName = "dbo", bool writeToHistory = true,
+            bool writeSubProcessToRoot = false) : this(new PersistenceProviderOptions(connectionString)
+        {
+            SchemaName = schemaName, WriteToHistory = writeToHistory, WriteSubProcessToRoot = writeSubProcessToRoot
+        }) {}
+        
+        public MSSQLProvider(PersistenceProviderOptions options)
+        {
+            if (options == null)
+            {
+                throw new ArgumentException("PersistenceProviderOptions are null");
+            }
+            
+            options.SchemaName ??= "dbo";
+            Options = options;
+            
+            //Creating DbObjects
+            WorkflowProcessInstance = new WorkflowProcessInstance(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessInstanceStatus = new WorkflowProcessInstanceStatus(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessInstancePersistence = new WorkflowProcessInstancePersistence(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessTransitionHistory = new WorkflowProcessTransitionHistory(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessTimer = new WorkflowProcessTimer(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowInbox = new WorkflowInbox(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowApprovalHistory = new WorkflowApprovalHistory(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessAssignment = new WorkflowProcessAssignment(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowGlobalParameter = new WorkflowGlobalParameter(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowProcessScheme = new WorkflowProcessScheme(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowRuntime = new MSSQL.Models.WorkflowRuntime(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowScheme = new WorkflowScheme(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowSync = new WorkflowSync(Options.SchemaName, Options.GlobalCommandTimeout);
+            ProcessInstanceTree = new ProcessInstanceTree(Options.SchemaName, Options.GlobalCommandTimeout);
+        }
+
+        /// <summary> Opens a new database connection </summary>
+        /// <returns>A new database connection</returns>
+        public SqlConnection OpenConnection()
+        {
+            return new SqlConnection(Options.ConnectionString);
         }
 
         #region IPersistenceProvider
@@ -51,31 +106,33 @@ namespace OptimaJet.Workflow.DbPersistence
         #region IAssignmentProvider
         public async Task DeleteAssignmentAsync(Guid assignmentId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowProcessAssignment.DeleteAsync(connection, assignmentId).ConfigureAwait(false);
         }
 
         public async Task<List<Assignment>> GetAssignmentsAsync(AssignmentFilter filter, List<(string parameterName,SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            var assignments = await WorkflowProcessAssignment.SelectByFilterAsync(connection, filter.Parameters, orderParameters,  paging).ConfigureAwait(false);
+            using var connection = OpenConnection();
             
-            return assignments.Select(a => a.ConvertToAssignment()).ToList();
+            var assignments = await WorkflowProcessAssignment
+                .SelectByFilterAsync(connection, filter.Parameters, orderParameters, paging).ConfigureAwait(false);
+            
+            return assignments.Select(a => WorkflowProcessAssignment.ConvertToAssignment(a)).ToList();
         }
 
         public async Task<int> GetAssignmentCountAsync(AssignmentFilter filter)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return  await WorkflowProcessAssignment.GetAssignmentCountAsync(connection, filter.Parameters).ConfigureAwait(false);
         }
 
         public async Task CreateAssignmentAsync(Guid processId, AssignmentCreationForm form)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             form.Observers ??= new List<string>();
             form.Tags ??= new List<string>();
             
-            var assignment = new WorkflowProcessAssignment
+            var assignment = new ProcessAssignmentEntity
             {
                 Id = form.Id ?? Guid.NewGuid(),
                 AssignmentCode = form.AssignmentCode,
@@ -93,20 +150,22 @@ namespace OptimaJet.Workflow.DbPersistence
                 DateCreation = _runtime.RuntimeDateTimeNow
             };
 
-            await assignment.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessAssignment.InsertAsync(connection, assignment).ConfigureAwait(false);
         }
 
         public virtual async Task<Assignment> GetAssignmentAsync(Guid assignmentId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
+            
             var assignment = await WorkflowProcessAssignment.SelectByKeyAsync(connection, assignmentId).ConfigureAwait(false);
             
-            return assignment.ConvertToAssignment();
+            return WorkflowProcessAssignment.ConvertToAssignment(assignment);
         }
         
         public async Task UpdateAssignmentAsync(Assignment a)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
+            
             var assignment = await WorkflowProcessAssignment.SelectByKeyAsync(connection, a.AssignmentId).ConfigureAwait(false);
             
             assignment.Name = a.Name;
@@ -123,67 +182,71 @@ namespace OptimaJet.Workflow.DbPersistence
             assignment.Observers = JsonConvert.SerializeObject(a.Observers ?? new List<string>());
             assignment.Tags = JsonConvert.SerializeObject(a.Tags ?? new List<string>());
             
-            await assignment.UpdateAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessAssignment.UpdateAsync(connection, assignment).ConfigureAwait(false);
         }
         #endregion
         
         public async Task DeleteInactiveTimersByProcessIdAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteInactiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
         }
 
         public async Task DeleteTimerAsync(Guid timerId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteAsync(connection, timerId).ConfigureAwait(false);
         }
 
         public virtual async Task<List<Guid>> GetRunningProcessesAsync(string runtimeId = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await WorkflowProcessInstanceStatus.GetProcessesByStatusAsync(connection, ProcessStatus.Running.Id, runtimeId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await WorkflowProcessInstanceStatus.GetProcessesByStatusAsync(connection, ProcessStatus.Running.Id, runtimeId)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task<bool> MultiServerRuntimesExistAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await MSSQL.Models.WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
         }
 
         public virtual async Task<int> ActiveMultiServerRuntimesCountAsync(string currentRuntimeId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await MSSQL.Models.WorkflowRuntime.GetActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await WorkflowRuntime.GetActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
         }
 
         public virtual async Task<WorkflowRuntimeModel> CreateWorkflowRuntimeAsync(string runtimeId, RuntimeStatus status)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
-            var runtime = new MSSQL.Models.WorkflowRuntime()
+            var runtime = new RuntimeEntity
             {
                 RuntimeId = runtimeId,
                 Lock = Guid.NewGuid(),
                 Status = status
             };
-
-            await runtime.InsertAsync(connection).ConfigureAwait(false);
+            
+            await WorkflowRuntime.InsertAsync(connection, runtime).ConfigureAwait(false);
 
             return new WorkflowRuntimeModel { Lock = runtime.Lock, RuntimeId = runtimeId, Status = status };
         }
 
         public virtual async Task DeleteWorkflowRuntimeAsync(string name)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            await MSSQL.Models.WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            await WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
         }
 
-        public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(List<(string parameterName,SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(
+            List<(string parameterName, SortDirection sortDirection)> orderParameters = null,
+            Paging paging = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-           
-            WorkflowProcessInstance[] processInstances = await WorkflowProcessInstance.SelectAllWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            ProcessInstanceEntity[] processInstances = await WorkflowProcessInstance
+                .SelectAllWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
            
             return processInstances.Select(pi => new ProcessInstanceItem()
             {
@@ -210,15 +273,16 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public async Task<int> GetProcessInstancesCountAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowProcessInstance.GetCountAsync(connection).ConfigureAwait(false);
         }
 
         public async Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName,SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
-            WorkflowScheme[] schemes = await WorkflowScheme.SelectAllWorkflowSchemesWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
+            var schemes = await WorkflowScheme.SelectAllWorkflowSchemesWithPagingAsync(connection, orderParameters, paging)
+                .ConfigureAwait(false);
            
             return schemes.Select(sc => new SchemeItem()
             {
@@ -232,13 +296,16 @@ namespace OptimaJet.Workflow.DbPersistence
        
         public async Task<int> GetSchemesCountAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowScheme.GetCountAsync(connection).ConfigureAwait(false);
         }
 
         public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
-            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.Status = status, MSSQL.Models.WorkflowRuntime.UpdateStatusAsync).ConfigureAwait(false);
+            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime,
+                    x => x.Status = status,
+                    WorkflowRuntime.UpdateStatusAsync)
+                .ConfigureAwait(false);
 
             if (res.Item1 != 1)
             {
@@ -250,21 +317,27 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(WorkflowRuntimeModel runtime, string restorerId)
         {
-            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime, x => x.RestorerId = restorerId, MSSQL.Models.WorkflowRuntime.UpdateRestorerAsync).ConfigureAwait(false);
+            Tuple<int, WorkflowRuntimeModel> res = await UpdateWorkflowRuntimeAsync(runtime,
+                    x => x.RestorerId = restorerId,
+                    WorkflowRuntime.UpdateRestorerAsync)
+                .ConfigureAwait(false);
 
             return (res.Item1 == 1, res.Item2);
         }
 
         public virtual async Task InitializeProcessAsync(ProcessInstance processInstance)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
-            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            ProcessInstanceEntity oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
+                .ConfigureAwait(false);
+            
             if (oldProcess != null)
             {
                 throw new ProcessAlreadyExistsException(processInstance.ProcessId);
             }
-            var newProcess = new WorkflowProcessInstance
+            
+            var newProcess = new ProcessInstanceEntity
             {
                 Id = processInstance.ProcessId,
                 SchemeId = processInstance.SchemeId,
@@ -277,7 +350,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 SubprocessName = processInstance.SubprocessName,
                 CreationDate = processInstance.CreationDate
             };
-            await newProcess.InsertAsync(connection).ConfigureAwait(false);
+            
+            await WorkflowProcessInstance.InsertAsync(connection, newProcess).ConfigureAwait(false);
         }
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
@@ -287,20 +361,25 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstance oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            ProcessInstanceEntity oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
+                .ConfigureAwait(false);
+            
             if (oldProcess == null)
             {
                 throw new ProcessNotFoundException(processInstance.ProcessId);
             }
+            
             oldProcess.SchemeId = processInstance.SchemeId;
             oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
+            
             if (resetIsDeterminingParametersChanged)
             {
                 oldProcess.IsDeterminingParametersChanged = false;
             }
 
-            await oldProcess.UpdateAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessInstance.UpdateAsync(connection, oldProcess).ConfigureAwait(false);
         }
 
         public virtual async Task FillProcessParametersAsync(ProcessInstance processInstance)
@@ -334,22 +413,28 @@ namespace OptimaJet.Workflow.DbPersistence
                                                                            .Select(ptp => ParameterDefinitionWithValueToDynamic(ptp))
                                                                            .ToList();
             
-            using var connection = new SqlConnection(ConnectionString);
-            var persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processInstance.ProcessId).ConfigureAwait(false)).ToList();
+            using var connection = OpenConnection();
+
+            var persistedParameters = 
+                (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processInstance.ProcessId)
+                    .ConfigureAwait(false)).ToList();
 
             foreach (dynamic parameterDefinitionWithValue in parametersToPersistList)
             {
-                WorkflowProcessInstancePersistence persistence = persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
+                var persistence = persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
 
-                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence).ConfigureAwait(false);
+                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence)
+                    .ConfigureAwait(false);
             }
         }
         public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
         {
             dynamic parameter = ParameterDefinitionWithValueToDynamic(processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
 
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstancePersistence persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var persistedParameter = await WorkflowProcessInstancePersistence
+                .SelectByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
 
             await InsertOrUpdateParameterAsync(connection, processInstance, parameter, persistedParameter).ConfigureAwait(false);
         }
@@ -359,21 +444,23 @@ namespace OptimaJet.Workflow.DbPersistence
             string serializedValue = ptp.Type == typeof(UnknownParameterType) ? (string)ptp.Value : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
             return new { Parameter = ptp, SerializedValue = serializedValue };
         }
-        
-        private async Task InsertOrUpdateParameterAsync(SqlConnection connection, ProcessInstance processInstance, dynamic parameter, WorkflowProcessInstancePersistence persistence)
+
+        private async Task InsertOrUpdateParameterAsync(SqlConnection connection, ProcessInstance processInstance, dynamic parameter,
+            ProcessInstancePersistenceEntity persistence)
         {
             if (persistence == null)
             {
                 if (parameter.SerializedValue != null)
                 {
-                    persistence = new WorkflowProcessInstancePersistence()
+                    persistence = new ProcessInstancePersistenceEntity()
                     {
                         Id = Guid.NewGuid(),
                         ProcessId = processInstance.ProcessId,
                         ParameterName = parameter.Parameter.Name,
                         Value = parameter.SerializedValue
                     };
-                    await persistence.InsertAsync(connection).ConfigureAwait(false);
+                    
+                    await WorkflowProcessInstancePersistence.InsertAsync(connection, persistence).ConfigureAwait(false);
                 }
             }
             else
@@ -381,7 +468,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 if (parameter.SerializedValue != null)
                 {
                     persistence.Value = parameter.SerializedValue;
-                    await persistence.UpdateAsync(connection).ConfigureAwait(false);
+                    await WorkflowProcessInstancePersistence.UpdateAsync(connection, persistence).ConfigureAwait(false);
                 }
                 else
                 {
@@ -392,8 +479,9 @@ namespace OptimaJet.Workflow.DbPersistence
         
         public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            await WorkflowProcessInstancePersistence.DeleteByNameAsync(connection, processInstance.ProcessId, parameterName).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            await WorkflowProcessInstancePersistence.DeleteByNameAsync(connection, processInstance.ProcessId, parameterName)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus)
@@ -436,14 +524,14 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public async Task WriteInitialRecordToHistoryAsync(ProcessInstance processInstance)
         {
-            if (!_writeToHistory) { return; }
+            if (!Options.WriteToHistory) { return; }
 
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
 
-            var history = new WorkflowProcessTransitionHistory
+            var history = new ProcessTransitionHistoryEntity
             {
                 Id = Guid.NewGuid(),
-                ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess
+                ProcessId = Options.WriteSubProcessToRoot && processInstance.IsSubprocess
                     ? processInstance.RootProcessId
                     : processInstance.ProcessId,
                 FromActivityName = String.Empty,
@@ -457,7 +545,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 TransitionDuration = 0
             };
 
-            await history.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
         public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
@@ -470,52 +558,52 @@ namespace OptimaJet.Workflow.DbPersistence
             string identityId = paramIdentityId == null ? String.Empty : (string)paramIdentityId.Value;
             string impIdentityId = paramImpIdentityId == null ? identityId : (string)paramImpIdentityId.Value;
 
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
-            WorkflowProcessInstance inst = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
+            var instance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId).ConfigureAwait(false);
 
-            if (!(inst == null || transition.To.DisablePersistState))
+            if (!(instance == null || transition.To.DisablePersistState))
             {
                 if (!String.IsNullOrEmpty(transition.To.State))
                 {
-                    inst.StateName = transition.To.State;
+                    instance.StateName = transition.To.State;
                 }
 
-                inst.ActivityName = transition.To.Name;
-                inst.PreviousActivity = transition.From.Name;
+                instance.ActivityName = transition.To.Name;
+                instance.PreviousActivity = transition.From.Name;
 
                 if (!String.IsNullOrEmpty(transition.From.State))
                 {
-                    inst.PreviousState = transition.From.State;
+                    instance.PreviousState = transition.From.State;
                 }
 
                 if (transition.Classifier == TransitionClassifier.Direct)
                 {
-                    inst.PreviousActivityForDirect = transition.From.Name;
+                    instance.PreviousActivityForDirect = transition.From.Name;
 
                     if (!String.IsNullOrEmpty(transition.From.State))
                     {
-                        inst.PreviousStateForDirect = transition.From.State;
+                        instance.PreviousStateForDirect = transition.From.State;
                     }
                 }
                 else if (transition.Classifier == TransitionClassifier.Reverse)
                 {
-                    inst.PreviousActivityForReverse = transition.From.Name;
+                    instance.PreviousActivityForReverse = transition.From.Name;
 
                     if (!String.IsNullOrEmpty(transition.From.State))
                     {
-                        inst.PreviousStateForReverse = transition.From.State;
+                        instance.PreviousStateForReverse = transition.From.State;
                     }
                 }
 
-                inst.ParentProcessId = processInstance.ParentProcessId;
-                inst.RootProcessId = processInstance.RootProcessId;
-                inst.LastTransitionDate = processInstance.LastTransitionDate;
+                instance.ParentProcessId = processInstance.ParentProcessId;
+                instance.RootProcessId = processInstance.RootProcessId;
+                instance.LastTransitionDate = processInstance.LastTransitionDate;
 
-                await inst.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessInstance.UpdateAsync(connection, instance).ConfigureAwait(false);
             }
 
-            if (!_writeToHistory || transition.To.DisablePersistTransitionHistory)
+            if (!Options.WriteToHistory || transition.To.DisablePersistTransitionHistory)
             {
                 return;
             }
@@ -534,7 +622,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 }
             }
 
-            var history = new WorkflowProcessTransitionHistory
+            var history = new ProcessTransitionHistoryEntity
             {
                 ActorIdentityId = impIdentityId,
                 ExecutorIdentityId = identityId,
@@ -542,7 +630,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 ExecutorName = executorName,
                 Id = Guid.NewGuid(),
                 IsFinalised = transition.To.IsFinal,
-                ProcessId = _writeSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
+                ProcessId = Options.WriteSubProcessToRoot && processInstance.IsSubprocess ? processInstance.RootProcessId : processInstance.ProcessId,
                 FromActivityName = transition.From.Name,
                 FromStateName = transition.From.State,
                 ToActivityName = transition.To.Name,
@@ -554,37 +642,36 @@ namespace OptimaJet.Workflow.DbPersistence
                 TransitionDuration = (int)(_runtime.RuntimeDateTimeNow - startTransitionTime).TotalMilliseconds
             };
             
-            await history.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
         public virtual async Task<bool> IsProcessExistsAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            
+            using var connection = OpenConnection();
             return await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false) != null;
         }
 
         public virtual async Task<ProcessStatus> GetInstanceStatusAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstanceStatus instance = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
-            if (instance == null)
+            using var connection = OpenConnection();
+            
+            var instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
+            if (instanceStatus == null)
             {
                 return ProcessStatus.NotFound;
             }
-            ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instance.Status);
-            if (status == null)
-            {
-                return ProcessStatus.Unknown;
-            }
-            return status;
+            
+            ProcessStatus status = ProcessStatus.All.SingleOrDefault(ins => ins.Id == instanceStatus.Status);
+            
+            return status ?? ProcessStatus.Unknown;
         }
         
         private async Task SetRunningStatusAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
-            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            var instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
 
             if (instanceStatus == null)
             {
@@ -602,12 +689,13 @@ namespace OptimaJet.Workflow.DbPersistence
             instanceStatus.Status = ProcessStatus.Running.Id;
             instanceStatus.RuntimeId = _runtime.Id;
             instanceStatus.SetTime = _runtime.RuntimeDateTimeNow;
-
+            
             int cnt = await WorkflowProcessInstanceStatus.ChangeStatusAsync(connection, instanceStatus, oldLock).ConfigureAwait(false);
             
             if (cnt == 0)
             {
                 instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+                
                 if (instanceStatus == null)
                 {
                     throw new StatusNotDefinedException();
@@ -620,10 +708,13 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
+        // ReSharper disable once ParameterOnlyUsedForPreconditionCheck.Local
         private async Task SetCustomStatusAsync(Guid processId, ProcessStatus status, bool createIfNotDefined = false)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstanceStatus instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (instanceStatus == null)
             {
                 if (!createIfNotDefined)
@@ -631,7 +722,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     throw new StatusNotDefinedException();
                 }
 
-                instanceStatus = new WorkflowProcessInstanceStatus()
+                instanceStatus = new ProcessInstanceStatusEntity()
                 {
                     Id = processId,
                     Lock = Guid.NewGuid(),
@@ -640,7 +731,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     SetTime = _runtime.RuntimeDateTimeNow
                 };
 
-                await instanceStatus.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessInstanceStatus.InsertAsync(connection, instanceStatus).ConfigureAwait(false);
             }
             else
             {
@@ -656,6 +747,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 if (cnt == 0)
                 {
                     instanceStatus = await WorkflowProcessInstanceStatus.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+                    
                     if (instanceStatus == null)
                     {
                         throw new StatusNotDefinedException();
@@ -679,7 +771,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         private async Task<List<ParameterDefinitionWithValue>> GetSystemProcessParametersAsync(Guid processId, ProcessDefinition processDefinition)
         {
-            WorkflowProcessInstance processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
+            var processInstance = await GetProcessInstanceAsync(processId).ConfigureAwait(false);
 
             var systemParameters =
                 processDefinition.Parameters.Where(p => p.Purpose == ParameterPurpose.System).ToList();
@@ -749,14 +841,14 @@ namespace OptimaJet.Workflow.DbPersistence
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
             var parameters = new List<ParameterDefinitionWithValue>(persistenceParameters.Count);
 
-            List<WorkflowProcessInstancePersistence> persistedParameters;
-
-            using (var connection = new SqlConnection(ConnectionString))
+            List<ProcessInstancePersistenceEntity> persistedParameters;
+            
+            using (var connection = OpenConnection())
             {
                 persistedParameters = (await WorkflowProcessInstancePersistence.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false)).ToList();
             }
 
-            foreach (WorkflowProcessInstancePersistence persistedParameter in persistedParameters)
+            foreach (var persistedParameter in persistedParameters)
             {
                 parameters.Add(WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter));
             }
@@ -767,40 +859,47 @@ namespace OptimaJet.Workflow.DbPersistence
         private async Task<ParameterDefinitionWithValue> GetPersistedProcessParameterAsync(Guid processId, ProcessDefinition processDefinition, string parameterName)
         {
             var persistenceParameters = processDefinition.PersistenceParameters.ToList();
-            WorkflowProcessInstancePersistence persistedParameter;
-            using (var connection = new SqlConnection(ConnectionString))
+            
+            ProcessInstancePersistenceEntity persistedParameter;
+            
+            using (var connection = OpenConnection())
             {
-                persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processId, parameterName).ConfigureAwait(false);
+                persistedParameter = await WorkflowProcessInstancePersistence.SelectByNameAsync(connection, processId, parameterName)
+                    .ConfigureAwait(false);
             }
 
-            if (persistedParameter == null)
-            {
-                return null;
-            }
-
-            return WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter);
+            return persistedParameter == null
+                ? null
+                : WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(persistenceParameters, persistedParameter);
         }
 
-        private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(List<ParameterDefinition> persistenceParameters, WorkflowProcessInstancePersistence persistedParameter)
+        private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(
+            List<ParameterDefinition> persistenceParameters, ProcessInstancePersistenceEntity persistedParameter)
         {
             ParameterDefinition parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+            
             if (parameterDefinition == null)
             {
-                parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
+                parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType),
+                    ParameterPurpose.Persistence);
+                
                 return ParameterDefinition.Create(parameterDefinition, persistedParameter.Value);
             }
 
             return ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
         }
 
-        private async Task<WorkflowProcessInstance> GetProcessInstanceAsync(Guid processId)
+        private async Task<ProcessInstanceEntity> GetProcessInstanceAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (processInstance == null)
             {
                 throw new ProcessNotFoundException(processId);
             }
+            
             return processInstance;
         }
 
@@ -814,46 +913,48 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task SaveGlobalParameterAsync<T>(string type, string name, T value)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+            using var connection = OpenConnection();
+            
+            var globalParameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false))
+                .FirstOrDefault();
 
-            if (parameter == null)
+            if (globalParameter == null)
             {
-                parameter = new WorkflowGlobalParameter()
+                globalParameter = new GlobalParameterEntity()
                 {
                     Id = Guid.NewGuid(),
                     Type = type,
                     Name = name,
                     Value = JsonConvert.SerializeObject(value)
                 };
-
-                await parameter.InsertAsync(connection).ConfigureAwait(false);
+                
+                await WorkflowGlobalParameter.InsertAsync(connection, globalParameter).ConfigureAwait(false);
             }
             else
             {
-                parameter.Value = JsonConvert.SerializeObject(value);
+                globalParameter.Value = JsonConvert.SerializeObject(value);
 
-                await parameter.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowGlobalParameter.UpdateAsync(connection, globalParameter).ConfigureAwait(false);
             }
         }
 
         public virtual async Task<T> LoadGlobalParameterAsync<T>(string type, string name)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowGlobalParameter parameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false)).FirstOrDefault();
+            using var connection = OpenConnection();
+            
+            var globalParameter = (await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, name).ConfigureAwait(false))
+                .FirstOrDefault();
 
-            if (parameter == null)
-            {
-                return default;
-            }
-
-            return JsonConvert.DeserializeObject<T>(parameter.Value);
+            return globalParameter == null
+                ? default
+                : JsonConvert.DeserializeObject<T>(globalParameter.Value);
         }
 
         public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowGlobalParameter[] parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
 
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
@@ -866,23 +967,25 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowGlobalParameter[] parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
 
             return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
        
         public virtual async Task DeleteGlobalParametersAsync(string type, string name = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowGlobalParameter.DeleteByTypeAndNameAsync(connection, type, name).ConfigureAwait(false);
         }
 
         public virtual async Task DeleteProcessAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             connection.Open();
             using SqlTransaction transaction = connection.BeginTransaction();
+            
             await WorkflowProcessInstance.DeleteAsync(connection, processId, transaction).ConfigureAwait(false);
             await WorkflowProcessInstanceStatus.DeleteAsync(connection, processId, transaction).ConfigureAwait(false);
             await WorkflowProcessInstancePersistence.DeleteByProcessIdAsync(connection, processId, transaction).ConfigureAwait(false);
@@ -897,11 +1000,13 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessTimer timer = await WorkflowProcessTimer.SelectByProcessIdAndNameAsync(connection, processId, name).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var timer = await WorkflowProcessTimer.SelectByProcessIdAndNameAsync(connection, processId, name).ConfigureAwait(false);
+            
             if (timer == null)
             {
-                timer = new WorkflowProcessTimer
+                timer = new ProcessTimerEntity
                 {
                     Id = Guid.NewGuid(),
                     Name = name,
@@ -911,24 +1016,24 @@ namespace OptimaJet.Workflow.DbPersistence
                     RootProcessId = rootProcessId
                 };
 
-                await timer.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessTimer.InsertAsync(connection, timer).ConfigureAwait(false);
             }
             else if (!notOverrideIfExists)
             {
                 timer.NextExecutionDateTime = nextExecutionDateTime;
-                await timer.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowProcessTimer.UpdateAsync(connection, timer).ConfigureAwait(false);
             }
         }
 
         public virtual async Task ClearTimersAsync(Guid processId, List<string> timersIgnoreList)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowProcessTimer.DeleteByProcessIdAsync(connection, processId, timersIgnoreList).ConfigureAwait(false);
         }
 
         public virtual async Task<int> SetTimerIgnoreAsync(Guid timerId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowProcessTimer.SetTimerIgnoreAsync(connection, timerId).ConfigureAwait(false);
         }
 
@@ -936,8 +1041,8 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             DateTime now = _runtime.RuntimeDateTimeNow;
 
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessTimer[] timers = await WorkflowProcessTimer.GetTopTimersToExecuteAsync(connection, top, now).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            ProcessTimerEntity[] timers = await WorkflowProcessTimer.GetTopTimersToExecuteAsync(connection, top, now).ConfigureAwait(false);
 
             if (timers.Length == 0)
             {
@@ -956,7 +1061,8 @@ namespace OptimaJet.Workflow.DbPersistence
 
        public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
+            
             return (await WorkflowProcessTransitionHistory.SelectByProcessIdAsync(connection, processId, paging).ConfigureAwait(false))
                 .Select(hi => new ProcessHistoryItem
                 {
@@ -981,71 +1087,70 @@ namespace OptimaJet.Workflow.DbPersistence
 
        public async Task<int> GetProcessHistoryCountAsync(Guid processId)
        {
-           using var connection = new SqlConnection(ConnectionString);
+           using var connection = OpenConnection();
            return await WorkflowProcessTransitionHistory.GetCountByAsync(connection, x => x.ProcessId, processId)
                .ConfigureAwait(false);
        }
 
        public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            IEnumerable<ProcessTimerEntity> timers = await WorkflowProcessTimer.SelectByProcessIdAsync(connection, processId)
+                .ConfigureAwait(false);
+            
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
         public virtual async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await ProcessInstanceTreeItem.GetProcessTreeItemsByRootProcessIdAsync(connection, rootProcessId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await ProcessInstanceTree.GetProcessTreeItemsByRootProcessIdAsync(connection, rootProcessId).ConfigureAwait(false);
         }
 
         public virtual async Task<List<ProcessTimer>> GetActiveTimersForProcessAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            IEnumerable<WorkflowProcessTimer> timers = await WorkflowProcessTimer.SelectActiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            IEnumerable<ProcessTimerEntity> timers = await WorkflowProcessTimer.SelectActiveByProcessIdAsync(connection, processId)
+                .ConfigureAwait(false);
+            
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
         public virtual async Task<WorkflowRuntimeModel> GetWorkflowRuntimeModelAsync(string runtimeId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await MSSQL.Models.WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
         }
 
         public virtual async Task<int> SendRuntimeLastAliveSignalAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return await MSSQL.Models.WorkflowRuntime.SendRuntimeLastAliveSignalAsync(connection, _runtime.Id, _runtime.RuntimeDateTimeNow).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            return await WorkflowRuntime.SendRuntimeLastAliveSignalAsync(connection, _runtime.Id, _runtime.RuntimeDateTimeNow)
+                .ConfigureAwait(false);
         }
 
         public virtual async Task<DateTime?> GetNextTimerDateAsync(TimerCategory timerCategory, int timerInterval)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
             string categoryName = timerCategory.ToString();
-
-            WorkflowSync syncLock = await WorkflowSync.GetByNameAsync(connection, categoryName).ConfigureAwait(false);
+            var syncLock = await WorkflowSync.GetByNameAsync(connection, categoryName).ConfigureAwait(false);
 
             if (syncLock == null)
             {
                 throw new Exception($"Sync lock {categoryName} not found");
             }
 
-            string nextTimeColumnName;
-
-            switch (timerCategory)
+            string nextTimeColumnName = timerCategory switch
             {
-                case TimerCategory.Timer:
-                    nextTimeColumnName = "NextTimerTime";
-                    break;
-                case TimerCategory.ServiceTimer:
-                    nextTimeColumnName = "NextServiceTimerTime";
-                    break;
-                default:
-                    throw new Exception($"Unknown sync lock name: {categoryName}");
-            }
+                TimerCategory.Timer => "NextTimerTime",
+                TimerCategory.ServiceTimer => "NextServiceTimerTime",
+                _ => throw new Exception($"Unknown sync lock name: {categoryName}")
+            };
 
-            DateTime? max = await MSSQL.Models.WorkflowRuntime.GetMaxNextTimeAsync(connection, _runtime.Id, nextTimeColumnName).ConfigureAwait(false);
+            DateTime? max = await WorkflowRuntime.GetMaxNextTimeAsync(connection, _runtime.Id, nextTimeColumnName).ConfigureAwait(false);
 
             DateTime result = _runtime.RuntimeDateTimeNow;
 
@@ -1059,9 +1164,12 @@ namespace OptimaJet.Workflow.DbPersistence
             var newLock = Guid.NewGuid();
             
             using SqlTransaction transaction = connection.BeginTransaction();
-            await MSSQL.Models.WorkflowRuntime.UpdateNextTimeAsync(connection, _runtime.Id, nextTimeColumnName, result, transaction).ConfigureAwait(false);
+            
+            await WorkflowRuntime.UpdateNextTimeAsync(connection, _runtime.Id, nextTimeColumnName, result, transaction)
+                .ConfigureAwait(false);
                    
-            int rowCount = await WorkflowSync.UpdateLockAsync(connection, categoryName, syncLock.Lock, newLock, transaction).ConfigureAwait(false);
+            int rowCount = await WorkflowSync.UpdateLockAsync(connection, categoryName, newLock, syncLock.Lock, transaction)
+                .ConfigureAwait(false);
 
             if (rowCount == 0)
             {
@@ -1076,14 +1184,22 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<List<WorkflowRuntimeModel>> GetWorkflowRuntimesAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
-            return (await MSSQL.Models.WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
+            using var connection = OpenConnection();
+            return (await WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
         }
 
 
-        private WorkflowRuntimeModel GetModel(MSSQL.Models.WorkflowRuntime result)
+        private WorkflowRuntimeModel GetModel(RuntimeEntity result)
         {
-            return new WorkflowRuntimeModel { Lock = result.Lock, RuntimeId = result.RuntimeId, Status = result.Status, RestorerId = result.RestorerId, LastAliveSignal = result.LastAliveSignal, NextTimerTime = result.NextTimerTime };
+            return new WorkflowRuntimeModel
+            {
+                Lock = result.Lock,
+                RuntimeId = result.RuntimeId,
+                Status = result.Status,
+                RestorerId = result.RestorerId,
+                LastAliveSignal = result.LastAliveSignal,
+                NextTimerTime = result.NextTimerTime
+            };
         }
 
         #endregion
@@ -1092,8 +1208,10 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeByProcessIdAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessInstance processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var processInstance = await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false);
+            
             if (processInstance == null)
             {
                 throw new ProcessNotFoundException(processId);
@@ -1104,15 +1222,18 @@ namespace OptimaJet.Workflow.DbPersistence
                 throw SchemeNotFoundException.Create(processId, SchemeLocation.WorkflowProcessInstance);
             }
 
-            SchemeDefinition<XElement> schemeDefinition = await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
+            SchemeDefinition<XElement> schemeDefinition = await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value)
+                .ConfigureAwait(false);
+            
             schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
             return schemeDefinition;
         }
 
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeBySchemeIdAsync(Guid schemeId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessScheme processScheme = await WorkflowProcessScheme.SelectByKeyAsync(connection, schemeId).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var processScheme = await WorkflowProcessScheme.SelectByKeyAsync(connection, schemeId).ConfigureAwait(false);
 
             if (processScheme == null || String.IsNullOrEmpty(processScheme.Scheme))
             {
@@ -1125,14 +1246,18 @@ namespace OptimaJet.Workflow.DbPersistence
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
-            IEnumerable<WorkflowProcessScheme> processSchemes;
+            IEnumerable<ProcessSchemeEntity> processSchemes;
             string hash = HashHelper.GenerateStringHash(definingParameters);
-
-            using (var connection = new SqlConnection(ConnectionString))
+            bool? isObsolete = ignoreObsolete ? false : (bool?)null;
+            
+            using (var connection = OpenConnection())
             {
-                processSchemes =
-                    await WorkflowProcessScheme.SelectAsync(connection, schemeCode, hash, ignoreObsolete ? false : (bool?) null,
-                        rootSchemeId).ConfigureAwait(false);
+                processSchemes = await WorkflowProcessScheme.SelectAsync(connection,
+                        schemeCode,
+                        hash,
+                        isObsolete,
+                        rootSchemeId)
+                    .ConfigureAwait(false);
             }
 
             if (!processSchemes.Any())
@@ -1142,11 +1267,11 @@ namespace OptimaJet.Workflow.DbPersistence
 
             if (processSchemes.Count() == 1)
             {
-                WorkflowProcessScheme scheme = processSchemes.First();
+                var scheme = processSchemes.First();
                 return ConvertToSchemeDefinition(scheme);
             }
 
-            foreach (WorkflowProcessScheme processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
+            foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
             {
                 return ConvertToSchemeDefinition(processScheme);
             }
@@ -1158,21 +1283,20 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             string definingParameters = DefiningParametersSerializer.Serialize(parameters);
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-
-            using var connection = new SqlConnection(ConnectionString);
+            
+            using var connection = OpenConnection();
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, definingParametersHash).ConfigureAwait(false);
         }
 
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode).ConfigureAwait(false);
         }
         
         public virtual async Task DropUnusedWorkflowProcessSchemeAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
-            
+            using var connection = OpenConnection();
             await WorkflowProcessScheme.DeleteUnusedAsync(connection).ConfigureAwait(false);
         }
         
@@ -1181,20 +1305,21 @@ namespace OptimaJet.Workflow.DbPersistence
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowProcessScheme[] oldSchemes = await WorkflowProcessScheme.SelectAsync(connection, scheme.SchemeCode, definingParametersHash,
+            using var connection = OpenConnection();
+            
+            var oldSchemes = await WorkflowProcessScheme.SelectAsync(connection, scheme.SchemeCode, definingParametersHash,
                 scheme.IsObsolete, scheme.RootSchemeId).ConfigureAwait(false);
 
             if (oldSchemes.Any())
             {
-                WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                var existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
                 if (existing != null)
                 {
                     return ConvertToSchemeDefinition(existing);
                 }
             }
 
-            var newProcessScheme = new WorkflowProcessScheme
+            var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
                 DefiningParameters = definingParameters,
@@ -1208,7 +1333,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 IsObsolete = scheme.IsObsolete
             };
 
-            await newProcessScheme.InsertAsync(connection).ConfigureAwait(false);
+            await WorkflowProcessScheme.InsertAsync(connection, newProcessScheme).ConfigureAwait(false);
 
             return ConvertToSchemeDefinition(newProcessScheme);
         }
@@ -1218,7 +1343,7 @@ namespace OptimaJet.Workflow.DbPersistence
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
             
-            var newProcessScheme = new WorkflowProcessScheme
+            var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
                 DefiningParameters = definingParameters,
@@ -1232,59 +1357,36 @@ namespace OptimaJet.Workflow.DbPersistence
                 IsObsolete = scheme.IsObsolete
             };
             
-            using var connection = new SqlConnection(ConnectionString);
-            try
-            {
-                await newProcessScheme.InsertAsync(connection).ConfigureAwait(false);
-            }
-            catch (Exception)
-            {
-                var existingSchemeCount = await WorkflowProcessScheme.GetCountByAsync(connection, s => s.Id, newProcessScheme.Id).ConfigureAwait(false);
-
-                if (existingSchemeCount == 1)
-                {
-                    await newProcessScheme.UpdateAsync(connection).ConfigureAwait(false);
-                }
-                else
-                {
-                    throw;
-                }
-            }
+            using var connection = OpenConnection();
+            
+            await WorkflowProcessScheme.UpsertAsync(connection, newProcessScheme).ConfigureAwait(false);
         }
 
         public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme,
             List<string> tags)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowScheme wfScheme = await WorkflowScheme.SelectByKeyAsync(connection, schemaCode).ConfigureAwait(false);
-            if (wfScheme == null)
+            using var connection = OpenConnection();
+            
+            var newScheme = new SchemeEntity
             {
-                wfScheme = new WorkflowScheme
-                {
-                    Code = schemaCode,
-                    Scheme = scheme,
-                    CanBeInlined = canBeInlined,
-                    InlinedSchemes = inlinedSchemes.Any()
-                        ? JsonConvert.SerializeObject(inlinedSchemes)
-                        : null,
-                    Tags = TagHelper.ToTagStringForDatabase(tags)
-                };
-                await wfScheme.InsertAsync(connection).ConfigureAwait(false);
-            }
-            else
-            {
-                wfScheme.Scheme = scheme;
-                wfScheme.CanBeInlined = canBeInlined;
-                wfScheme.InlinedSchemes = inlinedSchemes.Any() ? JsonConvert.SerializeObject(inlinedSchemes) : null;
-                wfScheme.Tags = TagHelper.ToTagStringForDatabase(tags);
-                await wfScheme.UpdateAsync(connection).ConfigureAwait(false);
-            }
+                Code = schemaCode,
+                Scheme = scheme,
+                CanBeInlined = canBeInlined,
+                InlinedSchemes = inlinedSchemes.Any()
+                    ? JsonConvert.SerializeObject(inlinedSchemes)
+                    : null,
+                Tags = TagHelper.ToTagStringForDatabase(tags)
+            };
+
+            await WorkflowScheme.UpsertAsync(connection, newScheme).ConfigureAwait(false);
         }
 
         public virtual async Task<XElement> GetSchemeAsync(string code)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowScheme scheme = await WorkflowScheme.SelectByKeyAsync(connection, code).ConfigureAwait(false);
+            using var connection = OpenConnection();
+            
+            var scheme = await WorkflowScheme.SelectByKeyAsync(connection, code).ConfigureAwait(false);
+            
             if (scheme == null || String.IsNullOrEmpty(scheme.Scheme))
             {
                 throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowProcessScheme);
@@ -1295,13 +1397,13 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<List<string>> GetInlinedSchemeCodesAsync()
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowScheme.GetInlinedSchemeCodesAsync(connection).ConfigureAwait(false);
         }
 
         public virtual async Task<List<string>> GetRelatedByInliningSchemeCodesAsync(string schemeCode)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowScheme.GetRelatedSchemeCodesAsync(connection,schemeCode).ConfigureAwait(false);
         }
 
@@ -1312,7 +1414,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<List<string>> SearchSchemesByTagsAsync(IEnumerable<string> tags)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowScheme.GetSchemeCodesByTagsAsync(connection, tags).ConfigureAwait(false);
         }
 
@@ -1323,7 +1425,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task AddSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowScheme.AddSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
@@ -1334,7 +1436,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task RemoveSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowScheme.RemoveSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
@@ -1345,7 +1447,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task SetSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowScheme.SetSchemeTagsAsync(connection, schemeCode, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
@@ -1365,11 +1467,16 @@ namespace OptimaJet.Workflow.DbPersistence
 
         #endregion
 
-        private SchemeDefinition<XElement> ConvertToSchemeDefinition(WorkflowProcessScheme workflowProcessScheme)
+        private SchemeDefinition<XElement> ConvertToSchemeDefinition(ProcessSchemeEntity workflowProcessScheme)
         {
-            return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
-                workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
-                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+            return new SchemeDefinition<XElement>(
+                workflowProcessScheme.Id,
+                workflowProcessScheme.RootSchemeId,
+                workflowProcessScheme.SchemeCode,
+                workflowProcessScheme.RootSchemeCode,
+                XElement.Parse(workflowProcessScheme.Scheme),
+                workflowProcessScheme.IsObsolete,
+                false,
                 JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
                 workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
@@ -1378,7 +1485,7 @@ namespace OptimaJet.Workflow.DbPersistence
         private async Task<Tuple<int,WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime, Action<WorkflowRuntimeModel> setter, 
             Func<SqlConnection, WorkflowRuntimeModel, Guid, Task<int>> updateMethod)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             
             Guid oldLock = runtime.Lock;
             
@@ -1398,15 +1505,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
         #region Bulk methods
 
-        public bool IsBulkOperationsSupported
-        {
-#if !NETCOREAPP || NETCORE2
-            get { return true; }
-#else
-            get { return false; }
-#endif
-
-        }
+        public bool IsBulkOperationsSupported => true;
 
         public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
         {
@@ -1415,9 +1514,6 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers, ProcessStatus status, CancellationToken token)
         {
-#if NETCOREAPP && !NETCORE2
-            throw new NotImplementedException();
-#else
             if (token.IsCancellationRequested)
             {
                 return;
@@ -1480,11 +1576,12 @@ namespace OptimaJet.Workflow.DbPersistence
                 }
             }
 
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             // ReSharper disable once MethodSupportsCancellation
             await connection.OpenAsync().ConfigureAwait(false);
             using SqlTransaction transaction = connection.BeginTransaction();
-            var bulk = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction) {DestinationTableName = WorkflowProcessInstance.ObjectName};
+            var bulk = new SqlBulkCopy(connection, SqlBulkCopyOptions.Default, transaction) 
+                {DestinationTableName = WorkflowProcessInstance.ObjectName};
             bulk.ColumnMappings.Add("Id", "Id");
             bulk.ColumnMappings.Add("SchemeId", "SchemeId");
             bulk.ColumnMappings.Add("ActivityName", "ActivityName");
@@ -1532,8 +1629,6 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 transaction.Commit();
             }
-
-#endif
         }
 
         #endregion
@@ -1542,37 +1637,37 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task DropWorkflowInboxAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            await WorkflowInbox.DeleteByAsync(connection, x=>x.ProcessId, processId)
+            using var connection = OpenConnection();
+            await WorkflowInbox.DeleteByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public virtual async Task InsertInboxAsync(List<InboxItem> newActors)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowInbox[] inboxItems = newActors.Select(WorkflowInbox.ToDB).ToArray();
+            using var connection = OpenConnection();
+            InboxEntity[] inboxItems = newActors.Select(WorkflowInbox.ToDB).ToArray();
             await WorkflowInbox.InsertAllAsync(connection, inboxItems).ConfigureAwait(false);
         }
 
         public async Task<int> GetInboxCountByProcessIdAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowInbox.GetCountByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public async Task<int> GetInboxCountByIdentityIdAsync(string identityId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowInbox.GetCountByAsync(connection, x => x.IdentityId, identityId)
                 .ConfigureAwait(false);
         }
 
         public virtual async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging=null, CultureInfo culture = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-           
-            WorkflowInbox[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
+            using var connection = OpenConnection();
+            
+            InboxEntity[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
                     x => x.ProcessId, processId,
                     x => x.AddingDate, SortDirection.Desc,
                     paging)
@@ -1584,9 +1679,9 @@ namespace OptimaJet.Workflow.DbPersistence
        
         public virtual async Task<List<InboxItem>> GetInboxByIdentityIdAsync(string identityId, Paging paging=null, CultureInfo culture = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-
-            WorkflowInbox[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
+            using var connection = OpenConnection();
+            
+            InboxEntity[] inboxItems = await WorkflowInbox.SelectByWithPagingAsync(connection,
                     x => x.IdentityId, identityId,
                     x => x.AddingDate, SortDirection.Desc,
                     paging)
@@ -1598,42 +1693,42 @@ namespace OptimaJet.Workflow.DbPersistence
        
         public async Task FillApprovalHistoryAsync(ApprovalHistoryItem approvalHistoryItem)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            WorkflowApprovalHistory historyItem = 
-                (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, approvalHistoryItem.ProcessId).ConfigureAwait(false))
-                .FirstOrDefault(h =>!h.TransitionTime.HasValue &&
-                                    h.InitialState == approvalHistoryItem.InitialState && h.DestinationState == approvalHistoryItem.DestinationState);
+            using var connection = OpenConnection();
 
-            if (historyItem is null)
+            var approvalHistory = (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, approvalHistoryItem.ProcessId)
+                    .ConfigureAwait(false)).FirstOrDefault(h => !h.TransitionTime.HasValue 
+                     && h.InitialState == approvalHistoryItem.InitialState 
+                     && h.DestinationState == approvalHistoryItem.DestinationState);
+
+            if (approvalHistory is null)
             {
-                historyItem =  WorkflowApprovalHistory.ToDB(approvalHistoryItem);
+                approvalHistory =  WorkflowApprovalHistory.ToDB(approvalHistoryItem);
 
-                await historyItem.InsertAsync(connection).ConfigureAwait(false);
+                await WorkflowApprovalHistory.InsertAsync(connection, approvalHistory).ConfigureAwait(false);
             }
             else
             {
-                historyItem.TriggerName = approvalHistoryItem.TriggerName;
-                historyItem.TransitionTime = approvalHistoryItem.TransitionTime;
-                historyItem.IdentityId = approvalHistoryItem.IdentityId;
-                historyItem.Commentary = approvalHistoryItem.Commentary;
+                approvalHistory.TriggerName = approvalHistoryItem.TriggerName;
+                approvalHistory.TransitionTime = approvalHistoryItem.TransitionTime;
+                approvalHistory.IdentityId = approvalHistoryItem.IdentityId;
+                approvalHistory.Commentary = approvalHistoryItem.Commentary;
                
-                await historyItem.UpdateAsync(connection).ConfigureAwait(false);
+                await WorkflowApprovalHistory.UpdateAsync(connection, approvalHistory).ConfigureAwait(false);
             }
         }
 
         public async Task DropApprovalHistoryByIdentityIdAsync(string identityId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            await WorkflowApprovalHistory.DeleteByAsync(connection, x => x.IdentityId, identityId)
-                .ConfigureAwait(false);
+            using var connection = OpenConnection();
+            await WorkflowApprovalHistory.DeleteByAsync(connection, x => x.IdentityId, identityId).ConfigureAwait(false);
         }
 
         public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
-            foreach (WorkflowApprovalHistory record in (await WorkflowApprovalHistory.
-                    SelectByProcessIdAsync(connection, processId).ConfigureAwait(false)).
-                Where(x => !x.TransitionTime.HasValue).ToList())
+            using var connection = OpenConnection();
+            
+            foreach (var record in (await WorkflowApprovalHistory.SelectByProcessIdAsync(connection, processId)
+                .ConfigureAwait(false)).Where(x => !x.TransitionTime.HasValue).ToList())
             {
                 await WorkflowApprovalHistory.DeleteAsync(connection, record.Id).ConfigureAwait(false);
             }
@@ -1641,58 +1736,57 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public async Task DropApprovalHistoryByProcessIdAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             await WorkflowApprovalHistory.DeleteByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
        
         public async Task<int> GetApprovalHistoryCountByProcessIdAsync(Guid processId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetCountByAsync(connection, x => x.ProcessId, processId)
                 .ConfigureAwait(false);
         }
 
         public async Task<int> GetApprovalHistoryCountByIdentityIdAsync(string identityId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetCountByAsync(connection, x => x.IdentityId, identityId)
                 .ConfigureAwait(false);
         }
 
         public virtual async  Task<List<ApprovalHistoryItem>> GetApprovalHistoryByProcessIdAsync(Guid processId, Paging paging=null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-
+            using var connection = OpenConnection();
+            
             return (await WorkflowApprovalHistory.SelectByWithPagingAsync(connection,
-                    x=>x.ProcessId, processId, 
-                    x=>x.Sort, SortDirection.Asc,
+                    x => x.ProcessId, processId,
+                    x => x.Sort, SortDirection.Asc,
                     paging)
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
 
         public virtual async  Task<List<ApprovalHistoryItem>> GetApprovalHistoryByIdentityIdAsync(string identityId, Paging paging=null)
         {
-            using var connection = new SqlConnection(ConnectionString);
-           
+            using var connection = OpenConnection();
+            
             return (await WorkflowApprovalHistory.SelectByWithPagingAsync(connection,
-                    x=>x.IdentityId, identityId,
-                    x=>x.Sort, SortDirection.Asc,
+                    x => x.IdentityId, identityId,
+                    x => x.Sort, SortDirection.Asc,
                     paging)
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
-       
 
         public async Task<int> GetOutboxCountByIdentityIdAsync(string identityId)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowApprovalHistory.GetOutboxCountByIdentityIdAsync(connection, identityId)
                 .ConfigureAwait(false);
         }
        
-        public virtual async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging=null)
+        public virtual async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging = null)
         {
-            using var connection = new SqlConnection(ConnectionString);
+            using var connection = OpenConnection();
             return await WorkflowApprovalHistory.SelectOutboxByIdentityIdAsync(connection, identityId, paging)
                 .ConfigureAwait(false);
         }

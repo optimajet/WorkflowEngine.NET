@@ -3,6 +3,7 @@ using System.Collections.Specialized;
 using System.IO;
 using System.Linq;
 using System.Text;
+using System.Threading.Tasks;
 using System.Web.Mvc;
 using OptimaJet.Workflow;
 using WF.Sample.Business.Workflow;
@@ -12,12 +13,12 @@ namespace WF.Sample.Controllers
 {
     public class DesignerController : Controller
     {
-        public ActionResult Index(string schemeName)
+        public Task<ActionResult> Index(string schemeName)
         {
-            return View();
+            return Task.FromResult<ActionResult>(View());
         }
         
-        public ActionResult API()
+        public async Task<ActionResult> API()
         {
             Stream filestream = null;
             if (Request.Files.Count > 0)
@@ -39,7 +40,8 @@ namespace WF.Sample.Controllers
                 }
             }
 
-            var res = WorkflowInit.Runtime.DesignerAPI(pars, out bool hasError, filestream, true);
+            (string res, bool hasError) = await WorkflowInit.Runtime.DesignerAPIAsync(pars, filestream);
+            
             var operation = pars["operation"].ToLower();
             if (operation == "downloadscheme" && !hasError)
                 return File(Encoding.UTF8.GetBytes(res), "text/xml");

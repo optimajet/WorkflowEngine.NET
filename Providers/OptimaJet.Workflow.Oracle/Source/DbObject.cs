@@ -5,6 +5,7 @@ using System.Data.Common;
 using System.Linq;
 using System.Linq.Expressions;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Persistence;
 using Oracle.ManagedDataAccess.Client;
@@ -20,213 +21,234 @@ namespace OptimaJet.Workflow.Oracle
         public bool IsVirtual = false;
     }
 
-    public abstract class DbObject
+    public class DbObject<TEntity> where TEntity : IEntity, new()
     {
-        public static string SchemaName { get; set; }
-
-        public static async Task CommitAsync(OracleConnection connection)
+        public DbObject(string schemaName, string dbTableName, int commandTimeout)
         {
-            if (connection.State != ConnectionState.Open)
-            {
-                await connection.OpenAsync().ConfigureAwait(false);
-            }
-
-            using OracleCommand command = connection.CreateCommand();
-            command.CommandText = "COMMIT";
-            command.CommandType = CommandType.Text;
-            await command.ExecuteNonQueryAsync().ConfigureAwait(false);
+            SchemaName = schemaName;
+            DbTableName = dbTableName;
+            CommandTimeout = commandTimeout;
         }
-    }
 
-    public abstract class DbObject<T> : DbObject where T : DbObject<T>, new()
-    {
+        public int CommandTimeout { get; }
+        public string SchemaName { get; }
+        public string DbTableName { get; }
+
+        public string ObjectName =>
+            !String.IsNullOrWhiteSpace(SchemaName)
+                ? $"{SchemaName}.{DbTableName}"
+                : $"{DbTableName}";
+
         // ReSharper disable once StaticMemberInGenericType
-        public static string DbTableName;
-
-        public static string ObjectName
-        {
-            get
-            {
-                if (!String.IsNullOrWhiteSpace(SchemaName))
-                    return $"{SchemaName}.{DbTableName}";
-                return $"{DbTableName}";
-            }
-        }
-
         public static List<ColumnInfo> DBColumnsStatic = new List<ColumnInfo>();
-        
+
         public List<ColumnInfo> DBColumns = new List<ColumnInfo>();
 
-        public virtual object GetValue(string key)
-        {
-            return null;
-        }
-
-        public virtual void SetValue(string key, object value)
-        {
-            
-        }
-      
         #region Command Insert/Update/Delete/Commit
-        public virtual async Task<int> InsertAsync (OracleConnection connection)
+
+        public async Task<int> InsertAsync(OracleConnection connection, TEntity entity, OracleTransaction transaction = null)
         {
-            string command = String.Format("INSERT INTO {0} ({1}) VALUES ({2})",
-                    ObjectName,
-                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => c.Name.ToUpperInvariant())),
-                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => ":" + c.Name)));
+            string command = $"INSERT INTO {ObjectName} " +
+                             $"({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => c.Name.ToUpperInvariant()))}) " +
+                             $"VALUES ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => ":" + c.Name))})";
 
-            OracleParameter[] parameters = DBColumns.Select(c => new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray();
+            OracleParameter[] parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
 
-            return await ExecuteCommandNonQueryAsync(connection, command, parameters).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters).ConfigureAwait(false);
+        }
+        
+        public async Task<int> UpsertAsync(OracleConnection connection, TEntity entity, OracleTransaction transaction = null)
+        {
+            string command =
+                "BEGIN LOOP BEGIN " +
+                $"MERGE INTO {ObjectName} " + 
+                $"USING dual ON ({String.Join(",", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name))}) " +
+                "WHEN NOT MATCHED THEN " +
+                $"INSERT ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => c.Name.ToUpperInvariant()))}) " +
+                $"VALUES ({String.Join(",", DBColumns.Where(c => !c.IsVirtual).Select(c => ":" + c.Name))}) " +
+                "WHEN MATCHED THEN UPDATE SET " +
+                $"{String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name))}; " +
+                "EXIT; -- success? -> exit loop " + Environment.NewLine + 
+                "EXCEPTION " +
+                "WHEN NO_DATA_FOUND THEN " +
+                "NULL; -- exception? -> no op, i.e. continue looping " + Environment.NewLine +
+                " WHEN DUP_VAL_ON_INDEX THEN " +
+                "NULL; -- exception? -> no op, i.e. continue looping " + Environment.NewLine +
+                "END; END LOOP; END;";
+            
+            var parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
+
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters)
+                .ConfigureAwait(false);
         }
 
-        public virtual async Task<int> UpdateAsync (OracleConnection connection)
+        public virtual async Task<int> UpdateAsync(OracleConnection connection, TEntity entity, OracleTransaction transaction = null)
         {
-            string command = String.Format(@"UPDATE {0} SET {1} WHERE {2}",
-                    ObjectName,
-                    String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name)),
-                    String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name )));
+            string command = $@"UPDATE {ObjectName} SET " +
+                             $"{String.Join(",", DBColumns.Where(c => !c.IsVirtual).Where(c => !c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name))} " +
+                             $"WHERE {String.Join(" AND ", DBColumns.Where(c => c.IsKey).Select(c => c.Name.ToUpperInvariant() + " = :" + c.Name))}";
 
-            OracleParameter[] parameters = DBColumns.Select(c =>
-                new OracleParameter(c.Name, c.Type, GetValue(c.Name), ParameterDirection.Input)).ToArray();
+            OracleParameter[] parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
 
-            return await ExecuteCommandNonQueryAsync(connection, command, parameters).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters).ConfigureAwait(false);
         }
 
-        public static async Task<T[]> SelectAllAsync(OracleConnection connection)
+        public async Task<TEntity[]> SelectAllAsync(OracleConnection connection)
         {
             return await SelectAsync(connection, $"SELECT * FROM {ObjectName}").ConfigureAwait(false);
         }
-        
-        public static async Task<T[]> SelectAllWithPagingAsync(OracleConnection connection, List<(string parameterName,SortDirection sortDirection)> orderParameters, Paging paging)
+
+        public async Task<TEntity[]> SelectAllWithPagingAsync(OracleConnection connection,
+            List<(string parameterName, SortDirection sortDirection)> orderParameters,
+            Paging paging)
         {
             orderParameters ??= new List<(string parameterName, SortDirection sortDirection)>();
-            
+
             string pagingText = String.Empty;
             string orderText = String.Empty;
-            
+
             if (paging != null)
             {
                 //default sort for paging
                 if (orderParameters.Count < 1)
                 {
-                    orderParameters.Add((GetKeyOrFirstColumn(),SortDirection.Asc));
+                    orderParameters.Add((GetKeyOrFirstColumn(), SortDirection.Asc));
                 }
-                
+
                 pagingText = $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
             }
-            
+
             if (orderParameters.Any())
             {
                 orderText = $" ORDER BY {GetOrderParameters(orderParameters)}";
             }
-            
+
             string selectText = $"SELECT * FROM {ObjectName}{orderText}{pagingText}";
-            
+
             return await SelectAsync(connection, selectText).ConfigureAwait(false);
         }
 
-        public static async Task<int> GetCountAsync(OracleConnection connection)
+        public async Task<int> GetCountAsync(OracleConnection connection)
         {
             var result = await ExecuteCommandScalarAsync(connection, $"SELECT COUNT(*) FROM {ObjectName}")
                 .ConfigureAwait(false);
-            
-            result = (result == DBNull.Value) ? null : result;
-            return Convert.ToInt32(result);
-        }
-        public static async Task<int> GetCountByAsync<TSelect>(OracleConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value)
-        {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
-            string paramName = $"p_{propertyName}";
-            string selectText = String.Format($"SELECT COUNT(*) FROM {ObjectName} WHERE {propertyName.ToUpperInvariant()} = :{paramName}");
-            
-            var param = new OracleParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type, ParameterDirection.Input) { Value = ConvertToDbCompatibilityType(value) };
-            
-            var result = await ExecuteCommandScalarAsync(connection, selectText, param).ConfigureAwait(false);
-            
-            result = (result == DBNull.Value) ? null : result;
-            return Convert.ToInt32(result);
 
+            result = (result == DBNull.Value) ? null : result;
+            return Convert.ToInt32(result);
         }
-        public static async Task<T[]> SelectByAsync<TSelect>(OracleConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value)
+
+        public async Task<int> GetCountByAsync<TSelect>(OracleConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value, OracleTransaction transaction = null)
         {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"p_{propertyName}";
-            
-            string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE {propertyName.ToUpperInvariant()} = :{paramName}");
-            
-            var param = new OracleParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type, ParameterDirection.Input) { Value = ConvertToDbCompatibilityType(value) };
-            
+            string selectText = String.Format($"SELECT COUNT(*) FROM {ObjectName} WHERE {propertyName?.ToUpperInvariant()} = :{paramName}");
+
+            var column = DBColumns.Find(x => x.Name == propertyName);
+            var param = new OracleParameter(paramName, column.Type, ParameterDirection.Input) {Value = ToDbValue(value, column.Type)};
+
+            var result = await ExecuteCommandScalarAsync(connection, selectText, transaction, param).ConfigureAwait(false);
+
+            result = (result == DBNull.Value) ? null : result;
+            return Convert.ToInt32(result);
+        }
+
+        public async Task<TEntity[]> SelectByAsync<TSelect>(OracleConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value)
+        {
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
+            string paramName = $"p_{propertyName}";
+
+            string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE {propertyName?.ToUpperInvariant()} = :{paramName}");
+
+            var column = DBColumns.Find(x => x.Name == propertyName);
+            var param = new OracleParameter(paramName, column.Type, ParameterDirection.Input) {Value = ToDbValue(value, column.Type)};
+
             return await SelectAsync(connection, selectText, param).ConfigureAwait(false);
         }
-        
-        public static async Task<int> DeleteByAsync<TSelect>(OracleConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value)
+
+        public async Task<int> DeleteByAsync<TSelect>(OracleConnection connection, Expression<Func<TEntity, TSelect>> selectorLambda,
+            TSelect value, OracleTransaction transaction = null)
         {
-            var t = new T();
-            string propertyName = (selectorLambda.Body as MemberExpression).Member.Name;
+            string propertyName = (selectorLambda.Body as MemberExpression)?.Member.Name;
             string paramName = $"p_{propertyName}";
-            string selectText = String.Format($"Delete FROM {ObjectName} WHERE {propertyName.ToUpperInvariant()} = :{paramName}");
-            
-            var param = new OracleParameter(paramName, t.DBColumns.Find(x=>x.Name == propertyName).Type, ParameterDirection.Input) { Value = ConvertToDbCompatibilityType(value) };
-            
-            return await ExecuteCommandNonQueryAsync(connection, selectText, param).ConfigureAwait(false);
+            string selectText = String.Format($"Delete FROM {ObjectName} WHERE {propertyName?.ToUpperInvariant()} = :{paramName}");
+
+            var column = DBColumns.Find(x => x.Name == propertyName);
+            var param = new OracleParameter(paramName, column.Type, ParameterDirection.Input) {Value = ToDbValue(value, column.Type)};
+
+            return await ExecuteCommandNonQueryAsync(connection, selectText, transaction, param).ConfigureAwait(false);
         }
-        
-        public static async Task<T[]> SelectByWithPagingAsync<TSelect, TSort>(OracleConnection connection, Expression<Func<T, TSelect>> selectorLambda, TSelect value, Expression<Func<T, TSort>> sortLambda, SortDirection sortDirection, Paging paging)
+
+        public async Task<TEntity[]> SelectByWithPagingAsync<TSelect, TSort>(OracleConnection connection,
+            Expression<Func<TEntity, TSelect>> selectorLambda, TSelect value, Expression<Func<TEntity, TSort>> sortLambda,
+            SortDirection sortDirection, Paging paging)
         {
-            var t = new T();
-            string selectorProperty = (selectorLambda.Body as MemberExpression).Member.Name;
-            string sortProperty =(sortLambda.Body as MemberExpression).Member.Name;
-            
+            string selectorProperty = (selectorLambda.Body as MemberExpression)?.Member.Name;
+            string sortProperty = (sortLambda.Body as MemberExpression)?.Member.Name;
+
             string paramName = $"p_{selectorProperty}";
-            
+
             string pagingText = String.Empty;
 
             if (paging != null)
             {
                 pagingText = $" OFFSET {paging.SkipCount()} ROWS FETCH NEXT {paging.PageSize} ROWS ONLY";
             }
-            
-            string selectText = String.Format($"SELECT * FROM {ObjectName} WHERE {selectorProperty.ToUpperInvariant()} = :{paramName} ORDER BY {sortProperty.ToUpperInvariant()} {sortDirection.UpperName().ToUpperInvariant()}{pagingText}");
-            
-            var param = new OracleParameter(paramName, t.DBColumns.Find(x=>x.Name == selectorProperty).Type, ParameterDirection.Input) { Value = ConvertToDbCompatibilityType(value) };
-            
+
+            string selectText =
+                String.Format(
+                    $"SELECT * FROM {ObjectName} WHERE {selectorProperty?.ToUpperInvariant()} = :{paramName} ORDER BY {sortProperty?.ToUpperInvariant()} {sortDirection.UpperName().ToUpperInvariant()}{pagingText}");
+
+            var column = DBColumns.Find(x => x.Name == selectorProperty);
+            var param = new OracleParameter(paramName, column.Type, ParameterDirection.Input) {Value = ToDbValue(value, column.Type)};
+
             return await SelectAsync(connection, selectText, param).ConfigureAwait(false);
         }
-        
-        public static async Task<T> SelectByKeyAsync(OracleConnection connection, object id)
-        {
-            var t = new T();
 
-            ColumnInfo key = t.DBColumns.FirstOrDefault(c => c.IsKey);
-            if(key == null)
+        public async Task<TEntity> SelectByKeyAsync(OracleConnection connection, object id)
+        {
+            ColumnInfo key = DBColumns.FirstOrDefault(c => c.IsKey);
+            if (key == null)
             {
                 throw new Exception($"Key for table {ObjectName} isn't defined.");
             }
 
             string selectText = $"SELECT * FROM {ObjectName} WHERE {key.Name.ToUpperInvariant()} = :p_id";
-            OracleParameter[] parameters = new[] {new OracleParameter("p_id", key.Type, ConvertToDbCompatibilityType(id), ParameterDirection.Input)};
+            OracleParameter[] parameters = new[] {new OracleParameter("p_id", key.Type, ToDbValue(id, key.Type), ParameterDirection.Input)};
 
             return (await SelectAsync(connection, selectText, parameters).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static async Task<int> DeleteAsync(OracleConnection connection, object id)
+        public async Task<int> DeleteAsync(OracleConnection connection, object id, OracleTransaction transaction = null)
         {
-            var t = new T();
-            ColumnInfo key = t.DBColumns.FirstOrDefault(c => c.IsKey);
+            ColumnInfo key = DBColumns.FirstOrDefault(c => c.IsKey);
+
             if (key == null)
             {
                 throw new Exception($"Key for table {ObjectName} isn't defined.");
             }
 
             return await ExecuteCommandNonQueryAsync(connection,
-                    $"DELETE FROM {ObjectName} WHERE {key.Name.ToUpperInvariant()} = :p_id", new OracleParameter("p_id", key.Type, ConvertToDbCompatibilityType(id), ParameterDirection.Input))
+                    $"DELETE FROM {ObjectName} WHERE {key.Name.ToUpperInvariant()} = :p_id",
+                    transaction,
+                    new OracleParameter(
+                        "p_id",
+                        key.Type,
+                        ToDbValue(id, key.Type),
+                        ParameterDirection.Input
+                    ))
                 .ConfigureAwait(false);
         }
 
-        public static async Task<int> ExecuteCommandNonQueryAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
+        public async Task<int> ExecuteCommandNonQueryAsync(OracleConnection connection, string commandText,
+            params OracleParameter[] parameters)
+        {
+            return await ExecuteCommandNonQueryAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
+        
+        public async Task<int> ExecuteCommandNonQueryAsync(OracleConnection connection, string commandText,
+            OracleTransaction transaction = null, params OracleParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -234,6 +256,13 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             using OracleCommand command = connection.CreateCommand();
+            
+            if (transaction != null)
+            {
+                command.Transaction = transaction;
+            }
+            
+            command.CommandTimeout = CommandTimeout;
             command.CommandText = commandText;
             command.CommandType = CommandType.Text;
             command.BindByName = true;
@@ -241,8 +270,15 @@ namespace OptimaJet.Workflow.Oracle
             int cnt = await command.ExecuteNonQueryAsync().ConfigureAwait(false);
             return cnt;
         }
-       
-        public static async Task<object> ExecuteCommandScalarAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
+
+        public async Task<object> ExecuteCommandScalarAsync(OracleConnection connection, string commandText,
+            params OracleParameter[] parameters)
+        {
+            return await ExecuteCommandScalarAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
+        
+        public async Task<object> ExecuteCommandScalarAsync(OracleConnection connection, string commandText,
+            OracleTransaction transaction, params OracleParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -250,15 +286,21 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             using OracleCommand command = connection.CreateCommand();
+            
+            if (transaction != null)
+            {
+                command.Transaction = transaction;
+            }
+            
+            command.CommandTimeout = CommandTimeout;
             command.CommandText = commandText;
             command.CommandType = CommandType.Text;
             command.BindByName = true;
             command.Parameters.AddRange(parameters);
             return await command.ExecuteScalarAsync().ConfigureAwait(false);
         }
-        
-        
-        public async static Task<T[]> SelectAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
+
+        public async Task<TEntity[]> SelectAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -266,33 +308,44 @@ namespace OptimaJet.Workflow.Oracle
             }
 
             using OracleCommand command = connection.CreateCommand();
+
             command.Connection = connection;
+            command.CommandTimeout = CommandTimeout;
+
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = commandText;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
+
             command.BindByName = true;
             command.CommandType = CommandType.Text;
             command.Parameters.AddRange(parameters);
-            var res = new List<T>();
+
+            var entities = new List<TEntity>();
+
             using DbDataReader reader = await command.ExecuteReaderAsync().ConfigureAwait(false);
             while (await reader.ReadAsync().ConfigureAwait(false))
             {
-                var item = new T();
+                var entity = new TEntity();
                 for (int i = 0; i < reader.FieldCount; i++)
                 {
                     string name = reader.GetName(i);
-                    ColumnInfo column = item.DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+                    ColumnInfo column = DBColumns.FirstOrDefault(c => c.Name.Equals(name, StringComparison.OrdinalIgnoreCase));
+
                     if (column != null)
                     {
-                        item.SetValue(column.Name, await reader.IsDBNullAsync(i).ConfigureAwait(false) ? null : reader.GetValue(i));
+                        var value = await reader.IsDBNullAsync(i).ConfigureAwait(false) ? null : reader.GetValue(i);
+                        entity.SetValue(ColumnToPropertyName(column.Name), FromDbValue(value, column.Type));
                     }
                 }
-                res.Add(item);
+
+                entities.Add(entity);
             }
 
-            return res.ToArray();
+            return entities.ToArray();
         }
-        public async static Task<List<Dictionary<string, object>>> SelectAsDictionaryAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
+
+        public async Task<List<Dictionary<string, object>>> SelectAsDictionaryAsync(OracleConnection connection,
+            string commandText, params OracleParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -301,6 +354,7 @@ namespace OptimaJet.Workflow.Oracle
 
             using OracleCommand command = connection.CreateCommand();
             command.Connection = connection;
+            command.CommandTimeout = CommandTimeout;
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities
             command.CommandText = commandText;
 #pragma warning restore CA2100 // Review SQL queries for security vulnerabilities
@@ -317,6 +371,7 @@ namespace OptimaJet.Workflow.Oracle
                     var name = reader.GetName(i);
                     item.Add(name, reader.IsDBNull(i) ? null : reader.GetValue(i));
                 }
+
                 res.Add(item);
             }
 
@@ -325,42 +380,73 @@ namespace OptimaJet.Workflow.Oracle
 
         #endregion
 
-        public static async Task<int> InsertAllAsync (OracleConnection connection, T[] values)
+        public async Task<int> InsertAllAsync(OracleConnection connection, TEntity[] entities, OracleTransaction transaction = null)
         {
-            if (values.Length < 1)
+            if (entities.Length < 1)
             {
                 return 0;
             }
 
-            foreach(T value in values)
+            foreach (TEntity entity in entities)
             {
-                await value.InsertAsync(connection).ConfigureAwait(false);
+                await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
             }
 
-            return values.Length;
+            return entities.Length;
         }
-        
-        public static object ConvertToDbCompatibilityType<TValue>(TValue obj)
+
+        public OracleParameter CreateParameter(TEntity entity, ColumnInfo column, string namePrefix = "")
         {
-            if (obj is Guid guid)
-            {
-                return guid.ToByteArray();
-            }
-
-            return obj;
+            return new OracleParameter(
+                namePrefix + column.Name,
+                column.Type,
+                ParameterDirection.Input
+            ) {Value = ToDbValue(entity.GetValue(ColumnToPropertyName(column.Name)), column.Type)};
         }
-        
-        private static string GetOrderParameters(List<(string parameterName,SortDirection sortDirection)> orderParameters)
+
+        protected static object ToDbValue<TValue>(TValue value, OracleDbType type)
+        {
+            return type switch
+            {
+                OracleDbType.Raw => value is Guid guid ? (object)guid.ToByteArray() : value,
+                OracleDbType.Int16 => value is byte b ? (object)(short)b : value,
+                OracleDbType.Byte => value is bool b ? (object)(b ? "1" : "0") : value,
+                OracleDbType.Decimal => value is long l ? (object)(decimal)l : value,
+                _ => value
+            };
+        }
+
+        protected static object FromDbValue<TValue>(TValue dbValue, OracleDbType type)
+        {
+            return type switch
+            {
+                OracleDbType.Raw => dbValue is byte[] bytes ? (object)new Guid(bytes) : dbValue,
+                OracleDbType.Int16 => dbValue is short sh ? (object)(byte)sh : dbValue,
+                OracleDbType.Byte => dbValue is string s ? (object)(s == "1") : dbValue,
+                OracleDbType.Decimal => dbValue is decimal d ? (object)(long)d : dbValue,
+                _ => dbValue
+            };
+        }
+
+        private static string ColumnToPropertyName(string name)
+        {
+            return name switch
+            {
+                "LOCKFLAG" => "Lock",
+                _ => name
+            };
+        }
+
+        private static string GetOrderParameters(List<(string parameterName, SortDirection sortDirection)> orderParameters)
         {
             string result = String.Join(", ",
                 orderParameters.Select(x => $"{x.parameterName.ToUpperInvariant()} {x.sortDirection.UpperName()}"));
             return result;
         }
-        
-        public static string GetKeyOrFirstColumn()
+
+        public string GetKeyOrFirstColumn()
         {
-            var t = new T();
-            ColumnInfo column = t.DBColumns.FirstOrDefault(c => c.IsKey) ?? t.DBColumns.First();
+            ColumnInfo column = DBColumns.FirstOrDefault(c => c.IsKey) ?? DBColumns.First();
             return column.Name;
         }
     }

@@ -23,10 +23,11 @@
           :title="validateField('Name', item)"
         ></el-input>
       </td>
-      <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+      <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Triple">
         <el-button-group>
           <el-button :class="'WorkflowDesignerTableCodeParametersButton ' + (editParametersItem == item ? 'is-active' : '')"
                      v-on:click="showparameters(item)"></el-button>
+          <el-button class="WorkflowDesignerTableCommentButton el-icon-" v-on:click="showComment(item)"></el-button>
           <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
         </el-button-group>
       </td>
@@ -136,7 +137,7 @@
                     move: true,
                     resize: true,
                     savePosition: true,
-          class: 'WorkflowDesignerParametersForm',
+                    class: 'WorkflowDesignerParametersForm',
                     onSuccess: onSuccess,
                     onClose: onClose,
                     parameterDefinition: {}
@@ -145,6 +146,27 @@
             }
 
       me.parametersform.show('commandParameters', item);
+    };
+
+    me.VueConfig.methods.showComment = function (item) {
+      const name = "Comment";
+      const title = "Edit comment";
+      const type = WorkflowDesignerConstants.ParameterTypes.TextArea;
+
+      me.editItem = item;
+
+      me.showJsonForm(item[name], {
+        customTitle: title,
+        parameterDefinition: {type},
+        onSuccess: function (value) {
+          if (me.editItem) {
+            me.editItem[name] = value;
+          }
+        },
+        onClose: function () {
+          delete me.editItem;
+        }
+      });
     };
 
     me.VueConfig.methods.validate = function () {
@@ -176,7 +198,7 @@
             if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
                 me.graph.data.Commands,
                 me.VueConfig.data.items,
-        ['Name', 'InputParameters'])) {
+        ['Name', 'InputParameters', "Comment"])) {
 
         me.showConfirm();
         return false;

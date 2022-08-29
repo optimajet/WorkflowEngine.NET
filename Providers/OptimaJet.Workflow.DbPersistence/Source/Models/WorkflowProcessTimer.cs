@@ -1,103 +1,46 @@
 using System;
 using System.Collections.Generic;
 using System.Data;
-#if NETCOREAPP
 using Microsoft.Data.SqlClient;
-#else
-using System.Data.SqlClient;
-#endif
 using System.Linq;
 using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Fault;
+using OptimaJet.Workflow.Core.Entities;
 
 // ReSharper disable once CheckNamespace
 
 namespace OptimaJet.Workflow.DbPersistence
 {
-    public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
+    public class WorkflowProcessTimer : DbObject<ProcessTimerEntity>
     {
-        static WorkflowProcessTimer()
-        {
-            DbTableName = "WorkflowProcessTimer";
-        }
-
-        public WorkflowProcessTimer()
+        public WorkflowProcessTimer(string schemaName, int commandTimeout) : base(schemaName, "WorkflowProcessTimer", commandTimeout)
         {
             DBColumns.AddRange(new[]
             {
-                new ColumnInfo {Name = "Id", IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = "ProcessId", Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = "Name"},
-                new ColumnInfo {Name = "NextExecutionDateTime", Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = "Ignore", Type = SqlDbType.Bit},
-                new ColumnInfo {Name = nameof(RootProcessId), Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Id), IsKey = true, Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.ProcessId), Type = SqlDbType.UniqueIdentifier},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Name)},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.NextExecutionDateTime), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Ignore), Type = SqlDbType.Bit},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.RootProcessId), Type = SqlDbType.UniqueIdentifier},
             });
         }
 
-        public Guid Id { get; set; }
-        public Guid ProcessId { get; set; }
-        public Guid RootProcessId { get; set; }
-        public string Name { get; set; }
-        public DateTime NextExecutionDateTime { get; set; }
-        public bool Ignore { get; set; }
-
-        public override object GetValue(string key)
+        public async Task<int> DeleteInactiveByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
         {
-            switch (key)
-            {
-                case "Id":
-                    return Id;
-                case "ProcessId":
-                    return ProcessId;
-                case "Name":
-                    return Name;
-                case "NextExecutionDateTime":
-                    return NextExecutionDateTime;
-                case "Ignore":
-                    return Ignore;
-                case nameof(RootProcessId):
-                    return RootProcessId;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case "Id":
-                    Id = (Guid) value;
-                    break;
-                case "ProcessId":
-                    ProcessId = (Guid) value;
-                    break;
-                case "Name":
-                    Name = (string) value;
-                    break;
-                case "NextExecutionDateTime":
-                    NextExecutionDateTime = (DateTime) value;
-                    break;
-                case "Ignore":
-                    Ignore = (bool) value;
-                    break;
-                case nameof(RootProcessId):
-                    RootProcessId = (Guid) value;
-                    break;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public static async Task<int> DeleteInactiveByProcessIdAsync(SqlConnection connection, Guid processId, SqlTransaction transaction = null)
-        {
-            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             return await ExecuteCommandNonQueryAsync(connection,
-                $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid AND [Ignore] = 1", transaction, pProcessId).ConfigureAwait(false);
+                    $"DELETE FROM {ObjectName} " +
+                    $"WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid " +
+                    $"AND [{nameof(ProcessTimerEntity.Ignore)}] = 1",
+                    transaction,
+                    pProcessId)
+                .ConfigureAwait(false);
         }
 
-        public static async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, List<string> timersIgnoreList = null, SqlTransaction transaction = null)
+        public async Task<int> DeleteByProcessIdAsync(SqlConnection connection, Guid processId, List<string> timersIgnoreList = null,
+            SqlTransaction transaction = null)
         {
             var pProcessId = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
@@ -114,11 +57,14 @@ namespace OptimaJet.Workflow.DbPersistence
                     cnt++;
                 }
 
-                string commandText = $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid AND [Name] NOT IN ({String.Join(",", parameters)})";
+                string commandText = $"DELETE FROM {ObjectName} " +
+                                     $"WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid " +
+                                     $"AND [{nameof(ProcessTimerEntity.Name)}] NOT IN ({String.Join(",", parameters)})";
 
                 try
                 {
-                    return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
+                    return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, sqlParameters.ToArray())
+                        .ConfigureAwait(false);
                 }
                 catch (Exception ex)
                 {
@@ -128,7 +74,11 @@ namespace OptimaJet.Workflow.DbPersistence
 
             try
             {
-                return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE [ProcessId] = @processid", transaction, pProcessId).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection,
+                        $"DELETE FROM {ObjectName} WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid",
+                        transaction,
+                        pProcessId)
+                    .ConfigureAwait(false);
             }
             catch (Exception ex)
             {
@@ -136,9 +86,11 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(SqlConnection connection, Guid processId, string name)
+        public async Task<ProcessTimerEntity> SelectByProcessIdAndNameAsync(SqlConnection connection, Guid processId, string name)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid AND [Name] = @name";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid " +
+                                $"AND [{nameof(ProcessTimerEntity.Name)}] = @name";
 
             var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
@@ -147,56 +99,61 @@ namespace OptimaJet.Workflow.DbPersistence
             return (await SelectAsync(connection, selectText, p1, p2).ConfigureAwait(false)).FirstOrDefault();
         }
 
-        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
+        public async Task<IEnumerable<ProcessTimerEntity>> SelectByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid";
 
-            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectActiveByProcessIdAsync(SqlConnection connection, Guid processId)
+        public async Task<IEnumerable<ProcessTimerEntity>> SelectActiveByProcessIdAsync(SqlConnection connection, Guid processId)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE [ProcessId] = @processid AND [Ignore] = 0";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE [{nameof(ProcessTimerEntity.ProcessId)}] = @processid " +
+                                $"AND [{nameof(ProcessTimerEntity.Ignore)}] = 0";
 
-            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) { Value = processId };
+            var p1 = new SqlParameter("processid", SqlDbType.UniqueIdentifier) {Value = processId};
 
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public static async Task<int> SetTimerIgnoreAsync(SqlConnection connection, Guid timerId)
+        public async Task<int> SetTimerIgnoreAsync(SqlConnection connection, Guid timerId)
         {
-            string command = $"UPDATE {ObjectName} SET [Ignore] = 1 WHERE [Id] = @timerid AND [Ignore] = 0";
-            
-            var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) { Value = timerId };
-            
+            // string command = $"UPDATE {ObjectName} SET [Ignore] = 1 WHERE [Id] = @timerid AND [Ignore] = 0";
+            string command = $"UPDATE {ObjectName} SET [{nameof(ProcessTimerEntity.Ignore)}] = 1 " +
+                             $"WHERE [{nameof(ProcessTimerEntity.Id)}] = @timerid " +
+                             $"AND [{nameof(ProcessTimerEntity.Ignore)}] = 0";
+
+            var p1 = new SqlParameter("timerid", SqlDbType.UniqueIdentifier) {Value = timerId};
+
             return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(SqlConnection connection, int top, DateTime now)
+        public async Task<ProcessTimerEntity[]> GetTopTimersToExecuteAsync(SqlConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT TOP {top} * FROM {ObjectName}" +
-                                "WHERE [Ignore] = 0 AND [NextExecutionDateTime] <= @currentTime " +
-                                "ORDER BY [NextExecutionDateTime]";
+                                $"WHERE [{nameof(ProcessTimerEntity.Ignore)}] = 0 " +
+                                $"AND [{nameof(ProcessTimerEntity.NextExecutionDateTime)}] <= @currentTime " +
+                                $"ORDER BY [{nameof(ProcessTimerEntity.NextExecutionDateTime)}]";
 
-            var p1 = new SqlParameter("currentTime", SqlDbType.DateTime) { Value = now };
+            var p1 = new SqlParameter("currentTime", SqlDbType.DateTime) {Value = now};
 
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-#if !NETCOREAPP || NETCORE2
         public static DataTable ToDataTable()
         {
             var dt = new DataTable();
-            dt.Columns.Add("Id", typeof(Guid));
-            dt.Columns.Add("ProcessId", typeof(Guid));
-            dt.Columns.Add("RootProcessId", typeof(Guid));
-            dt.Columns.Add("Name", typeof(string));
-            dt.Columns.Add("NextExecutionDateTime", typeof(DateTime));
-            dt.Columns.Add("Ignore", typeof(bool));
+            dt.Columns.Add(nameof(ProcessTimerEntity.Id), typeof(Guid));
+            dt.Columns.Add(nameof(ProcessTimerEntity.ProcessId), typeof(Guid));
+            dt.Columns.Add(nameof(ProcessTimerEntity.RootProcessId), typeof(Guid));
+            dt.Columns.Add(nameof(ProcessTimerEntity.Name), typeof(string));
+            dt.Columns.Add(nameof(ProcessTimerEntity.NextExecutionDateTime), typeof(DateTime));
+            dt.Columns.Add(nameof(ProcessTimerEntity.Ignore), typeof(bool));
             return dt;
         }
-#endif
     }
 }

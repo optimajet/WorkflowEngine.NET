@@ -39,20 +39,14 @@ namespace WF.Sample.MySql.Implementation
             for (int i = 0; i < ids.Length; i += 1)
                 commandParams[i] = $"@p{i}";
             
-            //TODO 
-            //Can't use Contains with Guid. It's will be fixed in MySql.Data.EntityFrameworkCore 8.0.24.
-            //Read about Bug: https://bugs.mysql.com/bug.php?id=93398
-            // var query = _sampleContext.Documents.Where(x => ids.Contains(x.Id));
-            // _sampleContext.Documents.RemoveRange(objs);
+            var query = _sampleContext.Documents.Where(x => ids.Contains(x.Id));
+            _sampleContext.Documents.RemoveRange(query);
             
             foreach (var id in ids)
             {
                 WorkflowInit.Runtime.PersistenceProvider.DropWorkflowInboxAsync(id).GetAwaiter().GetResult();
                 WorkflowInit.Runtime.PersistenceProvider.DropApprovalHistoryByProcessIdAsync(id).GetAwaiter().GetResult();
             }
-            
-            _sampleContext.Database.ExecuteSqlCommand($"DELETE FROM `Document` WHERE `Id` IN ({string.Join(",", commandParams)})", 
-                ids.Select(x => x.ToByteArray()).ToArray());
             
             _sampleContext.SaveChanges();
         }

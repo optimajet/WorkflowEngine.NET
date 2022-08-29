@@ -3,93 +3,41 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
+using OptimaJet.Workflow.Core.Entities;
 using Oracle.ManagedDataAccess.Client;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.Oracle
 {
-    public class WorkflowProcessTimer : DbObject<WorkflowProcessTimer>
+    public class WorkflowProcessTimer : DbObject<ProcessTimerEntity>
     {
-        public Guid Id { get; set; }
-        public Guid ProcessId { get; set; }
-        public Guid RootProcessId { get; set; }
-        public string Name { get; set; }
-        public DateTime NextExecutionDateTime { get; set; }
-        public bool Ignore { get; set; }
-
-        static WorkflowProcessTimer()
+        public WorkflowProcessTimer(string schemaName, int commandTimeout) : base(schemaName, "WorkflowProcessTimer", commandTimeout)
         {
-            DbTableName = "WorkflowProcessTimer";
-        }
-
-        public WorkflowProcessTimer()
-        {
-            DBColumns.AddRange(new[]{
-                new ColumnInfo {Name="Id", IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo {Name="ProcessId", Type = OracleDbType.Raw},
-                new ColumnInfo {Name="Name"},
-                new ColumnInfo {Name="NextExecutionDateTime", Type = OracleDbType.TimeStamp },
-                new ColumnInfo {Name="Ignore", Type = OracleDbType.Byte },
-                new ColumnInfo {Name=nameof(RootProcessId), Type = OracleDbType.Raw},
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Id), IsKey = true, Type = OracleDbType.Raw},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.ProcessId), Type = OracleDbType.Raw},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Name)},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.NextExecutionDateTime), Type = OracleDbType.TimeStamp},
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.Ignore), Type = OracleDbType.Byte },
+                new ColumnInfo {Name = nameof(ProcessTimerEntity.RootProcessId), Type = OracleDbType.Raw},
             });
         }
 
-        public override object GetValue(string key)
-        {
-            switch (key)
-            {
-                case "Id":
-                    return Id.ToByteArray();
-                case "ProcessId":
-                    return ProcessId.ToByteArray();
-                case "Name":
-                    return Name;
-                case "NextExecutionDateTime":
-                    return NextExecutionDateTime;
-                case "Ignore":
-                    return Ignore ? "1" : "0";
-                case nameof(RootProcessId):
-                    return RootProcessId.ToByteArray();
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case "Id":
-                    Id = new Guid((byte[])value);
-                    break;
-                case "ProcessId":
-                    ProcessId = new Guid((byte[])value);
-                    break;
-                case "Name":
-                    Name = (string)value;
-                    break;
-                case "NextExecutionDateTime":
-                    NextExecutionDateTime = (DateTime)value;
-                    break;
-                case "Ignore":
-                    Ignore = (string)value == "1";
-                    break;
-                case nameof(RootProcessId):
-                    RootProcessId = new Guid((byte[])value);
-                    break;
-                default:
-                    throw new Exception($"Column {key} is not exists");
-            }
-        }
-
-        public static async Task<int> DeleteInactiveByProcessIdAsync(OracleConnection connection, Guid processId)
+        public async Task<int> DeleteInactiveByProcessIdAsync(OracleConnection connection, Guid processId, OracleTransaction transaction = null)
         {
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
-            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 1", pProcessId).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection,
+                    $"DELETE FROM {ObjectName} " +
+                    $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                    $"AND {nameof(ProcessTimerEntity.Ignore).ToUpperInvariant()} = 1",
+                    transaction,
+                    pProcessId)
+                .ConfigureAwait(false);
         }
 
-        public static async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null)
+        public async Task<int> DeleteByProcessIdAsync(OracleConnection connection, Guid processId, List<string> timersIgnoreList = null, OracleTransaction transaction = null)
         {
             var pProcessId = new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input);
 
@@ -106,18 +54,27 @@ namespace OptimaJet.Workflow.Oracle
                     cnt++;
                 }
 
-                string commandText = $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid AND NAME NOT IN ({String.Join(",", parameters)})";
+                string commandText = $"DELETE FROM {ObjectName} " +
+                                     $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                                     $"AND {nameof(ProcessTimerEntity.Name).ToUpperInvariant()} " +
+                                     $"NOT IN ({String.Join(",", parameters)})";
 
-                return await ExecuteCommandNonQueryAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
             }
 
-            return await ExecuteCommandNonQueryAsync(connection, $"DELETE FROM {ObjectName} WHERE PROCESSID = :processid", pProcessId).ConfigureAwait(false);
-
+            return await ExecuteCommandNonQueryAsync(connection,
+                    $"DELETE FROM {ObjectName} " +
+                    $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid",
+                    transaction,
+                    pProcessId)
+                .ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowProcessTimer> SelectByProcessIdAndNameAsync(OracleConnection connection, Guid processId, string name)
+        public async Task<ProcessTimerEntity> SelectByProcessIdAndNameAsync(OracleConnection connection, Guid processId, string name)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid AND NAME = :name";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                                $"AND {nameof(ProcessTimerEntity.Name).ToUpperInvariant()} = :name";
     
             return (await SelectAsync(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
@@ -125,34 +82,42 @@ namespace OptimaJet.Workflow.Oracle
                 .FirstOrDefault();
         }
 
-        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
+        public async Task<IEnumerable<ProcessTimerEntity>> SelectByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid";
 
             return await SelectAsync(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static async Task<IEnumerable<WorkflowProcessTimer>> SelectActiveByProcessIdAsync(OracleConnection connection, Guid processId)
+        public async Task<IEnumerable<ProcessTimerEntity>> SelectActiveByProcessIdAsync(OracleConnection connection, Guid processId)
         {
-            string selectText = $"SELECT * FROM {ObjectName} WHERE PROCESSID = :processid AND IGNORE = 0";
+            string selectText = $"SELECT * FROM {ObjectName} " +
+                                $"WHERE {nameof(ProcessTimerEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                                $"AND {nameof(ProcessTimerEntity.Ignore).ToUpperInvariant()} = 0";
 
             return await SelectAsync(connection, selectText,
                 new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input)).ConfigureAwait(false);
         }
 
-        public static async Task<int> SetTimerIgnoreAsync(OracleConnection connection, Guid timerId)
+        public async Task<int> SetTimerIgnoreAsync(OracleConnection connection, Guid timerId, OracleTransaction transaction = null)
         {
-            string command = $"UPDATE {ObjectName} SET IGNORE = 1 WHERE ID = :timerid AND IGNORE = 0";
+            string command = $"UPDATE {ObjectName} SET {nameof(ProcessTimerEntity.Ignore).ToUpperInvariant()} = 1 " +
+                             $"WHERE {nameof(ProcessTimerEntity.Id).ToUpperInvariant()} = :timerid " +
+                             $"AND {nameof(ProcessTimerEntity.Ignore).ToUpperInvariant()} = 0";
+            
             var p1 = new OracleParameter("timerid", OracleDbType.Raw, timerId.ToByteArray(), ParameterDirection.Input);
-            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1).ConfigureAwait(false);
         }
 
-        public static async Task<WorkflowProcessTimer[]> GetTopTimersToExecuteAsync(OracleConnection connection, int top, DateTime now)
+        public async Task<ProcessTimerEntity[]> GetTopTimersToExecuteAsync(OracleConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT * FROM (SELECT * FROM {ObjectName} " +
-                                "WHERE IGNORE = 0 AND NextExecutionDateTime <= :currentTime " +
-                                "ORDER BY NextExecutionDateTime) WHERE ROWNUM <= :rowsCount";
+                                $"WHERE {nameof(ProcessTimerEntity.Ignore).ToUpperInvariant()} = 0 " +
+                                $"AND {nameof(ProcessTimerEntity.NextExecutionDateTime)} <= :currentTime " +
+                                $"ORDER BY {nameof(ProcessTimerEntity.NextExecutionDateTime)}) " +
+                                $"WHERE ROWNUM <= :rowsCount";
 
             return await SelectAsync(connection, selectText,
                 new OracleParameter("currentTime", OracleDbType.Date, now, ParameterDirection.Input),

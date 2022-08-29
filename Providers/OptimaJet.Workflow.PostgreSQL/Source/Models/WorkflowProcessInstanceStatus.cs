@@ -4,89 +4,36 @@ using System.Linq;
 using System.Threading.Tasks;
 using Npgsql;
 using NpgsqlTypes;
+using OptimaJet.Workflow.Core.Entities;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.PostgreSQL
 {
-    public class WorkflowProcessInstanceStatus : DbObject<WorkflowProcessInstanceStatus>
+    public class WorkflowProcessInstanceStatus : DbObject<ProcessInstanceStatusEntity>
     {
-        public Guid Id { get; set; }
-        public Guid Lock { get; set; }
-        public byte Status { get; set; }
-
-        public string RuntimeId { get; set; }
-
-        public DateTime SetTime { get; set; }
-
-        static WorkflowProcessInstanceStatus()
+        public WorkflowProcessInstanceStatus(string schemaName, int commandTimeout) 
+            : base(schemaName, "WorkflowProcessInstanceStatus", commandTimeout)
         {
-            DbTableName = "WorkflowProcessInstanceStatus";
-        }
-
-        public WorkflowProcessInstanceStatus()
-        {
-            DBColumns.AddRange(new[]{
-                new ColumnInfo {Name="Id", IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name="Lock", Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name="Status", Type = NpgsqlDbType.Smallint},
-                new ColumnInfo {Name = "RuntimeId"},
-                new ColumnInfo {Name = "SetTime", Type = NpgsqlDbType.Timestamp}
+            DBColumns.AddRange(new[]
+            {
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Id), IsKey = true, Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Lock), Type = NpgsqlDbType.Uuid},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.Status), Type = NpgsqlDbType.Smallint},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.RuntimeId)},
+                new ColumnInfo {Name = nameof(ProcessInstanceStatusEntity.SetTime), Type = NpgsqlDbType.Timestamp}
             });
         }
 
-        public override object GetValue(string key)
+        public async Task<List<Guid>> GetProcessesByStatusAsync(NpgsqlConnection connection, byte status, string runtimeId = null)
         {
-            switch (key)
-            {
-                case "Id":
-                   return Id;
-                case "Lock":
-                   return Lock;
-                case "Status":
-                    return Status;
-                case "RuntimeId":
-                    return RuntimeId;
-                case "SetTime":
-                    return SetTime;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-
-        }
-
-        public override void SetValue(string key, object value)
-        {
-            switch (key)
-            {
-                case "Id":
-                    Id = (Guid)value;
-                    break;
-                case "Lock":
-                    Lock = (Guid)value;
-                    break;
-                case "Status":
-                    Status = (byte)(short)value;
-                    break;
-                case "RuntimeId":
-                    RuntimeId = (string)value;
-                    break;
-                case "SetTime":
-                    SetTime = (DateTime)value;
-                    break;
-                default:
-                    throw new Exception(string.Format("Column {0} is not exists", key));
-            }
-        }
-
-        public static async Task<List<Guid>> GetProcessesByStatusAsync(NpgsqlConnection connection, byte status, string runtimeId = null)
-        {
-            string command = $"SELECT \"Id\" FROM {ObjectName} WHERE \"Status\" = @status";
+            string command = $"SELECT \"{nameof(ProcessInstanceStatusEntity.Id)}\" " + 
+                             $"FROM {ObjectName} WHERE \"{nameof(ProcessInstanceStatusEntity.Status)}\" = @status";
 
             var p = new List<NpgsqlParameter>();
 
             if (!String.IsNullOrEmpty(runtimeId))
             {
-                command += " AND \"RuntimeId\" = @runtime";
+                command += $" AND \"{nameof(ProcessInstanceStatusEntity.RuntimeId)}\" = @runtime";
                 p.Add(new NpgsqlParameter("runtime", NpgsqlDbType.Varchar) { Value = runtimeId });
             }
 
@@ -94,10 +41,14 @@ namespace OptimaJet.Workflow.PostgreSQL
             return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
-        public static async Task<int> ChangeStatusAsync(NpgsqlConnection connection, WorkflowProcessInstanceStatus status, Guid oldLock)
+        public async Task<int> ChangeStatusAsync(NpgsqlConnection connection, ProcessInstanceStatusEntity status, Guid oldLock)
         {
-            string command = $"UPDATE {ObjectName} SET \"Status\" = @newstatus, \"Lock\" = @newlock, \"SetTime\" = @settime, \"RuntimeId\" = @runtimeid " +
-                             "WHERE \"Id\" = @id AND \"Lock\" = @oldlock";
+            string command = $"UPDATE {ObjectName} SET " + 
+                             $"\"{nameof(ProcessInstanceStatusEntity.Status)}\" = @newstatus, " + 
+                             $"\"{nameof(ProcessInstanceStatusEntity.Lock)}\" = @newlock, \"SetTime\" = @settime, " + 
+                             $"\"{nameof(ProcessInstanceStatusEntity.RuntimeId)}\" = @runtimeid " +
+                             $"WHERE \"{nameof(ProcessInstanceStatusEntity.Id)}\" = @id " + 
+                             $"AND \"{nameof(ProcessInstanceStatusEntity.Lock)}\" = @oldlock";
             var p1 = new NpgsqlParameter("newstatus", NpgsqlDbType.Smallint) { Value = status.Status };
             var p2 = new NpgsqlParameter("newlock", NpgsqlDbType.Uuid) { Value = status.Lock };
             var p3 = new NpgsqlParameter("id", NpgsqlDbType.Uuid) { Value = status.Id };
