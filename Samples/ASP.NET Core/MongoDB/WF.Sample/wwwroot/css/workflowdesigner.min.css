@@ -267,11 +267,13 @@ td .el-checkbox__input {
 
 .WorkflowDesignerTitleWithCreate > a {
   cursor: pointer;
+  color: #409EFF;
 }
 
 .WorkflowDesignerTitleWithCreate > a:before {
   margin: 0 5px;
   content: "|";
+  color: initial;
 }
 
 .WorkflowDesignerWindowContainer {

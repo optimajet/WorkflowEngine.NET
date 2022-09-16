@@ -5,42 +5,39 @@
       <el-submenu index="1">
         <template slot="title">{{ labels.Menu }}</template>
         <el-submenu index="1-1">
-          <template slot="title">{{ labels.Upload }}</template>
+          <template slot="title">{{ labels.File }}</template>
           <el-menu-item index="1-1-1" @click="uploadXML">
-            {{ labels.UploadXML }}
+            {{ labels.UploadScheme }}
           </el-menu-item>
-          <el-menu-item index="1-1-2" @click="uploadBPMN">
+          <el-menu-item v-if="settings.showBpmnMenu" index="1-1-2" @click="uploadBPMN">
             {{ labels.UploadBPMN }}
           </el-menu-item>
-        </el-submenu>
-        <el-submenu index="1-2">
-          <template slot="title">{{ labels.Download }}</template>
-          <el-menu-item index="1-2-1" @click="downloadXML">
-            {{ labels.DownloadXML }}
+          <el-menu-item index="1-1-3" @click="downloadXML">
+            {{ labels.DownloadScheme }}
           </el-menu-item>
-          <el-menu-item index="1-2-2" @click="downloadBPMN">
+          <el-menu-item v-if="settings.showBpmnMenu" index="1-1-5" @click="downloadBPMN">
             {{ labels.DownloadBPMN }}
           </el-menu-item>
-          <el-menu-item index="1-3-3" @click="showToImageDialog(true)">
+          <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
             {{ labels.SaveToImage }}
           </el-menu-item>
         </el-submenu>
-        <el-submenu index="1-3">
+        <el-submenu index="1-2">
           <template slot="title">{{ labels.Scheme }}</template>
-          <el-menu-item index="1-3-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
-          <el-menu-item index="1-3-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
-          <el-menu-item index="1-3-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
-          <el-menu-item index="1-3-5" @click="showExInfo">
+          <el-menu-item index="1-2-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
+          <el-menu-item index="1-2-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
+          <el-menu-item index="1-2-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
+          <el-menu-item index="1-2-5" @click="showExInfo">
             {{ labels.Info }}
             <i v-if="exinfo" class="el-icon-check"></i>
           </el-menu-item>
-          <el-menu-item index="1-3-6" @click="showLegend">
+          <el-menu-item index="1-2-6" @click="showLegend">
             {{ labels.Legend }}
             <i v-if="legend" class="el-icon-check"></i>
           </el-menu-item>
-          <el-menu-item index="1-3-7" @click="clear">{{ labels.Clear }}</el-menu-item>
+          <el-menu-item index="1-2-7" @click="clear">{{ labels.Clear }}</el-menu-item>
         </el-submenu>
-        <el-submenu index="1-4">
+        <el-submenu index="1-3">
           <template slot="title">{{ labels.Language }}</template>
           <el-menu-item v-for="lang in languagesList" :key="lang.code" style="display: flex" @click="setLanguage(lang.code)">
             <b style="margin-inline-end: 10px">{{ lang.dialect }}</b>

@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MySQL/7.0.0": {
+      "OptimaJet.Workflow.MySQL/7.1.0": {
         "dependencies": {
           "MySql.Data": "8.0.30",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "7.0.0"
+          "WorkflowEngine.NETCore-Core": "7.1.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MySQL.dll": {}
@@ -1074,7 +1074,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/7.0.0": {
+      "WorkflowEngine.NETCore-Core/7.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1093,7 +1093,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MySQL/7.0.0": {
+    "OptimaJet.Workflow.MySQL/7.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1101,28 +1101,28 @@
     "Google.Protobuf/3.19.4": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-NadCxLoYaK3Nb+IFQyyciVkLNweNIq9RC4VcX0uh7swoJjqcD6ScLMWYcWpRpv7Fsb9h05EuXR8NFUw0fiolpg==",
+      "sha512": "sha512-fd07/ykL4O4FhqrZIELm5lmiyOHfdPg9+o+hWr6tcfRdS7tHXnImg/2wtogLzlW2eEmr0J7j6ZrZvaWOLiJbxQ==",
       "path": "google.protobuf/3.19.4",
       "hashPath": "google.protobuf.3.19.4.nupkg.sha512"
     },
     "K4os.Compression.LZ4/1.2.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Q26f4EErYaqc5/45gGc7QB5UtY5usf+TBgnk4JDCIS0csM0QyceID0m/tbgWtWh4uHcTQTkjU+beXF1XbnHJQA==",
+      "sha512": "sha512-4EN8EE6bZG2U8dFfeqn+Om3UNajK3cPYHvyQROCFm4jNFVLuRB7Nl5bDkjBSAjfctS6konm+ay3u5RafBzltDA==",
       "path": "k4os.compression.lz4/1.2.6",
       "hashPath": "k4os.compression.lz4.1.2.6.nupkg.sha512"
     },
     "K4os.Compression.LZ4.Streams/1.2.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-55EOaV4KQiGJ7RSgk4I/zQwieExTBQFW8oWuUXGaYxCjqSAKVeGgVn1cNpSQf9FpD/ZPbxNWOYRBMi3UktuDDA==",
+      "sha512": "sha512-5KMcNFRHeRrnJ9c8k5fZcfAJJEY0FndMiDiHIYa35Mx5KCMkeSNo/PEXu7YmtCoVczJagx+Vt7J/F+//S1PcJQ==",
       "path": "k4os.compression.lz4.streams/1.2.6",
       "hashPath": "k4os.compression.lz4.streams.1.2.6.nupkg.sha512"
     },
     "K4os.Hash.xxHash/1.0.6": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-O912mmd08ozUNCf0RvUWiMfOEZeJ6PsJQ95Z93lEWLUEfv0FpV9zp3SU6AfCZCQxPNp5M+My3+cRktfa+n0ERw==",
+      "sha512": "sha512-jCfNP0inx1sGcP3KSbpiDEH3km2e1sVBjMfKo+V92jr1dL4ZYgA1uhRMl1wAtdGZcbObXIikKqtVlgx3j/CW6g==",
       "path": "k4os.hash.xxhash/1.0.6",
       "hashPath": "k4os.hash.xxhash.1.0.6.nupkg.sha512"
     },
@@ -1199,7 +1199,7 @@
     "MySql.Data/8.0.30": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-daYqffs6GEqngcvDmswhDlhUQvV3NmYlgsnufK6QEVnvBqKW/LGIozb7JjZx9s99wtAtwfkdLNsK4xyhZz8YKw==",
+      "sha512": "sha512-SRoxG9ASRQrqL/JKU9KxaWfkmWtBuw5rA7d9G34Z1w4Aq5YwvxIjuGDOkUSk/H6VOmlZ/wywgBSX9S6btbUAYg==",
       "path": "mysql.data/8.0.30",
       "hashPath": "mysql.data.8.0.30.nupkg.sha512"
     },
@@ -1220,7 +1220,7 @@
     "Portable.BouncyCastle/1.9.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-JzUKh1aM8WpTvbTYmU3LFKxQLxhZ0Ow6rp5nH45aXWAyUuEQLc035niHAEdmgi5BJcXcFQy5/M/HxRKFyehazQ==",
+      "sha512": "sha512-eZZBCABzVOek+id9Xy04HhmgykF0wZg9wpByzrWN7q8qEI0Qen9b7tfd7w8VA3dOeesumMG7C5ZPy0jk7PSRHw==",
       "path": "portable.bouncycastle/1.9.0",
       "hashPath": "portable.bouncycastle.1.9.0.nupkg.sha512"
     },
@@ -1381,7 +1381,7 @@
     "System.Configuration.ConfigurationManager/4.4.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-LoSjM/kLDpyLyoGsmwS5oVMRzHf/0XHkRpr3QZu/HuAv6Sfk919usTMLqD9N9VK3S4Q2+bd3tKJ0ko4MYFfq4Q==",
+      "sha512": "sha512-jz3TWKMAeuDEyrPCK5Jyt4bzQcmzUIMcY9Ud6PkElFxTfnsihV+9N/UCqvxe1z5gc7jMYAnj7V1COMS9QKIuHQ==",
       "path": "system.configuration.configurationmanager/4.4.1",
       "hashPath": "system.configuration.configurationmanager.4.4.1.nupkg.sha512"
     },
@@ -1626,14 +1626,14 @@
     "System.Security.Cryptography.ProtectedData/4.4.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-WwEexvBd+17yfY7fcS+fBGl+HADEfCJuKeDJqBT7D6j6vKwYvfLyGuq2y/MmrKORC6mbYwth7kjinO1mPhTL3g==",
+      "sha512": "sha512-cJV7ScGW7EhatRsjehfvvYVBvtiSMKgN8bOVI0bQhnF5bU7vnHVIsH49Kva7i7GWaWYvmEzkYVk1TC+gZYBEog==",
       "path": "system.security.cryptography.protecteddata/4.4.0",
       "hashPath": "system.security.cryptography.protecteddata.4.4.0.nupkg.sha512"
     },
     "System.Security.Permissions/4.7.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-nIbDtCQhjWGNMCjNThbiuTFA7k4ILZiaSyNJQesoIuXbnNQhZRV+HeekdkgqlLlHvBatlgOIizqSb2NXlzO2hA==",
+      "sha512": "sha512-dkOV6YYVBnYRa15/yv004eCGRBVADXw8qRbbNiCn/XpdJSUXkkUeIvdvFHkvnko4CdKMqG8yRHC4ox83LSlMsQ==",
       "path": "system.security.permissions/4.7.0",
       "hashPath": "system.security.permissions.4.7.0.nupkg.sha512"
     },
@@ -1714,7 +1714,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/7.0.0": {
+    "WorkflowEngine.NETCore-Core/7.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

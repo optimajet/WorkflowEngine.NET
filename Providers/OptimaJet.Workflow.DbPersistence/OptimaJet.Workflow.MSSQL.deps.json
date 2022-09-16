@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MSSQL/7.0.0": {
+      "OptimaJet.Workflow.MSSQL/7.1.0": {
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.0.1",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "7.0.0"
+          "WorkflowEngine.NETCore-Core": "7.1.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MSSQL.dll": {}
@@ -1418,7 +1418,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/7.0.0": {
+      "WorkflowEngine.NETCore-Core/7.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1437,7 +1437,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MSSQL/7.0.0": {
+    "OptimaJet.Workflow.MSSQL/7.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1487,7 +1487,7 @@
     "Microsoft.Data.SqlClient/2.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-SLtmpFIzSym7kfHaxCKsIIgLU38V+3dguAAA9H9pBbEeUfxfNGbD72sBE9ntR25ff/9wlfWFzBTueuHfA68eMA==",
+      "sha512": "sha512-cff+ug/XZnGmX6DFgLY92t7G9W3i8r23w5Qnuby41l9rS+X+f7Y51hV5glvIrmsu3tIcnxbR+Z4CQ2zGhksIJw==",
       "path": "microsoft.data.sqlclient/2.0.1",
       "hashPath": "microsoft.data.sqlclient.2.0.1.nupkg.sha512"
     },
@@ -1515,7 +1515,7 @@
     "Microsoft.Identity.Client/4.14.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-7RS32G7AzFVnqvtXJ8EZD92MOm6ub+JlqRofwKDrP31jZXANXZpkdN2pK+EFMXF65oIgYeNzd71ihxCLs5SA4g==",
+      "sha512": "sha512-Etqux6Zuuv1yEN4UwKbAn6EZv0Rooc+vM4N9z7gxmeT7dyoKlXIRN44DQPzD9LV1CW0KsTVqH+2B42p1NKqPlQ==",
       "path": "microsoft.identity.client/4.14.0",
       "hashPath": "microsoft.identity.client.4.14.0.nupkg.sha512"
     },
@@ -2212,7 +2212,7 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/7.0.0": {
+    "WorkflowEngine.NETCore-Core/7.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
