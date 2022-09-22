@@ -7,7 +7,7 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <AssemblyVersion>7.1.0</AssemblyVersion>
     <FileVersion>7.1.0</FileVersion>
-    <Version>7.1.0</Version>
+    <Version>7.1.1</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>
