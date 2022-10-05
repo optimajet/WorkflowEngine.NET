@@ -193,7 +193,7 @@
             delete me.VueConfig.data.FormData[key];
       }
 
-      me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
 
       var params = JSON.parse(me.VueConfig.data.FormData.ProcessCreationParameters);
       if (params != null) {

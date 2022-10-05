@@ -22,7 +22,7 @@ Steps for include the engine into your project: https://workflowengine.io/docume
 - Support SQL/NoSQL databases
 
 **Workflow Engine NET includes a html5 designer:**
-[![Workflow scheme in Designer](./scheme.png "Workflow scheme")](https://workflowengine.io/demo/designer)
+[![Workflow scheme in Designer](./scheme.png "Workflow scheme")](https://demo.workflowengine.io/designer)
 
 ### Samples
 
@@ -32,9 +32,9 @@ We have samples with MS SQL, MongoDB, MySQL, Oracle, PostgreSQL, Redis. Check ou
 
 **Documentation** &mdash; [https://workflowengine.io/documentation](https://workflowengine.io/documentation)
 
-**Designer** &mdash; [https://workflowengine.io/demo/designer](https://workflowengine.io/demo/designer)
+**Designer** &mdash; [https://demo.workflowengine.io/designer](https://demo.workflowengine.io/designer)
 
-**Demo** &mdash; [https://workflowengine.io/demo](https://workflowengine.io/demo)
+**Demo** &mdash; [https://demo.workflowengine.io/](https://demo.workflowengine.io/)
 
 For technical questions, please contact [wf@optimajet.com](mailto:wf@optimajet.com?subject=Question from github)
 

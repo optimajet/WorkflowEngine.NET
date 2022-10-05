@@ -4,7 +4,7 @@
 		"dialect": "TR",
 		"name": "Türk",
 		"description": "Turkish",
-    "elementUICode": "tr-TR"
+		"elementUICode": "tr-TR"
 	},
 	"ActivityFormLabel": {
 		"ActivityLabel": "Aktivite",
@@ -486,6 +486,8 @@
 	},
 	"ReadMore": "Daha fazla oku.",
 	"SaveConfirm": "Değişiklikleri kaydet?",
+	"SchemeNotSaved": "Şema kaydedilmedi",
+	"SchemeSaved": "Şema kaydedildi",
 	"SwitchToDefaultMode": "Varsayılan Moda Geç",
 	"SwitchToExpertMode": "Uzman Moduna Geç",
 	"TimerFormLabel": {
@@ -515,6 +517,7 @@
 		"Delete": "Silmek",
 		"Download": "İndirmek",
 		"DownloadBPMN": "BPMN olarak indir",
+		"DownloadScheme": "İndirme şeması",
 		"DownloadXML": "XML olarak indir",
 		"Elements": "Öğeler",
 		"File": "Dosya",
@@ -535,6 +538,7 @@
 		"Refresh": "Yenilemek",
 		"ResetSettings": "Ayarları sıfırla",
 		"ResetZoom": "Yakınlaştırmayı sıfırla",
+		"Save": "Kaydetmek",
 		"SaveToImage": "Görüntüye kaydet",
 		"Scheme": "Şema",
 		"Settings": "Ayarlar",
@@ -544,6 +548,7 @@
 		"Undo": "Geri alma",
 		"Upload": "Yükle",
 		"UploadBPMN": "Bpmn'yi yükle",
+		"UploadScheme": "Yükleme şeması",
 		"UploadXML": "XML yükle",
 		"View": "Manzara",
 		"ZoomIn": "yakınlaştırmak",

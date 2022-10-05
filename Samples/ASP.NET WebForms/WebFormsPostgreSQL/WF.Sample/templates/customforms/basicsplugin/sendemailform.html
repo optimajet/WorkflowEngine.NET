@@ -312,7 +312,7 @@
       me.VueConfig.data.FormData.BccList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.BccList);
       me.VueConfig.data.FormData.ReplyToList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.ReplyToList);
 
-      me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
+      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
 
       me.VueConfig.data.useAuth = me.VueConfig.data.FormData.MailServerPass != null || me.VueConfig.data.FormData.MailServerLogin != null
     };

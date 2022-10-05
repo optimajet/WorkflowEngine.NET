@@ -48,6 +48,11 @@
       </el-submenu>
     </el-menu>
 
+    <el-tooltip :content="labels.Save" v-if="settings.showSaveButton">
+      <el-button :class="getButtonClass()" @click="save()">
+        <div class="WorkflowDesignerToolbarIcon Save RTLIcon"></div>
+      </el-button>
+    </el-tooltip>
     <el-tooltip :content="labels.Undo">
       <el-button :class="getButtonClass()" :disabled="undoDisabled" @click="undo()">
         <div class="WorkflowDesignerToolbarIcon Undo RTLIcon"></div>
@@ -301,8 +306,13 @@
       designer.create();
     };
 
-    me.VueConfig.methods.undo = function () {
-      me.graph.Undo();
+    me.VueConfig.methods.save = function () {
+      const {notify} = me.VueConfig.methods;
+      const notSavedMessage = `
+        ${WorkflowDesignerConstants.SchemeNotSaved}.
+        ${WorkflowDesignerConstants.ErrorInBrowserConsole}
+      `
+      me.graph.designer?.save(() => notify(WorkflowDesignerConstants.SchemeSaved));
     };
 
     me.VueConfig.methods.redo = function () {

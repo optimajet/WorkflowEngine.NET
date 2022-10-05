@@ -9,7 +9,7 @@ Email: [support@optimajet.com](mailto:support@optimajet.com)
 WorkflowEngine.NET - component that adds workflow in your application. 
 It can be fully integrated into your application, or be in the form of a specific service (such as a web service).
 
-Demo on-line: https://workflowengine.io/demo/designer
+Demo on-line: https://demo.workflowengine.io/designer
 
 1. **MongoDB** - Sample for MongoDB
 

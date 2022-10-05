@@ -475,37 +475,36 @@
       formdata.DisablePersistParameters = item.DisablePersistParameters;
       formdata.UserComment = item.UserComment;
       formdata.Implementation = Array.isArray(item.Implementation) ? WorkflowDesignerCommon.clone(item.Implementation) : [];
-      formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
-      formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
+          formdata.PreExecutionImplementation = Array.isArray(item.PreExecutionImplementation) ? WorkflowDesignerCommon.clone(item.PreExecutionImplementation) : [];
+          formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
 
-      me.linkItem = item;
-      me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
-      me.VueConfig.data.prevName = item.Name;
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
-      me.VueConfig.data.actions = me.graph.getActionNames();
-      me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
+          me.linkItem = item;
+          me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
+          me.VueConfig.data.prevName = item.Name;
+          me.VueConfig.data.readonly = me.graph.Settings.readonly;
+          me.VueConfig.data.actions = me.graph.getActionNames();
+          me.VueConfig.data.itemHasComment = formdata.UserComment != null && formdata.UserComment.length > 0;
 
-      me.graph.data.Activities.forEach(function (element) {
-        if (element == item) //not add current activity
-          return;
-        me.VueConfig.data.activities.push(element.Name);
-        if (element.State && element.State !== '') {
-          me.VueConfig.data.states.push(element.State);
-        }
-      });
+          const {activities, states} = me.VueConfig.data;
+          me.graph.data.Activities.forEach(({Name, State}) => {
+            if (item.Name === Name) return;
 
-      me.VueConfig.data.activities.sort();
-      me.VueConfig.data.states.sort();
+            if (!activities.includes(Name)) activities.push(Name);
+            if (State && !states.includes(State)) states.push(State);
+          });
 
-      me.VueConfig.data.disableAllPersist = formdata.DisablePersistState && formdata.DisablePersistTransitionHistory && formdata.DisablePersistParameters;
-      me.VueConfig.data.isIndeterminate = formdata.DisablePersistState || formdata.DisablePersistTransitionHistory || formdata.DisablePersistParameters;
-      me.VueConfig.data.persists = [
-        me.VueConfig.data.labels.DisablePersists.DisablePersistState,
-        me.VueConfig.data.labels.DisablePersists.DisablePersistParameters,
-        me.VueConfig.data.labels.DisablePersists.DisablePersistTransitionHistory
-      ];
-      if (formdata.DisablePersistState != undefined && formdata.DisablePersistState) {
-        me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistState);
+          activities.sort();
+          states.sort();
+
+          me.VueConfig.data.disableAllPersist = formdata.DisablePersistState && formdata.DisablePersistTransitionHistory && formdata.DisablePersistParameters;
+          me.VueConfig.data.isIndeterminate = formdata.DisablePersistState || formdata.DisablePersistTransitionHistory || formdata.DisablePersistParameters;
+          me.VueConfig.data.persists = [
+            me.VueConfig.data.labels.DisablePersists.DisablePersistState,
+            me.VueConfig.data.labels.DisablePersists.DisablePersistParameters,
+            me.VueConfig.data.labels.DisablePersists.DisablePersistTransitionHistory
+          ];
+          if (formdata.DisablePersistState != undefined && formdata.DisablePersistState) {
+            me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistState);
       }
       if (formdata.DisablePersistParameters != undefined && formdata.DisablePersistParameters) {
         me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistParameters);

@@ -175,7 +175,7 @@
 
       me.graph.designer.loadFile(url,
         () => onLoad(Array.from(WFELibrary)),
-        () => $.ajax({url, async: true}).done(onLoad)
+        data => onLoad(typeof data === 'string' ? JSON.parse(data) : data)
       );
     };
 

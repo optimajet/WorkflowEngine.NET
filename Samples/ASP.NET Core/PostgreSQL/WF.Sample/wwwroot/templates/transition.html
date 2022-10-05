@@ -547,7 +547,7 @@
           condition.Action = {};
       });
       formdata.Restrictions = Array.isArray(item.Restrictions) ? WorkflowDesignerCommon.clone(item.Restrictions) : [];
-      formdata.Trigger = WorkflowDesignerCommon.clone(item.Trigger);
+      formdata.Trigger = {...formdata.Trigger, ...WorkflowDesignerCommon.clone(item.Trigger)};
 
       if (!formdata.Trigger.Timer) formdata.Trigger.Timer = {};
       if (!formdata.Trigger.Command) formdata.Trigger.Command = {};

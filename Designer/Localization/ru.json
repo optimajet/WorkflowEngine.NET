@@ -4,7 +4,7 @@
 		"dialect": "RU",
 		"name": "Русский",
 		"description": "Russian (Standard)",
-    "elementUICode": "ru-RU"
+		"elementUICode": "ru-RU"
 	},
 	"ActivityFormLabel": {
 		"ActivityLabel": "Активность",
@@ -486,6 +486,8 @@
 	},
 	"ReadMore": "Подробнее.",
 	"SaveConfirm": "Сохранить изменения?",
+	"SchemeNotSaved": "Схема не сохранена",
+	"SchemeSaved": "Схема сохранена",
 	"SwitchToDefaultMode": "Режим По умолчанию",
 	"SwitchToExpertMode": "Экспертный режим",
 	"TimerFormLabel": {
@@ -515,6 +517,7 @@
 		"Delete": "Удалить",
 		"Download": "Скачать",
 		"DownloadBPMN": "Скачать как BPMN",
+		"DownloadScheme": "Схема загрузки",
 		"DownloadXML": "Скачать в формате XML",
 		"Elements": "Элементы",
 		"File": "Файл",
@@ -535,6 +538,7 @@
 		"Refresh": "Обновить",
 		"ResetSettings": "Сброс настроек",
 		"ResetZoom": "Сброс масштаба",
+		"Save": "Сохранить",
 		"SaveToImage": "Сохранить в изображение",
 		"Scheme": "Схема",
 		"Settings": "Настройки",
@@ -544,6 +548,7 @@
 		"Undo": "Отменить",
 		"Upload": "Загрузить",
 		"UploadBPMN": "Загрузить BPMN",
+		"UploadScheme": "Схема загрузки",
 		"UploadXML": "Загрузить XML",
 		"View": "Вид",
 		"ZoomIn": "Увеличить масштаб",

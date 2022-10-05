@@ -30,6 +30,8 @@
   "ReadMore": "Read more.",
   "None": "None",
   "Warning": "Warning",
+  "SchemeSaved": "Scheme saved",
+  "SchemeNotSaved": "Scheme not saved",
   "SwitchToExpertMode": "Switch To Expert Mode",
   "SwitchToDefaultMode": "Switch To Default Mode",
   "InfoBlockLabel": {
@@ -500,6 +502,7 @@
   },
   "ToolbarLabel": {
     "CopySelected": "Copy selected",
+    "Save": "Save",
     "Undo": "Undo",
     "Redo": "Redo",
     "Move": "Move",

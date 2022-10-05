@@ -4,7 +4,7 @@
   :title="title"
   :visible="visible"
   width="30%">
-  <span style="word-break: normal;" v-html="message"></span>
+  <span v-html="message"></span>
   <span slot="footer" class="dialog-footer">
         <template v-if="typeof actions !== 'undefined' && actions.length > 0">
             <el-button v-for="(action, index) in actions" :key="index" :type="action.type" @click="funcWrapper(action.onClick)">
