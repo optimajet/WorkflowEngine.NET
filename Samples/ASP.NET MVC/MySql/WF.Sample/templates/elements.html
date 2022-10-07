@@ -52,7 +52,6 @@
       activities: [],
       templates: [],
       loading: true,
-      folder: me.graph.Settings.templatefolder,
     });
 
     me.VueConfig.mounted = function () {
@@ -148,7 +147,7 @@
         me.VueConfig.methods.getLocalizationItem(
           item,
           item.Class === 'Custom' ? item.Type : item.Class
-      ));
+        ));
 
       data.original.activities = data.activities;
 
@@ -165,7 +164,6 @@
         return templates;
       };
 
-      const url = me.VueConfig.data.folder + 'library.json';
       const onLoad = result => {
         data.original.templates
           = data.templates
@@ -173,9 +171,9 @@
         data.loading = false;
       }
 
-      me.graph.designer.loadFile(url,
-        () => onLoad(Array.from(WFELibrary)),
-        data => onLoad(typeof data === 'string' ? JSON.parse(data) : data)
+      me.graph.designer.loadFile('library.json',
+        data => onLoad(typeof data === 'string' ? JSON.parse(data) : data),
+        () => onLoad(Array.from(WFELibrary))
       );
     };
 

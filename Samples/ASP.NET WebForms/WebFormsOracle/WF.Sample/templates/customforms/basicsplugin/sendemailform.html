@@ -308,9 +308,9 @@
             delete me.VueConfig.data.FormData[key];
       }
 
-      me.VueConfig.data.FormData.CcList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.CcList);
-      me.VueConfig.data.FormData.BccList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.BccList);
-      me.VueConfig.data.FormData.ReplyToList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.ReplyToList);
+      me.VueConfig.data.FormData.CcList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.CcList, []);
+      me.VueConfig.data.FormData.BccList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.BccList, []);
+      me.VueConfig.data.FormData.ReplyToList = WorkflowDesignerCommon.toJSON(me.VueConfig.data.FormData.ReplyToList, []);
 
       me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
 
