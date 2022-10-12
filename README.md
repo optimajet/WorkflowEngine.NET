@@ -36,9 +36,9 @@ We have samples with MS SQL, MongoDB, MySQL, Oracle, PostgreSQL, Redis. Check ou
 
 **Demo** &mdash; [https://demo.workflowengine.io/](https://demo.workflowengine.io/)
 
-For technical questions, please contact [wf@optimajet.com](mailto:wf@optimajet.com?subject=Question from github)
+For technical questions, please contact [support@optimajet.com](mailto:support@optimajet.com).
 
-For commercial use, please contact [sales@optimajet.com](mailto:sales@optimajet.com?subject=Question from github)
+For commercial use, please contact [sales@optimajet.com](mailto:sales@optimajet.com).
 
 **Free limits:**
 
