@@ -1150,8 +1150,7 @@ namespace OptimaJet.Workflow.MongoDB
             
             return dict;
         }
-
-
+        
         public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
         {
             IMongoCollection<WorkflowGlobalParameter> dbcoll = Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
@@ -1159,6 +1158,32 @@ namespace OptimaJet.Workflow.MongoDB
             return (await (await dbcoll.FindAsync(item => item.Type == type).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false))
                 .Select(gp => JsonConvert.DeserializeObject<T>(gp.Value))
                 .ToList();
+        }
+
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+        {
+            IMongoCollection<WorkflowGlobalParameter> dbcoll =
+                Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
+
+            var parametersQuery = dbcoll.AsQueryable().Where(c => c.Type == type);
+
+            if (!String.IsNullOrEmpty(name))
+            {
+                parametersQuery = parametersQuery.Where(c => c.Name.ToLower().Contains(name.ToLower()));
+            }
+
+            var count = await parametersQuery.CountAsync().ConfigureAwait(false);
+            var parameters = await parametersQuery.OrderBy(c => c.Name)
+                .Skip(paging.SkipCount())
+                .Take(paging.PageSize)
+                .ToListAsync()
+                .ConfigureAwait(false);
+
+            return new PagedResponse<T>()
+            {
+                Data = parameters.Select(c => JsonConvert.DeserializeObject<T>(c.Value)).ToList(),
+                Count = count
+            };
         }
 
         public virtual async Task DeleteGlobalParametersAsync(string type, string name = null)

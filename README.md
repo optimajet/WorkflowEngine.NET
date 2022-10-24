@@ -22,7 +22,11 @@ Steps for include the engine into your project: https://workflowengine.io/docume
 - Support SQL/NoSQL databases
 
 **Workflow Engine NET includes a html5 designer:**
-[![Workflow scheme in Designer](./scheme.png "Workflow scheme")](https://demo.workflowengine.io/designer)
+[![Workflow scheme in Designer](./images/scheme.png "Workflow scheme")](https://demo.workflowengine.io/designer)
+
+### Demo
+
+[![Demo](./images/demo.gif "Workflow Engine Demo")](https://www.youtube.com/watch?v=yf6-JY7r7sQ)
 
 ### Samples
 

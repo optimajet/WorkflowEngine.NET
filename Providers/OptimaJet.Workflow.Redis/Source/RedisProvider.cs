@@ -2386,7 +2386,7 @@ namespace OptimaJet.Workflow.Redis
 
             return dict;
         }
-
+        
         /// <summary>
         /// Returns a global parameter values
         /// </summary>
@@ -2397,6 +2397,38 @@ namespace OptimaJet.Workflow.Redis
         {
             IDatabase db = _connector.GetDatabase();
             return (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false)).Where(he => he.Value.HasValue).Select(he => JsonConvert.DeserializeObject<T>(he.Value)).ToList();
+        }
+
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+        {
+            IDatabase db = _connector.GetDatabase();
+            
+            List<T> parametersQuery;
+            int count;
+            if (!String.IsNullOrEmpty(name))
+            {
+                parametersQuery = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
+                    .Where(he => he.Value.HasValue && he.Name.ToString().ToLower().Contains(name.ToLower()))
+                    .OrderBy(c => c.Name)
+                    .Skip(paging.SkipCount())
+                    .Take(paging.PageSize)
+                    .Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+                count = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
+                    .Count(he => he.Value.HasValue && he.Name.ToString().ToLower().Contains(name.ToLower()));
+            }
+            else
+            {
+                parametersQuery = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
+                    .Where(he => he.Value.HasValue)
+                    .OrderBy(c => c.Name)
+                    .Skip(paging.SkipCount())
+                    .Take(paging.PageSize)
+                    .Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+                count = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
+                    .Count(he => he.Value.HasValue);
+            }
+
+            return new PagedResponse<T>() {Data = parametersQuery, Count = count};
         }
 
         /// <summary>

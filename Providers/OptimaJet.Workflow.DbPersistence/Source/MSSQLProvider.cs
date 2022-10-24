@@ -964,7 +964,7 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return dict;
         }
-
+        
         public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
         {
             using var connection = OpenConnection();
@@ -973,7 +973,22 @@ namespace OptimaJet.Workflow.DbPersistence
 
             return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
-       
+
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+        {
+            using var connection = OpenConnection();
+            var parameters = await WorkflowGlobalParameter
+                .SearchByTypeAndNameWithPagingAsync(connection, type, name, paging)
+                .ConfigureAwait(false);
+            var count = await WorkflowGlobalParameter.GetCountByTypeAndNameAsync(connection, type, name)
+                .ConfigureAwait(false);
+            return new PagedResponse<T>()
+            {
+                Data = parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList(),
+                Count = count
+            };
+        }
+        
         public virtual async Task DeleteGlobalParametersAsync(string type, string name = null)
         {
             using var connection = OpenConnection();

@@ -1,7 +1,10 @@
 ﻿using System;
+using System.Collections.Generic;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using OptimaJet.Workflow.Core.Entities;
+using OptimaJet.Workflow.Core.Persistence;
+using OptimaJet.Workflow.MySQL.Models;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MySQL
@@ -38,6 +41,50 @@ namespace OptimaJet.Workflow.MySQL
             var p1 = new MySqlParameter("name", MySqlDbType.VarString) { Value = name };
 
             return await SelectAsync(connection, selectText, p, p1).ConfigureAwait(false);
+        }
+        
+        private QueryDefinition GetBasicSearchQuery(string type, string name = null)
+        {
+            var parameters = new List<MySqlParameter>();
+            var selectText = $"FROM {DbTableName} WHERE {nameof(GlobalParameterEntity.Type)} = @type";
+
+            parameters.Add(new MySqlParameter("type", MySqlDbType.VarString) {Value = type});
+
+            if (!String.IsNullOrEmpty(name))
+            {
+                selectText += $" AND {nameof(GlobalParameterEntity.Name)} LIKE @name";
+                parameters.Add(new MySqlParameter("name", MySqlDbType.VarString) {Value = $"%{name}%"});
+            }
+
+            return new QueryDefinition() {Parameters = parameters, Query = selectText};
+        }
+
+        public async Task<GlobalParameterEntity[]> SearchByTypeAndNameWithPagingAsync(MySqlConnection connection, string type,
+            string name = null, Paging paging = null)
+        {
+            var queryDefinition = GetBasicSearchQuery(type, name);
+            var parameters = queryDefinition.Parameters;
+            var selectText = $"SELECT * {queryDefinition.Query} ORDER BY {nameof(GlobalParameterEntity.Name)}";
+
+            if (paging != null)
+            {
+                selectText += " LIMIT @skip, @size";
+                parameters.Add(new MySqlParameter("skip", MySqlDbType.Int32) {Value = paging.SkipCount()});
+                parameters.Add(new MySqlParameter("size", MySqlDbType.Int32) {Value = paging.PageSize});
+            }
+            
+            return await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
+        }
+
+        public async Task<int> GetCountByTypeAndNameAsync(MySqlConnection connection, string type, string name = null)
+        {
+            var queryDefinition = GetBasicSearchQuery(type, name);
+            var parameters = queryDefinition.Parameters;
+            var selectText = $"SELECT COUNT(*) {queryDefinition.Query}";
+            
+            var result = await ExecuteCommandScalarAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
+            var count = result == DBNull.Value ? 0 : result;
+            return Convert.ToInt32(count);
         }
 
         public async Task<int> DeleteByTypeAndNameAsync(MySqlConnection connection, string type, string name = null)

@@ -5,9 +5,9 @@
     <AssemblyName>OptimaJet.Workflow.Redis</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>7.1.4</AssemblyVersion>
-    <FileVersion>7.1.4</FileVersion>
-    <Version>7.1.4</Version>
+    <AssemblyVersion>7.2.0</AssemblyVersion>
+    <FileVersion>7.2.0</FileVersion>
+    <Version>7.2.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>OptimaJet, LLC</Authors>

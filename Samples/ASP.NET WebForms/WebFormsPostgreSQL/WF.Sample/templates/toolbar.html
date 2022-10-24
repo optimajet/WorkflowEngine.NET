@@ -315,6 +315,10 @@
       me.graph.designer?.save(() => notify(WorkflowDesignerConstants.SchemeSaved));
     };
 
+    me.VueConfig.methods.undo = function () {
+      me.graph.Undo();
+    };
+
     me.VueConfig.methods.redo = function () {
       me.graph.Redo();
     };
