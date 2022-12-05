@@ -3,6 +3,7 @@ using System.Collections.Generic;
 using System.Threading.Tasks;
 using MySql.Data.MySqlClient;
 using OptimaJet.Workflow.Core.Entities;
+using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.MySQL.Models;
 
@@ -22,25 +23,25 @@ namespace OptimaJet.Workflow.MySQL
             });
         }
 
-        public async Task<GlobalParameterEntity[]> SelectByTypeAndNameAsync(MySqlConnection connection, string type, string name = null)
+        public async Task<GlobalParameterEntity[]> SelectByTypeAndNameAsync(MySqlConnection connection, string type,
+            string name = null, Sorting sort = null)
         {
             string selectText = $"SELECT * FROM {DbTableName}  WHERE `{nameof(GlobalParameterEntity.Type)}` = @type";
+
+            var parameters = new List<MySqlParameter> {new ("type", MySqlDbType.VarString) {Value = type}};
 
             if (!String.IsNullOrEmpty(name))
             {
                 selectText += $" AND `{nameof(GlobalParameterEntity.Name)}` = @name";
+                parameters.Add(new MySqlParameter("name", MySqlDbType.VarString) { Value = name });
             }
 
-            var p = new MySqlParameter("type", MySqlDbType.VarString) {Value = type};
-
-            if (String.IsNullOrEmpty(name))
+            if (sort != null)
             {
-                return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
+                selectText += $" ORDER BY {sort.FieldName} {sort.SortDirection.UpperName()}";
             }
 
-            var p1 = new MySqlParameter("name", MySqlDbType.VarString) { Value = name };
-
-            return await SelectAsync(connection, selectText, p, p1).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
         }
         
         private QueryDefinition GetBasicSearchQuery(string type, string name = null)
@@ -60,11 +61,14 @@ namespace OptimaJet.Workflow.MySQL
         }
 
         public async Task<GlobalParameterEntity[]> SearchByTypeAndNameWithPagingAsync(MySqlConnection connection, string type,
-            string name = null, Paging paging = null)
+            string name = null, Paging paging = null, Sorting sort = null)
         {
             var queryDefinition = GetBasicSearchQuery(type, name);
             var parameters = queryDefinition.Parameters;
-            var selectText = $"SELECT * {queryDefinition.Query} ORDER BY {nameof(GlobalParameterEntity.Name)}";
+
+            sort ??= Sorting.Create(nameof(GlobalParameterEntity.Name));
+            
+            var selectText = $"SELECT * {queryDefinition.Query} ORDER BY {sort.FieldName} {sort.SortDirection.UpperName()}";
 
             if (paging != null)
             {

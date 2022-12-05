@@ -2,6 +2,7 @@
 using System.Collections.Generic;
 using System.Threading.Tasks;
 using OptimaJet.Workflow.Core.Entities;
+using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Oracle.Models;
 using Oracle.ManagedDataAccess.Client;
@@ -23,25 +24,24 @@ namespace OptimaJet.Workflow.Oracle
         }
 
         public async Task<GlobalParameterEntity[]> SelectByTypeAndNameAsync(OracleConnection connection, string type,
-            string name = null)
+            string name = null, Sorting sort = null)
         {
             string selectText = $"SELECT * FROM {ObjectName}  WHERE {nameof(GlobalParameterEntity.Type)} = :type";
+
+            var parameters = new List<OracleParameter> {new("type", OracleDbType.NVarchar2) {Value = type}};
 
             if (!String.IsNullOrEmpty(name))
             {
                 selectText += $" AND {nameof(GlobalParameterEntity.Name)} = :name";
+                parameters.Add(new OracleParameter("name", OracleDbType.NVarchar2) {Value = name});
             }
 
-            var p = new OracleParameter("type", OracleDbType.NVarchar2) {Value = type};
-
-            if (String.IsNullOrEmpty(name))
+            if (sort != null)
             {
-                return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
+                selectText += $" ORDER BY {sort.FieldName} {sort.SortDirection.UpperName()}";
             }
 
-            var p1 = new OracleParameter("name", OracleDbType.NVarchar2) {Value = name};
-
-            return await SelectAsync(connection, selectText, p, p1).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
         }
 
         private QueryDefinition GetBasicSearchQuery(string type, string name = null)
@@ -61,11 +61,14 @@ namespace OptimaJet.Workflow.Oracle
         }
 
         public async Task<GlobalParameterEntity[]> SearchByTypeAndNameWithPagingAsync(OracleConnection connection, string type,
-            string name = null, Paging paging = null)
+            string name = null, Paging paging = null, Sorting sort = null)
         {
             var queryDefinition = GetBasicSearchQuery(type, name);
             var parameters = queryDefinition.Parameters;
-            var selectText = $"SELECT * {queryDefinition.Query} ORDER BY {nameof(GlobalParameterEntity.Name)}";
+            
+            sort ??= Sorting.Create(nameof(GlobalParameterEntity.Name));
+            
+            var selectText = $"SELECT * {queryDefinition.Query} ORDER BY {sort.FieldName} {sort.SortDirection.UpperName()}";
 
             if (paging != null)
             {

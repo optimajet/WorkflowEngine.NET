@@ -1136,11 +1136,17 @@ namespace OptimaJet.Workflow.MongoDB
             return default;
         }
 
-        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type)
+        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type, Sorting sort = null)
         {
             IMongoCollection<WorkflowGlobalParameter> dbcoll = Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
-            var parameters = await (await dbcoll.FindAsync(item => item.Type == type).ConfigureAwait(false)).ToListAsync()
-                .ConfigureAwait(false);
+
+            var findOptions = sort is null ? null : new FindOptions<WorkflowGlobalParameter, WorkflowGlobalParameter>
+            {
+                Sort = GetSortDefinition<WorkflowGlobalParameter>(sort)
+            };
+
+            var asyncCursor = await dbcoll.FindAsync(item => item.Type == type, findOptions).ConfigureAwait(false);
+            var parameters = await asyncCursor.ToListAsync().ConfigureAwait(false);
 
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
@@ -1151,33 +1157,41 @@ namespace OptimaJet.Workflow.MongoDB
             return dict;
         }
         
-        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
+        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type, Sorting sort = null)
         {
             IMongoCollection<WorkflowGlobalParameter> dbcoll = Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
-           
-            return (await (await dbcoll.FindAsync(item => item.Type == type).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false))
-                .Select(gp => JsonConvert.DeserializeObject<T>(gp.Value))
-                .ToList();
-        }
 
-        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+            var findOptions = sort is null ? null : new FindOptions<WorkflowGlobalParameter, WorkflowGlobalParameter>
+            {
+                Sort = GetSortDefinition<WorkflowGlobalParameter>(sort)
+            };
+            
+            var findAsync = dbcoll.FindAsync(item => item.Type == type, findOptions);
+            var asyncCursor = await findAsync.ConfigureAwait(false);
+            var parameters = await asyncCursor.ToListAsync().ConfigureAwait(false);
+            
+            return parameters.Select(gp => JsonConvert.DeserializeObject<T>(gp.Value)).ToList();
+        }
+        
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null,
+            Sorting sort = null)
         {
             IMongoCollection<WorkflowGlobalParameter> dbcoll =
                 Store.GetCollection<WorkflowGlobalParameter>(MongoDBConstants.WorkflowGlobalParameterCollectionName);
-
-            var parametersQuery = dbcoll.AsQueryable().Where(c => c.Type == type);
+            var parametersQuery = dbcoll.Aggregate().Match(c => c.Type == type);
+            var countQuery = dbcoll.AsQueryable().Where(c => c.Type == type);
 
             if (!String.IsNullOrEmpty(name))
             {
-                parametersQuery = parametersQuery.Where(c => c.Name.ToLower().Contains(name.ToLower()));
+                parametersQuery = parametersQuery.Match(c => c.Name.ToLower().Contains(name.ToLower()));
+                countQuery = countQuery.Where(c => c.Name.ToLower().Contains(name.ToLower()));
             }
 
-            var count = await parametersQuery.CountAsync().ConfigureAwait(false);
-            var parameters = await parametersQuery.OrderBy(c => c.Name)
-                .Skip(paging.SkipCount())
-                .Take(paging.PageSize)
-                .ToListAsync()
-                .ConfigureAwait(false);
+            sort ??= Sorting.Create(nameof(WorkflowGlobalParameter.Name));
+            parametersQuery = parametersQuery.Sort(GetSortDefinition<WorkflowGlobalParameter>(sort));
+
+            var count = await countQuery.CountAsync().ConfigureAwait(false);
+            var parameters = parametersQuery.Skip(paging.SkipCount()).Limit(paging.PageSize).ToList();
 
             return new PagedResponse<T>()
             {
@@ -2149,6 +2163,13 @@ namespace OptimaJet.Workflow.MongoDB
             string result = String.Join(", ",
                 orderParameters.Select(x => $"{x.parameterName} {x.sortDirection.UpperName()}"));
             return result;
+        }
+
+        private static SortDefinition<T> GetSortDefinition<T>(Sorting sort)
+        {
+            return sort.SortDirection == SortDirection.Desc
+                ? Builders<T>.Sort.Descending(sort.FieldName)
+                : Builders<T>.Sort.Ascending(sort.FieldName);
         }
     }
 }

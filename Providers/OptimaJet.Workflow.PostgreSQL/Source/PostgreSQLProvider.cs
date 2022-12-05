@@ -1056,10 +1056,10 @@ namespace OptimaJet.Workflow.PostgreSQL
                     : JsonConvert.DeserializeObject<T>(parameter.Value);
         }
 
-        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type)
+        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type, Sorting sort = null)
         {
             await using var connection = OpenConnection();
-            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, null, sort).ConfigureAwait(false);
 
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
@@ -1070,19 +1070,19 @@ namespace OptimaJet.Workflow.PostgreSQL
             return dict;
         }
         
-        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
+        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type, Sorting sort = null)
         {
             await using var connection = OpenConnection();
-            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type).ConfigureAwait(false);
+            var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, null, sort).ConfigureAwait(false);
 
             return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
 
-        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null, Sorting sort = null)
         {
             await using var connection = OpenConnection();
             var parameters = await WorkflowGlobalParameter
-                .SearchByTypeAndNameWithPagingAsync(connection, type, name, paging)
+                .SearchByTypeAndNameWithPagingAsync(connection, type, name, paging, sort)
                 .ConfigureAwait(false);
             var count = await WorkflowGlobalParameter.GetCountByTypeAndNameAsync(connection, type, name)
                 .ConfigureAwait(false);

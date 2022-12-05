@@ -2372,12 +2372,23 @@ namespace OptimaJet.Workflow.Redis
         /// <typeparam name="T">System type of the parameter</typeparam>
         /// <param name="type">Logical type of the parameter</param>
         /// <returns>Dictionary of parameter names and values</returns>
-        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type)
+        public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type, Sorting sort = null)
         {
             IDatabase db = _connector.GetDatabase();
             var parameters = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
                 .Where(he => he.Value.HasValue && he.Name.HasValue);
-            
+            if (sort != null)
+            {
+                if (sort.SortDirection == SortDirection.Desc)
+                {
+                    parameters = parameters.OrderByDescending(c => c.GetType().GetProperty(sort.FieldName).GetValue(c));
+                }
+                else
+                {
+                    parameters = parameters.OrderBy(c => c.GetType().GetProperty(sort.FieldName).GetValue(c));
+                }
+            }
+
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
             {
@@ -2393,42 +2404,67 @@ namespace OptimaJet.Workflow.Redis
         /// <typeparam name="T">System type of the parameter</typeparam>
         /// <param name="type">Logical type of the parameter</param>
         /// <returns>List of the values of the parameters</returns>
-        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type)
+        public virtual async Task<List<T>> LoadGlobalParametersAsync<T>(string type, Sorting sort = null)
         {
             IDatabase db = _connector.GetDatabase();
-            return (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false)).Where(he => he.Value.HasValue).Select(he => JsonConvert.DeserializeObject<T>(he.Value)).ToList();
+            var parameters =
+                (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false)).Where(he =>
+                    he.Value.HasValue);
+            if (sort != null)
+            {
+                if (sort.SortDirection == SortDirection.Desc)
+                {
+                    parameters = parameters.OrderByDescending(he => he.GetType().GetProperty(sort.FieldName).GetValue(he));
+                }
+                else
+                {
+                    parameters = parameters.OrderBy(he => he.GetType().GetProperty(sort.FieldName).GetValue(he));
+                }
+            }
+
+            return parameters.Select(he => JsonConvert.DeserializeObject<T>(he.Value)).ToList();
         }
 
-        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null)
+        public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null, Sorting sort = null)
         {
-            IDatabase db = _connector.GetDatabase();
+            if (sort == null)
+            {
+                sort = Sorting.Create(nameof(HashEntry.Name));
+            }
             
+            IDatabase db = _connector.GetDatabase();
+
             List<T> parametersQuery;
             int count;
+            var parameters =
+                (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false)).Where(he =>
+                    he.Value.HasValue);
             if (!String.IsNullOrEmpty(name))
             {
-                parametersQuery = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
-                    .Where(he => he.Value.HasValue && he.Name.ToString().ToLower().Contains(name.ToLower()))
-                    .OrderBy(c => c.Name)
-                    .Skip(paging.SkipCount())
-                    .Take(paging.PageSize)
-                    .Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+                parameters = parameters.Where(he => he.Name.ToString().ToLower().Contains(name.ToLower()));
                 count = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
                     .Count(he => he.Value.HasValue && he.Name.ToString().ToLower().Contains(name.ToLower()));
             }
             else
             {
-                parametersQuery = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
-                    .Where(he => he.Value.HasValue)
-                    .OrderBy(c => c.Name)
-                    .Skip(paging.SkipCount())
-                    .Take(paging.PageSize)
-                    .Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
                 count = (await db.HashGetAllAsync(GetKeyGlobalParameter(type)).ConfigureAwait(false))
                     .Count(he => he.Value.HasValue);
             }
 
-            return new PagedResponse<T>() {Data = parametersQuery, Count = count};
+            if (sort.SortDirection == SortDirection.Desc)
+            {
+                parameters = parameters.OrderByDescending(he => he.GetType().GetProperty(sort.FieldName).GetValue(he));
+                
+            }
+            else
+            {
+                parameters = parameters.OrderBy(he => he.GetType().GetProperty(sort.FieldName).GetValue(he));
+            }
+
+            var globalParameters = parameters.Skip(paging.SkipCount()).Take(paging.PageSize)
+                .Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+
+            return new PagedResponse<T>() {Data = globalParameters, Count = count};
         }
 
         /// <summary>
