@@ -178,17 +178,21 @@
 <script type="application/javascript">
   function toolbar_Init(me) {
     const data = me.VueConfig.data;
+    me.VueConfig.methods.UpdateLanguage = function () {
+      data.labels = {
+        ...WorkflowDesignerConstants.ToolbarLabel,
+        ...WorkflowDesignerConstants.Logs,
+        ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      };
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     const designer = me.graph.designer;
     const isProcess = !!designer.processid;
     data.toImageDialogVisible = false;
     data.imageAspectRatio = 1;
     data.showGrid = false;
-    data.labels = {
-      ...WorkflowDesignerConstants.ToolbarLabel,
-      ...WorkflowDesignerConstants.Logs,
-      ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-    };
     data.legend = false;
     data.logs = false;
     data.settings = null;
@@ -429,7 +433,5 @@
       me.graph.setParam('exinfo', value);
       me.graph.Draw();
     }
-
-
   }
 </script>

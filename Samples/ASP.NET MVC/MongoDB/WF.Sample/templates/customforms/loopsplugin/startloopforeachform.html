@@ -121,17 +121,23 @@
 
 <script type="application/javascript">
   function customforms_loopsplugin_startloopforeachform_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.StartLoopForeach,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        isRequiredColor: WorkflowDesignerConstants.IsRequiredColor,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       customTitle: undefined,
       readonly: false,
-      FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
-      ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-      labels: WorkflowDesignerConstants.EditParametersFormlabel,
-      customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.StartLoopForeach,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      isRequiredColor: WorkflowDesignerConstants.IsRequiredColor,
-      parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
       FormData: {},
       Field: {},
       parameterFromProcess: {

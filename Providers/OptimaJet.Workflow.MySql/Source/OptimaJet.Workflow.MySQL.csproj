@@ -3,9 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Version>7.2.3</Version>
-    <AssemblyVersion>7.2.0</AssemblyVersion>
-    <FileVersion>7.2.0</FileVersion>
+    <Version>7.3.0</Version>
+    <AssemblyVersion>7.3.0</AssemblyVersion>
+    <FileVersion>7.3.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Product>Workflow Engine</Product>
     <Description>
@@ -16,7 +16,7 @@
       Steps for workflow runtime configuration with MySQLProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
       Create WorkflowRuntime section.
     </Description>
-    <Copyright>OptimaJet Workflow Engine 2022</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2023</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>

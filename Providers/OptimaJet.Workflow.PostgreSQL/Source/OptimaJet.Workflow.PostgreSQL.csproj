@@ -6,12 +6,12 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>7.2.3</Version>
+    <Version>7.3.0</Version>
     <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
     <Authors>OptimaJet, LLC</Authors>
     <Company>OptimaJet, LLC</Company>
     <Product>Workflow Engine</Product>
-    <Copyright>OptimaJet Workflow Engine 2022</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2023</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <RepositoryUrl>
@@ -29,8 +29,8 @@
     <AssemblyName>OptimaJet.Workflow.PostgreSQL</AssemblyName>
     <RootNamespace>OptimaJet.Workflow.PostgreSQL</RootNamespace>
     <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
-    <AssemblyVersion>7.2.0</AssemblyVersion>
-    <FileVersion>7.2.0</FileVersion>
+    <AssemblyVersion>7.3.0</AssemblyVersion>
+    <FileVersion>7.3.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>

@@ -119,15 +119,21 @@
 
 <script type="application/javascript">
   function customforms_basicsplugin_createprocessform_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.CreateProcess,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+      })
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       customTitle: undefined,
       readonly: false,
       editItem: undefined,
-      labels: WorkflowDesignerConstants.EditParametersFormlabel,
-      customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.CreateProcess,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
       FormData: {},
       Field: {},
       items: []

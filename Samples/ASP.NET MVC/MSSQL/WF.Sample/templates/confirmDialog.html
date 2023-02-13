@@ -20,16 +20,22 @@
 </el-dialog>
 <script type="application/javascript">
   function confirmDialog_Init(me) {
-    me.VueConfig.methods.defaultInit = function () {
+    me.VueConfig.methods.UpdateLanguage = function () {
       me.VueConfig.data = Object.assign(me.VueConfig.data, {
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
-        isAlert: false,
-        actions: undefined,
-        visible: true,
         yes: WorkflowDesignerConstants.ButtonTextYes,
         no: WorkflowDesignerConstants.ButtonTextNo,
         ok: WorkflowDesignerConstants.ButtonTextOk,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
+    me.VueConfig.methods.defaultInit = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        isAlert: false,
+        actions: undefined,
+        visible: true,
       });
     };
 
@@ -66,6 +72,5 @@
       if (!value.title && value.isAlert)
         me.VueConfig.data.title = WorkflowDesignerConstants.AlertTitle;
     };
-
   }
 </script>

@@ -45,8 +45,14 @@
 
 <script type="application/javascript">
   function elements_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.Elements,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     const data = Object.assign(me.VueConfig.data, {
-      labels: WorkflowDesignerConstants.Elements,
       activeTab: 'Activities',
       original: {},
       activities: [],
@@ -226,19 +232,13 @@
       me.lastPos = e.originalEvent
     }
 
-    me.VueConfig.methods.insertScheme = function (item) {
+    me.VueConfig.methods.insertScheme = function (item, pos) {
       var e = me.lastPos;
       var loadingSpinner = $('<div class=\'WorkflowDesignerWindowLoaderOverlay Compact\'><div class=\'cv-spinner\'><span class=\'spinner\'></span></div></div>')
       $('body').append(loadingSpinner);
       loadingSpinner.css('left', e.pageX + 'px');
       loadingSpinner.css('top', e.pageY + 'px');
       loadingSpinner.show();
-
-      var offset = me.parentContainer.offset();
-      var pos = {
-        x: e.pageX - offset.left,
-        y: e.pageY - offset.top
-      };
 
       me.graph.insertSchemeFromLibrary(item.File, pos, function () {
         loadingSpinner.remove()
@@ -274,14 +274,15 @@
       me.parentContainer.off('dragover', me.VueConfig.methods.savePos);
 
       if (this.draggingItem !== undefined) {
-        var offset = me.parentContainer.offset();
-        var pos = {
-          x: (e.pageX || me.pageX) - offset.left,
-          y: (e.pageY || me.pageY) - offset.top
+        const e = me.lastPos;
+        const offset = me.parentContainer.offset();
+        const pos = {
+          x: e.pageX - offset.left,
+          y: e.pageY - offset.top
         };
         this.draggingItemType === 'activity'
           ? this.createActivity(this.draggingItem, pos)
-          : this.insertScheme(this.draggingItem);
+          : this.insertScheme(this.draggingItem, pos);
         this.draggingItem = undefined;
         window.removeEventListener('dragover', me.dragover);
       }

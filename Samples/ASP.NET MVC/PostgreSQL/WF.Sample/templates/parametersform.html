@@ -123,19 +123,25 @@
 </div>
 <script type="application/javascript">
     function parametersform_Init(me){
+      me.VueConfig.methods.UpdateLanguage = function () {
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+          labels: {
+            ReadMore: WorkflowDesignerConstants.ReadMore,
+            ...WorkflowDesignerConstants.CodeActionsFormLabel
+          },
+          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        });
+      }
+
+      me.VueConfig.methods.UpdateLanguage();
       const types = WorkflowDesignerConstants.ParameterTypes;
       me.VueConfig.data = Object.assign(me.VueConfig.data, {
         readonly: false,
-        labels: {
-          ReadMore: WorkflowDesignerConstants.ReadMore,
-          ...WorkflowDesignerConstants.CodeActionsFormLabel
-        },
         editParametersItem: undefined,
         editItem: undefined,
-        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
         types: Object.keys(types).filter(type => type !== types.Custom)
       });
 

@@ -37,6 +37,16 @@
 </div>
 <script type="application/javascript">
   function activitytoolbar_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: {
+          ...WorkflowDesignerConstants.ElementToolbar,
+          ...WorkflowDesignerConstants.ActivityToolbar
+        },
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       activity: undefined,
       Color: '',
@@ -62,10 +72,6 @@
         '#9e9e9e',
         '#607d8b'
       ],
-      labels: {
-        ...WorkflowDesignerConstants.ElementToolbar,
-        ...WorkflowDesignerConstants.ActivityToolbar
-      },
       graph: me.value.graph
 
     });

@@ -1063,7 +1063,7 @@ header.doc-header p {
 /* line 856, ../scss/documentation.scss */
 .documentation-content > div {
   max-width: 72.5%;
-  /* ╨║╨╛╤Б╤В╤Л╨╗╤М ╨╕╨╖-╨╖╨░ ╨╜╨░╨┤╨╛╨▒╨╜╨╛╤Б╤В╨╕ ╤А╨░╤Б╤Б╤В╤П╨╢╨╡╨╜╨╕╤П ╤Б╨░╨╣╨┤╨▒╨░╤А╨░ ╨┐╨╛ ╨▓╤Л╤Б╨╛╤В╨╡ */
+  /* crutch due to the need to stretch the sidebar in height */
 }
 /* line 864, ../scss/documentation.scss */
 .documentation-content h1 + p + h2 {
@@ -1145,7 +1145,7 @@ header.doc-header p {
 }
 /* line 947, ../scss/documentation.scss */
 .documentation-content pre {
-  /* ╤Г╨▒╤А╨░╤В╤М ╨╛╤В╤Б╤В╤Г╨┐ */
+  /* remove the indentation */
   margin: 22px 0;
   padding: 20px;
   line-height: 1.8;

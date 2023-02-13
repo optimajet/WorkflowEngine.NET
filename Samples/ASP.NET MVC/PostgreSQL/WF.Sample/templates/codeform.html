@@ -37,13 +37,19 @@
 </el-dialog>
 <script type="application/javascript">
   function codeform_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.EditCodeLabel,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     var funcSignature = 'ProcessInstance processInstance, WorkflowRuntime runtime, string parameter';
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       editor_container: me.id + '_editor',
       readonly: false,
-      labels: WorkflowDesignerConstants.EditCodeLabel,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
       Usings: null,
       UsingsValue: null,
       Name: '',

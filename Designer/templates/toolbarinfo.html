@@ -31,8 +31,14 @@
 </div>
 <script type="application/javascript">
     function toolbarinfo_Init(me){
+      me.VueConfig.methods.UpdateLanguage = function () {
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+          labels: WorkflowDesignerConstants.ToolbarLabel
+        });
+      }
+
+      me.VueConfig.methods.UpdateLanguage();
         var data = me.VueConfig.data;
-        data.labels = WorkflowDesignerConstants.ToolbarLabel;
 
         me.VueConfig.methods.onUpdate = function(){
             data.settings = me.graph.Settings;

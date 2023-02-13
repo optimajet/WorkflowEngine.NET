@@ -80,14 +80,20 @@
 </div>
 <script type="application/javascript">
     function parameters_Init(me){
+      me.VueConfig.methods.UpdateLanguage = function () {
+        me.VueConfig.data = Object.assign(me.VueConfig.data, {
+          labels: WorkflowDesignerConstants.ParameterFormLabel,
+          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        });
+      }
+
+      me.VueConfig.methods.UpdateLanguage();
          me.VueConfig.data = Object.assign(me.VueConfig.data, {
             readonly: false,
-            labels: WorkflowDesignerConstants.ParameterFormLabel,
             editItem: undefined,
-            ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-            ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-            ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-            ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
             showSystem: false
         });
 

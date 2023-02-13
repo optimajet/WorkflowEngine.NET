@@ -20,6 +20,13 @@
 </div>
 <script type="application/javascript">
   function transitiontoolbar_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.ElementToolbar,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       transition: undefined,
       Color: '',
@@ -45,7 +52,6 @@
         '#607d8b'
       ],
       readonly: false,
-      labels: WorkflowDesignerConstants.ElementToolbar,
       graph: me.value.graph
     });
     me.VueConfig.methods.onUpdate = function (transition) {

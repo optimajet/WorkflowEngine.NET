@@ -228,14 +228,20 @@
 
 <script type="application/javascript">
   function customforms_basicsplugin_sendemailform_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.SendEmail,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       customTitle: undefined,
       readonly: false,
-      labels: WorkflowDesignerConstants.EditParametersFormlabel,
-      customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.SendEmail,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
       parameterFromProcess: {
         MailServerPort: false,
         MailServerSsl: false,

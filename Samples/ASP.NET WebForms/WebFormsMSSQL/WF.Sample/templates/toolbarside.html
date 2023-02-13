@@ -41,9 +41,15 @@
 </div>
 <script type="application/javascript">
   function toolbarside_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.ToolbarLabel
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     var data = me.VueConfig.data;
-    data.labels = WorkflowDesignerConstants.ToolbarLabel;
-    data.zoom = 100;
+    data.zoom = me.graph.Settings.SavedScale ?? 100;
 
     me.VueConfig.methods.onUpdate = function () {
       data.move = me.graph.getParam('movemodeenabled');

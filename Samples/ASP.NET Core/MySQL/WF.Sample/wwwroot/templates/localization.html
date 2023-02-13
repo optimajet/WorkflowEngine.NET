@@ -133,13 +133,19 @@
 </div>
 <script type="application/javascript">
   function localization_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.LocalizationFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       readonly: false,
-      labels: WorkflowDesignerConstants.LocalizationFormLabel,
-      ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-      ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
       showPredefined: false,
       predefined: me.graph.data.AdditionalParams.PredefinedLocalization
     });

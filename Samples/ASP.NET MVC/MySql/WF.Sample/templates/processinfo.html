@@ -324,15 +324,21 @@
 </div>
 <script type="application/javascript">
   function processinfo_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
+        InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
+        LogEnabledLabel: WorkflowDesignerConstants.Logs.Label,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     const designer = me.graph.designer;
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       readonly: false,
-      labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
-      InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
-      LogEnabledLabel: WorkflowDesignerConstants.Logs.Label,
       editItem: undefined,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
       activeProcesses: ['Root'],
       FormData: {},
       Tags: [],

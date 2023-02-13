@@ -71,11 +71,17 @@
 </div>
 <script type="application/javascript">
   function comment_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.Elements.Comment,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage()
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       readonly: false,
-      labels: WorkflowDesignerConstants.Elements.Comment,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
       FormatText: [],
       FormData: {
         CommentDefinition: {},

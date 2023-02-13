@@ -92,11 +92,17 @@
 <script type="application/javascript">
 
   function logs_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.Logs,
+        ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
+        header: WorkflowDesignerConstants.Logs.Label,
+      });
+    }
+
+    me.VueConfig.methods.UpdateLanguage();
     const designer = me.graph.designer;
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      labels: WorkflowDesignerConstants.Logs,
-      ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
-      header: WorkflowDesignerConstants.Logs.Label,
       designer: me.graph.designer,
       count: 20,
       items: [],

@@ -84,20 +84,25 @@
 
 <script type="application/javascript">
   function customforms_assignmentplugin_assignmentshavestatus_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueCOnfig.data, {
+        FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentsHaveStatus,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        isRequiredColor: WorkflowDesignerConstants.IsRequiredColor,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
 
     var isAny = me.options && me.options.parameterDefinition && me.options.parameterDefinition.name === 'AssignmentsAnyHaveCertainStatus';
 
+    me.VueConfig.methods.UpdateLanguage();
     me.VueConfig.data = Object.assign(me.VueConfig.data, {
       customTitle: undefined,
       readonly: false,
-      FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
-      ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-      labels: WorkflowDesignerConstants.EditParametersFormlabel,
-      customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentsHaveStatus,
-      ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      isRequiredColor: WorkflowDesignerConstants.IsRequiredColor,
-      parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
       FormData: {},
       parameterFromProcess: {
         StatusState: false
