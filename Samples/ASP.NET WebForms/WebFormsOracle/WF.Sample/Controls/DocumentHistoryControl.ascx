@@ -14,7 +14,7 @@
                     <th>Command</th>
                     <th>Executor</th>
                     <th>TransitionTime</th>
-                    <th>Availiable for</th>
+                    <th>Available for</th>
                 </tr>
         </HeaderTemplate>
              
