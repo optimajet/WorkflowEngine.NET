@@ -3,9 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
-    <Version>8.0.0</Version>
-    <AssemblyVersion>8.0.0</AssemblyVersion>
-    <FileVersion>8.0.0</FileVersion>
+    <Version>8.1.0</Version>
+    <AssemblyVersion>8.1.0</AssemblyVersion>
+    <FileVersion>8.1.0</FileVersion>
     <Authors>OptimaJet, LLC</Authors>
     <Company>OptimaJet, LLC</Company>
     <Product>Workflow Engine</Product>

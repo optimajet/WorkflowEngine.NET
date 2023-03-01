@@ -41,9 +41,6 @@
     <Reference Include="EntityFramework.SqlServer, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089, processorArchitecture=MSIL">
       <HintPath>..\packages\EntityFramework.6.2.0\lib\net45\EntityFramework.SqlServer.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="Microsoft.Bcl.AsyncInterfaces, Version=6.0.0.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.Bcl.AsyncInterfaces.6.0.0\lib\net461\Microsoft.Bcl.AsyncInterfaces.dll</HintPath>
     </Reference>
@@ -69,11 +66,11 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-Core.7.0.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\packages\WorkflowEngine.NETCore-Core.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Oracle, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-ProviderForOracle.7.0.0\lib\netstandard2.0\OptimaJet.Workflow.Oracle.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Oracle, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\packages\WorkflowEngine.NETCore-ProviderForOracle.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.Oracle.dll</HintPath>
     </Reference>
     <Reference Include="Oracle.ManagedDataAccess, Version=4.122.1.0, Culture=neutral, PublicKeyToken=89b483f429c47342, processorArchitecture=MSIL">
       <HintPath>..\packages\Oracle.ManagedDataAccess.12.2.1100\lib\net40\Oracle.ManagedDataAccess.dll</HintPath>
@@ -150,6 +147,9 @@
     </Reference>
     <Reference Include="WeakEvent, Version=4.0.0.0, Culture=neutral, PublicKeyToken=274c1a48cbbd909f, processorArchitecture=MSIL">
       <HintPath>..\packages\ThomasLevesque.WeakEvent.4.1.0\lib\net45\WeakEvent.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

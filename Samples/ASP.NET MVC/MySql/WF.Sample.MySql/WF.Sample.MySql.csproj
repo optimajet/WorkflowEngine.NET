@@ -50,9 +50,6 @@
     <Reference Include="Google.Protobuf, Version=3.19.4.0, Culture=neutral, PublicKeyToken=a7d26565bac4d604, processorArchitecture=MSIL">
       <HintPath>..\packages\Google.Protobuf.3.19.4\lib\net45\Google.Protobuf.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73, processorArchitecture=MSIL">
-      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
-    </Reference>
     <Reference Include="K4os.Compression.LZ4, Version=1.2.6.0, Culture=neutral, PublicKeyToken=2186fa9121ef231d, processorArchitecture=MSIL">
       <HintPath>..\packages\K4os.Compression.LZ4.1.2.6\lib\net46\K4os.Compression.LZ4.dll</HintPath>
     </Reference>
@@ -90,11 +87,11 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-Core.7.0.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\packages\WorkflowEngine.NETCore-Core.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.MySQL, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-ProviderForMySQL.7.0.0\lib\netstandard2.0\OptimaJet.Workflow.MySQL.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.MySQL, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\packages\WorkflowEngine.NETCore-ProviderForMySQL.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.MySQL.dll</HintPath>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
@@ -172,6 +169,9 @@
     </Reference>
     <Reference Include="ZstdNet, Version=1.4.5.0, Culture=neutral, PublicKeyToken=c5687fc88969c44d, processorArchitecture=MSIL">
       <HintPath>..\packages\MySql.Data.8.0.30\lib\net48\ZstdNet.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

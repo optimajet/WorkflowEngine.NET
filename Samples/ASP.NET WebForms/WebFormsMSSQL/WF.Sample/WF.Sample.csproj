@@ -56,10 +56,6 @@
     <Reference Include="AutoMapper, Version=8.1.0.0, Culture=neutral, PublicKeyToken=be96cd2c38ef1005, processorArchitecture=MSIL">
       <HintPath>..\packages\AutoMapper.8.1.0\lib\net461\AutoMapper.dll</HintPath>
     </Reference>
-    <Reference Include="ICSharpCode.SharpZipLib, Version=1.2.0.246, Culture=neutral, PublicKeyToken=1b03e6acf1164f73">
-      <HintPath>..\packages\SharpZipLib.1.2.0\lib\net45\ICSharpCode.SharpZipLib.dll</HintPath>
-      <Private>True</Private>
-    </Reference>
     <Reference Include="Microsoft.CodeAnalysis, Version=4.1.0.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35, processorArchitecture=MSIL">
       <HintPath>..\packages\Microsoft.CodeAnalysis.Common.4.1.0\lib\netstandard2.0\Microsoft.CodeAnalysis.dll</HintPath>
     </Reference>
@@ -83,8 +79,8 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=7.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-Core.7.0.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
+      <HintPath>..\packages\WorkflowEngine.NETCore-Core.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
     </Reference>
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">
       <HintPath>..\packages\System.Buffers.4.5.1\lib\net461\System.Buffers.dll</HintPath>
@@ -184,6 +180,9 @@
     </Reference>
     <Reference Include="Microsoft.AspNet.FriendlyUrls">
       <HintPath>..\packages\Microsoft.AspNet.FriendlyUrls.Core.1.0.2\lib\net45\Microsoft.AspNet.FriendlyUrls.dll</HintPath>
+    </Reference>
+    <Reference Include="ICSharpCode.SharpZipLib">
+      <HintPath>..\packages\SharpZipLib.1.4.2\lib\netstandard2.0\ICSharpCode.SharpZipLib.dll</HintPath>
     </Reference>
   </ItemGroup>
   <ItemGroup>

@@ -7,12 +7,13 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/8.0.0": {
+      "OptimaJet.Workflow.MongoDB/8.1.0": {
         "dependencies": {
           "MongoDB.Driver.signed": "2.10.4",
           "NETStandard.Library": "2.0.3",
           "System.Linq.Dynamic.Core": "1.2.8",
-          "WorkflowEngine.NETCore-Core": "8.0.0"
+          "WorkflowEngine.NETCore-Core": "8.1.0",
+          "OptimaJet.Workflow.Core": "8.1.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -443,14 +444,6 @@
           "lib/netstandard2.0/SharpCompress.dll": {
             "assemblyVersion": "0.23.0.0",
             "fileVersion": "0.23.0.0"
-          }
-        }
-      },
-      "SharpZipLib/1.2.0": {
-        "runtime": {
-          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {
-            "assemblyVersion": "1.2.0.246",
-            "fileVersion": "1.2.0.246"
           }
         }
       },
@@ -1437,13 +1430,12 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/8.0.0": {
+      "WorkflowEngine.NETCore-Core/8.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
           "Microsoft.Extensions.DependencyModel": "1.1.1",
           "Newtonsoft.Json": "13.0.1",
-          "SharpZipLib": "1.2.0",
           "System.Collections.Specialized": "4.3.0",
           "System.Security.Cryptography.Csp": "4.3.0",
           "System.Xml.XmlDocument": "4.3.0",
@@ -1452,11 +1444,19 @@
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {}
         }
+      },
+      "OptimaJet.Workflow.Core/8.1.0.0": {
+        "runtime": {
+          "OptimaJet.Workflow.Core.dll": {
+            "assemblyVersion": "8.1.0.0",
+            "fileVersion": "8.1.0.0"
+          }
+        }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/8.0.0": {
+    "OptimaJet.Workflow.MongoDB/8.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1712,13 +1712,6 @@
       "sha512": "sha512-HBbT47JHvNrsZX2dTBzUBOSzBt+EmIRGLIBkbxcP6Jef7DB4eFWQX5iHWV3Nj7hABFPCjISrZ8s0z72nF2zFHQ==",
       "path": "sharpcompress/0.23.0",
       "hashPath": "sharpcompress.0.23.0.nupkg.sha512"
-    },
-    "SharpZipLib/1.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-zvWa/L02JHNatdtjya6Swpudb2YEHaOLHL1eRrqpjm71iGRNUNONO5adUF/9CHbSJbzhELW1UoH4NGy7n7+3bQ==",
-      "path": "sharpziplib/1.2.0",
-      "hashPath": "sharpziplib.1.2.0.nupkg.sha512"
     },
     "System.AppContext/4.1.0": {
       "type": "package",
@@ -2231,8 +2224,13 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/8.0.0": {
+    "WorkflowEngine.NETCore-Core/8.1.0": {
       "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OptimaJet.Workflow.Core/8.1.0.0": {
+      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

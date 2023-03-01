@@ -7,11 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MSSQL/8.0.0": {
+      "OptimaJet.Workflow.MSSQL/8.1.0": {
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.1.2",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "8.0.0"
+          "WorkflowEngine.NETCore-Core": "8.1.0",
+          "OptimaJet.Workflow.Core": "8.1.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MSSQL.dll": {}
@@ -454,14 +455,6 @@
       "runtime.ubuntu.14.04-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
       "runtime.ubuntu.16.04-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
       "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
-      "SharpZipLib/1.2.0": {
-        "runtime": {
-          "lib/netstandard2.0/ICSharpCode.SharpZipLib.dll": {
-            "assemblyVersion": "1.2.0.246",
-            "fileVersion": "1.2.0.246"
-          }
-        }
-      },
       "System.AppContext/4.1.0": {
         "dependencies": {
           "System.Runtime": "4.3.0"
@@ -1461,13 +1454,12 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/8.0.0": {
+      "WorkflowEngine.NETCore-Core/8.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
           "Microsoft.Extensions.DependencyModel": "1.1.1",
           "Newtonsoft.Json": "13.0.1",
-          "SharpZipLib": "1.2.0",
           "System.Collections.Specialized": "4.3.0",
           "System.Security.Cryptography.Csp": "4.3.0",
           "System.Xml.XmlDocument": "4.3.0",
@@ -1476,11 +1468,19 @@
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {}
         }
+      },
+      "OptimaJet.Workflow.Core/8.1.0.0": {
+        "runtime": {
+          "OptimaJet.Workflow.Core.dll": {
+            "assemblyVersion": "8.1.0.0",
+            "fileVersion": "8.1.0.0"
+          }
+        }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MSSQL/8.0.0": {
+    "OptimaJet.Workflow.MSSQL/8.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1743,13 +1743,6 @@
       "sha512": "sha512-VB5cn/7OzUfzdnC8tqAIMQciVLiq2epm2NrAm1E9OjNRyG4lVhfR61SMcLizejzQP8R8Uf/0l5qOIbUEi+RdEg==",
       "path": "runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl/4.3.0",
       "hashPath": "runtime.ubuntu.16.10-x64.runtime.native.system.security.cryptography.openssl.4.3.0.nupkg.sha512"
-    },
-    "SharpZipLib/1.2.0": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-zvWa/L02JHNatdtjya6Swpudb2YEHaOLHL1eRrqpjm71iGRNUNONO5adUF/9CHbSJbzhELW1UoH4NGy7n7+3bQ==",
-      "path": "sharpziplib/1.2.0",
-      "hashPath": "sharpziplib.1.2.0.nupkg.sha512"
     },
     "System.AppContext/4.1.0": {
       "type": "package",
@@ -2283,8 +2276,13 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/8.0.0": {
+    "WorkflowEngine.NETCore-Core/8.1.0": {
       "type": "project",
+      "serviceable": false,
+      "sha512": ""
+    },
+    "OptimaJet.Workflow.Core/8.1.0.0": {
+      "type": "reference",
       "serviceable": false,
       "sha512": ""
     }

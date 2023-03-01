@@ -127,9 +127,9 @@
         Type: 'Comment'
       });
       if (me.graph.data?.AdditionalParams) {
-        const {CustomActivities, InlinedSchemeCodes} = me.graph.data.AdditionalParams;
+        const {InlinedSchemeCodes} = me.graph.data.AdditionalParams;
 
-        CustomActivities?.forEach?.(item => {
+        me.graph.designer.customActivities?.forEach?.(item => {
           item.Class = 'Custom';
           data.activities.push(item);
         });
