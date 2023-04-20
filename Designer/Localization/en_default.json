@@ -552,7 +552,8 @@
     "ZoomOut": "Zoom Out",
     "ZoomTo100": "Set zoom to 100%",
     "Clone": "Clone",
-    "ZoomPositionDefault": "Zoom default"
+    "ZoomPositionDefault": "Zoom default",
+    "InstanceInfo": "Instance info"
   },
   "LibraryLabel": {
     "PluginRequired": "Plugin required:"
@@ -628,5 +629,7 @@
     },
     "Header": "Elements"
   },
-  "ErrorInBrowserConsole": "See more info in the browser console."
+  "ErrorInBrowserConsole": "See more info in the browser console.",
+  "InformationCopiedToClipboardAndConsole": "The information is copied to the clipboard and displayed in the browser console.",
+  "InformationLoggedToConsole": "The information is displayed in the browser console."
 }

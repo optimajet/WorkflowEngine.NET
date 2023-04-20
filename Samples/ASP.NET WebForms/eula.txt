@@ -11,7 +11,7 @@ SUMMARY
 5. Support plans include support only for officially published versions of Workflow Engine or Workflow Server. To get support for modified versions of Workflow Engine or Workflow Server, please, get a quote.
 
 EULA
-IMPORTANT — READ CAREFULLY: This OPTIMAJET LLC (“OPTIMAJET”) End-User License Agreement (“EULA”) is a legal agreement between you, a developer of software applications, (“Developer End User”) and OPTIMAJET for all OPTIMAJET products, frameworks, components, source code, demos, intermediate files, media, printed materials, and online or electronic documentation (“SOFTWARE DEVELOPMENT PRODUCT(S)”) contained in this distribution.
+IMPORTANT — READ CAREFULLY: This Optimajet Limited (“OPTIMAJET”) End-User License Agreement (“EULA”) is a legal agreement between you, a developer of software applications, (“Developer End User”) and OPTIMAJET for all OPTIMAJET products, frameworks, components, source code, demos, intermediate files, media, printed materials, and online or electronic documentation (“SOFTWARE DEVELOPMENT PRODUCT(S)”) contained in this distribution.
 
 By installing, copying, or otherwise using the SOFTWARE DEVELOPMENT PRODUCT(S), you agree to be bound by the terms of this EULA. If you do not agree to any part of the terms of this EULA, DO NOT INSTALL, COPY, USE, EVALUATE, OR REPLICATE IN ANY MANNER, ANY PART, FILE OR PORTION OF THE SOFTWARE DEVELOPMENT PRODUCT(S).
 
@@ -190,12 +190,12 @@ You hereby agree to indemnify OPTIMAJET and its officers, directors, employees, 
 Without prejudice to any other rights or remedies, OPTIMAJET will terminate this EULA upon your failure to comply with all the terms and conditions of this EULA. In such events, Developer End User must destroy all copies of the SOFTWARE DEVELOPMENT PRODUCT(S) and all of its component parts including any related documentation, and must remove ANY and ALL use of OPTIMAJET intellectual property from any applications distributed by Developer End User, whether in native, altered or compiled states.
 
 15. MISCELLANEOUS
-This EULA may only be modified in writing signed by you and an authorized officer of OPTIMAJET LLC. If any provision of this EULA is found void or unenforceable, the remainder will remain valid and enforceable according to its terms. If any remedy provided is determined to have failed for its essential purpose, all limitations of liability and exclusions of damages set forth in the Limited Warranty shall remain in effect.
+This EULA may only be modified in writing signed by you and an authorized officer of Optimajet Limited. If any provision of this EULA is found void or unenforceable, the remainder will remain valid and enforceable according to its terms. If any remedy provided is determined to have failed for its essential purpose, all limitations of liability and exclusions of damages set forth in the Limited Warranty shall remain in effect.
 
 OPTIMAJET reserves all rights not specifically granted in this EULA.
 
 YOU ACKNOWLEDGE THAT YOU HAVE READ AND UNDERSTAND THIS AGREEMENT AND YOU AGREE TO BE BOUND BY THE TERMS OF THIS AGREEMENT UPON INSTALLATION AND/OR USE of ALL SOFTWARE DEVELOPMENT PRODUCT(S) INCLUDED IN THIS DISTRIBUTION.
 
-© 2011- 2020 OPTIMAJET LLC
+© 2011- 2023 Optimajet Limited
 
 All trademarks and registered trademarks are property of their respective owners.
