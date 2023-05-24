@@ -190,6 +190,7 @@
     me.VueConfig.methods.UpdateLanguage = function () {
       me.VueConfig.data = Object.assign(me.VueConfig.data, {
         labels: Object.assign(
+          {},
           WorkflowDesignerConstants.ActivityFormLabel,
           WorkflowDesignerConstants.TransitionFormLabel,
           WorkflowDesignerConstants.DecisionTable),

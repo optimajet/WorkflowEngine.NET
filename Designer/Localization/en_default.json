@@ -630,6 +630,7 @@
     "Header": "Elements"
   },
   "ErrorInBrowserConsole": "See more info in the browser console.",
+  "FileNotExist": "The file doesn't exist",
   "InformationCopiedToClipboardAndConsole": "The information is copied to the clipboard and displayed in the browser console.",
   "InformationLoggedToConsole": "The information is displayed in the browser console."
 }
