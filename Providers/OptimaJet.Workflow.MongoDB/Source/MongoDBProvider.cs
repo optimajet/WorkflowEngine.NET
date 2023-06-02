@@ -1965,7 +1965,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
             WorkflowApprovalHistory historyItem = await (await dCollection.FindAsync(h => h.ProcessId == approvalHistoryItem.ProcessId 
-                        && !h.TransitionTime.HasValue 
+                        && h.TransitionTime == null
                         && h.InitialState == approvalHistoryItem.InitialState
                         && h.DestinationState == approvalHistoryItem.DestinationState)
                         .ConfigureAwait(false))
@@ -1983,7 +1983,7 @@ namespace OptimaJet.Workflow.MongoDB
                 await dCollection.UpdateOneAsync(x => x.Id == historyItem.Id,
                     Builders<WorkflowApprovalHistory>.Update
                         .Set(x => x.TriggerName, approvalHistoryItem.TriggerName)
-                        .Set(x => x.TransitionTime, _runtime.RuntimeDateTimeNow)
+                        .Set(x => x.TransitionTime, approvalHistoryItem.TransitionTime)
                         .Set(x => x.IdentityId, approvalHistoryItem.IdentityId)
                         .Set(x => x.Commentary, approvalHistoryItem.Commentary))
                         .ConfigureAwait(false);
