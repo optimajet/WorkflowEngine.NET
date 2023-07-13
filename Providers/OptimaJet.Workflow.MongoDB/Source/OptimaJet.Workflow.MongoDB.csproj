@@ -7,9 +7,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>WorkflowEngine.NETCore-ProviderForMongoDB</PackageId>
-    <Version>9.1.1</Version>
-    <AssemblyVersion>9.1.0</AssemblyVersion>
-    <FileVersion>9.1.0</FileVersion>
+    <Version>10.0.0</Version>
+    <AssemblyVersion>10.0.0</AssemblyVersion>
+    <FileVersion>10.0.0</FileVersion>
     <Authors>Optimajet Limited</Authors>
     <Product>Workflow Engine</Product>
     <Description>
@@ -40,7 +40,6 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver.signed" Version="2.10.4" />
-    <PackageReference Include="System.Linq.Dynamic.Core" Version="1.2.8" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj" />

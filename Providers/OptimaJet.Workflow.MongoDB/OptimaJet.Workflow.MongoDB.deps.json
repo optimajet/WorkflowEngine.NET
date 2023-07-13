@@ -7,13 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/9.1.1": {
+      "OptimaJet.Workflow.MongoDB/10.0.0": {
         "dependencies": {
           "MongoDB.Driver.signed": "2.10.4",
           "NETStandard.Library": "2.0.3",
-          "System.Linq.Dynamic.Core": "1.2.8",
-          "WorkflowEngine.NETCore-Core": "9.1.1",
-          "OptimaJet.Workflow.Core": "9.1.0.0"
+          "WorkflowEngine.NETCore-Core": "10.0.0",
+          "OptimaJet.Workflow.Core": "10.0.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -663,7 +662,7 @@
           "System.Linq.Expressions": "4.1.0",
           "System.ObjectModel": "4.0.12",
           "System.Reflection": "4.3.0",
-          "System.Reflection.Emit": "4.3.0",
+          "System.Reflection.Emit": "4.0.1",
           "System.Reflection.Emit.ILGeneration": "4.3.0",
           "System.Reflection.Primitives": "4.3.0",
           "System.Reflection.TypeExtensions": "4.1.0",
@@ -751,17 +750,6 @@
           }
         }
       },
-      "System.Linq.Dynamic.Core/1.2.8": {
-        "dependencies": {
-          "System.Reflection.Emit": "4.3.0"
-        },
-        "runtime": {
-          "lib/netstandard2.0/System.Linq.Dynamic.Core.dll": {
-            "assemblyVersion": "1.2.8.0",
-            "fileVersion": "1.2.8.0"
-          }
-        }
-      },
       "System.Linq.Expressions/4.1.0": {
         "dependencies": {
           "System.Collections": "4.3.0",
@@ -771,7 +759,7 @@
           "System.Linq": "4.3.0",
           "System.ObjectModel": "4.0.12",
           "System.Reflection": "4.3.0",
-          "System.Reflection.Emit": "4.3.0",
+          "System.Reflection.Emit": "4.0.1",
           "System.Reflection.Emit.ILGeneration": "4.3.0",
           "System.Reflection.Emit.Lightweight": "4.3.0",
           "System.Reflection.Extensions": "4.0.1",
@@ -910,7 +898,7 @@
           "System.Runtime": "4.3.0"
         }
       },
-      "System.Reflection.Emit/4.3.0": {
+      "System.Reflection.Emit/4.0.1": {
         "dependencies": {
           "System.IO": "4.3.0",
           "System.Reflection": "4.3.0",
@@ -920,8 +908,8 @@
         },
         "runtime": {
           "lib/netstandard1.3/System.Reflection.Emit.dll": {
-            "assemblyVersion": "4.0.2.0",
-            "fileVersion": "4.6.24705.1"
+            "assemblyVersion": "4.0.1.0",
+            "fileVersion": "1.0.24212.1"
           }
         }
       },
@@ -1430,7 +1418,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/9.1.1": {
+      "WorkflowEngine.NETCore-Core/10.0.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1445,18 +1433,18 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "OptimaJet.Workflow.Core/9.1.0.0": {
+      "OptimaJet.Workflow.Core/10.0.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "9.1.0.0",
-            "fileVersion": "9.1.0.0"
+            "assemblyVersion": "10.0.0.0",
+            "fileVersion": "10.0.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/9.1.1": {
+    "OptimaJet.Workflow.MongoDB/10.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1874,13 +1862,6 @@
       "path": "system.linq/4.3.0",
       "hashPath": "system.linq.4.3.0.nupkg.sha512"
     },
-    "System.Linq.Dynamic.Core/1.2.8": {
-      "type": "package",
-      "serviceable": true,
-      "sha512": "sha512-pt/p0YRKysUIwf/ihyVOftcITaQYBXQt/BxUfezsR/d7iXRDhYBwg+iYnL4zxX5i1qXVG0C/dwnmroWblmdH5A==",
-      "path": "system.linq.dynamic.core/1.2.8",
-      "hashPath": "system.linq.dynamic.core.1.2.8.nupkg.sha512"
-    },
     "System.Linq.Expressions/4.1.0": {
       "type": "package",
       "serviceable": true,
@@ -1944,12 +1925,12 @@
       "path": "system.reflection/4.3.0",
       "hashPath": "system.reflection.4.3.0.nupkg.sha512"
     },
-    "System.Reflection.Emit/4.3.0": {
+    "System.Reflection.Emit/4.0.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-228FG0jLcIwTVJyz8CLFKueVqQK36ANazUManGaJHkO0icjiIypKW7YLWLIWahyIkdh5M7mV2dJepllLyA1SKg==",
-      "path": "system.reflection.emit/4.3.0",
-      "hashPath": "system.reflection.emit.4.3.0.nupkg.sha512"
+      "sha512": "sha512-P2wqAj72fFjpP6wb9nSfDqNBMab+2ovzSDzUZK7MVIm54tBJEPr9jWfSjjoTpPwj1LeKcmX3vr0ttyjSSFM47g==",
+      "path": "system.reflection.emit/4.0.1",
+      "hashPath": "system.reflection.emit.4.0.1.nupkg.sha512"
     },
     "System.Reflection.Emit.ILGeneration/4.3.0": {
       "type": "package",
@@ -2224,12 +2205,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/9.1.1": {
+    "WorkflowEngine.NETCore-Core/10.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/9.1.0.0": {
+    "OptimaJet.Workflow.Core/10.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
