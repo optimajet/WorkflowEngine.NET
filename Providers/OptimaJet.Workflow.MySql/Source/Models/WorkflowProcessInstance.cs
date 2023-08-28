@@ -31,7 +31,8 @@ namespace OptimaJet.Workflow.MySQL
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.StartingTransition)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.SubprocessName)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.CreationDate), Type = MySqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = MySqlDbType.DateTime}
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = MySqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.CalendarName)}
             });
         }
         

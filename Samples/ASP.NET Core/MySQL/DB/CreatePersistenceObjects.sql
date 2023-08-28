@@ -3,7 +3,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 6.0
+Version: 11.0
 File: CreatePersistenceObjects.sql
 */
 
@@ -37,11 +37,14 @@ CREATE TABLE IF NOT EXISTS `workflowprocessinstance` (
   `SubprocessName` longtext NULL,
   `CreationDate`  datetime NOT NULL DEFAULT CURRENT_TIMESTAMP,
   `LastTransitionDate` datetime NULL,
+  `CalendarName` varchar(256) null,
   PRIMARY KEY  (`Id`),
   KEY `SchemeId` (`SchemeId`)
 );
 
 CREATE INDEX `ix_workflowprocessinstance_rootprocessid` ON `workflowprocessinstance` (`RootProcessId`);
+
+CREATE INDEX `ix_calendarname` ON `workflowprocessinstance` (`CalendarName`);
 
 CREATE TABLE IF NOT EXISTS `workflowprocessinstancepersistence` (
   `Id` binary(16) NOT NULL,

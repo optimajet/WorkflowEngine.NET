@@ -267,6 +267,7 @@ namespace OptimaJet.Workflow.PostgreSQL
                 SubprocessName = pi.SubprocessName,
                 CreationDate = pi.CreationDate,
                 LastTransitionDate = pi.LastTransitionDate,
+                CalendarName = pi.CalendarName
             }).ToList();
         }
 
@@ -360,7 +361,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                 TenantId = processInstance.TenantId,
                 StartingTransition = processInstance.ProcessScheme.StartingTransition,
                 SubprocessName = processInstance.SubprocessName,
-                CreationDate = processInstance.CreationDate
+                CreationDate = processInstance.CreationDate,
+                CalendarName = processInstance.CalendarName
             };
             await WorkflowProcessInstance.InsertAsync(connection, newProcess).ConfigureAwait(false);
         }
@@ -859,7 +861,10 @@ namespace OptimaJet.Workflow.PostgreSQL
                     processInstance.CreationDate),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterLastTransitionDate.Name),
-                    processInstance.LastTransitionDate)
+                    processInstance.LastTransitionDate),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCalendarName.Name),
+                    processInstance.CalendarName)
             };
             return parameters;
         }

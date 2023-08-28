@@ -6,9 +6,9 @@
     <AssemblyName>OptimaJet.Workflow.MSSQL</AssemblyName>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
-    <AssemblyVersion>10.0.0</AssemblyVersion>
-    <FileVersion>10.0.0</FileVersion>
-    <Version>10.0.1</Version>
+    <AssemblyVersion>11.0.0</AssemblyVersion>
+    <FileVersion>11.0.0</FileVersion>
+    <Version>11.0.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Optimajet Limited</Authors>

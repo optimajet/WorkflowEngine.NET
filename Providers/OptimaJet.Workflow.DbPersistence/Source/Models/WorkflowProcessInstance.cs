@@ -33,7 +33,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.StartingTransition), Type = SqlDbType.NVarChar},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.SubprocessName), Type = SqlDbType.NVarChar},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.CreationDate), Type = SqlDbType.DateTime},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = SqlDbType.DateTime}
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = SqlDbType.DateTime},
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.CalendarName), Type = SqlDbType.NVarChar}
             });
         }
 

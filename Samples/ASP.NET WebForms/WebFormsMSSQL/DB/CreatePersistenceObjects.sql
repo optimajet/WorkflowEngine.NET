@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MSSQL and Azure SQL
-Version: 6.0
+Version: 11.0
 File: CreatePersistenceObjects.sql
 
 */
@@ -60,9 +60,12 @@ BEGIN
 		,[SubprocessName] NVARCHAR(max)
 		,[CreationDate] datetime NOT NULL CONSTRAINT DF_WorkflowProcessInstance_CreationDate DEFAULT getdate()
 		,[LastTransitionDate] datetime NULL
+	    ,[CalendarName] NVARCHAR(450)
 		)
 
 	CREATE INDEX IX_RootProcessId ON WorkflowProcessInstance (RootProcessId)
+	
+	CREATE INDEX IX_CalendarName ON WorkflowProcessInstance (CalendarName)
 
 	PRINT 'WorkflowProcessInstance CREATE TABLE'
 END

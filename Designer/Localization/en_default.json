@@ -314,7 +314,9 @@
     "RootProcess": "Root Process",
     "TagsLabel": "Tags",
     "GeneralTabLabel": "General",
-    "ProcessIdLabel": "Process Id"
+    "ProcessIdLabel": "Process Id",
+    "WorkCalendar": "Work calendar",
+    "CalendarPlaceholder": "Start typing a name to find a calendar"
   },
   "DropdownValues": {
     "Name": "Name",

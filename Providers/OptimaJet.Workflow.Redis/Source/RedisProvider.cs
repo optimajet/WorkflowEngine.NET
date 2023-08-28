@@ -1556,7 +1556,8 @@ namespace OptimaJet.Workflow.Redis
                 ParentProcessId = processInstance.ParentProcessId,
                 TenantId = processInstance.TenantId,
                 SubprocessName = processInstance.SubprocessName,
-                CreationDate = processInstance.CreationDate
+                CreationDate = processInstance.CreationDate,
+                CalendarName = processInstance.CalendarName
             };
 
             string processKey = GetKeyForProcessInstance(processInstance.ProcessId);
@@ -1720,7 +1721,10 @@ namespace OptimaJet.Workflow.Redis
                     workflowProcessInstance.CreationDate),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterLastTransitionDate.Name),
-                    workflowProcessInstance.LastTransitionDate)
+                    workflowProcessInstance.LastTransitionDate),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCalendarName.Name),
+                    workflowProcessInstance.CalendarName)
             };
 
             processInstance.AddParameters(parameters);

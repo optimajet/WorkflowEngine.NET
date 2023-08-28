@@ -14,6 +14,25 @@
           <el-select v-model="Tags" :disabled="readonly" :placeholder="labels.TagsInputPlaceholder" allow-create filterable multiple
                      style="width: 100%;"></el-select>
         </el-form-item>
+        <el-form-item :label="labels.WorkCalendar">
+          <el-select
+            v-model="CalendarName"
+            filterable
+            remote
+            :placeholder="labels.CalendarPlaceholder"
+            :remote-method="SearchCalendar"
+            :CalendarLoading="CalendarLoading"
+            clearable
+            :class="CalendarExists(CalendarName) ? '' : 'WorkflowDesignerInputError'"
+            @clear="CalendarClear">
+            <el-option
+              v-for="item in ShownCalendars"
+              :key="item"
+              :label="item"
+              :value="item">
+            </el-option>
+          </el-select>
+        </el-form-item>
         <el-form-item>
           <el-switch v-model="CanBeInlined" :active-text="InlineLabel" :disabled="readonly"></el-switch>
         </el-form-item>
@@ -357,10 +376,15 @@
       Name: '',
       Id: undefined,
       SubprocessInfo: undefined,
+      CalendarName: '',
+      LoadedCalendars: [],
+      ShownCalendars: [],
+      CalendarLoading: false
     });
 
     me.VueConfig.methods.onUpdate = function () {
       var data = me.VueConfig.data;
+      data.CalendarName = me.graph.data.CalendarName;
       data.Tags = WorkflowDesignerCommon.clone(me.graph.data.Tags);
       data.CanBeInlined = me.graph.data.CanBeInlined;
       data.LogEnabled = me.graph.designer.LogEnabled;
@@ -394,6 +418,7 @@
       data.ProcessId = WorkflowDesignerCommon.clone(additionalParams.ProcessId);
       data.ProcessHistoryCount = WorkflowDesignerCommon.clone(additionalParams.ProcessHistoryCount);
       data.readonly = me.graph.Settings.readonly;
+      data.LoadedCalendars = me.VueConfig.methods.LoadCalendars();
     };
 
     me.VueConfig.methods.getFormatDate = function (stringDate) {
@@ -436,6 +461,7 @@
 
     me.VueConfig.methods.onSave = function () {
       var data = me.graph.data;
+      data.CalendarName = me.VueConfig.data.CalendarName;
       data.Tags = WorkflowDesignerCommon.clone(me.VueConfig.data.Tags);
       data.CanBeInlined = me.VueConfig.data.CanBeInlined;
       me.graph.setInlinedFlag(data.CanBeInlined);
@@ -501,5 +527,40 @@
         }
       }
     };
+
+    me.VueConfig.methods.CreateFilter = function (queryString) {
+      return link => link.toLowerCase().indexOf(queryString.toLowerCase()) > -1
+    }
+
+    me.VueConfig.methods.CalendarClear = function () {
+      me.VueConfig.data.ShownCalendars = [];
+    }
+
+    me.VueConfig.methods.LoadCalendars = function () {
+      return me.graph.designer.getcalendars();
+    }
+
+    me.VueConfig.methods.SearchCalendar = function (query) {
+      const data = me.VueConfig.data;
+      if (query !== '') {
+        data.CalendarLoading = true;
+        const createFilter = me.VueConfig.methods.CreateFilter;
+        const calendars = data.LoadedCalendars;
+        data.ShownCalendars = calendars.filter(createFilter(query));
+        data.CalendarLoading = false;
+      } else {
+        data.ShownCalendars = data.LoadedCalendars;
+      }
+    }
+
+    me.VueConfig.methods.CalendarExists = function (calendarName) {
+      if (calendarName !== "" && calendarName !== null) {
+        const data = me.VueConfig.data;
+        const calendar = data.LoadedCalendars.find(item => item === calendarName);
+        return !!calendar
+      }
+      return true;
+    }
+
   }
 </script>

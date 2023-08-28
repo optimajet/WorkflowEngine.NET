@@ -30,6 +30,8 @@ namespace OptimaJet.Workflow.MongoDB
 
         public WorkflowProcessInstanceStatus Status { get; set; }
         
+        public string CalendarName { get; set; }
+        
         
         public static readonly Dictionary<string, IOrderBy> OrderFunctions =
             new Dictionary<string, IOrderBy>
@@ -50,6 +52,7 @@ namespace OptimaJet.Workflow.MongoDB
                 { nameof(SubprocessName), new OrderBy<WorkflowProcessInstance,string>(x => x.SubprocessName) },
                 { nameof(CreationDate), new OrderBy<WorkflowProcessInstance,DateTime>(x => x.CreationDate) },
                 { nameof( LastTransitionDate), new OrderBy<WorkflowProcessInstance,DateTime?>(x => x. LastTransitionDate) },
+                { nameof(CalendarName), new OrderBy<WorkflowProcessInstance, string>(x => x.CalendarName) }
             };
     }
 }

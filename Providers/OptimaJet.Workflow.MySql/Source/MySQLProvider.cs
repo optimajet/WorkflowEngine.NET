@@ -260,6 +260,7 @@ namespace OptimaJet.Workflow.MySQL
                 SubprocessName = pi.SubprocessName,
                 CreationDate = pi.CreationDate,
                 LastTransitionDate = pi.LastTransitionDate,
+                CalendarName = pi.CalendarName
             }).ToList();
         }
 
@@ -354,7 +355,8 @@ namespace OptimaJet.Workflow.MySQL
                 TenantId = processInstance.TenantId,
                 StartingTransition = processInstance.ProcessScheme.StartingTransition,
                 SubprocessName = processInstance.SubprocessName,
-                CreationDate = processInstance.CreationDate
+                CreationDate = processInstance.CreationDate,
+                CalendarName = processInstance.CalendarName
             };
 
             await WorkflowProcessInstance.InsertAsync(connection, newProcess).ConfigureAwait(false);
@@ -853,7 +855,10 @@ namespace OptimaJet.Workflow.MySQL
                     processInstance.TenantId),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterSubprocessName.Name),
-                    processInstance.SubprocessName)
+                    processInstance.SubprocessName),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCalendarName.Name),
+                    processInstance.CalendarName)
             };
             return parameters;
         }

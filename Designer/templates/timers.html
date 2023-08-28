@@ -1,117 +1,117 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{labels.Title}}
-  <a v-if="!readonly" @click="add()">{{ButtonTextCreate}}</a>
+    {{ labels.Title }}
+    <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerTimersList" class="WorkflowDesignerWindowForm">
-  <table class="WorkflowDesignerTable">
-    <tr>
-      <th></th>
-      <th>{{ labels.Name }}</th>
-      <th>{{ labels.Type }}</th>
-      <th>{{ labels.Value }}</th>
-      <th>
-        <el-tooltip :content="labels.OverrideHint" placement="top-start">
-          <div>
-            {{ labels.Override }}<i class="el-icon-question header-info-icon"></i>
-          </div>
-        </el-tooltip>
-      </th>
-    </tr>
-    <tr v-for="(item, index) in items" :key="index"
-        :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
-        @dragend="dragend($event)" @dragover="dragover(item, index, $event)"
-        @dragstart="dragstart(index, $event)">
-      <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
-        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
-      </td>
+    <table class="WorkflowDesignerTable">
+        <tr>
+            <th></th>
+            <th>{{ labels.Name }}</th>
+            <th>{{ labels.Type }}</th>
+            <th>{{ labels.Value }}</th>
+            <th>
+                <el-tooltip :content="labels.OverrideHint" placement="top-start">
+                    <div>
+                        {{ labels.Override }}<i class="el-icon-question header-info-icon"></i>
+                    </div>
+                </el-tooltip>
+            </th>
+        </tr>
+        <tr v-for="(item, index) in items" :key="index"
+            :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+            @dragend="dragend($event)" @dragover="dragover(item, index, $event)"
+            @dragstart="dragstart(index, $event)">
+            <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+            </td>
             <td>
                 <el-input
-                    v-model="item.Name"
-          :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly"
-          :title="validateField('Name', item)"
-        ></el-input>
-      </td>
-      <td>
-        <el-select
-          v-model="item.Type"
-          :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
-          :disabled="readonly"
-                    :title="validateField('Type', item)"
-          filterable
-          style="width: 100%;"
-          @change="item.Value = null">
-          <el-option v-for="type in timertypes" :key="type" :label="type" :value="type"></el-option>
-        </el-select>
-      </td>
-      <td>
-        <el-input v-if="item.Type == 'Interval'"
-                  v-model="item.Value"
-                  :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-                  :readonly="readonly"
-                  :title="validateField('Value', item)">
-        </el-input>
-        <el-time-picker
-          v-if="item.Type == 'Time'"
-          v-model="item.Value"
-          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly"
-          :title="validateField('Value', item)"
-          arrow-control>
-        </el-time-picker>
-        <el-date-picker
-          v-if="item.Type == 'Date'"
-          v-model="item.Value"
-          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly"
-          :title="validateField('Value', item)"
-          type="date">
-        </el-date-picker>
-        <el-date-picker
-          v-if="item.Type == 'DateAndTime'"
-          v-model="item.Value"
-          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly"
-          :title="validateField('Value', item)"
-          type="datetime">
-        </el-date-picker>
-        <el-input v-if="item.Type == 'Expression'"
-                  v-model="item.Value"
-                  :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
-                  :readonly="readonly"
-                  :title="validateField('Value', item)">
-        </el-input>
-      </td>
-      <td>
-        <el-checkbox v-model="item.OverrideIfExists" :disabled="readonly"></el-checkbox>
-      </td>
-      <td v-if="!readonly" style="width: 42px;">
-        <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
-    </tr>
-  </table>
+                        v-model="item.Name"
+                        :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+                        :readonly="readonly"
+                        :title="validateField('Name', item)"
+                ></el-input>
+            </td>
+            <td>
+                <el-select
+                        v-model="item.Type"
+                        :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
+                        :disabled="readonly"
+                        :title="validateField('Type', item)"
+                        filterable
+                        style="width: 100%;"
+                        @change="item.Value = null">
+                    <el-option v-for="type in timertypes" :key="type" :label="type" :value="type"></el-option>
+                </el-select>
+            </td>
+            <td>
+                <el-input v-if="item.Type == 'Interval'"
+                          v-model="item.Value"
+                          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                          :readonly="readonly"
+                          :title="validateField('Value', item)">
+                </el-input>
+                <el-time-picker
+                        v-if="item.Type == 'Time'"
+                        v-model="item.Value"
+                        :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                        :readonly="readonly"
+                        :title="validateField('Value', item)"
+                        arrow-control>
+                </el-time-picker>
+                <el-date-picker
+                        v-if="item.Type == 'Date'"
+                        v-model="item.Value"
+                        :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                        :readonly="readonly"
+                        :title="validateField('Value', item)"
+                        type="date">
+                </el-date-picker>
+                <el-date-picker
+                        v-if="item.Type == 'DateAndTime'"
+                        v-model="item.Value"
+                        :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                        :readonly="readonly"
+                        :title="validateField('Value', item)"
+                        type="datetime">
+                </el-date-picker>
+                <el-input v-if="item.Type == 'Expression'"
+                          v-model="item.Value"
+                          :class="validateField('Value', item) ? 'WorkflowDesignerInputError' : ''"
+                          :readonly="readonly"
+                          :title="validateField('Value', item)">
+                </el-input>
+            </td>
+            <td>
+                <el-checkbox v-model="item.OverrideIfExists" :disabled="readonly"></el-checkbox>
+            </td>
+            <td v-if="!readonly" style="width: 42px;">
+                <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
+        </tr>
+    </table>
 </div>
 <div class="WorkflowDesignerButtons">
-  <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
-  <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+    <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
+    <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function timers_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.TimerFormLabel,
-          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
-      }
+  function timers_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.TimerFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
 
-      me.VueConfig.methods.UpdateLanguage();
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            editItem: undefined,
-            timertypes: me.graph.data.AdditionalParams.TimerTypes
-        });
+    me.VueConfig.methods.UpdateLanguage();
+    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+      readonly: false,
+      editItem: undefined,
+      timertypes: me.graph.data.AdditionalParams.TimerTypes
+    });
 
     me.VueConfig.methods.onUpdate = function () {
       var clonedTimers = WorkflowDesignerCommon.clone(me.graph.data.Timers);
@@ -177,6 +177,11 @@
         return WorkflowDesignerConstants.FieldIsRequired;
       }
 
+      if (name === 'Value' && item.Type === 'Interval' && me.VueConfig.methods.validateValueWithCalendar(item.Value)) {
+
+        return WorkflowDesignerConstants.FieldIsNotCorrected;
+      }
+
       if (name === 'Name') {
         var res = me.VueConfig.data.items.filter(function (i) {
           return i !== item && i.Name === item.Name
@@ -187,6 +192,41 @@
       }
     };
 
+    me.VueConfig.methods.validateValueWithCalendar = function (value) {
+      const calendarRegexList = [
+        new RegExp(/\d+\s*((years)|(year)|(y))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((months)|(month)|(mm))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((days)|(day)|(d))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((hours)|(hour)|(h))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((minutes)|(minute)|(m))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((seconds)|(second)|(s))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((milliseconds)|(millisecond)|(ml))(\W|\d|$)/, "i")
+      ]
+      const defaultRegexList = [
+        new RegExp(/\d+\s*((wyears)|(wyear)|(wy))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((wmonths)|(wmonth)|(wmm))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((wdays)|(wday)|(wd))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((whours)|(whour)|(wh))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((wminutes)|(wminute)|(wm))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((wseconds)|(wsecond)|(ws))(\W|\d|$)/, "i"),
+        new RegExp(/\d+\s*((wmilliseconds)|(wmillisecond)|(wml))(\W|\d|$)/, "i")
+      ]
+      let isCalendar = false;
+      let isDefault = false;
+      calendarRegexList.forEach(regex => {
+        if (regex.test(value)) {
+          isCalendar = true;
+        }
+      })
+      defaultRegexList.forEach(regex => {
+        if (regex.test(value)) {
+          isDefault = true;
+        }
+      })
+
+      return isCalendar === isDefault;
+    }
+
     me.VueConfig.methods.validate = function () {
       var validateFunc = me.VueConfig.methods.validateField;
       var items = me.VueConfig.data.items;
@@ -194,22 +234,19 @@
         var item = items[i];
         if (validateFunc('Name', item) || item.Value == null)
           return false;
+        if (validateFunc('Value', item))
+          return false;
       }
-
       return true;
     };
 
     me.VueConfig.methods.onSave = function () {
-
       if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
         me.VueConfig.data.items.forEach(function (item) {
           item.NotOverrideIfExists = !item.OverrideIfExists;
           me.VueConfig.methods.convertValue(item);
           delete item.OverrideIfExists;
         })
-
-        console.log(me.VueConfig.data.items)
-
         me.graph.UpdateData(me.graph.data.Timers, me.VueConfig.data.items);
         me.onClose(true);
       }
@@ -241,12 +278,12 @@
         me.VueConfig.methods.convertValue(item)
       });
 
-            if (WorkflowDesignerCommon.compareArray(
-                me.graph.data.Timers,
-                me.VueConfig.data.items,
+      if (WorkflowDesignerCommon.compareArray(
+        me.graph.data.Timers,
+        me.VueConfig.data.items,
         ['Name', 'Type', 'Value', 'NotOverrideIfExists'])) {
 
-                me.onClose(true);
+        me.onClose(true);
       } else {
         me.showConfirm();
       }

@@ -322,7 +322,8 @@ namespace OptimaJet.Workflow.MongoDB
                     SubprocessName  = pi.SubprocessName,
                     CreationDate  = pi.CreationDate,
                     LastTransitionDate  = pi.LastTransitionDate,
-                    StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString
+                    StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString,
+                    CalendarName = pi.CalendarName
                 }).ToList();
         }
 
@@ -447,7 +448,8 @@ namespace OptimaJet.Workflow.MongoDB
                 Persistence = new List<WorkflowProcessInstancePersistence>(),
                 TenantId = processInstance.TenantId,
                 SubprocessName = processInstance.SubprocessName,
-                CreationDate = processInstance.CreationDate
+                CreationDate = processInstance.CreationDate,
+                CalendarName = processInstance.CalendarName
             };
             await dbcoll.InsertOneAsync(newProcess).ConfigureAwait(false);
         }
@@ -1010,7 +1012,10 @@ namespace OptimaJet.Workflow.MongoDB
                     _runtime.ToRuntimeTime(processInstance.CreationDate)),
                 ParameterDefinition.Create(
                     systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterLastTransitionDate.Name),
-                     _runtime.ToRuntimeTime(processInstance.LastTransitionDate))
+                     _runtime.ToRuntimeTime(processInstance.LastTransitionDate)),
+                ParameterDefinition.Create(
+                    systemParameters.Single(sp => sp.Name == DefaultDefinitions.ParameterCalendarName.Name),
+                    processInstance.CalendarName)
             };
             return parameters;
         }

@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for PostgreSQL
-Version: 6.0
+Version: 11.0
 File: CreatePersistenceObjects.sql
 */
 -- WorkflowInbox
@@ -38,10 +38,13 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstance" (
   "SubprocessName" text NULL,
   "CreationDate" timestamp NOT NULL DEFAULT localtimestamp,
   "LastTransitionDate" timestamp NULL,
+  "CalendarName" character varying(256) null,
   CONSTRAINT "WorkflowProcessInstance_pkey" PRIMARY KEY ("Id")
 );
 
 CREATE INDEX IF NOT EXISTS "WorkflowProcessInstance_RootProcessId_idx"  ON "WorkflowProcessInstance" USING btree ("RootProcessId");
+
+CREATE INDEX IF NOT EXISTS "IX_CalendarName" ON "WorkflowProcessInstance" USING btree ("CalendarName");
 
 --WorkflowProcessInstancePersistence
 CREATE TABLE IF NOT EXISTS "WorkflowProcessInstancePersistence" (

@@ -23,5 +23,6 @@ namespace OptimaJet.Workflow.Redis
         public string SubprocessName { get; set; }
         public DateTime CreationDate { get; set; }
         public DateTime? LastTransitionDate { get; set; }
+        public string CalendarName { get; set; }
     }
 }

@@ -33,7 +33,8 @@ namespace OptimaJet.Workflow.Oracle
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.StartingTransition)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.SubprocessName)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.CreationDate), Type = OracleDbType.TimeStamp},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = OracleDbType.TimeStamp}
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.LastTransitionDate), Type = OracleDbType.TimeStamp},
+                new ColumnInfo {Name = nameof(ProcessInstanceEntity.CalendarName)}
             });
         }
 
