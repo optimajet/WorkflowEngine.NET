@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Version>11.0.0</Version>
+    <Version>11.0.1</Version>
     <AssemblyVersion>11.0.0</AssemblyVersion>
     <FileVersion>11.0.0</FileVersion>
     <Authors>Optimajet Limited</Authors>
