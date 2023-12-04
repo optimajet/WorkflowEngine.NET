@@ -1427,17 +1427,17 @@ namespace OptimaJet.Workflow.MongoDB
 
             string runtimeId = _runtime.Id;
 
-            Expression<Func<Models.WorkflowRuntime, object>> getterExpression;
+            string getterField;
             Func<Models.WorkflowRuntime, DateTime?> getterFunction;
 
             switch (timerCategory)
             {
                 case TimerCategory.Timer:
-                    getterExpression = e => e.NextTimerTime;
+                    getterField = "NextTimerTime";
                     getterFunction = x => x.NextTimerTime;
                     break;
                 case TimerCategory.ServiceTimer:
-                    getterExpression = e => e.NextServiceTimerTime;
+                    getterField = "NextServiceTimerTime";
                     getterFunction = x => x.NextServiceTimerTime;
                     break;
                 default:
@@ -1448,7 +1448,7 @@ namespace OptimaJet.Workflow.MongoDB
                 await (await runtimeColl.FindAsync(x => x.RuntimeId != runtimeId && x.Status == RuntimeStatus.Alive,
                         new FindOptions<Models.WorkflowRuntime>
                         {
-                            Sort = Builders<Models.WorkflowRuntime>.Sort.Descending(getterExpression),
+                            Sort = Builders<Models.WorkflowRuntime>.Sort.Descending(getterField),
                             Limit = 1
                         })
                         .ConfigureAwait(false))
@@ -1472,7 +1472,7 @@ namespace OptimaJet.Workflow.MongoDB
 
                 var newLock = Guid.NewGuid();
 
-                await runtimeColl.UpdateOneAsync(x => x.RuntimeId == runtimeId, Builders<Models.WorkflowRuntime>.Update.Set(getterExpression, result)).ConfigureAwait(false);
+                await runtimeColl.UpdateOneAsync(x => x.RuntimeId == runtimeId, Builders<Models.WorkflowRuntime>.Update.Set(getterField, result)).ConfigureAwait(false);
 
                 UpdateResult lockUpdateResult = await lockColl.UpdateOneAsync(x => x.Lock == syncLock && x.Name == timerCategoryName, 
                     Builders<Models.WorkflowSync>.Update.Set(c => c.Lock, newLock)).ConfigureAwait(false);

@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for Oracle
-Version: 11.0
+Version: 12.0
 File: CreatePersistenceObjects.sql
 */
 

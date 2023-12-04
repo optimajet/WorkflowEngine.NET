@@ -319,81 +319,81 @@
           <a v-if="!readonly" @click="addRow(FormData.ExceptionsHandlers)">{{ButtonTextCreate}}</a>
     </h4>
     <table v-if="FormData.ExceptionsHandlers.length > 0" class="WorkflowDesignerTable">
-        <tr>
-            <th></th>
-            <th>{{labels.Exceptions}}</th>
-            <th>{{labels.TypeLabel}}</th>
-            <th>{{labels.ImpAction}}</th>
-        </tr>
-        <tr v-for="(imp, index) in FormData.ExceptionsHandlers" :key="index"
-        :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
+      <tr>
+        <th></th>
+        <th>{{ labels.Exceptions }}</th>
+        <th>{{ labels.TypeLabel }}</th>
+        <th>{{ labels.ImpAction }}</th>
+      </tr>
+      <tr v-for="(imp, index) in FormData.ExceptionsHandlers" :key="index"
+          :class="dragOverIndex == index && dragOverBlock  == imp ? 'dragOver' : ''"
           @dragend="dragend($event)"
           @dragover="dragover(imp, index, $event)"
           @dragstart="dragstart(index, $event, FormData.ExceptionsHandlers)">
         <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
-                <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
-            </td >
-            <td>
-                <el-select
-                v-model="imp.Exceptions"
+          <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+        </td>
+        <td>
+          <el-select
+            v-model="imp.Exceptions"
             :class="validateField(notEmpty, imp.Exceptions) ? 'WorkflowDesignerInputError' : ''"
             :disabled="readonly"
             :placeholder="labels.Exceptions"
-                :title="validateField(notEmpty, imp.Exceptions)"
+            :title="validateField(notEmpty, imp.Exceptions)"
             allow-create
-                clearable
-                filterable
+            clearable
             filterable
             multiple
             style="width: 100%;">
-                <el-option key="AllExceptions" :label="labels.AllExceptions" value="*"></el-option>
-                </el-select>
-            </td>
-            <td >
-                <el-select
-                v-model="imp.Type"
+            <el-option key="AllExceptions" :label="labels.AllExceptions" value="*"></el-option>
+            <el-option v-for="item in imp.Exceptions" v-if="item !== '*'" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-select
+            v-model="imp.Type"
             :class="validateField(notEmpty, imp.Type) ? 'WorkflowDesignerInputError' : ''"
             :disabled="readonly"
             :placeholder="labels.TypeLabel"
-                :title="validateField(notEmpty, imp.Type)"
+            :title="validateField(notEmpty, imp.Type)"
             clearable
             filterable
             style="width: 100%;"
             @change="delete imp.NameForSet">
-                <el-option key="SetActivity" :label="labels.SetActivityLabel" value="SetActivity"></el-option>
-                <el-option key="SetState" :label="labels.SetStateLabel" value="SetState"></el-option>
-                <el-option key="Retry" :label="labels.RetryLabel" value="Retry"></el-option>
-                <el-option key="Ignore" :label="labels.IgnoreLabel" value="Ignore"></el-option>
-                </el-select>
-            </td>
-            <td v-if="imp.Type == 'SetActivity'"
-                :readonly="readonly">
-                <el-select
-                v-model="imp.NameForSet"
+            <el-option key="SetActivity" :label="labels.SetActivityLabel" value="SetActivity"></el-option>
+            <el-option key="SetState" :label="labels.SetStateLabel" value="SetState"></el-option>
+            <el-option key="Retry" :label="labels.RetryLabel" value="Retry"></el-option>
+            <el-option key="Ignore" :label="labels.IgnoreLabel" value="Ignore"></el-option>
+          </el-select>
+        </td>
+        <td v-if="imp.Type == 'SetActivity'"
+            :readonly="readonly">
+          <el-select
+            v-model="imp.NameForSet"
             :class="validateField(notEmpty, imp.NameForSet) ? 'WorkflowDesignerInputError' : ''"
             :disabled="readonly"
             :placeholder="labels.ActivityLabel"
             :title="validateField(notEmpty, imp.NameForSet)"
             clearable
-                filterable
+            filterable
             style="width: 100%;">
-                <el-option  v-for="item in activities" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-            </td>
-            <td v-if="imp.Type == 'SetState'" >
-                <el-select
-                v-model="imp.NameForSet"
+            <el-option v-for="item in activities" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </td>
+        <td v-if="imp.Type == 'SetState'">
+          <el-select
+            v-model="imp.NameForSet"
             :class="validateField(notEmpty, imp.NameForSet) ? 'WorkflowDesignerInputError' : ''"
             :disabled="readonly"
             :placeholder="labels.StateLabel"
-                :title="validateField(notEmpty, imp.NameForSet)"
+            :title="validateField(notEmpty, imp.NameForSet)"
             clearable
             filterable
             style="width: 100%;">
-                <el-option v-for="item in states" :key="item" :label="item" :value="item"></el-option>
-                </el-select>
-            </td>
-            <td v-if="imp.Type == 'Retry'">
+            <el-option v-for="item in states" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </td>
+        <td v-if="imp.Type == 'Retry'">
           <el-input-number v-model="imp.RetryCount" :class="validateField(notEmpty, imp.RetryCount) ? 'WorkflowDesignerInputError' : ''"
                            :placeholder="labels.RetryCountLabel"
                            :readonly="readonly"

@@ -1,4 +1,4 @@
-﻿using System;
+using System;
 using Autofac;
 using Autofac.Configuration;
 using Autofac.Extensions.DependencyInjection;
@@ -33,7 +33,7 @@ namespace WF.Sample
             services.AddHttpContextAccessor();
             services.AddAutoMapper();
 
-            services.AddRazorPages();
+            services.AddControllersWithViews().AddRazorRuntimeCompilation();
 
             // Create the container builder.
             var builder = new ContainerBuilder();

@@ -113,6 +113,21 @@ table.WorkflowDesignerTable td:not(:first-child):not(:last-child) {
   padding-inline-end: 10px;
 }
 
+.el-tag {
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+
+@-moz-document url-prefix() {
+  .el-tag {
+    text-overflow: unset;
+  }
+}
+
+.el-select-dropdown__item {
+  padding: 0 40px 0 20px;
+}
+
 td .cell .el-table__indent {
   padding-left: 0px !important;
 }
