@@ -467,21 +467,58 @@ namespace OptimaJet.Workflow.DbPersistence
 
         #endregion Command Insert/Update/Delete/Commit
 
-        public async Task<int> InsertAllAsync(SqlConnection connection, TEntity[] values, SqlTransaction transaction = null)
+        public async Task<int> InsertAllAsync(SqlConnection connection, TEntity[] entities,
+            SqlTransaction transaction = null)
         {
-            if (values.Length < 1)
+            if (entities.Length < 1)
             {
                 return 0;
             }
+            
+            if (entities.Length * DBColumns.Count < 2100)
+            {
+                return await InsertAllInternalAsync(connection, entities, transaction).ConfigureAwait(false);
+            }
 
+            bool needCommit = false;
+            
+            if (transaction == null)
+            {
+                if (connection.State != ConnectionState.Open)
+                {
+                    await connection.OpenAsync().ConfigureAwait(false);
+                }
+                transaction = connection.BeginTransaction();
+                needCommit = true;
+            }
+
+            int step = 2100 / DBColumns.Count - 1;
+            int result = 0;
+            for (int i = 0; i < entities.Length; i += step)
+            {
+                TEntity[] entitiesSlice = entities.Skip(i).Take(step).ToArray();
+                result += await InsertAllInternalAsync(connection, entitiesSlice, transaction).ConfigureAwait(false);
+            }
+
+            if (needCommit)
+            {
+                transaction.Commit();
+            }
+
+            return result;
+        }
+
+        private async Task<int> InsertAllInternalAsync(SqlConnection connection, TEntity[] entities,
+            SqlTransaction transaction = null)
+        {
             var parameters = new List<SqlParameter>();
             var names = new List<string>();
 
-            for (int i = 0; i < values.Length; i++)
+            for (int i = 0; i < entities.Length; i++)
             {
                 var i1 = i;
                 names.Add("(" + String.Join(",", DBColumns.Select(c => "@" + i1 + c.Name)) + ")");
-                parameters.AddRange(DBColumns.Select(c => CreateParameter(values[i], c, i.ToString())).ToArray());
+                parameters.AddRange(DBColumns.Select(c => CreateParameter(entities[i], c, i.ToString())).ToArray());
             }
 
             string command =
@@ -489,7 +526,8 @@ namespace OptimaJet.Workflow.DbPersistence
                 String.Join(",", DBColumns.Select(c => $"[{c.Name}]")) +
                 $") VALUES {String.Join(",", names)}";
 
-            return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters.ToArray()).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, parameters.ToArray())
+                .ConfigureAwait(false);
         }
 
         public static object ConvertToDbCompatibilityType(object obj)

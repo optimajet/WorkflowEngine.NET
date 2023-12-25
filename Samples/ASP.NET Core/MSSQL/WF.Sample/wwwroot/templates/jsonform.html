@@ -7,7 +7,7 @@
   class="WorkflowDesignerWindowForm"
   label-position="top"
   label-width="150px">
-  <el-form-item v-for="field in fields" :key="field.Name" :label="getLocalizationParameterLabel(field)" :prop="field.Name" :rules="getFieldRules(field)">
+  <el-form-item v-for="field in fields.filter(field => field.Type != 'Error')" :key="field.Name" :label="getLocalizationParameterLabel(field)" :prop="field.Name" :rules="getFieldRules(field)">
     <el-input v-if="field.Type == 'Text'" v-model="FormData[field.Name]" :readonly="readonly"></el-input>
     <el-input-number v-if="field.Type == 'Number'" v-model="FormData[field.Name]" :disabled="readonly"
                      controls-position="right"></el-input-number>
@@ -58,6 +58,15 @@
     <el-button v-if="field.Type == 'Json'" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == field ? 'is-active' : '')"
                @click="showjson('DefaultValue', field)"></el-button>
   </el-form-item>
+  <div style="display: flex;flex-direction: column;gap: 10px">
+    <el-alert
+      v-for="field in fields.filter(field => field.Type == 'Error')"
+      :title="field.Title"
+      :description="FormData[field.Name]"
+      type="error"
+      show-icon
+    />
+  </div>
 </el-form>
 
 <div class="WorkflowDesignerButtons">
