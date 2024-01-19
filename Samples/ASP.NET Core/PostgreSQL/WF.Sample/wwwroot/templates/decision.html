@@ -295,6 +295,13 @@
 
 
             var objectCorrect = me.VueConfig.methods.objectCorrect;
+
+            if ((formdata.State)
+              || (formdata.Conditions.find(item => typeof(item.ResultOnPreExecution) === 'boolean'))
+              || (formdata.WhenTrueClassifier && formdata.WhenTrueClassifier !== WorkflowDesignerConstants.notSpecified)
+              || (formdata.WhenFalseClassifier && formdata.WhenFalseClassifier !== WorkflowDesignerConstants.notSpecified)) {
+              me.VueConfig.data.expertMode = true;
+            }
         };
 
     me.VueConfig.methods.showUserComment = function () {

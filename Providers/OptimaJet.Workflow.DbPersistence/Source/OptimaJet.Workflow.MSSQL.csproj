@@ -8,7 +8,7 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <AssemblyVersion>12.1.0</AssemblyVersion>
     <FileVersion>12.1.0</FileVersion>
-    <Version>12.1.0</Version>
+    <Version>12.1.1</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Optimajet Limited</Authors>
@@ -22,7 +22,7 @@
       Steps for workflow runtime configuration with DbPersistenceProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
       Create WorkflowRuntime section.
     </Description>
-    <Copyright>OptimaJet Workflow Engine 2023</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <PackageId>WorkflowEngine.NETCore-ProviderForMSSQL</PackageId>
@@ -46,7 +46,7 @@
     <None Remove="Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.2" />
+    <PackageReference Include="Microsoft.Data.SqlClient" Version="2.1.7" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj" />

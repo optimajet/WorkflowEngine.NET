@@ -6,12 +6,12 @@
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>12.1.0</Version>
+    <Version>12.1.1</Version>
     <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
     <Authors>Optimajet Limited</Authors>
     <Company>Optimajet Limited</Company>
     <Product>Workflow Engine</Product>
-    <Copyright>OptimaJet Workflow Engine 2023</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <RepositoryUrl>
