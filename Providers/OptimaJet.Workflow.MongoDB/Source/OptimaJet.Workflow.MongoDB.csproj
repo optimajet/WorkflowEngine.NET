@@ -7,9 +7,9 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
     <PackageId>WorkflowEngine.NETCore-ProviderForMongoDB</PackageId>
-    <Version>12.1.1</Version>
-    <AssemblyVersion>12.1.0</AssemblyVersion>
-    <FileVersion>12.1.0</FileVersion>
+    <Version>12.2.0</Version>
+    <AssemblyVersion>12.2.0</AssemblyVersion>
+    <FileVersion>12.2.0</FileVersion>
     <Authors>Optimajet Limited</Authors>
     <Product>Workflow Engine</Product>
     <Description>

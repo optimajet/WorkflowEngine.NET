@@ -218,12 +218,17 @@
         activity.IsForSetState = false;
       }
 
-      const setValue = (key, value) => {
-        if (value) activity[key] = value;
+      for (const parameter of item.Parameters ?? []) {
+        if (!!parameter.DefaultValue) activity[parameter.Name] = parameter.DefaultValue;
+        activity.Annotations.push({
+          Name: parameter.Name,
+          JsonValue: parameter.DefaultValue
+        });
       }
 
-      item.Parameters?.forEach(({Name, DefaultValue}) => setValue(Name, DefaultValue));
-      for (const key in item.DefaultValues) setValue(key, item.DefaultValues[key]);
+      for (const key in item.DefaultValues) {
+        if (!!item.DefaultValues[key]) activity[key] = item.DefaultValues[key];
+      }
 
       me.graph.CreateActivity(pos, activity);
     }

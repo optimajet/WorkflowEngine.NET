@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MSSQL/12.1.1": {
+      "OptimaJet.Workflow.MSSQL/12.2.0": {
         "dependencies": {
           "Microsoft.Data.SqlClient": "2.1.7",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "12.1.1",
-          "OptimaJet.Workflow.Core": "12.1.0.0"
+          "WorkflowEngine.NETCore-Core": "12.2.0",
+          "OptimaJet.Workflow.Core": "12.2.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MSSQL.dll": {}
@@ -1454,7 +1454,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/12.1.1": {
+      "WorkflowEngine.NETCore-Core/12.2.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1469,18 +1469,18 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "OptimaJet.Workflow.Core/12.1.0.0": {
+      "OptimaJet.Workflow.Core/12.2.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "12.1.0.0",
-            "fileVersion": "12.1.0.0"
+            "assemblyVersion": "12.2.0.0",
+            "fileVersion": "12.2.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MSSQL/12.1.1": {
+    "OptimaJet.Workflow.MSSQL/12.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1600,14 +1600,14 @@
     "Microsoft.NETCore.Platforms/1.1.1": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-mDUJD1eLXIzmUnWCzWlmNQZGDp/cVGT8KyhzMcJNk2nlfdFUOoZai9idT8/FacJr8Nv8zhAmdf39FHm5qWUoGQ==",
+      "sha512": "sha512-TMBuzAHpTenGbGgk0SMTwyEkyijY/Eae4ZGsFNYJvAr/LDn1ku3Etp3FPxChmDp5HHF3kzJuoaa08N0xjqAJfQ==",
       "path": "microsoft.netcore.platforms/1.1.1",
       "hashPath": "microsoft.netcore.platforms.1.1.1.nupkg.sha512"
     },
     "Microsoft.NETCore.Targets/1.1.3": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-pxwq8g2PYRiEF5KXVjmZFMNTqsg2Gr1puv/pR1sqAduAKHAGbaCuJ6+yc3pAJseClQUD29S2Ubrm7n/ZD78dUg==",
+      "sha512": "sha512-3Wrmi0kJDzClwAC+iBdUBpEKmEle8FQNsCs77fkiOIw/9oYA07bL1EZNX0kQ2OMN3xpwvl0vAtOCYY3ndDNlhQ==",
       "path": "microsoft.netcore.targets/1.1.3",
       "hashPath": "microsoft.netcore.targets.1.1.3.nupkg.sha512"
     },
@@ -1950,7 +1950,7 @@
     "System.Private.Uri/4.3.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-G6xehzgf1cPvAp/BOiUBFxWeAzDBxwurC6u5R0OKXgtXPBb6GQFZUGVMOiEyc4HRAZVZ8B2ASwX0vkF0YiS5lw==",
+      "sha512": "sha512-o1+7RJnu3Ik3PazR7Z7tJhjPdE000Eq2KGLLWhqJJKXj04wrS8lwb1OFtDF9jzXXADhUuZNJZlPc98uwwqmpFA==",
       "path": "system.private.uri/4.3.2",
       "hashPath": "system.private.uri.4.3.2.nupkg.sha512"
     },
@@ -2083,7 +2083,7 @@
     "System.Runtime.Serialization.Json/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-Ma/DVHfRcOcgQFHVGafUrT7hT1IitsnmUjpNZG5xJCYrI/8wfaYKGYNZycxQyl9Nk+9IAJiMJE6RFuavRQ2WEg==",
+      "sha512": "sha512-CpVfOH0M/uZ5PH+M9+Gu56K0j9lJw3M+PKRegTkcrY/stOIvRUeonggxNrfBYLA5WOHL2j15KNJuTuld3x4o9w==",
       "path": "system.runtime.serialization.json/4.3.0",
       "hashPath": "system.runtime.serialization.json.4.3.0.nupkg.sha512"
     },
@@ -2174,7 +2174,7 @@
     "System.Security.SecureString/4.3.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-VQRz+JB9J9NVIKT7ZpIvDUIhq6nNhKfoo1sWLwBvbat+A78FIUS54XXn9a+xu2VFXfWpR8vn6LenYqNKAuq0Eg==",
+      "sha512": "sha512-PnXp38O9q/2Oe4iZHMH60kinScv6QiiL2XH54Pj2t0Y6c2zKPEiAZsM/M3wBOHLNTBDFP0zfy13WN2M0qFz5jg==",
       "path": "system.security.securestring/4.3.0",
       "hashPath": "system.security.securestring.4.3.0.nupkg.sha512"
     },
@@ -2276,12 +2276,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/12.1.1": {
+    "WorkflowEngine.NETCore-Core/12.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/12.1.0.0": {
+    "OptimaJet.Workflow.Core/12.2.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

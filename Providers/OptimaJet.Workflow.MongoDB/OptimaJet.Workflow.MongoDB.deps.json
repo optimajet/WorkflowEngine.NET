@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/12.1.1": {
+      "OptimaJet.Workflow.MongoDB/12.2.0": {
         "dependencies": {
           "MongoDB.Driver.signed": "2.19.0",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "12.1.1",
-          "OptimaJet.Workflow.Core": "12.1.0.0"
+          "WorkflowEngine.NETCore-Core": "12.2.0",
+          "OptimaJet.Workflow.Core": "12.2.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -1113,7 +1113,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/12.1.1": {
+      "WorkflowEngine.NETCore-Core/12.2.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1128,18 +1128,18 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "OptimaJet.Workflow.Core/12.1.0.0": {
+      "OptimaJet.Workflow.Core/12.2.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "12.1.0.0",
-            "fileVersion": "12.1.0.0"
+            "assemblyVersion": "12.2.0.0",
+            "fileVersion": "12.2.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/12.1.1": {
+    "OptimaJet.Workflow.MongoDB/12.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1700,7 +1700,7 @@
     "System.Security.Principal.Windows/5.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-RKkgqq8ishctQTGbtXqyuOGkUx1fAhkqb1OoHYdRJRlbYLoLWkSkWYHRN/17DzplsSlZtf2Xr8BXjNhO8nRnzQ==",
+      "sha512": "sha512-t0MGLukB5WAVU9bO3MGzvlGnyJPgUlcwerXn1kzBRjwLKixT96XV0Uza41W49gVd8zEMFu9vQEFlv0IOrytICA==",
       "path": "system.security.principal.windows/5.0.0",
       "hashPath": "system.security.principal.windows.5.0.0.nupkg.sha512"
     },
@@ -1781,12 +1781,12 @@
       "path": "zstdsharp.port/0.6.2",
       "hashPath": "zstdsharp.port.0.6.2.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/12.1.1": {
+    "WorkflowEngine.NETCore-Core/12.2.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/12.1.0.0": {
+    "OptimaJet.Workflow.Core/12.2.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
