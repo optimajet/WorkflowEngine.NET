@@ -5,7 +5,7 @@
                  @click="transition.ShowProperties()"></el-button>
     </div>
   </el-tooltip>
-  <div class="WorkflowDesignerElementToolbarIconContainer">
+  <div v-if="!graph.Settings.readonly" class="WorkflowDesignerElementToolbarIconContainer">
     <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Color"></el-button>
   </div>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Color">

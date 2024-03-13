@@ -1,0 +1,77 @@
+<Project Sdk="Microsoft.NET.Sdk">
+  <!-- Version -->
+  <PropertyGroup>
+    <Version>12.2.0</Version>
+    <AssemblyVersion>12.2.0</AssemblyVersion>
+    <FileVersion>12.2.0</FileVersion>
+  </PropertyGroup>
+  <!-- Build -->
+  <PropertyGroup>
+    <AssemblyName>OptimaJet.Workflow.SQLite</AssemblyName>
+    <RootNamespace>OptimaJet.Workflow.SQLite</RootNamespace>
+    <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
+    <LangVersion>10</LangVersion>
+    <ImplicitUsings>enable</ImplicitUsings>
+    <Nullable>disable</Nullable>
+    <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
+    <NoWarn>1701;1702;8002</NoWarn>
+    <SignAssembly>true</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+  </PropertyGroup>
+  <!-- Targets -->
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <ItemGroup>
+    <Compile Remove="Properties\AssemblyInfo.cs" />
+  </ItemGroup>
+  <!-- Nuget -->
+  <PropertyGroup>
+    <PackageId>WorkflowEngine.NETCore-ProviderForSQLite</PackageId>
+    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <Authors>Optimajet Limited</Authors>
+    <Company>Optimajet Limited</Company>
+    <Product>Workflow Engine</Product>
+    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
+    <PackageLicenseFile>License.txt</PackageLicenseFile>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <RepositoryUrl>https://github.com/optimajet/WorkflowEngine.NET</RepositoryUrl>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
+    <Description>
+      Contains dlls for SQLite Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
+      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
+
+      Steps for workflow runtime configuration with SQLiteProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
+      Create WorkflowRuntime section.
+    </Description>
+    <PackageTags>workflow engine, SQLite, sqlite, provider for SQLite</PackageTags>
+    <PackageIcon>icon.png</PackageIcon>
+  </PropertyGroup>
+  <!-- Dependencies -->
+  <ItemGroup>
+    <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.13" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="7.0.13" />
+  </ItemGroup>
+  <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.1" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
+  </ItemGroup>
+  <!-- Includes -->
+  <ItemGroup>
+    <None Include="license.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
+    <None Include="icon.png" Pack="true" PackagePath="" />
+  </ItemGroup>
+</Project>

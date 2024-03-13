@@ -177,9 +177,13 @@
         return WorkflowDesignerConstants.FieldIsRequired;
       }
 
-      if (name === 'Value' && item.Type === 'Interval' && me.VueConfig.methods.validateValueWithCalendar(item.Value)) {
-
-        return WorkflowDesignerConstants.FieldIsNotCorrected;
+      if (name === 'Value' && item.Type === 'Interval') {
+        if (me.VueConfig.methods.validateCombineValueWithCalendar(item.Value)) {
+          return WorkflowDesignerConstants.DoNotCombineCalendars;
+        }
+        if (me.VueConfig.methods.validateValueWithCalendar(item.Value)) {
+          return WorkflowDesignerConstants.FieldIsNotCorrected;
+        }
       }
 
       if (name === 'Name') {
@@ -192,24 +196,59 @@
       }
     };
 
+    me.VueConfig.methods.validateCombineValueWithCalendar = function (value) {
+      const calendarRegexList = [
+        new RegExp(/\d+\s*((wyears)|(wyear)|(wy))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((wmonths)|(wmonth)|(wmm))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((wdays)|(wday)|(wd))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((whours)|(whour)|(wh))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((wminutes)|(wminute)|(wm))(\W|\d|$)/, 'i'),
+      ]
+
+      const defaultRegexList = [
+        new RegExp(/\d+(\s+|$)/, "i"),
+        new RegExp(/\d+\s*((years)|(year)|(y))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((months)|(month)|(mm))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((days)|(day)|(d))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((hours)|(hour)|(h))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((minutes)|(minute)|(m))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((seconds)|(second)|(s))(\W|\d|$)/, 'i'),
+        new RegExp(/\d+\s*((milliseconds)|(millisecond)|(ms))(\W|\d|$)/, 'i'),
+      ]
+
+      let isCalendar = false;
+      let isDefault = false;
+      calendarRegexList.forEach(regex => {
+        if (regex.test(value)) {
+          isCalendar = true;
+        }
+      })
+      defaultRegexList.forEach(regex => {
+        if (regex.test(value)) {
+          isDefault = true;
+        }
+      })
+
+      return isCalendar === isDefault;
+    }
+
     me.VueConfig.methods.validateValueWithCalendar = function (value) {
       const calendarRegexList = [
-        new RegExp(/\d+\s*((years)|(year)|(y))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((months)|(month)|(mm))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((days)|(day)|(d))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((hours)|(hour)|(h))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((minutes)|(minute)|(m))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((seconds)|(second)|(s))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((milliseconds)|(millisecond)|(ml))(\W|\d|$)/, "i")
+        new RegExp(/\d+\s*((wyears)|(wyear)|(wy))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((wmonths)|(wmonth)|(wmm))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((wdays)|(wday)|(wd))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((whours)|(whour)|(wh))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((wminutes)|(wminute)|(wm))(\s*$)/, "i"),
       ]
       const defaultRegexList = [
-        new RegExp(/\d+\s*((wyears)|(wyear)|(wy))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((wmonths)|(wmonth)|(wmm))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((wdays)|(wday)|(wd))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((whours)|(whour)|(wh))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((wminutes)|(wminute)|(wm))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((wseconds)|(wsecond)|(ws))(\W|\d|$)/, "i"),
-        new RegExp(/\d+\s*((wmilliseconds)|(wmillisecond)|(wml))(\W|\d|$)/, "i")
+        new RegExp(/\d+(?!\w+)(\s*$)/, "i"),
+        new RegExp(/\d+\s*((years)|(year)|(y))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((months)|(month)|(mm))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((days)|(day)|(d))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((hours)|(hour)|(h))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((minutes)|(minute)|(m))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((seconds)|(second)|(s))(\s*$)/, "i"),
+        new RegExp(/\d+\s*((milliseconds)|(millisecond)|(ms))(\s*$)/, "i")
       ]
       let isCalendar = false;
       let isDefault = false;
