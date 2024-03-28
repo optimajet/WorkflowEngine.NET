@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for MySQL
-Version: 12.3
+Version: 12.4
 File: DropPersistenceObjects.sql
 */
 

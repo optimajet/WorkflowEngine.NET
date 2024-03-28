@@ -3,7 +3,7 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="12.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.4.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="12.4.0" />
   </ItemGroup>
 </Project>

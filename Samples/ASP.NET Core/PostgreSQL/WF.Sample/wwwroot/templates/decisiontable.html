@@ -83,6 +83,7 @@
               style="width: 100%;">
             </el-input>
           </td>
+          <td v-if="transition.condition.Type == 'Always'" colspan="2"></td>
           <template v-if="expertMode">
             <td>
               <el-select
@@ -90,6 +91,7 @@
                 :disabled="readonly"
                 filterable
                 placeholder=""
+                clearable
                 style="width: 100%;">
                 <el-option key="True" :value="true" label="True"></el-option>
                 <el-option key="False" :value="false" label="False"></el-option>
@@ -394,10 +396,8 @@
       if (name == 'Type') {
         var conditions = me.VueConfig.data.FormData.Conditions;
         var labels = me.VueConfig.data.labels;
-        if (item.Type == 'Always' && conditions.filter(function (c) {
-          return c.Type == item.Type
-        }).length > 1) {
-          return labels.AlwaysConditionShouldBeSingle;
+        if (item.Type == 'Always') {
+          return labels.AlwaysConditionIsIllegal;
         }
 
         if (item.Type == 'Otherwise' && conditions.filter(function (c) {

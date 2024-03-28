@@ -1,12 +1,12 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>net6.0</TargetFramework>
+    <TargetFramework>net8.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.4" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMySQL" Version="12.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.4.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMySQL" Version="12.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />

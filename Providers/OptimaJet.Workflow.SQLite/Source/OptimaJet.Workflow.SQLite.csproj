@@ -1,9 +1,9 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Version -->
   <PropertyGroup>
-    <Version>12.3.0</Version>
-    <AssemblyVersion>12.3.0</AssemblyVersion>
-    <FileVersion>12.3.0</FileVersion>
+    <Version>12.4.0</Version>
+    <AssemblyVersion>12.4.0</AssemblyVersion>
+    <FileVersion>12.4.0</FileVersion>
   </PropertyGroup>
   <!-- Build -->
   <PropertyGroup>
@@ -16,7 +16,6 @@
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>1701;1702;8002</NoWarn>
     <SignAssembly>true</SignAssembly>
-    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <!-- Targets -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -56,7 +55,7 @@
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <ProjectReference Include="..\OptimaJet.Workflow.Core\OptimaJet.Workflow.Core.csproj" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.4.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.13" />
