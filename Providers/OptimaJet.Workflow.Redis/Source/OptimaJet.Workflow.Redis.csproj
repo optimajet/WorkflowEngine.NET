@@ -4,9 +4,9 @@
     <RootNamespace>OptimaJet.Workflow.Redis</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.Redis</AssemblyName>
     <SignAssembly>True</SignAssembly>
-    <AssemblyVersion>12.4.0</AssemblyVersion>
-    <FileVersion>12.4.0</FileVersion>
-    <Version>12.4.0</Version>
+    <AssemblyVersion>12.5.0</AssemblyVersion>
+    <FileVersion>12.5.0</FileVersion>
+    <Version>12.5.0</Version>
     <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
     <Authors>Optimajet Limited</Authors>
@@ -48,7 +48,7 @@
     <PackageReference Include="StackExchange.Redis" Version="2.0.601" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.4.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.5.0" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
