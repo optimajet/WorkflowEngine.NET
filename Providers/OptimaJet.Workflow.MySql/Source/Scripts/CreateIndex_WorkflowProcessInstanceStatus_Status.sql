@@ -1,0 +1,1 @@
+CREATE INDEX `IX_WorkflowProcessInstanceStatus_Status` ON `workflowprocessinstancestatus` (`Status`);

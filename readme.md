@@ -30,7 +30,7 @@ Steps for include the engine into your project: https://workflowengine.io/docume
 
 ### Samples
 
-We have samples with MS SQL, MongoDB, MySQL, Oracle, PostgreSQL, Redis. Check out [Samples](Samples).
+We have samples with MS SQL, MongoDB, MySQL, Oracle, PostgreSQL. Check out [Samples](Samples).
 
 **Official web site** &mdash; [https://workflowengine.io](https://workflowengine.io)
 

@@ -3,9 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Version>12.5.1</Version>
-    <AssemblyVersion>12.5.0</AssemblyVersion>
-    <FileVersion>12.5.0</FileVersion>
+    <Version>13.0.0</Version>
+    <AssemblyVersion>13.0.0</AssemblyVersion>
+    <FileVersion>13.0.0</FileVersion>
     <Authors>Optimajet Limited</Authors>
     <Product>Workflow Engine</Product>
     <Description>
@@ -43,12 +43,62 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
     <PackageReference Include="MySql.Data" Version="8.0.30" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.5.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.0.0" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
+    <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceStatus_Status.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceStatus_Status.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceStatus_StatusRuntimeId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceStatus_StatusRuntimeId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCode.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCode.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowGlobalParameter.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowGlobalParameter.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowInbox.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowInbox.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessInstance.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstance.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessInstancePersistence.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstancePersistence.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessInstanceStatus.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstanceStatus.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessScheme.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessScheme.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessTimer.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessTimer.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessTransitionHistory.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessTransitionHistory.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowRuntime.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowRuntime.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowScheme.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowScheme.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowSync.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowSync.sql" />
+    <None Remove="Scripts\InsertIgnore_WorkflowSync.sql" />
+    <EmbeddedResource Include="Scripts\InsertIgnore_WorkflowSync.sql" />
   </ItemGroup>
 </Project>

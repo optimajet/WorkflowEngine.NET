@@ -4,9 +4,11 @@ using System.Data;
 using System.Globalization;
 using Microsoft.Data.SqlClient;
 using System.Linq;
+using System.Reflection;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
+using FluentMigrator.Runner;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Fault;
@@ -15,6 +17,7 @@ using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Runtime.Timers;
 using OptimaJet.Workflow.Core.Entities;
+using OptimaJet.Workflow.Migrator;
 using OptimaJet.Workflow.MSSQL.Models;
 using OptimaJet.Workflow.Plugins;
 using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
@@ -23,7 +26,7 @@ using WorkflowSync = OptimaJet.Workflow.MSSQL.Models.WorkflowSync;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.DbPersistence
 {
-    public class MSSQLProvider : IWorkflowProvider
+    public class MSSQLProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
         
@@ -1208,6 +1211,14 @@ namespace OptimaJet.Workflow.DbPersistence
             return (await WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
         }
 
+        ///<inheritdoc/>
+        public void ConfigureMigrations(IMigrationRunnerBuilder builder, Assembly assembly)
+        {
+            builder.AddSqlServer();
+            builder.WithGlobalConnectionString(ConnectionString);
+            Assembly scanAssembly = assembly ?? typeof(MSSQLProvider).Assembly;
+            builder.ScanIn(scanAssembly);
+        }
 
         private WorkflowRuntimeModel GetModel(RuntimeEntity result)
         {

@@ -557,7 +557,8 @@
     "ZoomTo100": "Set zoom to 100%",
     "Clone": "Clone",
     "ZoomPositionDefault": "Zoom default",
-    "InstanceInfo": "Instance info"
+    "InstanceInfo": "Instance info",
+    "About": "About"
   },
   "LibraryLabel": {
     "PluginRequired": "Plugin required:"
@@ -636,5 +637,9 @@
   "ErrorInBrowserConsole": "See more info in the browser console.",
   "FileNotExist": "The file doesn't exist",
   "InformationCopiedToClipboardAndConsole": "The information is copied to the clipboard and displayed in the browser console.",
-  "InformationLoggedToConsole": "The information is displayed in the browser console."
+  "InformationLoggedToConsole": "The information is displayed in the browser console.",
+  "DesignerVersion": "Designer version",
+  "BackendVersion": "Backend version",
+  "DesignerAndBackendVersionMismatch": "Designer and Backend versions do not match!",
+  "ClipboardAccessDenied": "Access to the clipboard has been denied. The information is displayed in the browser console."
 }

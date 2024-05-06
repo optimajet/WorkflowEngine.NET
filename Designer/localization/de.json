@@ -553,8 +553,9 @@
 		"ZoomIn": "vergrößern",
 		"ZoomOut": "verkleinern",
 		"ZoomPositionDefault": "Zoom Standard",
-		"ZoomTo100": "Zoom auf 100 einstellen%"
-	},
+    "ZoomTo100": "Zoom auf 100 einstellen%",
+    "About": "Über Designer"
+  },
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Aktion",
@@ -632,5 +633,9 @@
 		"TriggerType": "Art",
 		"UserComment": "Kommentar"
 	},
-	"Warning": "Warnung"
+	"Warning": "Warnung",
+  "DesignerVersion": "Designer version",
+  "BackendVersion": "Backend version",
+  "DesignerAndBackendVersionMismatch": "Designer und Backend-Versionen stimmen nicht überein!",
+  "ClipboardAccessDenied": "Der Zugriff auf die Zwischenablage wurde verweigert. Die Informationen werden in der Browserkonsole angezeigt."
 }

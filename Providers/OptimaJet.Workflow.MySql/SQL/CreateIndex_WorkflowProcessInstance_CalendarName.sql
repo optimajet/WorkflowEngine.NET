@@ -1,0 +1,1 @@
+CREATE INDEX `ix_calendarname` ON `workflowprocessinstance` (`CalendarName`);

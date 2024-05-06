@@ -46,6 +46,7 @@
           </el-menu-item>
         </el-submenu>
         <el-menu-item index="1-4" @click="showInstanceInfo">{{ labels.InstanceInfo }}</el-menu-item>
+        <el-menu-item index="1-5" @click="showAbout">{{ labels.About }}</el-menu-item>
       </el-submenu>
     </el-menu>
 
@@ -175,7 +176,21 @@
         </template>
     </span>
   </el-dialog>
+
+  <el-dialog
+    :before-close="() => showAboutDialog = false"
+    :modal-append-to-body="false"
+    :title="labels.About"
+    :visible="showAboutDialog"
+    width="30%">
+    <div style="user-select: text">{{ aboutDialogDesignerVersionText }}</div>
+    <div style="user-select: text">{{ aboutDialogBackendVersionText }}</div>
+    <span slot="footer" class="dialog-footer">
+            <el-button @click="showAboutDialog = false">{{ labels.ButtonTextOk }}</el-button>
+    </span>
+  </el-dialog>
 </div>
+
 <script type="application/javascript">
   function toolbar_Init(me) {
     const data = me.VueConfig.data;
@@ -183,10 +198,14 @@
       data.labels = {
         ...WorkflowDesignerConstants.ToolbarLabel,
         ...WorkflowDesignerConstants.Logs,
+        ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
         ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
         InformationCopiedToClipboardAndConsole: WorkflowDesignerConstants.InformationCopiedToClipboardAndConsole,
         InformationLoggedToConsole: WorkflowDesignerConstants.InformationLoggedToConsole,
+        DesignerVersion: WorkflowDesignerConstants.DesignerVersion,
+        BackendVersion: WorkflowDesignerConstants.BackendVersion,
+        ClipboardAccessDenied: WorkflowDesignerConstants.ClipboardAccessDenied
       };
     }
 
@@ -204,7 +223,9 @@
     data.LogEnabled = false;
     data.language = {};
     data.languagesList = [];
-
+    data.aboutDialogDesignerVersionText = '';
+    data.aboutDialogBackendVersionText = '';
+    data.showAboutDialog = false;
     me.VueConfig.methods.changeLogEnabled = isProcess
       ? designer.changelogenabled : me.graph.setLogEnabled;
 
@@ -442,11 +463,23 @@
         console.info('Instance info', data)
 
         const {notify} = me.VueConfig.methods;
-        navigator.clipboard.writeText(data).then(
-          () => notify(me.VueConfig.data.labels.InformationCopiedToClipboardAndConsole),
-          () => notify(me.VueConfig.data.labels.InformationLoggedToConsole)
-        );
+
+        // Checking if the Clipboard API is available
+        if (navigator.clipboard) {
+          navigator.clipboard.writeText(data).then(
+            () => notify(me.VueConfig.data.labels.InformationCopiedToClipboardAndConsole)
+          );
+        } else {
+          notify(me.VueConfig.data.labels.ClipboardAccessDenied, 'error');
+        }
       })
+    }
+
+    me.VueConfig.methods.showAbout = function () {
+      const versionInfo = me.graph.designer?.getAbout();
+      this.aboutDialogDesignerVersionText = me.VueConfig.data.labels.DesignerVersion + ": " + versionInfo.designerVersion;
+      this.aboutDialogBackendVersionText = me.VueConfig.data.labels.BackendVersion + ": " + me.graph.designer.backendVersion;
+      this.showAboutDialog = true;
     }
   }
 </script>

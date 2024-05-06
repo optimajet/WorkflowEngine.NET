@@ -554,8 +554,9 @@
 		"ZoomIn": "تكبير",
 		"ZoomOut": "تصغير",
 		"ZoomPositionDefault": "التكبير الافتراضي",
-		"ZoomTo100": "تعيين التكبير إلى 100%"
-	},
+		"ZoomTo100": "تعيين التكبير إلى 100%",
+    "About": "عن"
+  },
 	"TransitionAuto": "السيارات",
 	"TransitionFormLabel": {
 		"ActionLabel": "الإجراء",
@@ -633,5 +634,9 @@
 		"TriggerType": "النوع",
 		"UserComment": "التعليق"
 	},
-	"Warning": "تحذير"
+	"Warning": "تحذير",
+  "DesignerVersion": "النسخة للمصمم",
+  "BackendVersion": "النسخة للخلفية",
+  "DesignerAndBackendVersionMismatch": "إصدارات المصمم والخلفية لا تتطابق!",
+  "ClipboardAccessDenied": "تم رفض الوصول إلى الحافظة. يتم عرض المعلومات في وحدة تحكم المتصفح."
 }

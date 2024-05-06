@@ -553,7 +553,8 @@
 		"ZoomIn": "zoomer",
 		"ZoomOut": "Zoom Arrière",
 		"ZoomPositionDefault": "Zoom par défaut",
-		"ZoomTo100": "Régler le zoom sur 100%"
+		"ZoomTo100": "Régler le zoom sur 100%",
+    "About": "À propos du designer"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
@@ -632,5 +633,9 @@
 		"TriggerType": "Type",
 		"UserComment": "Commentaire"
 	},
-	"Warning": "Avertissement"
+	"Warning": "Avertissement",
+  "DesignerVersion": "Version du designer",
+  "BackendVersion": "Version du backend",
+  "DesignerAndBackendVersionMismatch": "Les versions du concepteur et du backend ne correspondent pas!",
+  "ClipboardAccessDenied": "L'accès au presse-papiers a été refusé. Les informations sont affichées dans la console du navigateur."
 }

@@ -1,7 +1,7 @@
 /*
 Company: OptimaJet
 Project: WorkflowEngine.NET Provider for SQLite
-Version: 12.5
+Version: 13.0
 File: CreatePersistenceObjects.sql
 */
 

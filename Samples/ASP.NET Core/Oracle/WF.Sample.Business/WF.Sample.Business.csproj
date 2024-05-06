@@ -3,7 +3,28 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.5.1" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="12.5.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="13.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="12.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Scripts\CreateTable_Document.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_Document.sql" />
+    <None Remove="Scripts\CreateTable_Employee.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_Employee.sql" />
+    <None Remove="Scripts\CreateTable_EmployeeRole.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_EmployeeRole.sql" />
+    <None Remove="Scripts\CreateTable_Roles.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_Roles.sql" />
+    <None Remove="Scripts\CreateTable_StructDivision.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_StructDivision.sql" />
+    <None Remove="Scripts\CreateView_Heads.sql" />
+    <EmbeddedResource Include="Scripts\CreateView_Heads.sql" />
+    <None Remove="Scripts\CreateView_StructDivisionParents.sql" />
+    <EmbeddedResource Include="Scripts\CreateView_StructDivisionParents.sql" />
+    <None Remove="Scripts\CreateView_StructDivisionParentsAndThis.sql" />
+    <EmbeddedResource Include="Scripts\CreateView_StructDivisionParentsAndThis.sql" />
+    <None Remove="Scripts\FillData.sql" />
+    <EmbeddedResource Include="Scripts\FillData.sql" />
   </ItemGroup>
 </Project>

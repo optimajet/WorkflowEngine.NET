@@ -554,8 +554,9 @@
 		"ZoomIn": "Увеличить масштаб",
 		"ZoomOut": "Уменьшить масштаб",
 		"ZoomPositionDefault": "Масштабирование по умолчанию",
-		"ZoomTo100": "Масштаб на 100%"
-	},
+		"ZoomTo100": "Масштаб на 100%",
+    "About": "О дизайнере"
+  },
 	"TransitionAuto": "Авто",
 	"TransitionFormLabel": {
 		"ActionLabel": "Действие",
@@ -633,5 +634,9 @@
 		"TriggerType": "Тип",
 		"UserComment": "Комментарий"
 	},
-	"Warning": "Предупреждение"
+	"Warning": "Предупреждение",
+  "DesignerVersion": "Версия дизайнера",
+  "BackendVersion": "Версия бэкенда",
+  "DesignerAndBackendVersionMismatch": "Версии дизайнера и бэкэнда не совпадают!",
+  "ClipboardAccessDenied": "Доступ к буферу обмена отсутствует. Информация отображена в консоли браузера."
 }

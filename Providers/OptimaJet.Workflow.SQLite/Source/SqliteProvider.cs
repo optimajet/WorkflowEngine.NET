@@ -1,5 +1,7 @@
 using System.Globalization;
+using System.Reflection;
 using System.Xml.Linq;
+using FluentMigrator.Runner;
 using Microsoft.Data.Sqlite;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
@@ -9,12 +11,13 @@ using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
 using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Core.Runtime.Timers;
+using OptimaJet.Workflow.Migrator;
 using OptimaJet.Workflow.Plugins;
 using WorkflowSync = OptimaJet.Workflow.SQLite.Models.WorkflowSync;
 
 namespace OptimaJet.Workflow.SQLite
 {
-    public class SqliteProvider : IWorkflowProvider
+    public class SqliteProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
         
@@ -1194,6 +1197,15 @@ namespace OptimaJet.Workflow.SQLite
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return (await WorkflowRuntime.SelectAllAsync(connection).ConfigureAwait(false)).Select(GetModel).ToList();
+        }
+        
+        ///<inheritdoc/>
+        public void ConfigureMigrations(IMigrationRunnerBuilder builder, Assembly assembly)
+        {
+            builder.AddSQLite();
+            builder.WithGlobalConnectionString(Options.ConnectionString);
+            Assembly scanAssembly = assembly ?? typeof(SqliteProvider).Assembly;
+            builder.ScanIn(scanAssembly);
         }
 
         private WorkflowRuntimeModel GetModel(RuntimeEntity result)

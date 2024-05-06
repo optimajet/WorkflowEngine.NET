@@ -554,7 +554,8 @@
 		"ZoomIn": "yakınlaştırmak",
 		"ZoomOut": "uzaklaştırmak",
 		"ZoomPositionDefault": "Yakınlaştırma varsayılanı",
-		"ZoomTo100": "Yakınlaştırmayı 100 olarak ayarla%"
+		"ZoomTo100": "Yakınlaştırmayı 100 olarak ayarla%",
+    "About": "Tasarımcı Hakkında"
 	},
 	"TransitionAuto": "Oto",
 	"TransitionFormLabel": {
@@ -633,5 +634,9 @@
 		"TriggerType": "Tip",
 		"UserComment": "Yorum"
 	},
-	"Warning": "Uyarı"
+	"Warning": "Uyarı",
+  "DesignerVersion": "Tasarımcı versiyonu",
+  "BackendVersion": "Arka uç versiyonu",
+  "DesignerAndBackendVersionMismatch": "Tasarımcı ve Arka Uç sürümleri eşleşmiyor!",
+  "ClipboardAccessDenied": "Panoya erişim reddedildi. Bilgiler tarayıcı konsolunda gösteriliyor."
 }

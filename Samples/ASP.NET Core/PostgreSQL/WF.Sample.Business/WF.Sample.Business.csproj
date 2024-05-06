@@ -3,7 +3,14 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="12.5.1" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="12.5.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="13.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="12.5.1" />
+  </ItemGroup>
+  <ItemGroup>
+    <None Remove="Scripts\CreateObjects.sql" />
+    <EmbeddedResource Include="Scripts\CreateObjects.sql" />
+    <None Remove="Scripts\FillData.sql" />
+    <EmbeddedResource Include="Scripts\FillData.sql" />
   </ItemGroup>
 </Project>

@@ -553,7 +553,8 @@
 		"ZoomIn": "ingrandire",
 		"ZoomOut": "Rimpicciolisci",
 		"ZoomPositionDefault": "Zoom predefinito",
-		"ZoomTo100": "Imposta zoom su 100%"
+		"ZoomTo100": "Imposta zoom su 100%",
+    "About": "Informazioni sul designer"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
@@ -632,5 +633,9 @@
 		"TriggerType": "Tipo",
 		"UserComment": "Commentare"
 	},
-	"Warning": "Avvertimento"
+	"Warning": "Avvertimento",
+  "DesignerVersion": "Versione del designer",
+  "BackendVersion": "Versione del backend",
+  "DesignerAndBackendVersionMismatch": "Le versioni del designer e del backend non corrispondono!",
+  "ClipboardAccessDenied": "L'accesso agli appunti è stato negato. Le informazioni vengono visualizzate nella console del browser."
 }

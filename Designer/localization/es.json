@@ -553,7 +553,8 @@
 		"ZoomIn": "acercar",
 		"ZoomOut": "Alejar el Zoom",
 		"ZoomPositionDefault": "Zoom por defecto",
-		"ZoomTo100": "Ajuste el zoom a 100%"
+		"ZoomTo100": "Ajuste el zoom a 100%",
+    "About": "Acerca del diseñador"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
@@ -632,5 +633,9 @@
 		"TriggerType": "Tipo",
 		"UserComment": "Comentario"
 	},
-	"Warning": "Advertencia"
+	"Warning": "Advertencia",
+  "DesignerVersion": "Versión del diseñador",
+  "BackendVersion": "Versión del backend",
+  "DesignerAndBackendVersionMismatch": "Las versiones del diseñador y del backend no coinciden!",
+  "ClipboardAccessDenied": "Se ha denegado el acceso al portapapeles. La información se muestra en la consola del navegador."
 }

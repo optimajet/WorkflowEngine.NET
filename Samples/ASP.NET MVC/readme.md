@@ -45,7 +45,3 @@ Demo on-line: https://demo.workflowengine.io/designer
     1. DB\CreatePersistenceObjects.sql
     2. DB\CreateObjects.sql
     3. DB\FillData.sql
-
-5. **Redis** - Sample for Redis
-
-   Specify connection to your Redis server in `WF.Sample\Configuration\AppSettings.config`

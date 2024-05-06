@@ -553,7 +553,8 @@
 		"ZoomIn": "ampliar",
 		"ZoomOut": "reduzir",
 		"ZoomPositionDefault": "Zoom padrão",
-		"ZoomTo100": "Definir zoom para 100%"
+		"ZoomTo100": "Definir zoom para 100%",
+    "About": "Sobre o designer"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
@@ -632,5 +633,9 @@
 		"TriggerType": "Tipo",
 		"UserComment": "Comentario"
 	},
-	"Warning": "Aviso"
+	"Warning": "Aviso",
+  "DesignerVersion": "Versão do designer",
+  "BackendVersion": "Versão do backend",
+  "DesignerAndBackendVersionMismatch": "As versões do Designer e do Backend não correspondem!",
+  "ClipboardAccessDenied": "O acesso à área de transferência foi negado. As informações são exibidas no console do navegador."
 }
