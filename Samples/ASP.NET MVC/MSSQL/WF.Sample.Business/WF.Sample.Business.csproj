@@ -75,11 +75,13 @@
     <Reference Include="Newtonsoft.Json, Version=13.0.0.0, Culture=neutral, PublicKeyToken=30ad4fe6b2a6aeed, processorArchitecture=MSIL">
       <HintPath>..\packages\Newtonsoft.Json.13.0.1\lib\net45\Newtonsoft.Json.dll</HintPath>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.Core, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-Core.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.Core, Version=13.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+      <HintPath>..\packages\WorkflowEngine.NETCore-Core.13.0.0\lib\netstandard2.0\OptimaJet.Workflow.Core.dll</HintPath>
+      <Private>True</Private>
     </Reference>
-    <Reference Include="OptimaJet.Workflow.FilesPlugin, Version=8.1.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7, processorArchitecture=MSIL">
-      <HintPath>..\packages\WorkflowEngine.NETCore-FilesPlugin.8.1.0\lib\netstandard2.0\OptimaJet.Workflow.FilesPlugin.dll</HintPath>
+    <Reference Include="OptimaJet.Workflow.FilesPlugin, Version=13.0.0.0, Culture=neutral, PublicKeyToken=3d29392dccd464d7">
+      <HintPath>..\packages\WorkflowEngine.NETCore-FilesPlugin.13.0.0\lib\netstandard2.0\OptimaJet.Workflow.FilesPlugin.dll</HintPath>
+      <Private>True</Private>
     </Reference>
     <Reference Include="System" />
     <Reference Include="System.Buffers, Version=4.0.3.0, Culture=neutral, PublicKeyToken=cc7b13ffcd2ddd51, processorArchitecture=MSIL">

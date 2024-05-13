@@ -9,8 +9,10 @@ using System.Threading.Tasks;
 using System.Collections.Generic;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
+using OptimaJet.Workflow.Migrator;
 using OptimaJet.Workflow.Plugins;
 using OptimaJet.Workflow.Plugins.AssignmentsPlugin;
+using WF.Sample.Business.Migrations;
 using WF.Sample.Business.Model;
 
 namespace WF.Sample.Business.Workflow
@@ -103,6 +105,8 @@ namespace WF.Sample.Business.Workflow
                             .WithPlugins(null, basicPlugin, loopPlugin, filePlugin, approvalPlugin, assignmentPlugin)
                             .WithExternalParametersProvider(externalParametersProvider)
                             .CodeActionsDebugOn()
+                            .RunMigrations()
+                            .RunCustomMigration(typeof(Migration2000010CreateObjects).Assembly)
                             .AsSingleServer() //.AsMultiServer()
                         //    .WithConsoleAllLogger()
                             .Start();

@@ -6,15 +6,15 @@
   "compilationOptions": {},
   "targets": {
     ".NETCoreApp,Version=v6.0": {
-      "OptimaJet.Workflow.SQLite/13.0.0": {
+      "OptimaJet.Workflow.SQLite/13.1.0": {
         "dependencies": {
           "FluentMigrator.Runner.SQLite": "5.2.0",
           "Microsoft.Data.Sqlite": "7.0.13",
           "Microsoft.EntityFrameworkCore.Sqlite.Core": "7.0.13",
-          "WorkflowEngine.NETCore-Core": "13.0.0",
-          "WorkflowEngine.NETCore-Migrator": "13.0.0",
-          "OptimaJet.Workflow.Core": "13.0.0.0",
-          "OptimaJet.Workflow.Migrator": "13.0.0.0"
+          "WorkflowEngine.NETCore-Core": "13.1.0",
+          "WorkflowEngine.NETCore-Migrator": "13.1.0",
+          "OptimaJet.Workflow.Core": "13.1.0.0",
+          "OptimaJet.Workflow.Migrator": "13.1.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.SQLite.dll": {}
@@ -1594,7 +1594,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/13.0.0": {
+      "WorkflowEngine.NETCore-Core/13.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1609,37 +1609,37 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "WorkflowEngine.NETCore-Migrator/13.0.0": {
+      "WorkflowEngine.NETCore-Migrator/13.1.0": {
         "dependencies": {
           "FluentMigrator": "5.2.0",
           "FluentMigrator.Runner": "5.2.0",
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "WorkflowEngine.NETCore-Core": "13.0.0"
+          "WorkflowEngine.NETCore-Core": "13.1.0"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {}
         }
       },
-      "OptimaJet.Workflow.Core/13.0.0.0": {
+      "OptimaJet.Workflow.Core/13.1.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.0.0"
+            "assemblyVersion": "13.1.0.0",
+            "fileVersion": "13.1.0.0"
           }
         }
       },
-      "OptimaJet.Workflow.Migrator/13.0.0.0": {
+      "OptimaJet.Workflow.Migrator/13.1.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {
-            "assemblyVersion": "13.0.0.0",
-            "fileVersion": "13.0.0.0"
+            "assemblyVersion": "13.1.0.0",
+            "fileVersion": "13.1.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.SQLite/13.0.0": {
+    "OptimaJet.Workflow.SQLite/13.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2589,22 +2589,22 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/13.0.0": {
+    "WorkflowEngine.NETCore-Core/13.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/13.0.0": {
+    "WorkflowEngine.NETCore-Migrator/13.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/13.0.0.0": {
+    "OptimaJet.Workflow.Core/13.1.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Migrator/13.0.0.0": {
+    "OptimaJet.Workflow.Migrator/13.1.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
