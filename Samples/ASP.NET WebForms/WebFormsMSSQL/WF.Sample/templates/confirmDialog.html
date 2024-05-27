@@ -1,9 +1,9 @@
 <el-dialog
   :before-close="function() {visible = false}"
-  :modal-append-to-body="false"
   :title="title"
   :visible="visible"
-  width="30%">
+  width="30%"
+  append-to-body>
   <span v-html="message"></span>
   <span slot="footer" class="dialog-footer">
         <template v-if="typeof actions !== 'undefined' && actions.length > 0">

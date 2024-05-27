@@ -615,6 +615,33 @@ td .el-checkbox__input {
   /* background-color: transparent; */
 }
 
+.el-menu--popup .el-divider {
+  margin: 5px;
+}
+
+.WorkflowDesignerToolbar .MainMenu {
+  display: flex;
+  gap: 10px;
+  align-items: center;
+  margin-inline-start: -2px;
+  margin-inline-end: -6px;
+  color: #606266;
+}
+
+.WorkflowDesignerToolbar .Title {
+  display: flex;
+  flex: 1;
+  align-items: center;
+  justify-content: space-between;
+}
+
+.WorkflowDesignerToolbar .Label {
+  text-overflow: ellipsis;
+  width: 205px;
+  overflow: hidden;
+  white-space: nowrap;
+}
+
 .WorkflowDesignerToolbarIcon.ShowProperties{
   background-image: url(data:image/svg+xml;base64,PHN2ZyB3aWR0aD0iMjAiIGhlaWdodD0iMjAiIHZpZXdCb3g9IjAgMCAyMCAyMCIgZmlsbD0ibm9uZSIgeG1sbnM9Imh0dHA6Ly93d3cudzMub3JnLzIwMDAvc3ZnIj4KPHBhdGggZmlsbC1ydWxlPSJldmVub2RkIiBjbGlwLXJ1bGU9ImV2ZW5vZGQiIGQ9Ik0xMC44MjkzIDVDMTAuNDE3NSA2LjE2NTE5IDkuMzA2MjIgNyA4IDdDNi42OTM3OCA3IDUuNTgyNTQgNi4xNjUxOSA1LjE3MDcxIDVIMkMxLjQ0NzcyIDUgMSA0LjU1MjI4IDEgNEMxIDMuNDQ3NzIgMS40NDc3MiAzIDIgM0g1LjE3MDcxQzUuNTgyNTQgMS44MzQ4MSA2LjY5Mzc4IDEgOCAxQzkuMzA2MjIgMSAxMC40MTc1IDEuODM0ODEgMTAuODI5MyAzSDE4QzE4LjU1MjMgMyAxOSAzLjQ0NzcyIDE5IDRDMTkgNC41NTIyOCAxOC41NTIzIDUgMTggNUgxMC44MjkzWk05IDRDOSA0LjU1MjI4IDguNTUyMjggNSA4IDVDNy40NDc3MiA1IDcgNC41NTIyOCA3IDRDNyAzLjQ0NzcyIDcuNDQ3NzIgMyA4IDNDOC41NTIyOCAzIDkgMy40NDc3MiA5IDRaTTE2LjgyOTMgMTFDMTYuNDE3NSAxMi4xNjUyIDE1LjMwNjIgMTMgMTQgMTNDMTIuNjkzOCAxMyAxMS41ODI1IDEyLjE2NTIgMTEuMTcwNyAxMUgyQzEuNDQ3NzIgMTEgMSAxMC41NTIzIDEgMTBDMSA5LjQ0NzcyIDEuNDQ3NzIgOSAyIDlIMTEuMTcwN0MxMS41ODI1IDcuODM0ODEgMTIuNjkzOCA3IDE0IDdDMTUuMzA2MiA3IDE2LjQxNzUgNy44MzQ4MSAxNi44MjkzIDlIMThDMTguNTUyMyA5IDE5IDkuNDQ3NzIgMTkgMTBDMTkgMTAuNTUyMyAxOC41NTIzIDExIDE4IDExSDE2LjgyOTNaTTE1IDEwQzE1IDEwLjU1MjMgMTQuNTUyMyAxMSAxNCAxMUMxMy40NDc3IDExIDEzIDEwLjU1MjMgMTMgMTBDMTMgOS40NDc3MiAxMy40NDc3IDkgMTQgOUMxNC41NTIzIDkgMTUgOS40NDc3MiAxNSAxMFpNNiAxOUM3LjMwNjIyIDE5IDguNDE3NDYgMTguMTY1MiA4LjgyOTI5IDE3SDE4QzE4LjU1MjMgMTcgMTkgMTYuNTUyMyAxOSAxNkMxOSAxNS40NDc3IDE4LjU1MjMgMTUgMTggMTVIOC44MjkyOUM4LjQxNzQ2IDEzLjgzNDggNy4zMDYyMiAxMyA2IDEzQzQuNjkzNzggMTMgMy41ODI1NCAxMy44MzQ4IDMuMTcwNzEgMTVIMkMxLjQ0NzcyIDE1IDEgMTUuNDQ3NyAxIDE2QzEgMTYuNTUyMyAxLjQ0NzcyIDE3IDIgMTdIMy4xNzA3MUMzLjU4MjU0IDE4LjE2NTIgNC42OTM3OCAxOSA2IDE5Wk02IDE3QzYuNTUyMjggMTcgNyAxNi41NTIzIDcgMTZDNyAxNS40NDc3IDYuNTUyMjggMTUgNiAxNUM1LjQ0NzcyIDE1IDUgMTUuNDQ3NyA1IDE2QzUgMTYuNTUyMyA1LjQ0NzcyIDE3IDYgMTdaIiBmaWxsPSIjMzMzMzMzIi8+Cjwvc3ZnPgo=);
 }
@@ -1077,7 +1104,8 @@ div.SpacedRow > div:not(:last-child) {
 }
 
 .WorkflowDesignerWindow .el-form--label-top .el-form-item__label, .WorkflowDesignerWindow .CustomLabel,
-.WorkflowDesignerWindow:not(.WorkflowDesignerLogs) tr:first-child > th {
+.WorkflowDesignerWindow:not(.WorkflowDesignerLogs) tr:first-child > th,
+.WFEForm.el-form--label-top .el-form-item__label {
   padding: 0 0 5px;
   font-size: 12px;
   font-weight: bolder;

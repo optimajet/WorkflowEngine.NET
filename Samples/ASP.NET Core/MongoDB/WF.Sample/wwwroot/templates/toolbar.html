@@ -1,42 +1,49 @@
 <div class="WorkflowDesignerToolbarMultiBlock">
-
   <div v-if="!settings.hideElementsToolbar && !settings.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
-    <el-menu mode="horizontal" >
+    <el-menu mode="horizontal">
       <el-submenu index="1">
-        <template slot="title">{{ labels.Menu }}</template>
-        <el-submenu index="1-1">
-          <template slot="title">{{ labels.File }}</template>
-          <el-menu-item index="1-1-1" @click="uploadXML">
-            {{ labels.UploadScheme }}
-          </el-menu-item>
-          <el-menu-item v-if="settings.showBpmnMenu" index="1-1-2" @click="uploadBPMN">
-            {{ labels.UploadBPMN }}
-          </el-menu-item>
-          <el-menu-item index="1-1-3" @click="downloadXML">
-            {{ labels.DownloadScheme }}
-          </el-menu-item>
-          <el-menu-item v-if="settings.showBpmnMenu" index="1-1-5" @click="downloadBPMN">
-            {{ labels.DownloadBPMN }}
-          </el-menu-item>
-          <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
-            {{ labels.SaveToImage }}
-          </el-menu-item>
-        </el-submenu>
-        <el-submenu index="1-2">
-          <template slot="title">{{ labels.Scheme }}</template>
-          <el-menu-item index="1-2-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
-          <el-menu-item index="1-2-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
-          <el-menu-item index="1-2-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
-          <el-menu-item index="1-2-5" @click="showExInfo">
-            {{ labels.Info }}
-            <i v-if="exinfo" class="el-icon-check"></i>
-          </el-menu-item>
-          <el-menu-item index="1-2-6" @click="showLegend">
-            {{ labels.Legend }}
-            <i v-if="legend" class="el-icon-check"></i>
-          </el-menu-item>
-          <el-menu-item index="1-2-7" @click="clear">{{ labels.Clear }}</el-menu-item>
-        </el-submenu>
+        <template slot="title">
+          <div class="MainMenu">
+            <div v-html="icons.menu"></div>
+            <div class="Title">
+              <label class="Label">
+                {{ schemeCode ?? labels.UntitledScheme }}
+              </label>
+              <i class="el-icon-arrow-down"></i>
+            </div>
+          </div>
+        </template>
+        <el-menu-item index="1-0" @click="showSaveAsDialog(true)">
+          {{ labels.SaveAs }}
+        </el-menu-item>
+        <el-menu-item index="1-1-1" @click="uploadXML">
+          {{ labels.UploadScheme }}
+        </el-menu-item>
+        <el-menu-item v-if="settings.showBpmnMenu" index="1-1-2" @click="uploadBPMN">
+          {{ labels.UploadBPMN }}
+        </el-menu-item>
+        <el-menu-item index="1-1-3" @click="downloadXML">
+          {{ labels.DownloadScheme }}
+        </el-menu-item>
+        <el-menu-item v-if="settings.showBpmnMenu" index="1-1-5" @click="downloadBPMN">
+          {{ labels.DownloadBPMN }}
+        </el-menu-item>
+        <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
+          {{ labels.SaveToImage }}
+        </el-menu-item>
+        <el-divider></el-divider>
+        <el-menu-item index="1-2-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
+        <el-menu-item index="1-2-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
+        <el-menu-item index="1-2-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
+        <el-menu-item index="1-2-5" @click="showExInfo">
+          {{ labels.Info }}
+          <i v-if="exinfo" class="el-icon-check"></i>
+        </el-menu-item>
+        <el-menu-item index="1-2-6" @click="showLegend">
+          {{ labels.Legend }}
+          <i v-if="legend" class="el-icon-check"></i>
+        </el-menu-item>
+        <el-menu-item index="1-4" @click="showInstanceInfo">{{ labels.InstanceInfo }}</el-menu-item>
         <el-submenu index="1-3">
           <template slot="title">{{ labels.Language }}</template>
           <el-menu-item v-for="lang in languagesList" :key="lang.code" style="display: flex" @click="setLanguage(lang.code)">
@@ -45,11 +52,14 @@
             <i v-if="lang.code === language.code" class="el-icon-check"></i>
           </el-menu-item>
         </el-submenu>
-        <el-menu-item index="1-4" @click="showInstanceInfo">{{ labels.InstanceInfo }}</el-menu-item>
         <el-menu-item index="1-5" @click="showAbout">{{ labels.About }}</el-menu-item>
+        <el-divider></el-divider>
+        <el-menu-item index="1-2-7" @click="clear">{{ labels.Clear }}</el-menu-item>
       </el-submenu>
     </el-menu>
+  </div>
 
+  <div v-if="!settings.hideElementsToolbar && !settings.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
     <el-tooltip :content="labels.Save" v-if="settings.showSaveButton">
       <el-button :class="getButtonClass()" @click="save()">
         <div class="WorkflowDesignerToolbarIcon Save RTLIcon"></div>
@@ -189,16 +199,42 @@
             <el-button @click="showAboutDialog = false">{{ labels.ButtonTextOk }}</el-button>
     </span>
   </el-dialog>
+
+  <el-dialog
+    :before-close="() => showSaveAsDialog(false)"
+    :title="labels.SaveAs"
+    :visible="renameDialogVisible"
+    width="30%"
+    append-to-body>
+    <el-form ref="form"
+             label-position="top"
+             :model="FormData"
+             onSubmit="return false"
+             class="WFEForm">
+      <el-form-item :label="labels.Name" :rules="requiredRule()"
+                    class="el-form-item" prop="SchemeName" style="flex-grow: 1;">
+        <el-input v-model="FormData.SchemeName" :placeholder="labels.Name"></el-input>
+      </el-form-item>
+    </el-form>
+    <span slot="footer" class="dialog-footer">
+        <template>
+            <el-button @click="saveRenamedScheme" type="primary">{{ labels.ButtonTextYes }}</el-button>
+            <el-button @click="showSaveAsDialog(false)">{{ labels.ButtonTextCancel }}</el-button>
+        </template>
+    </span>
+  </el-dialog>
 </div>
 
 <script type="application/javascript">
   function toolbar_Init(me) {
     const data = me.VueConfig.data;
+    data.icons = WorkflowDesignerConstants.icons
     me.VueConfig.methods.UpdateLanguage = function () {
       data.labels = {
         ...WorkflowDesignerConstants.ToolbarLabel,
         ...WorkflowDesignerConstants.Logs,
         ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
+        Name: WorkflowDesignerConstants.Name,
         ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
         InformationCopiedToClipboardAndConsole: WorkflowDesignerConstants.InformationCopiedToClipboardAndConsole,
@@ -213,7 +249,9 @@
     const designer = me.graph.designer;
     const isProcess = !!designer.processid;
     data.toImageDialogVisible = false;
+    data.renameDialogVisible = false;
     data.imageAspectRatio = 1;
+    data.FormData = {}
     data.showGrid = false;
     data.legend = false;
     data.logs = false;
@@ -229,7 +267,13 @@
     me.VueConfig.methods.changeLogEnabled = isProcess
       ? designer.changelogenabled : me.graph.setLogEnabled;
 
+    const updateSchemeName = () => {
+      data.schemeCode = designer.schemecode;
+      data.FormData.SchemeName = data.schemeCode;
+    }
+
     me.VueConfig.methods.onUpdate = function () {
+      updateSchemeName();
       data.settings = me.graph.Settings;
       data.undoDisabled = me.graph.graphDataIndex <= 0;
       data.redoDisabled = me.graph.graphData && me.graph.graphData.length <= (me.graph.graphDataIndex + 1);
@@ -302,9 +346,49 @@
       data.toImageDialogVisible = visible;
     };
 
+    me.VueConfig.methods.showSaveAsDialog = function (visible) {
+      if (visible) updateSchemeName();
+      data.renameDialogVisible = visible;
+    };
+
     me.VueConfig.methods.toImage = function () {
       me.graph.toImage(data.imageAspectRatio, data.showGrid);
       me.VueConfig.methods.showToImageDialog(false);
+    };
+
+    const isSchemeExists = (schemecode, onExists, onNotExists) => {
+      const {processid, schemeid} = designer;
+      const onSuccess = response => {
+        if (response?.data) {
+          onExists();
+          return;
+        }
+        onNotExists();
+      }
+      designer.exists({schemecode, processid, schemeid}, onSuccess);
+    }
+
+    me.VueConfig.methods.saveRenamedScheme = function () {
+      const newName = data.FormData.SchemeName;
+      const save = () => {
+        const {notify} = me.VueConfig.methods;
+        me.graph.designer?.save(() => {
+          notify(WorkflowDesignerConstants.SchemeSaved);
+          data.schemeCode = designer.schemecode = newName;
+          data.renameDialogVisible = false;
+        }, undefined, newName);
+      }
+      const confirmToReplace = () => me.VueConfig.methods.showConfirm({
+        message: WorkflowDesignerConstants.ReplaceSchemeConfirm,
+        onSuccess: save
+      });
+      if (this.$refs && WorkflowDesignerCommon.validateForms(this.$refs)) {
+        if (newName !== data.schemeCode) {
+          isSchemeExists(newName, confirmToReplace, save);
+          return;
+        }
+        save();
+      }
     };
 
     me.VueConfig.methods.uploadXML = function () {
