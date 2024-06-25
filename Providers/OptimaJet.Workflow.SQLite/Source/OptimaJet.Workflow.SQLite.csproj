@@ -1,7 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <!-- Version -->
   <PropertyGroup>
-    <Version>13.2.0</Version>
+    <Version>13.2.1</Version>
     <AssemblyVersion>13.2.0</AssemblyVersion>
     <FileVersion>13.2.0</FileVersion>
   </PropertyGroup>
@@ -55,8 +55,8 @@
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.1" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.13" />

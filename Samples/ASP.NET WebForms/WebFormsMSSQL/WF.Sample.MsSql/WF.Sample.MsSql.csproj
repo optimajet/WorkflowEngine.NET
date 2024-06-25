@@ -39,8 +39,8 @@
       <HintPath>..\packages\Azure.Core.1.39.0\lib\net472\Azure.Core.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Azure.Identity, Version=1.11.3.0, Culture=neutral, PublicKeyToken=92742159e12e44c8">
-      <HintPath>..\packages\Azure.Identity.1.11.3\lib\netstandard2.0\Azure.Identity.dll</HintPath>
+    <Reference Include="Azure.Identity, Version=1.11.4.0, Culture=neutral, PublicKeyToken=92742159e12e44c8">
+      <HintPath>..\packages\Azure.Identity.1.11.4\lib\netstandard2.0\Azure.Identity.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="EntityFramework, Version=6.0.0.0, Culture=neutral, PublicKeyToken=b77a5c561934e089">
@@ -190,12 +190,12 @@
       <HintPath>..\packages\Microsoft.Extensions.Primitives.8.0.0\lib\net462\Microsoft.Extensions.Primitives.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Identity.Client, Version=4.60.3.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae">
-      <HintPath>..\packages\Microsoft.Identity.Client.4.60.3\lib\net462\Microsoft.Identity.Client.dll</HintPath>
+    <Reference Include="Microsoft.Identity.Client, Version=4.61.3.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae">
+      <HintPath>..\packages\Microsoft.Identity.Client.4.61.3\lib\net462\Microsoft.Identity.Client.dll</HintPath>
       <Private>True</Private>
     </Reference>
-    <Reference Include="Microsoft.Identity.Client.Extensions.Msal, Version=4.60.3.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae">
-      <HintPath>..\packages\Microsoft.Identity.Client.Extensions.Msal.4.60.3\lib\netstandard2.0\Microsoft.Identity.Client.Extensions.Msal.dll</HintPath>
+    <Reference Include="Microsoft.Identity.Client.Extensions.Msal, Version=4.61.3.0, Culture=neutral, PublicKeyToken=0a613f4dd989e8ae">
+      <HintPath>..\packages\Microsoft.Identity.Client.Extensions.Msal.4.61.3\lib\netstandard2.0\Microsoft.Identity.Client.Extensions.Msal.dll</HintPath>
       <Private>True</Private>
     </Reference>
     <Reference Include="Microsoft.IdentityModel.Abstractions, Version=7.5.1.0, Culture=neutral, PublicKeyToken=31bf3856ad364e35">

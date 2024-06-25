@@ -1342,7 +1342,7 @@ namespace OptimaJet.Workflow.MongoDB
        public Task<int> GetProcessHistoryCountAsync(Guid processId)
        {
            IMongoCollection<WorkflowProcessTransitionHistory> dbcoll = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
-           return dbcoll.AsQueryable().CountAsync();
+           return dbcoll.AsQueryable().Where(c => c.ProcessId == processId).CountAsync();
        }
 
        public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)

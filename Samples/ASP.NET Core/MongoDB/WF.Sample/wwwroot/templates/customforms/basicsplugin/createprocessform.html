@@ -203,6 +203,7 @@
 
       var params = JSON.parse(me.VueConfig.data.FormData.ProcessCreationParameters);
       if (params != null) {
+        me.VueConfig.data.items = []
         params.forEach(function (item) {
           var purpose = item.persist ? 'Persistence' : 'Temporary';
           me.VueConfig.data.items.push({'Purpose': purpose, 'Value': item.value, 'Name': item.name});
