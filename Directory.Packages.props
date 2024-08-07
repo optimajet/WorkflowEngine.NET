@@ -1,0 +1,88 @@
+<Project>
+  <PropertyGroup>
+    <ManagePackageVersionsCentrally>true</ManagePackageVersionsCentrally>
+  </PropertyGroup>
+  <!-- Common -->
+  <ItemGroup>
+    <PackageVersion Include="ConfigureAwait.Fody" Version="3.3.1" />
+    <PackageVersion Include="Fody" Version="6.6.3" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="13.3.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="13.3.0" />
+  </ItemGroup>
+  <!-- Plugins -->
+  <ItemGroup>
+    <!-- ActiveDirectoryPlugin-->
+    <PackageVersion Include="Novell.Directory.Ldap.NETStandard" Version="3.6.0" />
+    <PackageVersion Include="System.DirectoryServices" Version="7.0.1" />
+    <!-- FilesPlugin -->
+    <PackageVersion Include="FluentFTP" Version="32.4.3" />
+    <PackageVersion Include="SharpZipLib" Version="1.4.2" />
+    <PackageVersion Include="SSH.NET" Version="2020.0.2" />
+    <!-- NexmoPlugin -->
+    <PackageVersion Include="Nexmo.Csharp.Client" Version="5.1.0" />
+    <!-- SlackPlugin -->
+    <PackageVersion Include="SlackAPI" Version="1.1.13" />
+    <!-- TelegramPlugin -->
+    <PackageVersion Include="TLSharp" Version="0.1.0.555" />
+    <!-- TwilioPlugin -->
+    <PackageVersion Include="Twilio" Version="5.45.1" />
+  </ItemGroup>
+  <!-- Core -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp" Version="4.1.0" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.CSharp.Scripting" Version="4.1.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyModel" Version="1.1.1" />
+    <PackageVersion Include="System.Collections.Specialized" Version="4.3.0" />
+    <PackageVersion Include="System.Security.Cryptography.Csp" Version="4.3.0" />
+    <PackageVersion Include="System.Xml.XmlDocument" Version="4.3.0" />
+    <PackageVersion Include="Newtonsoft.Json" Version="13.0.3" />
+    <PackageVersion Include="ThomasLevesque.WeakEvent" Version="4.1.0" />
+  </ItemGroup>
+  <!-- Providers -->
+  <ItemGroup>
+    <PackageVersion Include="FluentMigrator" Version="5.2.0" />
+    <PackageVersion Include="FluentMigrator.Runner" Version="5.2.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
+    <PackageVersion Include="MongoDB.Driver.signed" Version="2.19.0" />
+    <PackageVersion Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
+    <PackageVersion Include="MySql.Data" Version="8.0.30" />
+    <PackageVersion Include="FluentMigrator.Runner.Oracle" Version="5.2.0" />
+    <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="3.21.100" />
+    <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="5.2.0" />
+    <PackageVersion Include="Npgsql" Version="8.0.3" />
+    <PackageVersion Include="FluentMigrator.Runner.SQLite" Version="5.2.0" />
+  </ItemGroup>
+  <!-- EFSchema -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.5.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
+    <PackageVersion Include="Oracle.EntityFrameworkCore" Version="8.23.40" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+  </ItemGroup>
+  <!-- Tests -->
+  <ItemGroup>
+    <PackageVersion Include="Microsoft.NET.Test.Sdk" Version="17.9.0" />
+    <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
+    <PackageVersion Include="MSTest.TestFramework" Version="3.2.1" />
+    <PackageVersion Include="FluentAssertions" Version="6.12.0" />
+    <!-- RealTimeTrackingPlugin -->
+    <PackageVersion Include="Moq" Version="4.20.70" />
+    <!-- Tests -->
+    <PackageVersion Include="Bogus" Version="35.5.1" />
+    <PackageVersion Include="Microsoft.VisualStudio.Threading" Version="17.2.32" />
+    <PackageVersion Include="System.Diagnostics.Debug" Version="4.3.0" />
+    <PackageVersion Include="coverlet.collector" Version="3.1.0" />
+    <PackageVersion Include="System.Data.SQLite" Version="1.0.115.5" />
+    <!-- Test.Common -->
+    <PackageVersion Include="Testcontainers" Version="3.7.0" />
+    <PackageVersion Include="Testcontainers.MySql" Version="3.7.0" />
+    <PackageVersion Include="Testcontainers.PostgreSql" Version="3.7.0" />
+    <!-- WorkflowProvider.Test -->
+    <PackageVersion Include="AutoMapper" Version="13.0.1" />
+  </ItemGroup>
+</Project>

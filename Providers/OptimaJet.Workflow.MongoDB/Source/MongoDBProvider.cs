@@ -1241,7 +1241,7 @@ namespace OptimaJet.Workflow.MongoDB
             await dbcollApprovalHisory.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
             
             IMongoCollection<WorkflowProcessAssignment> dbcollAssignment = Store.GetCollection<WorkflowProcessAssignment>(MongoDBConstants.WorkflowProcessAssignmentCollectionName);
-            await dbcollApprovalHisory.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
+            await dbcollAssignment.DeleteManyAsync(c => c.ProcessId == processId).ConfigureAwait(false);
         }
 
         public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime, bool notOverrideIfExists)

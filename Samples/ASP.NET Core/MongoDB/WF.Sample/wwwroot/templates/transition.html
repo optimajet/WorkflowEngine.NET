@@ -363,7 +363,7 @@
       </el-form-item>
     </div>
 
-    <el-form-item v-if="expertMode" :label="labels.SubprocessSpecifiedParameters" :readonly="readonly">
+    <el-form-item v-if="expertMode" :readonly="readonly">
       <el-checkbox v-model="FormData.DisableParentStateControl" :disabled="readonly" :label="labels.DisableParentStateControl"
                    name="type"></el-checkbox>
     </el-form-item>

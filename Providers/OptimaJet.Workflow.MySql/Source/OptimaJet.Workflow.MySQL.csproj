@@ -1,13 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Version>13.2.2</Version>
-    <AssemblyVersion>13.2.0</AssemblyVersion>
-    <FileVersion>13.2.0</FileVersion>
-    <Authors>Optimajet Limited</Authors>
-    <Product>Workflow Engine</Product>
     <Description>
       Contains dlls for MySQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
       DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
@@ -16,15 +10,8 @@
       Steps for workflow runtime configuration with MySQLProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
       Create WorkflowRuntime section.
     </Description>
-    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
-    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
     <PackageTags>workflow engine, MySQL, provider for MySQL</PackageTags>
-    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <SignAssembly>true</SignAssembly>
     <RootNamespace>OptimaJet.Workflow.MySQL</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MySQL</AssemblyName>
   </PropertyGroup>
@@ -43,12 +30,12 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
-    <PackageReference Include="MySql.Data" Version="8.0.30" />
+    <PackageReference Include="FluentMigrator.Runner.MySql" />
+    <PackageReference Include="MySql.Data" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />

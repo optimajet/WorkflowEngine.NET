@@ -1,21 +1,14 @@
 <Project Sdk="Microsoft.NET.Sdk">
-  <!-- Version -->
-  <PropertyGroup>
-    <Version>13.2.2</Version>
-    <AssemblyVersion>13.2.0</AssemblyVersion>
-    <FileVersion>13.2.0</FileVersion>
-  </PropertyGroup>
   <!-- Build -->
   <PropertyGroup>
+    <ManagePackageVersionsCentrally>false</ManagePackageVersionsCentrally>
     <AssemblyName>OptimaJet.Workflow.SQLite</AssemblyName>
     <RootNamespace>OptimaJet.Workflow.SQLite</RootNamespace>
     <TargetFrameworks>net6.0;net8.0</TargetFrameworks>
-    <LangVersion>10</LangVersion>
     <ImplicitUsings>enable</ImplicitUsings>
     <Nullable>disable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>1701;1702;8002</NoWarn>
-    <SignAssembly>true</SignAssembly>
   </PropertyGroup>
   <!-- Targets -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -32,16 +25,7 @@
   <!-- Nuget -->
   <PropertyGroup>
     <PackageId>WorkflowEngine.NETCore-ProviderForSQLite</PackageId>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Authors>Optimajet Limited</Authors>
-    <Company>Optimajet Limited</Company>
-    <Product>Workflow Engine</Product>
-    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseFile>License.txt</PackageLicenseFile>
-    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
-    <RepositoryUrl>https://github.com/optimajet/WorkflowEngine.NET</RepositoryUrl>
-    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
     <Description>
       Contains dlls for SQLite Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
       DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
@@ -55,8 +39,8 @@
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.3.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.13" />

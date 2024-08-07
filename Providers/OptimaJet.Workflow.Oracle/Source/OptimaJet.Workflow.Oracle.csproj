@@ -1,14 +1,7 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
-    <LangVersion>10</LangVersion>
     <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
-    <Version>13.2.2</Version>
-    <AssemblyVersion>13.2.0</AssemblyVersion>
-    <FileVersion>13.2.0</FileVersion>
-    <Authors>Optimajet Limited</Authors>
-    <Company>Optimajet Limited</Company>
-    <Product>Workflow Engine</Product>
     <Description>
       Contains dlls for Oracle Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
       DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
@@ -17,15 +10,8 @@
       Steps for workflow runtime configuration with OracleProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
       Create WorkflowRuntime section.
     </Description>
-    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
-    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
     <PackageTags>workflow engine, oracle, ora, provider for oracle</PackageTags>
-    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
-    <PackageRequireLicenseAcceptance>true</PackageRequireLicenseAcceptance>
-    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
-    <SignAssembly>true</SignAssembly>
     <RootNamespace>OptimaJet.Workflow.Oracle</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.Oracle</AssemblyName>
   </PropertyGroup>
@@ -33,8 +19,8 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentMigrator.Runner.Oracle" Version="5.2.0" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" Version="3.21.100" />
+    <PackageReference Include="FluentMigrator.Runner.Oracle" />
+    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
   </ItemGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
     <OutputPath>..\DLL\NETCORE\</OutputPath>
@@ -43,8 +29,8 @@
     <OutputPath>..\DLL\NETCORE\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />

@@ -1566,6 +1566,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 processRow["StateName"] = processInstance.ProcessScheme.InitialActivity.State;
                 processRow["RootProcessId"] = processInstance.RootProcessId;
                 processRow["TenantId"] = processInstance.TenantId;
+                processRow["CalendarName"] = processInstance.CalendarName;
                 if (processInstance.ParentProcessId.HasValue)
                 {
                     processRow["ParentProcessId"] = processInstance.ParentProcessId;
@@ -1620,6 +1621,7 @@ namespace OptimaJet.Workflow.DbPersistence
             bulk.ColumnMappings.Add("RootProcessId", "RootProcessId");
             bulk.ColumnMappings.Add("ParentProcessId", "ParentProcessId");
             bulk.ColumnMappings.Add("TenantId", "TenantId");
+            bulk.ColumnMappings.Add("CalendarName", "CalendarName");
             await bulk.WriteToServerAsync(piDataTable, token).ConfigureAwait(false);
             bulk.DestinationTableName = WorkflowProcessInstanceStatus.ObjectName;
             bulk.ColumnMappings.Clear();

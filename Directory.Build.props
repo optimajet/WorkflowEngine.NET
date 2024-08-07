@@ -1,0 +1,25 @@
+<Project>
+  <!-- Version -->
+  <PropertyGroup>
+    <Version>13.3.0</Version>
+    <AssemblyVersion>13.3.0</AssemblyVersion>
+    <FileVersion>13.3.0</FileVersion>
+  </PropertyGroup>
+  <!-- Build -->
+  <PropertyGroup>
+    <LangVersion>12</LangVersion>
+    <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+  </PropertyGroup>
+  <!-- Nuget -->
+  <PropertyGroup>
+    <Company>Optimajet Limited</Company>
+    <Product>Workflow Engine</Product>
+    <Authors>Optimajet Limited</Authors>
+    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
+    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
+    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/workflow-engine/</PackageReleaseNotes>
+    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
+    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
+    <RepositoryUrl>https://github.com/optimajet/WorkflowEngine.NET</RepositoryUrl>
+  </PropertyGroup>
+</Project>

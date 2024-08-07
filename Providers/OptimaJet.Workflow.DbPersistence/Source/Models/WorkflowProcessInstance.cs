@@ -66,6 +66,7 @@ namespace OptimaJet.Workflow.DbPersistence
             dt.Columns.Add(nameof(ProcessInstanceEntity.SubprocessName), typeof(string));
             dt.Columns.Add(nameof(ProcessInstanceEntity.CreationDate), typeof(string));
             dt.Columns.Add(nameof(ProcessInstanceEntity.LastTransitionDate), typeof(string));
+            dt.Columns.Add(nameof(ProcessInstanceEntity.CalendarName), typeof(string));
             return dt;
         }
     }

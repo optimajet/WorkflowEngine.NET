@@ -1,21 +1,8 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <LangVersion>10</LangVersion>
     <TargetFramework>netstandard2.0</TargetFramework>
-    <SignAssembly>True</SignAssembly>
-    <GeneratePackageOnBuild>True</GeneratePackageOnBuild>
-    <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <Version>13.2.2</Version>
     <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
-    <Authors>Optimajet Limited</Authors>
-    <Company>Optimajet Limited</Company>
-    <Product>Workflow Engine</Product>
-    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
-    <RepositoryUrl>
-    </RepositoryUrl>
-    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/</PackageReleaseNotes>
     <Description>
       Contains dlls for PostgreSQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
       DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
@@ -27,9 +14,6 @@
     <PackageTags>workflow engine, PostgreSQL, postgres, provider for postgreSQL</PackageTags>
     <AssemblyName>OptimaJet.Workflow.PostgreSQL</AssemblyName>
     <RootNamespace>OptimaJet.Workflow.PostgreSQL</RootNamespace>
-    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
-    <AssemblyVersion>13.2.0</AssemblyVersion>
-    <FileVersion>13.2.0</FileVersion>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>
@@ -43,12 +27,12 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentMigrator.Runner.Postgres" Version="5.2.0" />
-    <PackageReference Include="Npgsql" Version="8.0.3" />
+    <PackageReference Include="FluentMigrator.Runner.Postgres" />
+    <PackageReference Include="Npgsql" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.2.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.2.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" />
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
