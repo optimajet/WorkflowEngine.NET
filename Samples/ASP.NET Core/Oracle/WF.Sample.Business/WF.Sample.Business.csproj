@@ -3,9 +3,9 @@
     <TargetFramework>netstandard2.0</TargetFramework>
   </PropertyGroup>
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="13.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.3.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="13.3.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.3.1" />
   </ItemGroup>
   <ItemGroup>
     <None Remove="Scripts\CreateTable_Document.sql" />
