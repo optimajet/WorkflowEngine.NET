@@ -7,15 +7,15 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.PostgreSQL/13.3.1": {
+      "OptimaJet.Workflow.PostgreSQL/14.1.0": {
         "dependencies": {
           "FluentMigrator.Runner.Postgres": "5.2.0",
           "NETStandard.Library": "2.0.3",
           "Npgsql": "8.0.3",
-          "WorkflowEngine.NETCore-Core": "13.3.1",
-          "WorkflowEngine.NETCore-Migrator": "13.3.1",
-          "OptimaJet.Workflow.Core": "13.3.0.0",
-          "OptimaJet.Workflow.Migrator": "13.3.0.0"
+          "WorkflowEngine.NETCore-Core": "14.1.0",
+          "WorkflowEngine.NETCore-Migrator": "14.1.0",
+          "OptimaJet.Workflow.Core": "14.1.0.0",
+          "OptimaJet.Workflow.Migrator": "14.1.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.PostgreSQL.dll": {}
@@ -1684,7 +1684,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/13.3.1": {
+      "WorkflowEngine.NETCore-Core/14.1.0": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1699,37 +1699,37 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "WorkflowEngine.NETCore-Migrator/13.3.1": {
+      "WorkflowEngine.NETCore-Migrator/14.1.0": {
         "dependencies": {
           "FluentMigrator": "5.2.0",
           "FluentMigrator.Runner": "5.2.0",
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "WorkflowEngine.NETCore-Core": "13.3.1"
+          "WorkflowEngine.NETCore-Core": "14.1.0"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {}
         }
       },
-      "OptimaJet.Workflow.Core/13.3.0.0": {
+      "OptimaJet.Workflow.Core/14.1.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "13.3.0.0",
-            "fileVersion": "13.3.0.0"
+            "assemblyVersion": "14.1.0.0",
+            "fileVersion": "14.1.0.0"
           }
         }
       },
-      "OptimaJet.Workflow.Migrator/13.3.0.0": {
+      "OptimaJet.Workflow.Migrator/14.1.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {
-            "assemblyVersion": "13.3.0.0",
-            "fileVersion": "13.3.0.0"
+            "assemblyVersion": "14.1.0.0",
+            "fileVersion": "14.1.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.PostgreSQL/13.3.1": {
+    "OptimaJet.Workflow.PostgreSQL/14.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2693,22 +2693,22 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/13.3.1": {
+    "WorkflowEngine.NETCore-Core/14.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/13.3.1": {
+    "WorkflowEngine.NETCore-Migrator/14.1.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/13.3.0.0": {
+    "OptimaJet.Workflow.Core/14.1.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Migrator/13.3.0.0": {
+    "OptimaJet.Workflow.Migrator/14.1.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

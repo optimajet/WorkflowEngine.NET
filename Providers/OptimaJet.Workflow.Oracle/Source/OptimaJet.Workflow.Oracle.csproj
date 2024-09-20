@@ -42,10 +42,14 @@
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowApprovalHistory_ProcessId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowInbox_IdentityId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_IdentityId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_Executor.sql" />
@@ -54,6 +58,8 @@
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId_ParameterName.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId_ParameterName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
@@ -70,6 +76,8 @@
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_NextExecutionDateTime.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTransition_ExecutorIdentityId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTransition_ExecutorIdentityId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTransition_ProcessId.sql" />
@@ -100,6 +108,8 @@
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowScheme.sql" />
     <None Remove="Scripts\CreateTable_WorkflowSync.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowSync.sql" />
+    <None Remove="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <EmbeddedResource Include="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
     <None Remove="Scripts\Insert_WorkflowSync.sql" />
     <EmbeddedResource Include="Scripts\Insert_WorkflowSync.sql" />
     <None Remove="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />

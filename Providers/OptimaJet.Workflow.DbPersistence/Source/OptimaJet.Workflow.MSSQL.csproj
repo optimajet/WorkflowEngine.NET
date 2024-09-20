@@ -43,5 +43,7 @@
   <ItemGroup>
     <None Remove="Scripts\InitialWorkflowEngineSchema.sql" />
     <EmbeddedResource Include="Scripts\InitialWorkflowEngineSchema.sql" />
+    <None Remove="Scripts\CreateUniqueIndexes.sql" />
+    <EmbeddedResource Include="Scripts\CreateUniqueIndexes.sql" />
   </ItemGroup>
 </Project>

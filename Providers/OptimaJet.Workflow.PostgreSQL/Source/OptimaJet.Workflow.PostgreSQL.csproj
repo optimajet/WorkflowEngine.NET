@@ -42,5 +42,9 @@
     <EmbeddedResource Include="Scripts\InitialWorkflowEngineSchema.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <None Remove="Scripts\CreateUniqueIndexes.sql" />
+    <EmbeddedResource Include="Scripts\CreateUniqueIndexes.sql">
+      <CopyToOutputDirectory>Always</CopyToOutputDirectory>
+    </EmbeddedResource>
   </ItemGroup>
 </Project>

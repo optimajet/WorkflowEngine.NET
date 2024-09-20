@@ -254,76 +254,82 @@ namespace OptimaJet.Workflow.MongoDB
             throw new NotImplementedException();
         }
 
-        public virtual async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public virtual async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(
+            List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
             IMongoCollection<WorkflowProcessInstance> workflowProcessInstanceCollection =
                 Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
 
-           
-            List<WorkflowProcessInstance> processInstances;
-           
-            if (paging is null || orderParameters is null)
-            { 
-                processInstances =
-                   await workflowProcessInstanceCollection.AsQueryable().ToListAsync().ConfigureAwait(false);
-            }
-            else
+            var sortDefinitions = new List<SortDefinition<WorkflowProcessInstance>>();
+            if (orderParameters != null && orderParameters.Count > 0)
             {
-                var query = workflowProcessInstanceCollection.AsQueryable();
-
-                foreach (var orderParameter in orderParameters)
+                foreach ((string parameterName, SortDirection sortDirection) in orderParameters)
                 {
-                    query = orderParameter.sortDirection == SortDirection.Desc
-                        ? Queryable.OrderByDescending(query, WorkflowProcessInstance.OrderFunctions[orderParameter.parameterName].Expression)
-                        : Queryable.OrderBy(query, WorkflowProcessInstance.OrderFunctions[orderParameter.parameterName].Expression);
+                    SortDefinition<WorkflowProcessInstance> sort = sortDirection == SortDirection.Desc
+                        ? Builders<WorkflowProcessInstance>.Sort.Descending(parameterName)
+                        : Builders<WorkflowProcessInstance>.Sort.Ascending(parameterName);
+                    sortDefinitions.Add(sort);
                 }
-                
-                processInstances = query
-                    .Skip(paging.SkipCount())
-                    .Take(paging.PageSize)
-                    .ToList();
             }
-            
-            IEnumerable<Guid?> schemeIds = processInstances.Select(x => x.SchemeId);
+
+            if (sortDefinitions.Count == 0)
+            {
+                sortDefinitions.Add(Builders<WorkflowProcessInstance>.Sort.Ascending("Id"));
+            }
+
+            SortDefinition<WorkflowProcessInstance> combinedSort =
+                Builders<WorkflowProcessInstance>.Sort.Combine(sortDefinitions);
+
+            List<WorkflowProcessInstance> processInstances = await workflowProcessInstanceCollection
+                .Find(FilterDefinition<WorkflowProcessInstance>.Empty)
+                .Sort(combinedSort)
+                .Skip(paging?.SkipCount() ?? 0)
+                .Limit(paging?.PageSize ?? 0)
+                .ToListAsync().ConfigureAwait(false);
+
+            var schemeIds = processInstances.Select(x => x.SchemeId).ToList();
             IMongoCollection<WorkflowProcessScheme> workflowProcessSchemeCollection =
                 Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
-            ProjectionDefinition<WorkflowProcessScheme> workflowProcessSchemeProjection = Builders<WorkflowProcessScheme>.Projection
-                .Include(ps => ps.Id)
-                .Include(ps => ps.StartingTransition);
 
-            var workflowProcessSchemeOptions = new FindOptions<WorkflowProcessScheme, BsonDocument> {Projection = workflowProcessSchemeProjection};
+            FilterDefinition<WorkflowProcessScheme> workflowProcessSchemeFilter =
+                Builders<WorkflowProcessScheme>.Filter.In(processScheme => processScheme.Id, schemeIds);
+            ProjectionDefinition<WorkflowProcessScheme> projection = Builders<WorkflowProcessScheme>.Projection
+                .Include(processScheme => processScheme.Id)
+                .Include(processScheme => processScheme.StartingTransition);
 
-            FilterDefinition<WorkflowProcessScheme> workflowProcessSchemeFilter = Builders<WorkflowProcessScheme>.Filter.In(ps => ps.Id, schemeIds);
-           
-            List<BsonDocument> schemes =
-                await (await workflowProcessSchemeCollection.FindAsync(workflowProcessSchemeFilter, workflowProcessSchemeOptions).ConfigureAwait(false))
-                    .ToListAsync().ConfigureAwait(false);
+            List<BsonDocument> schemes = await workflowProcessSchemeCollection
+                .Find(workflowProcessSchemeFilter)
+                .Project(projection)
+                .ToListAsync().ConfigureAwait(false);
 
             return processInstances.Join(
                 schemes,
-                pi => pi.SchemeId,
-                s => s["_id"].AsGuid,
-                (pi, s) => new ProcessInstanceItem()
+                processInstance => processInstance.SchemeId,
+                scheme => scheme["_id"].AsGuid,
+                (processInstance, scheme) => new ProcessInstanceItem
                 {
-                    ActivityName  = pi.ActivityName,
-                    Id  = pi.Id,
-                    IsDeterminingParametersChanged  = pi.IsDeterminingParametersChanged,
-                    PreviousActivity  = pi.PreviousActivity,
-                    PreviousActivityForDirect  = pi.PreviousActivityForDirect,
-                    PreviousActivityForReverse  = pi.PreviousActivityForReverse,
-                    PreviousState  = pi.PreviousState,
-                    PreviousStateForDirect  = pi.PreviousStateForDirect,
-                    PreviousStateForReverse  = pi.PreviousStateForReverse,
-                    SchemeId  = pi.SchemeId,
-                    StateName  = pi.StateName,
-                    ParentProcessId  = pi.ParentProcessId,
-                    RootProcessId  = pi.RootProcessId,
-                    TenantId  = pi.TenantId,
-                    SubprocessName  = pi.SubprocessName,
-                    CreationDate  = pi.CreationDate,
-                    LastTransitionDate  = pi.LastTransitionDate,
-                    StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString,
-                    CalendarName = pi.CalendarName
+                    ActivityName = processInstance.ActivityName,
+                    Id = processInstance.Id,
+                    IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged,
+                    PreviousActivity = processInstance.PreviousActivity,
+                    PreviousActivityForDirect = processInstance.PreviousActivityForDirect,
+                    PreviousActivityForReverse = processInstance.PreviousActivityForReverse,
+                    PreviousState = processInstance.PreviousState,
+                    PreviousStateForDirect = processInstance.PreviousStateForDirect,
+                    PreviousStateForReverse = processInstance.PreviousStateForReverse,
+                    SchemeId = processInstance.SchemeId,
+                    StateName = processInstance.StateName,
+                    ParentProcessId = processInstance.ParentProcessId,
+                    RootProcessId = processInstance.RootProcessId,
+                    TenantId = processInstance.TenantId,
+                    SubprocessName = processInstance.SubprocessName,
+                    CreationDate = processInstance.CreationDate,
+                    LastTransitionDate = processInstance.LastTransitionDate,
+                    StartingTransition =
+                        scheme[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value
+                            ? null
+                            : scheme[nameof(WorkflowProcessScheme.StartingTransition)].AsString,
+                    CalendarName = processInstance.CalendarName
                 }).ToList();
         }
 
@@ -335,38 +341,47 @@ namespace OptimaJet.Workflow.MongoDB
             return Convert.ToInt32(count);
         }
 
-        public virtual async Task<List<SchemeItem>> GetSchemesAsync(List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
+        public virtual async Task<List<SchemeItem>> GetSchemesAsync(
+            List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
-            IMongoCollection<WorkflowScheme> dbcoll =
+            IMongoCollection<WorkflowScheme> workflowSchemeCollection =
                 Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
-           
-            orderParameters ??= new List<(string parameterName, SortDirection sortDirection)>();
-            IQueryable<WorkflowScheme> schemes = dbcoll.AsQueryable();
 
-            //default sort for paging
-            if ((paging != null)&&(orderParameters.Count<1))
+            var sortDefinitions = new List<SortDefinition<WorkflowScheme>>();
+            if (orderParameters != null && orderParameters.Count > 0)
             {
-                orderParameters.Add((nameof(WorkflowScheme.Id),SortDirection.Asc));
+                foreach ((string parameterName, SortDirection sortDirection) in orderParameters)
+                {
+                    SortDefinition<WorkflowScheme> sortDefinition = sortDirection == SortDirection.Desc
+                        ? Builders<WorkflowScheme>.Sort.Descending(parameterName)
+                        : Builders<WorkflowScheme>.Sort.Ascending(parameterName);
+
+                    sortDefinitions.Add(sortDefinition);
+                }
             }
 
-            /*if (orderParameters.Any())
+            if (sortDefinitions.Count == 0)
             {
-                schemes = schemes.OrderBy(GetOrderParameters(orderParameters));
-            }*/
-           
-            if (paging != null)
-            {
-                schemes = schemes.Skip(paging.SkipCount()).Take(paging.PageSize);
+                sortDefinitions.Add(Builders<WorkflowScheme>.Sort.Ascending("Id"));
             }
-           
-           
-            return schemes.ToList().Select(sc => new SchemeItem()
+
+            FilterDefinition<WorkflowScheme> filter = Builders<WorkflowScheme>.Filter.Empty;
+            SortDefinition<WorkflowScheme> combinedSort = Builders<WorkflowScheme>.Sort.Combine(sortDefinitions);
+            List<WorkflowScheme> schemes = await workflowSchemeCollection
+                .Find(filter)
+                .Sort(combinedSort)
+                .Skip(paging?.SkipCount() ?? 0)
+                .Limit(paging?.PageSize ?? 0)
+                .ToListAsync()
+                .ConfigureAwait(false);
+            
+            return schemes.Select(scheme => new SchemeItem
             {
-                Code = sc.Code,
-                Scheme = sc.Scheme,
-                CanBeInlined = sc.CanBeInlined,
-                InlinedSchemes = sc.InlinedSchemes,
-                Tags = sc.Tags,
+                Code = scheme.Code,
+                Scheme = scheme.Scheme,
+                CanBeInlined = scheme.CanBeInlined,
+                InlinedSchemes = scheme.InlinedSchemes,
+                Tags = scheme.Tags
             }).ToList();
         }
 
@@ -784,7 +799,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             WorkflowProcessInstance instance = await (await dbcoll.FindAsync(x => x.Id == processId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
-            WorkflowProcessInstanceStatus instanceStatus = instance.Status;
+            WorkflowProcessInstanceStatus instanceStatus = instance?.Status;
             
             if (instanceStatus == null)
             {
@@ -1284,25 +1299,34 @@ namespace OptimaJet.Workflow.MongoDB
 
         public virtual async Task<List<Core.Model.WorkflowTimer>> GetTopTimersToExecuteAsync(int top)
         {
-            DateTime now = _runtime.RuntimeDateTimeNow.ToUniversalTime();
+            if (top <= 0)
+            {
+                throw new ArgumentException(ArgumentExceptionMessages.ArgumentMustBePositive(nameof(top), top));
+            }
+            
+            DateTime currentTime = _runtime.RuntimeDateTimeNow.ToUniversalTime();
 
-            IMongoCollection<WorkflowProcessTimer> timerColl = Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
+            IMongoCollection<WorkflowProcessTimer> timerCollection =
+                Store.GetCollection<WorkflowProcessTimer>(MongoDBConstants.WorkflowProcessTimerCollectionName);
 
-            IEnumerable<Core.Model.WorkflowTimer> result = 
-                (await (await timerColl.FindAsync(x => !x.Ignore && x.NextExecutionDateTime <= now).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false))
-                .Select(x => new Core.Model.WorkflowTimer
-                {
-                    Name = x.Name,
-                    ProcessId = x.ProcessId,
-                    TimerId = x.Id,
-                    NextExecutionDateTime = _runtime.ToRuntimeTime(x.NextExecutionDateTime),
-                    RootProcessId = x.RootProcessId
-                });
+            List<WorkflowProcessTimer> workflowTimers = await timerCollection
+                .Find(timer => !timer.Ignore && timer.NextExecutionDateTime <= currentTime)
+                .Sort(Builders<WorkflowProcessTimer>.Sort.Ascending(timer => timer.NextExecutionDateTime))
+                .Limit(top)
+                .ToListAsync()
+                .ConfigureAwait(false);
 
-            return result.ToList();
+            return workflowTimers.Select(timer => new Core.Model.WorkflowTimer
+            {
+                Name = timer.Name,
+                ProcessId = timer.ProcessId,
+                TimerId = timer.Id,
+                NextExecutionDateTime = _runtime.ToRuntimeTime(timer.NextExecutionDateTime),
+                RootProcessId = timer.RootProcessId
+            }).ToList();
         }
 
-       public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
+        public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
         {
             IMongoCollection<WorkflowProcessTransitionHistory> dbcoll = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
             

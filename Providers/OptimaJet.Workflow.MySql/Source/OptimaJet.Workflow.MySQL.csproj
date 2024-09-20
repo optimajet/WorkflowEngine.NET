@@ -45,8 +45,14 @@
     <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstancePersistence_ProcessId_ParameterName.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstancePersistence_ProcessId_ParameterName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
@@ -59,6 +65,8 @@
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCode.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
     <None Remove="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
     <None Remove="Scripts\CreateTable_WorkflowGlobalParameter.sql" />
@@ -87,5 +95,7 @@
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowSync.sql" />
     <None Remove="Scripts\InsertIgnore_WorkflowSync.sql" />
     <EmbeddedResource Include="Scripts\InsertIgnore_WorkflowSync.sql" />
+    <None Remove="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <EmbeddedResource Include="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
   </ItemGroup>
 </Project>

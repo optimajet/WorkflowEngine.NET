@@ -39,8 +39,8 @@
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="13.3.1" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="13.3.1" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="14.1.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="14.1.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net6.0' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="7.0.13" />
@@ -64,5 +64,7 @@
   <ItemGroup>
     <None Remove="Scripts\InitialWorkflowEngineSchema.sql" />
     <EmbeddedResource Include="Scripts\InitialWorkflowEngineSchema.sql" />
+    <None Remove="Scripts\CreateUniqueIndexes.sql" />
+    <EmbeddedResource Include="Scripts\CreateUniqueIndexes.sql" />
   </ItemGroup>
 </Project>

@@ -294,7 +294,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 Scheme = sc.Scheme,
                 CanBeInlined = sc.CanBeInlined,
                 InlinedSchemes = sc.GetInlinedSchemes(),
-                Tags = TagHelper.FromTagString(sc.Tags),
+                Tags = TagHelper.FromTagStringForDatabase(sc.Tags)
             }).ToList();
         }
        
@@ -1062,6 +1062,11 @@ namespace OptimaJet.Workflow.DbPersistence
 
         public virtual async Task<List<Core.Model.WorkflowTimer>> GetTopTimersToExecuteAsync(int top)
         {
+            if (top <= 0)
+            {
+                throw new ArgumentException(ArgumentExceptionMessages.ArgumentMustBePositive(nameof(top), top));
+            }
+            
             DateTime now = _runtime.RuntimeDateTimeNow;
 
             using var connection = OpenConnection();
