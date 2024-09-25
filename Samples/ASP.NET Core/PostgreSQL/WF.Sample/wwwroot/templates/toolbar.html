@@ -19,14 +19,11 @@
         <el-menu-item index="1-1-1" @click="uploadXML">
           {{ labels.UploadScheme }}
         </el-menu-item>
-        <el-menu-item v-if="settings.showBpmnMenu" index="1-1-2" @click="uploadBPMN">
+        <el-menu-item v-if="uploadBpmnEnabled" index="1-1-2" @click="uploadBPMN">
           {{ labels.UploadBPMN }}
         </el-menu-item>
         <el-menu-item index="1-1-3" @click="downloadXML">
           {{ labels.DownloadScheme }}
-        </el-menu-item>
-        <el-menu-item v-if="settings.showBpmnMenu" index="1-1-5" @click="downloadBPMN">
-          {{ labels.DownloadBPMN }}
         </el-menu-item>
         <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
           {{ labels.SaveToImage }}
@@ -166,8 +163,8 @@
     </el-tooltip>
   </div>
 
-  <form id="uploadForm" enctype="multipart/form-data" method="post">
-    <input id="uploadFile" name="uploadFile" style="display:none" type="file" @change="uploadChange($event)"></input>
+  <form id="wfeDesignerToolbarUploadForm" enctype="multipart/form-data" method="post">
+    <input id="wfeDesignerToolbarUploadInput" name="wfeDesignerToolbarUploadInput" style="display:none" type="file" @change="uploadChange($event)"></input>
   </form>
 
   <el-dialog
@@ -227,7 +224,7 @@
 
 <script type="application/javascript">
   function toolbar_Init(me) {
-    const data = me.VueConfig.data;
+    const {data, methods} = me.VueConfig;
     data.icons = WorkflowDesignerConstants.icons
     me.VueConfig.methods.UpdateLanguage = function () {
       data.labels = {
@@ -237,8 +234,6 @@
         Name: WorkflowDesignerConstants.Name,
         ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        InformationCopiedToClipboardAndConsole: WorkflowDesignerConstants.InformationCopiedToClipboardAndConsole,
-        InformationLoggedToConsole: WorkflowDesignerConstants.InformationLoggedToConsole,
         DesignerVersion: WorkflowDesignerConstants.DesignerVersion,
         BackendVersion: WorkflowDesignerConstants.BackendVersion,
         ClipboardAccessDenied: WorkflowDesignerConstants.ClipboardAccessDenied
@@ -286,6 +281,7 @@
       data.languagesList = Object.values(designer.localizationControl.localization).map(({LangInfo}) => LangInfo);
 
       var plugins = me.graph.getPluginsNames();
+      data.uploadBpmnEnabled = plugins?.includes('BpmnPlugin');
 
       for (var i = 0; i < plugins?.length; i++) {
         if (plugins[i] == 'AssignmentPlugin') {
@@ -392,26 +388,26 @@
     };
 
     me.VueConfig.methods.uploadXML = function () {
-      document.getElementById('uploadFile').click();
+      document.getElementById('wfeDesignerToolbarUploadInput').click();
       me._uploadCallback = designer.uploadscheme;
     };
 
     me.VueConfig.methods.uploadBPMN = function () {
-      document.getElementById('uploadFile').click();
-      me._uploadCallback = designer.uploadschemeBPMN;
+      const uploader = document.getElementById('wfeDesignerToolbarUploadInput');
+      me._uploadCallback = form => {
+        methods.showPropertyWindow('uploadBpmn', undefined, form);
+      };
+      uploader.value = "";
+      uploader.click();
     };
 
     me.VueConfig.methods.uploadChange = function () {
-      const form = document.getElementById('uploadForm');
+      const form = document.getElementById('wfeDesignerToolbarUploadForm');
       me._uploadCallback(form);
     }
 
     me.VueConfig.methods.downloadXML = function () {
       designer.downloadscheme();
-    };
-
-    me.VueConfig.methods.downloadBPMN = function () {
-      designer.downloadschemeBPMN();
     };
 
     me.VueConfig.methods.clear = function () {
@@ -496,7 +492,7 @@
       me.graph.onFullScreenClick();
     };
 
-    me.VueConfig.methods.showPropertyWindow = function (name, className) {
+    me.VueConfig.methods.showPropertyWindow = function (name, className, value) {
       if (!me[name]) {
         var options = {
           move: true,
@@ -514,7 +510,7 @@
       if (me[name].isOpen)
         me[name].onClose();
       else {
-        me[name].show(name);
+        me[name].show(name, value);
         me.graph.setParam(name, true);
         me.VueConfig.data[name] = true;
       }
@@ -543,20 +539,7 @@
     }
 
     me.VueConfig.methods.showInstanceInfo = function () {
-      me.graph.designer?.getInstanceInfo(data => {
-        console.info('Instance info', data)
-
-        const {notify} = me.VueConfig.methods;
-
-        // Checking if the Clipboard API is available
-        if (navigator.clipboard) {
-          navigator.clipboard.writeText(data).then(
-            () => notify(me.VueConfig.data.labels.InformationCopiedToClipboardAndConsole)
-          );
-        } else {
-          notify(me.VueConfig.data.labels.ClipboardAccessDenied, 'error');
-        }
-      })
+      me.graph.designer?.getInstanceInfo(me.copyToClipboard);
     }
 
     me.VueConfig.methods.showAbout = function () {

@@ -435,6 +435,10 @@ td .el-checkbox__input {
   background-repeat: no-repeat;
 }
 
+.WorkflowDesignerElements .Icon.BPMN {
+  background-image: none;
+}
+
 .WorkflowDesignerElements .el-card__body {
   padding: 7px 15px !important;
 }
@@ -1099,6 +1103,25 @@ div.SpacedRow > div:not(:last-child) {
   border-color: red;
 }
 
+.WFEUploadLog,
+.WFEUploadLog .el-textarea,
+.WFEUploadLog .el-textarea__inner {
+  position: relative;
+  display: flex;
+  flex: 1;
+  min-height: 0;
+  width: 100%;
+  resize: none;
+}
+
+.WFEUploadLog .el-button {
+  position: absolute;
+  inset-inline-end: 8px;
+  inset-block-start: 8px;
+  padding: 10px !important;
+  border: none;
+}
+
 .el-autocomplete-suggestion {
   width: fit-content !important;
 }
@@ -1361,6 +1384,16 @@ table .el-form-item {
 
 .WorkflowDesignerRtl .RTLIcon {
   transform: scaleX(-1);
+}
+
+.wf-elements-tabs.with-bpmn {
+  .el-tabs__header {
+    margin-inline: 0;
+    margin-inline-end: 8px;
+  }
+  .el-tabs__nav-wrap {
+    padding-inline: 0;
+  }
 }
 
 /* Scrollbar */

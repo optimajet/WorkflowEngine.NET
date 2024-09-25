@@ -80,6 +80,18 @@
 		"Title": "Asignaciones",
 		"TypeSomething": "Escribe algo"
 	},
+	"BackendVersion": "Versión del backend",
+	"BpmnPlugin": {
+		"DefaultFlow": "Flujo predeterminado",
+		"EndEvent": "Evento final",
+		"ExclusiveGateway": "Pasarela exclusiva",
+		"MessageCatchEvent": "Evento de captura de mensajes",
+		"ParallelGateway": "Pasarela paralela",
+		"ServiceTask": "Tarea de servicio",
+		"StartEvent": "Iniciar evento",
+		"TerminateEvent": "Terminar evento final",
+		"TimerCatchEvent": "Evento de captura del temporizador"
+	},
 	"BrokenReferencesDialogText": "Este esquema contiene referencias a ELEMENTOS que no están definidos por este esquema ni por los proveedores de acciones actuales. ¿Quieres conservarlos?",
 	"ButtonTextCancel": "Cancelar",
 	"ButtonTextClose": "Cerca",
@@ -91,6 +103,7 @@
 	"ButtonTextSave": "Guardar",
 	"ButtonTextUndo": "Deshacer",
 	"ButtonTextYes": "Sí",
+	"ClipboardAccessDenied": "Se ha denegado el acceso al portapapeles. La información se muestra en la consola del navegador.",
 	"CloseWithoutSaving": "Cerrar sin guardar?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Código de acción",
@@ -189,7 +202,10 @@
 	},
 	"DeleteConfirm": "¿Está seguro de que desea eliminar los elementos seleccionados?",
 	"DeleteConfirmCurrent": "¿Estás seguro de que quieres eliminar este artículo?",
+	"DesignerAndBackendVersionMismatch": "Las versiones del diseñador y del backend no coinciden!",
+	"DesignerVersion": "Versión del diseñador",
 	"DialogConfirmText": "Pregunta",
+	"DoNotCombineCalendars": "Es imposible combinar el tiempo con el tiempo de trabajo.",
 	"DropdownValues": {
 		"Dropdown": "Desplegable",
 		"Name": "Nombre",
@@ -365,6 +381,7 @@
 	},
 	"Elements": {
 		"Activities": "Actividad",
+		"BPMN": "BPMN",
 		"BasicActivity": "Actividad Básica",
 		"BasicActivityDesc": "Determina un estado y el orden en el que se ejecutan las acciones en su proceso.",
 		"Comment": {
@@ -399,11 +416,13 @@
 	"FieldIsRequired": "Este campo es obligatorio.",
 	"FieldMustBeUnique": "El campo debe ser único!",
 	"FieldMustContainAt": "El campo debe contener @",
+	"FileNotExist": "El archivo no existe",
 	"InfoBlockLabel": {
 		"Activity": "Actividad: ",
 		"Command": "Comando: ",
 		"Transition": "Transiciones: "
 	},
+	"InformationCopiedToClipboardAndConsole": "La información se copia en el portapapeles y se muestra en la consola del navegador.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin requerido:"
 	},
@@ -440,6 +459,7 @@
 		"ShowDetails": "Mostrar detalles",
 		"Timestamp": "Marca de tiempo"
 	},
+	"Name": "Nombre",
 	"None": "Ninguno",
 	"ParameterFormLabel": {
 		"InitialValue": "Valor inicial",
@@ -451,6 +471,7 @@
 		"Value": "Valor"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Comience a escribir un nombre para encontrar un calendario",
 		"DefiningParameters": "Definición de parámetros",
 		"GeneralTabLabel": "General",
 		"HistoryTabActorIdLabel": "Id de Actor",
@@ -481,9 +502,11 @@
 		"TimersTabName": "Temporizador",
 		"TimersTabNameLabel": "Nombre",
 		"TimersTabValueLabel": "Valor",
-		"Title": "Información del Proceso"
+		"Title": "Información del Proceso",
+		"WorkCalendar": "Calendario de trabajo"
 	},
 	"ReadMore": "Leer más.",
+	"ReplaceSchemeConfirm": "Ya existe un esquema con ese nombre. ¿Quieres reemplazarlo?",
 	"SaveConfirm": "¿Guardar cambios?",
 	"SchemeNotSaved": "Esquema no guardado",
 	"SchemeSaved": "Esquema guardado",
@@ -498,6 +521,7 @@
 		"Value": "Valor"
 	},
 	"ToolbarLabel": {
+		"About": "Acerca del diseñador",
 		"ActivitiesCount": "Recuento / Límite de actividades",
 		"Actors": "Actor",
 		"AdditionalParameters": "Parámetros Adicionales",
@@ -515,7 +539,6 @@
 		"CreateTransition": "Crear una transición",
 		"Delete": "Eliminar",
 		"Download": "Descargar",
-		"DownloadBPMN": "Descargar como BPMN",
 		"DownloadScheme": "Descargar esquema",
 		"DownloadXML": "Descargar como XML",
 		"Elements": "Elemento",
@@ -525,6 +548,7 @@
 		"ImageQuality": "Calidad (relación de aspecto de píxeles):",
 		"Info": "Información ampliada",
 		"Inline": "El esquema puede estar en línea",
+		"InstanceInfo": "Información de la instancia",
 		"Language": "Idioma",
 		"Legend": "Leyenda",
 		"Library": "Biblioteca",
@@ -538,6 +562,7 @@
 		"ResetSettings": "Restablecer la configuración",
 		"ResetZoom": "Restablecer zoom",
 		"Save": "Guardar",
+		"SaveAs": "Guardar como...",
 		"SaveToImage": "Guardar en imagen",
 		"Scheme": "Esquema",
 		"Settings": "Configuración",
@@ -545,6 +570,7 @@
 		"Timers": "Temporizador",
 		"TransitionsCount": "Recuento / Límite de transiciones",
 		"Undo": "Deshacer",
+		"UntitledScheme": "Esquema sin título",
 		"Upload": "Subir",
 		"UploadBPMN": "Cargar BPMN",
 		"UploadScheme": "Esquema de carga",
@@ -553,14 +579,14 @@
 		"ZoomIn": "acercar",
 		"ZoomOut": "Alejar el Zoom",
 		"ZoomPositionDefault": "Zoom por defecto",
-		"ZoomTo100": "Ajuste el zoom a 100%",
-    "About": "Acerca del diseñador"
+		"ZoomTo100": "Ajuste el zoom a 100%"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Acto",
 		"Allow": "Permitir",
 		"AllowConcatenationType": "Concat permitir como",
+		"AlwaysConditionIsIllegal": "Siempre la condición es ilegal",
 		"AlwaysConditionShouldBeSingle": "Siempre la condición debe ser única",
 		"AlwaysLabel": "Siempre",
 		"AnnotationName": "Nombre",
@@ -633,9 +659,14 @@
 		"TriggerType": "Tipo",
 		"UserComment": "Comentario"
 	},
-	"Warning": "Advertencia",
-  "DesignerVersion": "Versión del diseñador",
-  "BackendVersion": "Versión del backend",
-  "DesignerAndBackendVersionMismatch": "Las versiones del diseñador y del backend no coinciden!",
-  "ClipboardAccessDenied": "Se ha denegado el acceso al portapapeles. La información se muestra en la consola del navegador."
+	"UploadBpmnLabel": {
+		"InfoMessage": "Archivo Bpmn subido ver resultado en el log.",
+		"InfoTitle": "Archivo Bpmn subido",
+		"MainSchemeCode": "Código del esquema principal",
+		"OK": "OK.",
+		"OverwriteExisting": "Sobrescribir esquemas cargados previamente",
+		"Title": "Subir Bpmn",
+		"Upload": "Subir"
+	},
+	"Warning": "Advertencia"
 }

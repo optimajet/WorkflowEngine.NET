@@ -80,6 +80,18 @@
 		"Title": "Zuordnung",
 		"TypeSomething": "Geben Sie etwas ein"
 	},
+	"BackendVersion": "Backend version",
+	"BpmnPlugin": {
+		"DefaultFlow": "Standardfluss",
+		"EndEvent": "Ende Veranstaltung",
+		"ExclusiveGateway": "Exklusives Gateway",
+		"MessageCatchEvent": "Ereignis zum Abfangen von Nachrichten",
+		"ParallelGateway": "Paralleles Gateway",
+		"ServiceTask": "Service-Aufgabe",
+		"StartEvent": "Veranstaltung starten",
+		"TerminateEvent": "Ereignis beenden beenden",
+		"TimerCatchEvent": "Timer-Fang-Ereignis"
+	},
 	"BrokenReferencesDialogText": "Dieses Schema enthält Verweise auf ELEMENTE, die nicht von diesem Schema oder aktuellen Aktionsanbietern definiert werden. Willst du sie behalten?",
 	"ButtonTextCancel": "Stornieren",
 	"ButtonTextClose": "Schließen",
@@ -91,6 +103,7 @@
 	"ButtonTextSave": "Speichern",
 	"ButtonTextUndo": "Rückgängig",
 	"ButtonTextYes": "Ja",
+	"ClipboardAccessDenied": "Der Zugriff auf die Zwischenablage wurde verweigert. Die Informationen werden in der Browserkonsole angezeigt.",
 	"CloseWithoutSaving": "Schließen ohne zu speichern?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Aktionscode",
@@ -189,7 +202,10 @@
 	},
 	"DeleteConfirm": "Sind Sie sicher, dass Sie ausgewählte Elemente löschen möchten?",
 	"DeleteConfirmCurrent": "Sind Sie sicher, dass Sie diesen Artikel löschen möchten?",
+	"DesignerAndBackendVersionMismatch": "Designer und Backend-Versionen stimmen nicht überein!",
+	"DesignerVersion": "Designer version",
 	"DialogConfirmText": "Frage",
+	"DoNotCombineCalendars": "Es ist unmöglich, Zeit mit Arbeitszeit zu kombinieren",
 	"DropdownValues": {
 		"Dropdown": "Dropdown",
 		"Name": "Name",
@@ -365,6 +381,7 @@
 	},
 	"Elements": {
 		"Activities": "Aktivitäten",
+		"BPMN": "BPMN",
 		"BasicActivity": "Grundlegende Tätigkeit",
 		"BasicActivityDesc": "Es bestimmt einen Zustand und die Reihenfolge, in der Aktionen in Ihrem Prozess ausgeführt werden.",
 		"Comment": {
@@ -399,11 +416,13 @@
 	"FieldIsRequired": "Feld ist erforderlich!",
 	"FieldMustBeUnique": "Feld muss eindeutig sein!",
 	"FieldMustContainAt": "Feld muss enthalten @",
+	"FileNotExist": "Die Datei existiert nicht",
 	"InfoBlockLabel": {
 		"Activity": "Aktivitäten: ",
 		"Command": "Menübefehle: ",
 		"Transition": "Nge: "
 	},
+	"InformationCopiedToClipboardAndConsole": "Die Informationen werden in die Zwischenablage kopiert und in der Browserkonsole angezeigt.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin erforderlich:"
 	},
@@ -440,6 +459,7 @@
 		"ShowDetails": "Details anzeigen",
 		"Timestamp": "Zeitstempel"
 	},
+	"Name": "Name",
 	"None": "Kein",
 	"ParameterFormLabel": {
 		"InitialValue": "Initialwert",
@@ -451,6 +471,7 @@
 		"Value": "Wert"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Geben Sie einen Namen ein, um einen Kalender zu finden",
 		"DefiningParameters": "Parameter definieren",
 		"GeneralTabLabel": "Allgemein",
 		"HistoryTabActorIdLabel": "Schauspieler-ID",
@@ -481,9 +502,11 @@
 		"TimersTabName": "Hasen",
 		"TimersTabNameLabel": "Name",
 		"TimersTabValueLabel": "Wert",
-		"Title": "Prozessinfo"
+		"Title": "Prozessinfo",
+		"WorkCalendar": "Arbeitskalender"
 	},
 	"ReadMore": "Lesen Sie mehr.",
+	"ReplaceSchemeConfirm": "Ein Schema mit diesem Namen existiert bereits. Möchten Sie es ersetzen?",
 	"SaveConfirm": "Änderungen speichern?",
 	"SchemeNotSaved": "Schema nicht gespeichert",
 	"SchemeSaved": "Schema gespeichert",
@@ -498,6 +521,7 @@
 		"Value": "Wert"
 	},
 	"ToolbarLabel": {
+		"About": "Über Designer",
 		"ActivitiesCount": "Anzahl der Aktivitäten / Limit",
 		"Actors": "AkteurInnen",
 		"AdditionalParameters": "Zusätzliche Parameter",
@@ -515,7 +539,6 @@
 		"CreateTransition": "Erstellen Sie einen Übergang",
 		"Delete": "Löschen",
 		"Download": "Herunterladen",
-		"DownloadBPMN": "Als BPMN herunterladen",
 		"DownloadScheme": "Schema herunterladen",
 		"DownloadXML": "Als XML herunterladen",
 		"Elements": "Schlüsselelemente",
@@ -525,6 +548,7 @@
 		"ImageQuality": "Qualität (Pixel-Seitenverhältnis):",
 		"Info": "Erweiterte Infos",
 		"Inline": "Das Schema kann inline sein",
+		"InstanceInfo": "Instanz-Info",
 		"Language": "Sprachlich",
 		"Legend": "Legende",
 		"Library": "Bibliothek",
@@ -538,6 +562,7 @@
 		"ResetSettings": "Einstellungen zurücksetzen",
 		"ResetZoom": "Zoom zurücksetzen",
 		"Save": "Speichern",
+		"SaveAs": "Speichern unter...",
 		"SaveToImage": "In Bild speichern",
 		"Scheme": "Scheme",
 		"Settings": "Einstellung",
@@ -545,6 +570,7 @@
 		"Timers": "Hasen",
 		"TransitionsCount": "Übergänge zählen / begrenzen",
 		"Undo": "Rückgängig",
+		"UntitledScheme": "Schema ohne Titel",
 		"Upload": "Laden",
 		"UploadBPMN": "BPMN hochladen",
 		"UploadScheme": "Upload-Schema",
@@ -553,14 +579,14 @@
 		"ZoomIn": "vergrößern",
 		"ZoomOut": "verkleinern",
 		"ZoomPositionDefault": "Zoom Standard",
-    "ZoomTo100": "Zoom auf 100 einstellen%",
-    "About": "Über Designer"
-  },
+		"ZoomTo100": "Zoom auf 100 einstellen%"
+	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Aktion",
 		"Allow": "Erlauben",
 		"AllowConcatenationType": "Verketten erlauben als",
+		"AlwaysConditionIsIllegal": "Bedingung ist immer illegal",
 		"AlwaysConditionShouldBeSingle": "Immer Bedingung sollte Single sein",
 		"AlwaysLabel": "Immer",
 		"AnnotationName": "Name",
@@ -633,9 +659,14 @@
 		"TriggerType": "Art",
 		"UserComment": "Kommentar"
 	},
-	"Warning": "Warnung",
-  "DesignerVersion": "Designer version",
-  "BackendVersion": "Backend version",
-  "DesignerAndBackendVersionMismatch": "Designer und Backend-Versionen stimmen nicht überein!",
-  "ClipboardAccessDenied": "Der Zugriff auf die Zwischenablage wurde verweigert. Die Informationen werden in der Browserkonsole angezeigt."
+	"UploadBpmnLabel": {
+		"InfoMessage": "Hochgeladene Bpmn-Datei siehe Ergebnis im Protokoll.",
+		"InfoTitle": "Bpmn-Datei hochgeladen",
+		"MainSchemeCode": "Hauptsystemcode",
+		"OK": "Okay",
+		"OverwriteExisting": "Überschreiben zuvor hochgeladener Schemata",
+		"Title": "BPM-Nummer hochladen",
+		"Upload": "Laden"
+	},
+	"Warning": "Warnung"
 }

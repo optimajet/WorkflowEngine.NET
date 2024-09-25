@@ -1,11 +1,10 @@
 <el-form class="mx-auto" class="WorkflowDesignerWindowForm" style="height: calc(100% - 10px);" @drop="drop($event)">
-  <el-tabs v-model="activeTab" id="ElementsTabs" style="height: 100%; display: flex; flex-direction: column">
+  <el-tabs v-model="activeTab" id="ElementsTabs" style="height: 100%; display: flex; flex-direction: column"
+           :class="hasBpmn && 'wf-elements-tabs with-bpmn'">
     <el-input clearable v-model="search" prefix-icon="el-icon-search" size="medium"
-              style="margin-bottom: 15px"
-              @input="onSearch"
-    ></el-input>
-    <el-tab-pane :label="labels.Activities" name="Activities">
-      <div v-for="(item, index) in activities" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
+              style="margin-bottom: 15px"></el-input>
+    <el-tab-pane :label="labels.Activities" name="activities">
+      <div v-for="(item, index) in getFiltered()" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
         flex: 1;" @dblclick="createActivity(item)"
            @dragend="dragend($event)" @dragstart="dragstart(item, $event, 'activity')" @drop="drop($event)">
         <el-card body-style="padding:15px">
@@ -21,8 +20,25 @@
         </el-card>
       </div>
     </el-tab-pane>
-    <el-tab-pane :label="labels.Templates" name="Templates">
-      <div v-for="(item, index) in templates" :key="index" class="TemplateCard">
+    <el-tab-pane v-if="hasBpmn" :label="labels.BPMN" name="bpmnActivities">
+      <div v-for="(item, index) in getFiltered()" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
+        flex: 1;" @dblclick="createActivity(item)"
+           @dragend="dragend($event)" @dragstart="dragstart(item, $event, 'activity')" @drop="drop($event)">
+        <el-card body-style="padding:15px">
+          <div class="ActivityTitle">
+            <div style="display: flex; align-items: center;">
+              <div class="Icon RTLIcon BPMN" style="opacity: 0.8" v-html="icons[item.SVGTemplate]"></div>
+              <label> {{ item.Title }}</label>
+            </div>
+            <el-tooltip :content="item.Description" placement="right">
+              <i class="Icon Info"></i>
+            </el-tooltip>
+          </div>
+        </el-card>
+      </div>
+    </el-tab-pane>
+    <el-tab-pane :label="labels.Templates" name="templates">
+      <div v-for="(item, index) in getFiltered()" :key="index" class="TemplateCard">
         <b v-if="item.Header">{{ item.Header }}</b>
         <div v-if="item.Title" :draggable="item.IsEnable" style="cursor:grab;" @dragend="dragend($event)"
              @dragstart="dragstart(item, $event, 'template')"
@@ -53,12 +69,12 @@
 
     me.VueConfig.methods.UpdateLanguage();
     const data = Object.assign(me.VueConfig.data, {
-      activeTab: 'Activities',
-      original: {},
+      activeTab: 'activities',
       activities: [],
       templates: [],
       loading: true,
     });
+    data.icons = WorkflowDesignerConstants.icons
 
     me.VueConfig.mounted = function () {
       me.addMoveHandlers($.find('#ElementsTabs > .el-tabs__header')[0]);
@@ -66,8 +82,10 @@
 
     me.VueConfig.methods.onUpdate = function () {
       data.search = '';
-
       data.activities = [];
+      data.bpmnActivities = [];
+      data.hasBpmn = false;
+
       data.activities.push({
         Title: data.labels.BasicActivity,
         Description: data.labels.BasicActivityDesc,
@@ -126,11 +144,17 @@
         Class: 'Custom',
         Type: 'Comment'
       });
+
       if (me.graph.data?.AdditionalParams) {
         const {InlinedSchemeCodes} = me.graph.data.AdditionalParams;
 
         me.graph.designer.customActivities?.forEach?.(item => {
           item.Class = 'Custom';
+          if (item.PluginName === 'BpmnPlugin') {
+            data.hasBpmn = true;
+            data.bpmnActivities.push(item);
+            return;
+          }
           data.activities.push(item);
         });
 
@@ -155,8 +179,6 @@
           item.Class === 'Custom' ? item.Type : item.Class
         ));
 
-      data.original.activities = data.activities;
-
       const validateTemplates = templates => {
         const pluginsNames = me.graph.designer.getpluginsnames();
         const hasInPlugins = name => pluginsNames?.includes(name.trim())
@@ -171,9 +193,7 @@
       };
 
       const onLoad = result => {
-        data.original.templates
-          = data.templates
-          = validateTemplates(result);
+        data.templates = validateTemplates(result);
         data.loading = false;
       }
 
@@ -194,10 +214,6 @@
       }
     };
 
-    me.VueConfig.methods.onSearch = function () {
-      me.VueConfig.watch.options.handler();
-    };
-
     me.VueConfig.methods.createActivity = function (item, pos) {
       var activity = {
         Name: item.Type,
@@ -212,14 +228,18 @@
         SVGTemplate: item.SVGTemplate
       };
 
-      if (item.Type === 'DecisionTable' || item.Type === 'Decision') {
-        //decisions doesn't have state by default
-        activity.State = null;
-        activity.IsForSetState = false;
+      const setValue = (key, value) => {
+        if (typeof value !== 'undefined') activity[key] = value
       }
 
+      const customActivity = me.graph.GetCustomActivityByType(item.Type);
+
       for (const parameter of item.Parameters ?? []) {
-        if (!!parameter.DefaultValue) activity[parameter.Name] = parameter.DefaultValue;
+        if (typeof customActivity !== 'undefined' &&  (customActivity?.OrdinaryActivityParameters?.includes(parameter.Name) ?? false)) {
+          continue;
+        }
+
+        setValue(parameter.Name, parameter.DefaultValue);
         activity.Annotations.push({
           Name: parameter.Name,
           JsonValue: parameter.DefaultValue
@@ -227,7 +247,7 @@
       }
 
       for (const key in item.DefaultValues) {
-        if (!!item.DefaultValues[key]) activity[key] = item.DefaultValues[key];
+        setValue(key, item.DefaultValues[key])
       }
 
       me.graph.CreateActivity(pos, activity);
@@ -299,21 +319,13 @@
       me.parentContainer.off('dragover.elementsbar');
     };
 
-    me.VueConfig.watch = {
-      options: {
-        handler: () => {
-          const activeTab = data.activeTab.toLowerCase();
-          const search = data.search.toLowerCase();
-          const includes = str => !!str?.toLowerCase().includes(search);
+    me.VueConfig.methods.getFiltered = function () {
+      const search = data.search.toLowerCase();
+      const list = data[data.activeTab];
+      if (!search) return list;
 
-          if (!search) {
-            data[activeTab] = data.original[activeTab];
-            return;
-          }
-          data[activeTab] = data.original[activeTab]
-            ?.filter(el => includes(el.Title) || includes(el.Description))
-        }
-      },
+      const includes = str => !!str?.toLowerCase().includes(search);
+      return list?.filter(el => includes(el.Title) || includes(el.Description))
     };
   }
 </script>

@@ -181,6 +181,7 @@
     "AlwaysConditionShouldBeSingle": "Always condition should be single",
     "AlwaysConditionIsIllegal": "Always condition is illegal",
     "OtherwiseConditionShouldBeSingle": "Otherwise condition should be single",
+    "AlwaysConditionIsIllegal": "Always condition is illegal",
     "ConditionalLabel": "Conditional",
     "AlwaysLabel": "Always",
     "ActionLabel": "Action",
@@ -259,6 +260,17 @@
     "ProhibitedForExecution": "Prohibited for execution",
     "AssignmentDeleted": "Assignment deleted",
     "TypeSomething": "Type something"
+  },
+  "BpmnPlugin": {
+    "ServiceTask": "Service task",
+    "ParallelGateway": "Parallel gateway",
+    "MessageCatchEvent": "Message catch event",
+    "TimerCatchEvent": "Timer catch event",
+    "ExclusiveGateway": "Exclusive gateway",
+    "EndEvent": "End event",
+    "TerminateEvent": "Terminate end event",
+    "StartEvent": "Start event",
+    "DefaultFlow": "Default flow"
   },
   "ParameterFormLabel": {
     "Title": "Parameters",
@@ -517,7 +529,6 @@
     "UploadScheme": "Upload scheme",
     "UploadBPMN": "Upload BPMN",
     "DownloadScheme": "Download scheme",
-    "DownloadBPMN": "Download as BPMN",
     "FullScreen": "Full Screen",
     "ResetZoom": "Reset zoom",
     "Refresh": "Refresh",
@@ -614,6 +625,7 @@
   },
   "Elements": {
     "Activities": "Activities",
+    "BPMN": "BPMN",
     "Templates": "Templates",
     "BasicActivity": "Basic Activity",
     "BasicActivityDesc": "It determines a state and the order, in which Actions are executed in your process.",
@@ -638,12 +650,20 @@
     },
     "Header": "Elements"
   },
+  "UploadBpmnLabel": {
+    "Title": "Upload Bpmn",
+    "OverwriteExisting" : "Overwrite previously uploaded schemes",
+    "MainSchemeCode": "Main scheme code",
+    "Upload": "Upload",
+    "Rerender": "Rerender",
+    "UploadHint": "Click on Upload to start uploading the schema."
+  },
   "ErrorInBrowserConsole": "See more info in the browser console.",
   "FileNotExist": "The file doesn't exist",
-  "InformationCopiedToClipboardAndConsole": "The information is copied to the clipboard and displayed in the browser console.",
-  "InformationLoggedToConsole": "The information is displayed in the browser console.",
   "DesignerVersion": "Designer version",
   "BackendVersion": "Backend version",
+  "InformationCopiedToClipboard": "The information is copied to the clipboard.",
   "DesignerAndBackendVersionMismatch": "Designer and Backend versions do not match!",
+  "InformationCopiedToClipboardAndConsole": "The information is copied to the clipboard and displayed in the browser console.",
   "ClipboardAccessDenied": "Access to the clipboard has been denied. The information is displayed in the browser console."
 }

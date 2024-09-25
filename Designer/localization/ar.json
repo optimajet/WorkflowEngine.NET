@@ -81,6 +81,18 @@
 		"Title": "المهام",
 		"TypeSomething": "اكتب شيئا"
 	},
+	"BackendVersion": "النسخة للخلفية",
+	"BpmnPlugin": {
+		"DefaultFlow": "التدفق الافتراضي",
+		"EndEvent": "نهاية الحدث",
+		"ExclusiveGateway": "بوابة حصرية",
+		"MessageCatchEvent": "حدث التقاط الرسائل",
+		"ParallelGateway": "بوابة موازية",
+		"ServiceTask": "مهمة الخدمة",
+		"StartEvent": "بدء الحدث",
+		"TerminateEvent": "إنهاء الحدث النهائي",
+		"TimerCatchEvent": "حدث الصيد الموقت"
+	},
 	"BrokenReferencesDialogText": "يحتوي هذا المخطط على مراجع للعناصر التي لم يتم تعريفها بواسطة هذا المخطط أو موفري الإجراءات الحاليين. هل تريد الاحتفاظ بها?",
 	"ButtonTextCancel": "إلغاء",
 	"ButtonTextClose": "إغلاق",
@@ -92,6 +104,7 @@
 	"ButtonTextSave": "حفظ",
 	"ButtonTextUndo": "تراجع",
 	"ButtonTextYes": "نعم",
+	"ClipboardAccessDenied": "تم رفض الوصول إلى الحافظة. يتم عرض المعلومات في وحدة تحكم المتصفح.",
 	"CloseWithoutSaving": "إغلاق دون حفظ?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "قانون العمل",
@@ -190,7 +203,10 @@
 	},
 	"DeleteConfirm": "هل أنت متأكد من أنك تريد حذف العنصر المحدد (ق)?",
 	"DeleteConfirmCurrent": "هل أنت متأكد من أنك تريد حذف هذا العنصر?",
+	"DesignerAndBackendVersionMismatch": "إصدارات المصمم والخلفية لا تتطابق!",
+	"DesignerVersion": "النسخة للمصمم",
 	"DialogConfirmText": "سؤال",
+	"DoNotCombineCalendars": "من المستحيل الجمع بين الوقت ووقت العمل",
 	"DropdownValues": {
 		"Dropdown": "القائمة المنسدلة",
 		"Name": "الاسم",
@@ -366,6 +382,7 @@
 	},
 	"Elements": {
 		"Activities": "الأنشطة",
+		"BPMN": "بي بي إم إن",
 		"BasicActivity": "النشاط الأساسي",
 		"BasicActivityDesc": "فإنه يحدد الدولة والنظام ، والتي يتم تنفيذ الإجراءات في العملية الخاصة بك.",
 		"Comment": {
@@ -400,11 +417,13 @@
 	"FieldIsRequired": "الحقل مطلوب!",
 	"FieldMustBeUnique": "يجب أن يكون الحقل فريدا!",
 	"FieldMustContainAt": "يجب أن يحتوي الحقل على @",
+	"FileNotExist": "الملف غير موجود",
 	"InfoBlockLabel": {
 		"Activity": "الأنشطة: ",
 		"Command": "الأوامر: ",
 		"Transition": "التحولات: "
 	},
+	"InformationCopiedToClipboardAndConsole": "يتم نسخ المعلومات إلى الحافظة وعرضها في وحدة تحكم المتصفح.",
 	"LibraryLabel": {
 		"PluginRequired": "البرنامج المساعد المطلوبة:"
 	},
@@ -441,6 +460,7 @@
 		"ShowDetails": "إظهار التفاصيل",
 		"Timestamp": "الطابع الزمني"
 	},
+	"Name": "الاسم",
 	"None": "لا شيء",
 	"ParameterFormLabel": {
 		"InitialValue": "القيمة الأولية",
@@ -452,6 +472,7 @@
 		"Value": "القيمة"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "ابدأ بكتابة اسم للعثور على تقويم",
 		"DefiningParameters": "تحديد المعلمات",
 		"GeneralTabLabel": "معلومات عامة",
 		"HistoryTabActorIdLabel": "معرف الممثل",
@@ -482,9 +503,11 @@
 		"TimersTabName": "مؤقتات",
 		"TimersTabNameLabel": "الاسم",
 		"TimersTabValueLabel": "القيمة",
-		"Title": "معلومات العملية"
+		"Title": "معلومات العملية",
+		"WorkCalendar": "تقويم العمل"
 	},
 	"ReadMore": "اقرأ المزيد.",
+	"ReplaceSchemeConfirm": "مخطط بهذا الاسم موجود بالفعل. هل تريد استبداله?",
 	"SaveConfirm": "حفظ التغييرات?",
 	"SchemeNotSaved": "لم يتم حفظ المخطط",
 	"SchemeSaved": "تم حفظ المخطط",
@@ -499,6 +522,7 @@
 		"Value": "القيمة"
 	},
 	"ToolbarLabel": {
+		"About": "عن",
 		"ActivitiesCount": "عدد الأنشطة / الحد",
 		"Actors": "الجهات الفاعلة",
 		"AdditionalParameters": "معلمات إضافية",
@@ -516,7 +540,6 @@
 		"CreateTransition": "إنشاء انتقال",
 		"Delete": "حذف",
 		"Download": "تحميل",
-		"DownloadBPMN": "تحميل كما ببمن",
 		"DownloadScheme": "مخطط التحميل",
 		"DownloadXML": "تحميل كما شمل",
 		"Elements": "الأركان",
@@ -526,6 +549,7 @@
 		"ImageQuality": "الجودة (نسبة العرض إلى الارتفاع بكسل):",
 		"Info": "معلومات موسعة",
 		"Inline": "يمكن تضمين المخطط",
+		"InstanceInfo": "معلومات المثيل",
 		"Language": "اللغة",
 		"Legend": "أسطورة",
 		"Library": "المكتبة",
@@ -539,6 +563,7 @@
 		"ResetSettings": "إعادة ضبط الإعدادات",
 		"ResetZoom": "إعادة تعيين التكبير",
 		"Save": "حفظ",
+		"SaveAs": "حفظ باسم...",
 		"SaveToImage": "حفظ للصورة",
 		"Scheme": "مخطط",
 		"Settings": "الإعدادات",
@@ -546,6 +571,7 @@
 		"Timers": "مؤقتات",
 		"TransitionsCount": "التحولات العد / الحد",
 		"Undo": "تراجع",
+		"UntitledScheme": "مخطط بدون عنوان",
 		"Upload": "تحميل",
 		"UploadBPMN": "تحميل بي بي إم إن",
 		"UploadScheme": "مخطط التحميل",
@@ -554,14 +580,14 @@
 		"ZoomIn": "تكبير",
 		"ZoomOut": "تصغير",
 		"ZoomPositionDefault": "التكبير الافتراضي",
-		"ZoomTo100": "تعيين التكبير إلى 100%",
-    "About": "عن"
-  },
+		"ZoomTo100": "تعيين التكبير إلى 100%"
+	},
 	"TransitionAuto": "السيارات",
 	"TransitionFormLabel": {
 		"ActionLabel": "الإجراء",
 		"Allow": "السماح",
 		"AllowConcatenationType": "كونكات تسمح كما",
+		"AlwaysConditionIsIllegal": "دائما الشرط غير قانوني",
 		"AlwaysConditionShouldBeSingle": "دائما يجب أن تكون حالة واحدة",
 		"AlwaysLabel": "دائما",
 		"AnnotationName": "الاسم",
@@ -634,9 +660,14 @@
 		"TriggerType": "النوع",
 		"UserComment": "التعليق"
 	},
-	"Warning": "تحذير",
-  "DesignerVersion": "النسخة للمصمم",
-  "BackendVersion": "النسخة للخلفية",
-  "DesignerAndBackendVersionMismatch": "إصدارات المصمم والخلفية لا تتطابق!",
-  "ClipboardAccessDenied": "تم رفض الوصول إلى الحافظة. يتم عرض المعلومات في وحدة تحكم المتصفح."
+	"UploadBpmnLabel": {
+		"InfoMessage": "تم تحميل ملف بمن انظر النتيجة في السجل.",
+		"InfoTitle": "تم تحميل الملف",
+		"MainSchemeCode": "رمز المخطط الرئيسي",
+		"OK": "حسنا",
+		"OverwriteExisting": "الكتابة فوق المخططات التي تم تحميلها مسبقا",
+		"Title": "تحميل بمن",
+		"Upload": "تحميل"
+	},
+	"Warning": "تحذير"
 }

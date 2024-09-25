@@ -81,6 +81,18 @@
 		"Title": "Atamalar",
 		"TypeSomething": "Bir şey yazın"
 	},
+	"BackendVersion": "Arka uç versiyonu",
+	"BpmnPlugin": {
+		"DefaultFlow": "Varsayılan akış",
+		"EndEvent": "Etkinliği sonlandır",
+		"ExclusiveGateway": "Özel ağ geçidi",
+		"MessageCatchEvent": "İleti yakalama olayı",
+		"ParallelGateway": "Paralel ağ geçidi",
+		"ServiceTask": "Hizmet görevi",
+		"StartEvent": "Etkinliği başlat",
+		"TerminateEvent": "Bitiş olayını sonlandır",
+		"TimerCatchEvent": "Zamanlayıcı yakalama etkinliği"
+	},
 	"BrokenReferencesDialogText": "Bu şema, bu şema veya geçerli eylem sağlayıcıları tarafından tanımlanmayan öğelere başvurular içerir. Sende kalsın mı?",
 	"ButtonTextCancel": "İptal etmek",
 	"ButtonTextClose": "Kapatma",
@@ -92,6 +104,7 @@
 	"ButtonTextSave": "Kaydetmek",
 	"ButtonTextUndo": "Geri alma",
 	"ButtonTextYes": "Evet",
+	"ClipboardAccessDenied": "Panoya erişim reddedildi. Bilgiler tarayıcı konsolunda gösteriliyor.",
 	"CloseWithoutSaving": "Kaydetmeden kapatmak mı?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Eylem kodu",
@@ -190,7 +203,10 @@
 	},
 	"DeleteConfirm": "Seçili öğeleri silmek istediğinizden emin misiniz?",
 	"DeleteConfirmCurrent": "Bu öğeyi silmek istediğinizden emin misiniz?",
+	"DesignerAndBackendVersionMismatch": "Tasarımcı ve Arka Uç sürümleri eşleşmiyor!",
+	"DesignerVersion": "Tasarımcı versiyonu",
 	"DialogConfirmText": "Soru",
+	"DoNotCombineCalendars": "Zamanı çalışma süresiyle birleştirmek imkansızdır",
 	"DropdownValues": {
 		"Dropdown": "Açılır liste",
 		"Name": "İsim",
@@ -366,6 +382,7 @@
 	},
 	"Elements": {
 		"Activities": "Etkinlikler",
+		"BPMN": "BPMN",
 		"BasicActivity": "Temel Etkinlik",
 		"BasicActivityDesc": "İşleminizde eylemlerin yürütüldüğü bir durumu ve sırayı belirler.",
 		"Comment": {
@@ -400,11 +417,13 @@
 	"FieldIsRequired": "Saha gerekli!",
 	"FieldMustBeUnique": "Alan benzersiz olmalı!",
 	"FieldMustContainAt": "Alan şunları içermelidir @",
+	"FileNotExist": "Dosya mevcut değil",
 	"InfoBlockLabel": {
 		"Activity": "Etkinlikler: ",
 		"Command": "Komutlar: ",
 		"Transition": "Geçişler: "
 	},
+	"InformationCopiedToClipboardAndConsole": "Bilgiler panoya kopyalanır ve tarayıcı konsolunda görüntülenir.",
 	"LibraryLabel": {
 		"PluginRequired": "Eklenti gerekli:"
 	},
@@ -441,6 +460,7 @@
 		"ShowDetails": "Detayları göster",
 		"Timestamp": "Zaman damgası"
 	},
+	"Name": "İsim",
 	"None": "Hiçbiri",
 	"ParameterFormLabel": {
 		"InitialValue": "InitialValue",
@@ -452,6 +472,7 @@
 		"Value": "Değer"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Takvimi bulmak için bir ad yazmaya başlayın",
 		"DefiningParameters": "Parametrelerin tanımlanması",
 		"GeneralTabLabel": "Genel",
 		"HistoryTabActorIdLabel": "Oyuncu Kimliği",
@@ -482,9 +503,11 @@
 		"TimersTabName": "Çekimler",
 		"TimersTabNameLabel": "İsim",
 		"TimersTabValueLabel": "Değer",
-		"Title": "İşlem Bilgisi"
+		"Title": "İşlem Bilgisi",
+		"WorkCalendar": "Çalışma takvimi"
 	},
 	"ReadMore": "Daha fazla oku.",
+	"ReplaceSchemeConfirm": "Bu isimde bir şema zaten var. Değiştirmek ister misin?",
 	"SaveConfirm": "Değişiklikleri kaydet?",
 	"SchemeNotSaved": "Şema kaydedilmedi",
 	"SchemeSaved": "Şema kaydedildi",
@@ -499,6 +522,7 @@
 		"Value": "Değer"
 	},
 	"ToolbarLabel": {
+		"About": "Tasarımcı Hakkında",
 		"ActivitiesCount": "Etkinlik sayısı / Sınırı",
 		"Actors": "Aktörler",
 		"AdditionalParameters": "Ek Parametreler",
@@ -516,7 +540,6 @@
 		"CreateTransition": "Geçiş oluşturma",
 		"Delete": "Silmek",
 		"Download": "İndirmek",
-		"DownloadBPMN": "BPMN olarak indir",
 		"DownloadScheme": "İndirme şeması",
 		"DownloadXML": "XML olarak indir",
 		"Elements": "Öğeler",
@@ -526,6 +549,7 @@
 		"ImageQuality": "Kalite (piksel en boy oranı):",
 		"Info": "Genişletilmiş bilgi",
 		"Inline": "Şema satır içi olabilir",
+		"InstanceInfo": "Örnek bilgisi",
 		"Language": "Dil",
 		"Legend": "Efsane",
 		"Library": "Kütüphane",
@@ -539,6 +563,7 @@
 		"ResetSettings": "Ayarları sıfırla",
 		"ResetZoom": "Yakınlaştırmayı sıfırla",
 		"Save": "Kaydetmek",
+		"SaveAs": "Farklı kaydet...",
 		"SaveToImage": "Görüntüye kaydet",
 		"Scheme": "Şema",
 		"Settings": "Ayarlar",
@@ -546,6 +571,7 @@
 		"Timers": "Çekimler",
 		"TransitionsCount": "Geçiş sayısı / Sınırı",
 		"Undo": "Geri alma",
+		"UntitledScheme": "Başlıksız şema",
 		"Upload": "Yükle",
 		"UploadBPMN": "Bpmn'yi yükle",
 		"UploadScheme": "Yükleme şeması",
@@ -554,14 +580,14 @@
 		"ZoomIn": "yakınlaştırmak",
 		"ZoomOut": "uzaklaştırmak",
 		"ZoomPositionDefault": "Yakınlaştırma varsayılanı",
-		"ZoomTo100": "Yakınlaştırmayı 100 olarak ayarla%",
-    "About": "Tasarımcı Hakkında"
+		"ZoomTo100": "Yakınlaştırmayı 100 olarak ayarla%"
 	},
 	"TransitionAuto": "Oto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Aksiyon",
 		"Allow": "İzin vermek",
 		"AllowConcatenationType": "Concat olarak izin ver",
+		"AlwaysConditionIsIllegal": "Her zaman koşul yasa dışıdır",
 		"AlwaysConditionShouldBeSingle": "Her zaman durum tek olmalıdır",
 		"AlwaysLabel": "Her zaman",
 		"AnnotationName": "İsim",
@@ -634,9 +660,14 @@
 		"TriggerType": "Tip",
 		"UserComment": "Yorum"
 	},
-	"Warning": "Uyarı",
-  "DesignerVersion": "Tasarımcı versiyonu",
-  "BackendVersion": "Arka uç versiyonu",
-  "DesignerAndBackendVersionMismatch": "Tasarımcı ve Arka Uç sürümleri eşleşmiyor!",
-  "ClipboardAccessDenied": "Panoya erişim reddedildi. Bilgiler tarayıcı konsolunda gösteriliyor."
+	"UploadBpmnLabel": {
+		"InfoMessage": "Yüklenen Bpmn dosyası günlükteki sonuca bakın.",
+		"InfoTitle": "Bpmn dosyası yüklendi",
+		"MainSchemeCode": "Ana şema kodu",
+		"OK": "tamam",
+		"OverwriteExisting": "Önceden yüklenmiş şemaların üzerine yaz",
+		"Title": "Bpmn'yi Yükle",
+		"Upload": "Yükle"
+	},
+	"Warning": "Uyarı"
 }

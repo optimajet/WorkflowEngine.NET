@@ -81,6 +81,18 @@
 		"Title": "Назначения",
 		"TypeSomething": "Наберите что-нибудь"
 	},
+	"BackendVersion": "Версия бэкенда",
+	"BpmnPlugin": {
+		"DefaultFlow": "Поток по умолчанию",
+		"EndEvent": "Конечное событие",
+		"ExclusiveGateway": "Эксклюзивный шлюз",
+		"MessageCatchEvent": "Событие перехвата сообщения",
+		"ParallelGateway": "Параллельный шлюз",
+		"ServiceTask": "Служебная задача",
+		"StartEvent": "Начало события",
+		"TerminateEvent": "Завершить завершающее событие",
+		"TimerCatchEvent": "Событие перехвата по таймеру"
+	},
 	"BrokenReferencesDialogText": "Эта схема содержит ссылки на ЭЛЕМЕНТЫ, которые не определены этой схемой или текущими поставщиками действий. Вы хотите оставить их себе?",
 	"ButtonTextCancel": "Отмена",
 	"ButtonTextClose": "Закрыть",
@@ -92,6 +104,7 @@
 	"ButtonTextSave": "Сохранить",
 	"ButtonTextUndo": "Отменить",
 	"ButtonTextYes": "Да",
+	"ClipboardAccessDenied": "Доступ к буферу обмена отсутствует. Информация отображена в консоли браузера.",
 	"CloseWithoutSaving": "Закрыть без сохранения?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Код действия",
@@ -190,7 +203,10 @@
 	},
 	"DeleteConfirm": "Вы уверены, что хотите удалить выбранные элементы?",
 	"DeleteConfirmCurrent": "Вы уверены, что хотите удалить этот элемент?",
+	"DesignerAndBackendVersionMismatch": "Версии дизайнера и бэкэнда не совпадают!",
+	"DesignerVersion": "Версия дизайнера",
 	"DialogConfirmText": "Вопрос",
+	"DoNotCombineCalendars": "Невозможно совместить свободное время с рабочим",
 	"DropdownValues": {
 		"Dropdown": "Выпадающий список",
 		"Name": "Имя",
@@ -366,6 +382,7 @@
 	},
 	"Elements": {
 		"Activities": "Активности",
+		"BPMN": "BPMN",
 		"BasicActivity": "Основная Активность",
 		"BasicActivityDesc": "Он определяет состояние и порядок, в котором выполняются действия в вашем процессе.",
 		"Comment": {
@@ -400,11 +417,13 @@
 	"FieldIsRequired": "Поле обязательно для заполнения!",
 	"FieldMustBeUnique": "Поле должно быть уникальным!",
 	"FieldMustContainAt": "Поле должно содержать @",
+	"FileNotExist": "Этот файл не существует",
 	"InfoBlockLabel": {
 		"Activity": "Состояния: ",
 		"Command": "Команды: ",
 		"Transition": "Переходы: "
 	},
+	"InformationCopiedToClipboardAndConsole": "Информация копируется в буфер обмена и отображается в консоли браузера.",
 	"LibraryLabel": {
 		"PluginRequired": "Требуется плагин:"
 	},
@@ -441,6 +460,7 @@
 		"ShowDetails": "Показать детали",
 		"Timestamp": "Отметка времени"
 	},
+	"Name": "Имя",
 	"None": "Отсутствует",
 	"ParameterFormLabel": {
 		"InitialValue": "Начальное значение",
@@ -452,6 +472,7 @@
 		"Value": "Значение"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Начните вводить название, чтобы найти календарь",
 		"DefiningParameters": "Определение параметров",
 		"GeneralTabLabel": "Общие",
 		"HistoryTabActorIdLabel": "Идентификатор актера",
@@ -482,9 +503,11 @@
 		"TimersTabName": "Таймеры",
 		"TimersTabNameLabel": "Имя",
 		"TimersTabValueLabel": "Значение",
-		"Title": "Информация о процессе"
+		"Title": "Информация о процессе",
+		"WorkCalendar": "Рабочий календарь"
 	},
 	"ReadMore": "Подробнее.",
+	"ReplaceSchemeConfirm": "Схема с таким названием уже существует. Вы хотите ее заменить?",
 	"SaveConfirm": "Сохранить изменения?",
 	"SchemeNotSaved": "Схема не сохранена",
 	"SchemeSaved": "Схема сохранена",
@@ -499,6 +522,7 @@
 		"Value": "Значение"
 	},
 	"ToolbarLabel": {
+		"About": "О дизайнере",
 		"ActivitiesCount": "Количество активностей/ Лимит",
 		"Actors": "Актеры",
 		"AdditionalParameters": "Дополнительные параметры",
@@ -516,7 +540,6 @@
 		"CreateTransition": "Создать переход",
 		"Delete": "Удалить",
 		"Download": "Скачать",
-		"DownloadBPMN": "Скачать как BPMN",
 		"DownloadScheme": "Схема загрузки",
 		"DownloadXML": "Скачать в формате XML",
 		"Elements": "Элементы",
@@ -526,6 +549,7 @@
 		"ImageQuality": "Качество (соотношение сторон в пикселях):",
 		"Info": "Расширенная информация",
 		"Inline": "Схема может быть встроеной",
+		"InstanceInfo": "Информация об экземпляре",
 		"Language": "Язык",
 		"Legend": "Легенда",
 		"Library": "Библиотека",
@@ -539,6 +563,7 @@
 		"ResetSettings": "Сброс настроек",
 		"ResetZoom": "Сброс масштаба",
 		"Save": "Сохранить",
+		"SaveAs": "Сохранить как...",
 		"SaveToImage": "Сохранить в изображение",
 		"Scheme": "Схема",
 		"Settings": "Настройки",
@@ -546,6 +571,7 @@
 		"Timers": "Таймеры",
 		"TransitionsCount": "Количество переходов / Лимит",
 		"Undo": "Отменить",
+		"UntitledScheme": "Схема без названия",
 		"Upload": "Загрузить",
 		"UploadBPMN": "Загрузить BPMN",
 		"UploadScheme": "Схема загрузки",
@@ -554,14 +580,14 @@
 		"ZoomIn": "Увеличить масштаб",
 		"ZoomOut": "Уменьшить масштаб",
 		"ZoomPositionDefault": "Масштабирование по умолчанию",
-		"ZoomTo100": "Масштаб на 100%",
-    "About": "О дизайнере"
-  },
+		"ZoomTo100": "Масштаб на 100%"
+	},
 	"TransitionAuto": "Авто",
 	"TransitionFormLabel": {
 		"ActionLabel": "Действие",
 		"Allow": "Позволять",
 		"AllowConcatenationType": "Конкатенацию разрешить как",
+		"AlwaysConditionIsIllegal": "Всегда условие является незаконным",
 		"AlwaysConditionShouldBeSingle": "Условие всегда должно быть единственным",
 		"AlwaysLabel": "Всегда",
 		"AnnotationName": "Имя",
@@ -634,9 +660,14 @@
 		"TriggerType": "Тип",
 		"UserComment": "Комментарий"
 	},
-	"Warning": "Предупреждение",
-  "DesignerVersion": "Версия дизайнера",
-  "BackendVersion": "Версия бэкенда",
-  "DesignerAndBackendVersionMismatch": "Версии дизайнера и бэкэнда не совпадают!",
-  "ClipboardAccessDenied": "Доступ к буферу обмена отсутствует. Информация отображена в консоли браузера."
+	"UploadBpmnLabel": {
+		"InfoMessage": "Загруженный файл Bpmn показывает результат в журнале.",
+		"InfoTitle": "Загруженный файл Bpmn",
+		"MainSchemeCode": "Код основной схемы",
+		"OK": "ОК",
+		"OverwriteExisting": "Перезаписать ранее загруженные схемы",
+		"Title": "Загрузить Bpmn",
+		"Upload": "Загружать"
+	},
+	"Warning": "Предупреждение"
 }

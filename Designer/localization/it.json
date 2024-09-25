@@ -80,6 +80,18 @@
 		"Title": "Assegnazione",
 		"TypeSomething": "Digita qualcosa"
 	},
+	"BackendVersion": "Versione del backend",
+	"BpmnPlugin": {
+		"DefaultFlow": "Flusso predefinito",
+		"EndEvent": "Fine evento",
+		"ExclusiveGateway": "Gateway esclusivo",
+		"MessageCatchEvent": "Evento Cattura messaggio",
+		"ParallelGateway": "Gateway parallelo",
+		"ServiceTask": "Attività di servizio",
+		"StartEvent": "Inizio evento",
+		"TerminateEvent": "Termina evento di fine",
+		"TimerCatchEvent": "Timer cattura evento"
+	},
 	"BrokenReferencesDialogText": "Questo schema contiene riferimenti a ELEMENTI che non sono definiti da questo schema o dai provider di azioni correnti. Vuoi tenerli?",
 	"ButtonTextCancel": "Annullare",
 	"ButtonTextClose": "Vicino",
@@ -91,6 +103,7 @@
 	"ButtonTextSave": "Salvare",
 	"ButtonTextUndo": "Annullare",
 	"ButtonTextYes": "Sì",
+	"ClipboardAccessDenied": "L'accesso agli appunti è stato negato. Le informazioni vengono visualizzate nella console del browser.",
 	"CloseWithoutSaving": "Chiudere senza salvare?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Codice azione",
@@ -189,7 +202,10 @@
 	},
 	"DeleteConfirm": "Eliminare veramente gli elementi selezionati?",
 	"DeleteConfirmCurrent": "Eliminare veramente questo elemento?",
+	"DesignerAndBackendVersionMismatch": "Le versioni del designer e del backend non corrispondono!",
+	"DesignerVersion": "Versione del designer",
 	"DialogConfirmText": "Domanda",
+	"DoNotCombineCalendars": "È impossibile combinare il tempo con l'orario di lavoro",
 	"DropdownValues": {
 		"Dropdown": "Discesa",
 		"Name": "Nome",
@@ -365,6 +381,7 @@
 	},
 	"Elements": {
 		"Activities": "Attivita",
+		"BPMN": "BPMN",
 		"BasicActivity": "Attività di base",
 		"BasicActivityDesc": "Determina uno stato e l'ordine in cui vengono eseguite le azioni nel processo.",
 		"Comment": {
@@ -399,11 +416,13 @@
 	"FieldIsRequired": "Il campo è obbligatorio!",
 	"FieldMustBeUnique": "Il campo deve essere unico!",
 	"FieldMustContainAt": "Il campo deve contenere @",
+	"FileNotExist": "Il file non esiste",
 	"InfoBlockLabel": {
 		"Activity": "Attivita: ",
 		"Command": "Comando: ",
 		"Transition": "Transizione: "
 	},
+	"InformationCopiedToClipboardAndConsole": "Le informazioni vengono copiate negli appunti e visualizzate nella console del browser.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin richiesto:"
 	},
@@ -440,6 +459,7 @@
 		"ShowDetails": "Mostra dettagli",
 		"Timestamp": "Data e ora"
 	},
+	"Name": "Nome",
 	"None": "Nessuno",
 	"ParameterFormLabel": {
 		"InitialValue": "Valore iniziale",
@@ -451,6 +471,7 @@
 		"Value": "Valore"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Inizia a digitare un nome per trovare un calendario",
 		"DefiningParameters": "Definizione dei parametri",
 		"GeneralTabLabel": "Generale",
 		"HistoryTabActorIdLabel": "Id attore",
@@ -481,9 +502,11 @@
 		"TimersTabName": "Timer",
 		"TimersTabNameLabel": "Nome",
 		"TimersTabValueLabel": "Valore",
-		"Title": "Informazioni sul processo"
+		"Title": "Informazioni sul processo",
+		"WorkCalendar": "Calendario di lavoro"
 	},
 	"ReadMore": "Per saperne di più.",
+	"ReplaceSchemeConfirm": "Uno schema con quel nome esiste già. Vuoi sostituirlo?",
 	"SaveConfirm": "Salvare le modifiche?",
 	"SchemeNotSaved": "Schema non salvato",
 	"SchemeSaved": "Schema salvato",
@@ -498,6 +521,7 @@
 		"Value": "Valore"
 	},
 	"ToolbarLabel": {
+		"About": "Informazioni sul designer",
 		"ActivitiesCount": "Conteggio / limite delle attività",
 		"Actors": "Attore",
 		"AdditionalParameters": "Parametri aggiuntivi",
@@ -515,7 +539,6 @@
 		"CreateTransition": "Creare una transizione",
 		"Delete": "Eliminare",
 		"Download": "Scaricare",
-		"DownloadBPMN": "Scarica come BPMN",
 		"DownloadScheme": "Scarica schema",
 		"DownloadXML": "Scarica come XML",
 		"Elements": "Elemento",
@@ -525,6 +548,7 @@
 		"ImageQuality": "Qualità (rapporto di aspetto pixel):",
 		"Info": "Informazioni estese",
 		"Inline": "Lo schema può essere inline",
+		"InstanceInfo": "Informazioni sull'istanza",
 		"Language": "Lingua",
 		"Legend": "Leggenda",
 		"Library": "Biblioteca",
@@ -538,6 +562,7 @@
 		"ResetSettings": "Ripristina impostazioni",
 		"ResetZoom": "Azzera zoom",
 		"Save": "Salvare",
+		"SaveAs": "Salva con nome...",
 		"SaveToImage": "Salva nell'immagine",
 		"Scheme": "Schema",
 		"Settings": "Impostazioni",
@@ -545,6 +570,7 @@
 		"Timers": "Timer",
 		"TransitionsCount": "Conteggio / limite delle transizioni",
 		"Undo": "Annullare",
+		"UntitledScheme": "Schema senza titolo",
 		"Upload": "Caricare",
 		"UploadBPMN": "Carica BPMN",
 		"UploadScheme": "Schema di caricamento",
@@ -553,14 +579,14 @@
 		"ZoomIn": "ingrandire",
 		"ZoomOut": "Rimpicciolisci",
 		"ZoomPositionDefault": "Zoom predefinito",
-		"ZoomTo100": "Imposta zoom su 100%",
-    "About": "Informazioni sul designer"
+		"ZoomTo100": "Imposta zoom su 100%"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Azione",
 		"Allow": "Permettere",
 		"AllowConcatenationType": "Concat consenti come",
+		"AlwaysConditionIsIllegal": "La condizione è sempre illegale",
 		"AlwaysConditionShouldBeSingle": "Sempre condizione dovrebbe essere singolo",
 		"AlwaysLabel": "Sempre",
 		"AnnotationName": "Nome",
@@ -633,9 +659,14 @@
 		"TriggerType": "Tipo",
 		"UserComment": "Commentare"
 	},
-	"Warning": "Avvertimento",
-  "DesignerVersion": "Versione del designer",
-  "BackendVersion": "Versione del backend",
-  "DesignerAndBackendVersionMismatch": "Le versioni del designer e del backend non corrispondono!",
-  "ClipboardAccessDenied": "L'accesso agli appunti è stato negato. Le informazioni vengono visualizzate nella console del browser."
+	"UploadBpmnLabel": {
+		"InfoMessage": "File Bpmn caricato vedere il risultato nel registro.",
+		"InfoTitle": "File Bpmn caricato",
+		"MainSchemeCode": "Codice schema principale",
+		"OK": "OK",
+		"OverwriteExisting": "Sovrascrivi schemi precedentemente caricati",
+		"Title": "Carica Bpmn",
+		"Upload": "Caricare"
+	},
+	"Warning": "Avvertimento"
 }

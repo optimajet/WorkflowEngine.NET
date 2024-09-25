@@ -26,7 +26,7 @@
           {{labels.Transition}}
           <a v-if="!readonly"
        @click="addRow(Transitions.all,
-                {condition: {Type: 'Expression',Expression:null, Action: {ActionParameter:null}}})">{{ButtonTextCreate}}</a>
+                {condition: {Type: 'Expression',Expression:null, Action: {ActionParameter:null}}, Classifier: 'NotSpecified'})">{{ButtonTextCreate}}</a>
     </h4>
     <div style="margin-left: 20px;">
       <table class="WorkflowDesignerTable">
@@ -320,9 +320,9 @@
       var objectCorrect = me.VueConfig.methods.objectCorrect;
 
       if ((formdata.State)
-        || (transitions.all.find(item => item.Classifier && item.Classifier !== WorkflowDesignerConstants.notSpecified))
+        || (transitions.all.find(item => item.Classifier && item.Classifier !== WorkflowDesignerConstants.NotSpecified))
         || (transitions.all.find(item => typeof(item.condition.ResultOnPreExecution) === 'boolean'))
-        || (transitions.otherwise.Classifier && transitions.otherwise.Classifier !== WorkflowDesignerConstants.notSpecified)) {
+        || (transitions.otherwise.Classifier && transitions.otherwise.Classifier !== WorkflowDesignerConstants.NotSpecified)) {
         me.VueConfig.data.expertMode = true;
       }
     };

@@ -1,0 +1,77 @@
+<h3>{{ labels.Title }}</h3>
+
+<div class="WorkflowDesignerWindowForm" style="display: flex; flex-direction: column; gap: 15px;">
+  <el-input v-model="mainSchemeCode" :placeholder="labels.MainSchemeCode" :disabled="uploaded"></el-input>
+  <el-checkbox v-model="overwriteExisting" :disabled="uploaded">{{ labels.OverwriteExisting }}</el-checkbox>
+  <div class="WFEUploadLog">
+    <el-input v-model="resultLog" :rows="10" type="textarea" readonly></el-input>
+    <el-button  @click="copy()" icon="el-icon-document-copy"></el-button>
+  </div>
+</div>
+
+<div class="WorkflowDesignerButtons">
+  <el-button v-if="!readonly && !uploaded" type="primary" @click="onUpload">{{ labels.Upload }}</el-button>
+  <el-button @click="onClose" :type="redrawAfterClose ? 'primary' : undefined">{{ redrawAfterClose ? labels.Rerender : ButtonTextClose }}</el-button>
+</div>
+
+<script type="application/javascript">
+  function uploadBpmn_Init(me) {
+    me.VueConfig.methods.UpdateLanguage = function () {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+        labels: WorkflowDesignerConstants.UploadBpmnLabel,
+        ButtonTextClose: WorkflowDesignerConstants.ButtonTextClose,
+      });
+    }
+    me.VueConfig.methods.UpdateLanguage();
+
+    const designer = me.graph.designer;
+    const data = me.VueConfig.data
+    const initData = {
+      readonly: false,
+      overwriteExisting: false,
+      mainSchemeCode: designer?.data?.Name ?? '',
+      resultLog: data.labels.UploadHint,
+      uploaded: false,
+      redrawAfterClose: false
+    }
+    me.VueConfig.data = Object.assign(me.VueConfig.data, initData);
+
+    me.VueConfig.methods.onUpdate = function (value) {
+      me.VueConfig.data = Object.assign(me.VueConfig.data, initData);
+      data.value = value;
+      data.readonly = me.graph.Settings.readonly;
+    };
+
+    me.VueConfig.methods.onUpload = function () {
+      const settings = {
+        overwriteExisting: data.overwriteExisting,
+        mainSchemeCode: data.mainSchemeCode
+      }
+      designer.uploadbpmn(data.value, settings, showUploadResult);
+      data.uploaded = true;
+    };
+
+    me.VueConfig.methods.copy = function () {
+      me.copyToClipboard(me.VueConfig.data.resultLog, false);
+    };
+
+    me.VueConfig.methods.onClose = function () {
+      if (me.VueConfig.data.redrawAfterClose)
+      {
+        designer.data = data.newScheme;
+        designer.render();
+      }
+      me.onClose(true);
+    };
+
+    function showUploadResult(result, designer) {
+      data.resultLog = result.ResultLog;
+      const newScheme = result.MainProcessScheme;
+      data.redrawAfterClose = false;
+      if (newScheme && newScheme.Name === designer.data?.Name) {
+        data.redrawAfterClose = true;
+        data.newScheme = newScheme;
+      }
+    }
+  }
+</script>

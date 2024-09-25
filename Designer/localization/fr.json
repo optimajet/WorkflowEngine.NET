@@ -80,6 +80,18 @@
 		"Title": "Affectation",
 		"TypeSomething": "Tapez quelque chose"
 	},
+	"BackendVersion": "Version du backend",
+	"BpmnPlugin": {
+		"DefaultFlow": "Flux par défaut",
+		"EndEvent": "Événement de fin",
+		"ExclusiveGateway": "Passerelle exclusive",
+		"MessageCatchEvent": "Événement de capture de message",
+		"ParallelGateway": "Passerelle parallèle",
+		"ServiceTask": "Tâche de service",
+		"StartEvent": "Démarrer l'événement",
+		"TerminateEvent": "Terminer l'événement de fin",
+		"TimerCatchEvent": "Événement de capture de minuterie"
+	},
 	"BrokenReferencesDialogText": "Ce schéma contient des références à des ÉLÉMENTS qui ne sont pas définis par ce schéma ou par les fournisseurs d'actions actuels. Tu veux les garder?",
 	"ButtonTextCancel": "Annuler",
 	"ButtonTextClose": "Proche",
@@ -91,6 +103,7 @@
 	"ButtonTextSave": "Enregistrer",
 	"ButtonTextUndo": "Annuler",
 	"ButtonTextYes": "Oui",
+	"ClipboardAccessDenied": "L'accès au presse-papiers a été refusé. Les informations sont affichées dans la console du navigateur.",
 	"CloseWithoutSaving": "Fermer sans enregistrer?",
 	"CodeActionsFormLabel": {
 		"ActionCode": "Code d'action",
@@ -189,7 +202,10 @@
 	},
 	"DeleteConfirm": "Êtes-vous sûr de vouloir supprimer le(s) élément (s) sélectionné (s)?",
 	"DeleteConfirmCurrent": "Êtes-vous sûr de vouloir supprimer cet élément?",
+	"DesignerAndBackendVersionMismatch": "Les versions du concepteur et du backend ne correspondent pas!",
+	"DesignerVersion": "Version du designer",
 	"DialogConfirmText": "Question",
+	"DoNotCombineCalendars": "Il est impossible de combiner le temps avec le temps de travail",
 	"DropdownValues": {
 		"Dropdown": "Déroulante",
 		"Name": "Nom",
@@ -365,6 +381,7 @@
 	},
 	"Elements": {
 		"Activities": "Activité",
+		"BPMN": "BPM",
 		"BasicActivity": "Activité de Base",
 		"BasicActivityDesc": "Il détermine un état et l'ordre dans lequel les actions sont exécutées dans votre processus.",
 		"Comment": {
@@ -399,11 +416,13 @@
 	"FieldIsRequired": "Le champ est obligatoire!",
 	"FieldMustBeUnique": "Le champ doit être unique!",
 	"FieldMustContainAt": "Le champ doit contenir @",
+	"FileNotExist": "Le fichier n'existe pas",
 	"InfoBlockLabel": {
 		"Activity": "Activité: ",
 		"Command": "Commande: ",
 		"Transition": "Transition: "
 	},
+	"InformationCopiedToClipboardAndConsole": "Les informations sont copiées dans le presse-papiers et affichées dans la console du navigateur.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin requis:"
 	},
@@ -440,6 +459,7 @@
 		"ShowDetails": "Afficher les détails",
 		"Timestamp": "Timestamp"
 	},
+	"Name": "Nom",
 	"None": "Aucun",
 	"ParameterFormLabel": {
 		"InitialValue": "Valeur initiale",
@@ -451,6 +471,7 @@
 		"Value": "Valeur"
 	},
 	"ProcessInfoFormLabel": {
+		"CalendarPlaceholder": "Commencez à taper un nom pour trouver un calendrier",
 		"DefiningParameters": "Définition des paramètres",
 		"GeneralTabLabel": "Général",
 		"HistoryTabActorIdLabel": "Id de L'Acteur",
@@ -481,9 +502,11 @@
 		"TimersTabName": "Minuterie",
 		"TimersTabNameLabel": "Nom",
 		"TimersTabValueLabel": "Valeur",
-		"Title": "Informations sur le Processus"
+		"Title": "Informations sur le Processus",
+		"WorkCalendar": "Calendrier de travail"
 	},
 	"ReadMore": "Lire la suite.",
+	"ReplaceSchemeConfirm": "Un schéma portant ce nom existe déjà. Voulez-vous le remplacer?",
 	"SaveConfirm": "Enregistrer les modifications?",
 	"SchemeNotSaved": "Schéma non enregistré",
 	"SchemeSaved": "Schéma sauvegardé",
@@ -498,6 +521,7 @@
 		"Value": "Valeur"
 	},
 	"ToolbarLabel": {
+		"About": "À propos du designer",
 		"ActivitiesCount": "Nombre / Limite d'activités",
 		"Actors": "Acteur",
 		"AdditionalParameters": "Paramètres Supplémentaires",
@@ -515,7 +539,6 @@
 		"CreateTransition": "Créer une transition",
 		"Delete": "Supprimer",
 		"Download": "Télécharger",
-		"DownloadBPMN": "Télécharger comme BPMN",
 		"DownloadScheme": "Télécharger le schéma",
 		"DownloadXML": "Télécharger au format XML",
 		"Elements": "Élément",
@@ -525,6 +548,7 @@
 		"ImageQuality": "Qualité (rapport hauteur / largeur en pixels):",
 		"Info": "Informations étendues",
 		"Inline": "Le schéma peut être intégré",
+		"InstanceInfo": "Informations sur l'instance",
 		"Language": "Langue",
 		"Legend": "Légende",
 		"Library": "Bibliothèque",
@@ -538,6 +562,7 @@
 		"ResetSettings": "Réinitialiser les paramètres",
 		"ResetZoom": "Réinitialiser le zoom",
 		"Save": "Enregistrer",
+		"SaveAs": "Enregistrer sous...",
 		"SaveToImage": "Enregistrer dans l'image",
 		"Scheme": "Régime",
 		"Settings": "Paramètre",
@@ -545,6 +570,7 @@
 		"Timers": "Minuterie",
 		"TransitionsCount": "Nombre / Limite de transitions",
 		"Undo": "Annuler",
+		"UntitledScheme": "Régime sans titre",
 		"Upload": "Télécharger",
 		"UploadBPMN": "Télécharger BPMN",
 		"UploadScheme": "Schéma de téléchargement",
@@ -553,14 +579,14 @@
 		"ZoomIn": "zoomer",
 		"ZoomOut": "Zoom Arrière",
 		"ZoomPositionDefault": "Zoom par défaut",
-		"ZoomTo100": "Régler le zoom sur 100%",
-    "About": "À propos du designer"
+		"ZoomTo100": "Régler le zoom sur 100%"
 	},
 	"TransitionAuto": "Auto",
 	"TransitionFormLabel": {
 		"ActionLabel": "Action",
 		"Allow": "Permettre",
 		"AllowConcatenationType": "Concaténer comme",
+		"AlwaysConditionIsIllegal": "Toujours la condition est illégale",
 		"AlwaysConditionShouldBeSingle": "La condition doit toujours être unique",
 		"AlwaysLabel": "Toujours",
 		"AnnotationName": "Nom",
@@ -633,9 +659,14 @@
 		"TriggerType": "Type",
 		"UserComment": "Commentaire"
 	},
-	"Warning": "Avertissement",
-  "DesignerVersion": "Version du designer",
-  "BackendVersion": "Version du backend",
-  "DesignerAndBackendVersionMismatch": "Les versions du concepteur et du backend ne correspondent pas!",
-  "ClipboardAccessDenied": "L'accès au presse-papiers a été refusé. Les informations sont affichées dans la console du navigateur."
+	"UploadBpmnLabel": {
+		"InfoMessage": "Fichier Bpmn téléchargé voir le résultat dans le journal.",
+		"InfoTitle": "Fichier Bpmn téléchargé",
+		"MainSchemeCode": "Code du régime principal",
+		"OK": "D'ACCORD",
+		"OverwriteExisting": "Écraser les schémas précédemment téléchargés",
+		"Title": "Télécharger le BPM",
+		"Upload": "Télécharger"
+	},
+	"Warning": "Avertissement"
 }

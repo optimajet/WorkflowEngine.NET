@@ -298,8 +298,8 @@
 
             if ((formdata.State)
               || (formdata.Conditions.find(item => typeof(item.ResultOnPreExecution) === 'boolean'))
-              || (formdata.WhenTrueClassifier && formdata.WhenTrueClassifier !== WorkflowDesignerConstants.notSpecified)
-              || (formdata.WhenFalseClassifier && formdata.WhenFalseClassifier !== WorkflowDesignerConstants.notSpecified)) {
+              || (formdata.WhenTrueClassifier && formdata.WhenTrueClassifier !== WorkflowDesignerConstants.NotSpecified)
+              || (formdata.WhenFalseClassifier && formdata.WhenFalseClassifier !== WorkflowDesignerConstants.NotSpecified)) {
               me.VueConfig.data.expertMode = true;
             }
         };
