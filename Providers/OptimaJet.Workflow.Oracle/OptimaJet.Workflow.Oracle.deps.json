@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.1": {},
     ".NETStandard,Version=v2.1/": {
-      "OptimaJet.Workflow.Oracle/15.0.0": {
+      "OptimaJet.Workflow.Oracle/15.0.1": {
         "dependencies": {
           "FluentMigrator.Runner.Oracle": "5.2.0",
           "Oracle.ManagedDataAccess.Core": "3.21.100",
-          "WorkflowEngine.NETCore-Core": "15.0.0",
-          "WorkflowEngine.NETCore-Migrator": "15.0.0",
+          "WorkflowEngine.NETCore-Core": "15.0.1",
+          "WorkflowEngine.NETCore-Migrator": "15.0.1",
           "OptimaJet.Workflow.Core": "15.0.0.0",
           "OptimaJet.Workflow.Migrator": "15.0.0.0"
         },
@@ -1683,7 +1683,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/15.0.0": {
+      "WorkflowEngine.NETCore-Core/15.0.1": {
         "dependencies": {
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
@@ -1698,12 +1698,12 @@
           "OptimaJet.Workflow.Core.dll": {}
         }
       },
-      "WorkflowEngine.NETCore-Migrator/15.0.0": {
+      "WorkflowEngine.NETCore-Migrator/15.0.1": {
         "dependencies": {
           "FluentMigrator": "5.2.0",
           "FluentMigrator.Runner": "5.2.0",
           "Microsoft.Extensions.DependencyInjection": "8.0.0",
-          "WorkflowEngine.NETCore-Core": "15.0.0"
+          "WorkflowEngine.NETCore-Core": "15.0.1"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {}
@@ -1728,7 +1728,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.Oracle/15.0.0": {
+    "OptimaJet.Workflow.Oracle/15.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2692,12 +2692,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/15.0.0": {
+    "WorkflowEngine.NETCore-Core/15.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/15.0.0": {
+    "WorkflowEngine.NETCore-Migrator/15.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

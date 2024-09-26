@@ -13,7 +13,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.25" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="15.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="15.0.1" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.PostgreSql\WF.Sample.PostgreSql.csproj" />
