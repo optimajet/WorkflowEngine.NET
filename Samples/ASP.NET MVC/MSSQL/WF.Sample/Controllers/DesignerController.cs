@@ -45,8 +45,6 @@ namespace WF.Sample.Controllers
             var operation = pars["operation"].ToLower();
             if (operation == "downloadscheme" && !hasError)
                 return File(Encoding.UTF8.GetBytes(res), "text/xml");
-            else if (operation == "downloadschemebpmn" && !hasError)
-                return File(UTF8Encoding.UTF8.GetBytes(res), "text/xml");
 
             return Content(res);
         }

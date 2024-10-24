@@ -1,0 +1,27 @@
+<svg width="{item.width = Math.max(item.InitialTextWidth + 2, 62)}"
+     height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="{(item.width - item.InitialTextWidth) / 2}" y="1" width="{item.InitialTextWidth + 2}" height="13" rx="4" fill="white" visibility="{item.InitialTextWidth > 0 ? 'visible' : 'hidden'}"/>
+  <text x="{(item.width - item.InitialTextWidth) / 2 + 2}" y="11.1016" font-family="Arial" font-size="12" font-weight="600"
+        fill="black">{Name}
+  </text>
+  <circle cx="{item.width / 2}" cy="48" r="28" fill="{Color}"
+          stroke="{item.Selected ? '#F39C12' : item.TextColor}" stroke-width="2"/>
+  <circle cx="{item.width / 2}" cy="48" r="24" stroke="{item.TextColor }" stroke-width="2"/>
+  <g transform="translate({item.width / 2 - 19}, 29)" stroke="{item.TextColor }">
+    <path d="M19 37C28.9411 37 37 28.9411 37 19C37 9.05887 28.9411 1 19 1C9.05887 1 1 9.05887 1 19C1 28.9411 9.05887 37 19 37Z"  stroke-width="1.5018"/>
+    <path d="M22.6818 6.72728L19 19L27.5909 21.4545"  stroke-width="1.5018" stroke-linecap="square"/>
+    <path d="M19 31.2727V34.9545" stroke-linecap="square"/>
+    <path d="M12.8628 29.6274L11.0219 32.8158" stroke-linecap="square"/>
+    <path d="M8.37264 25.1355L5.18419 26.9764" stroke-linecap="square"/>
+    <path d="M6.72728 19H3.04546" stroke-linecap="square"/>
+    <path d="M8.37264 12.8628L5.18419 11.0219" stroke-linecap="square"/>
+    <path d="M12.8645 8.37264L11.0236 5.18419" stroke-linecap="square"/>
+    <path d="M19 6.72728V3.04546" stroke-linecap="square"/>
+    <path d="M25.1372 8.37264L26.9781 5.18419" stroke-linecap="square"/>
+    <path d="M29.6274 12.8645L32.8158 11.0236" stroke-linecap="square"/>
+    <path d="M31.2727 19H34.9545" stroke-linecap="square"/>
+    <path d="M29.6274 25.1372L32.8158 26.9781" stroke-linecap="square"/>
+    <path d="M25.1355 29.6274L26.9764 32.8158" stroke-linecap="square"/>
+  </g>
+  <circle cx="{item.width / 2}" cy="48" r="17" stroke="{item.TextColor }" stroke-width="2.5"/>
+</svg>

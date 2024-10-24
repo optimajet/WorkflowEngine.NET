@@ -82,6 +82,7 @@
       var expression = me.editor.getValue().replace(/(?:\n)/g, '\\n');
       var params = {};
       params.expression = expression;
+      params.expressiontype = me.options.expressiontype;
       var callbackfn = function (response) {
         var infodialog = me.VueConfig.data.infodialog;
         infodialog.title = response.Success ? WorkflowDesignerConstants.EditExpressionLabel.Success : WorkflowDesignerConstants.EditExpressionLabel.Error;

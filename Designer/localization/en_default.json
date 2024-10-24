@@ -82,7 +82,12 @@
     "AnnotationName": "Name",
     "AnnotationValue": "Value",
     "Scheme": "Inline scheme",
-    "UserComment": "Comment"
+    "UserComment": "Comment",
+    "InputParameters": "Input parameters",
+    "OutputParameters": "Output parameters",
+    "Target": "Target",
+    "Purpose": "Purpose",
+    "Expression": "Expression"
   },
   "Decision": {
     "Title": "Decision",

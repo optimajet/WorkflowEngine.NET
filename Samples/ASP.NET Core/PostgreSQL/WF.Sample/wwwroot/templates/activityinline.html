@@ -8,7 +8,14 @@
     <el-input v-model="FormData.Name"></el-input>
   </el-form-item>
   <el-form-item :label="labels.Scheme" :rules="getFieldRules('SchemeCode')" prop="SchemeCode">
-    <el-select v-model="FormData.SchemeCode" :disabled="readonly" filterable placeholder="" style="width: 100%;">
+    <el-select
+      v-model="FormData.SchemeCode"
+      :disabled="readonly"
+      @change="onSchemeChange"
+      filterable
+      placeholder=""
+      style="width: 100%;"
+    >
       <el-option
         v-for="scheme in schemes"
         :key="scheme"
@@ -17,6 +24,146 @@
       </el-option>
     </el-select>
   </el-form-item>
+
+  <div style="margin-bottom: 10px;">
+    <h4 class="WorkflowDesignerTitleWithCreate Underline">
+      {{ labels.InputParameters }}
+      <a v-if="!readonly" @click="addInputParameter()">{{ ButtonTextCreate }}</a>
+    </h4>
+    <table v-if="inputParameters.length > 0" class="WorkflowDesignerTable">
+      <tr>
+        <th></th>
+        <th>{{ labels.Target }}</th>
+        <th>{{ labels.Purpose }}</th>
+        <th>{{ labels.Expression }}</th>
+      </tr>
+      <tr
+        v-for="(parameter, index) in inputParameters"
+        :key="index"
+        :class="dragOverIndex == index && dragOverBlock == parameter ? 'dragOver' : ''"
+        @dragend="dragend($event)"
+        @dragover="dragover(parameter, index, $event)"
+        @dragstart="dragstart(index, $event, inputParameters)"
+      >
+        <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+          <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+        </td>
+        <td>
+          <el-select
+            v-model="parameter.Target"
+            :allow-create="true"
+            :disabled="readonly"
+            @change="onInputParameterTargetChange"
+            :class="isEmpty(parameter.Target) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+            filterable
+          >
+            <el-option
+              v-for="schemeParameter in inlinedSchemeParameters"
+              :key="schemeParameter.Name"
+              :label="schemeParameter.Name"
+              :value="schemeParameter.Name">
+            </el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-select
+            v-model="parameter.Purpose"
+            :disabled="readonly || !!findInlinedSchemeParameter(parameter.Target)"
+            :class="isEmpty(parameter.Purpose) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+            filterable
+          >
+            <el-option key="Temporary" :label="!!findInlinedSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'" value="Temporary"></el-option>
+            <el-option key="Persistent" label="Persistence" value="Persistence"></el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-input
+            v-model="parameter.Expression"
+            :readonly="readonly"
+            :class="isEmpty(parameter.Expression) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+          ></el-input>
+        </td>
+        <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+          <el-button-group>
+            <el-button
+              :class="'WorkflowDesignerTableCodeActionsButton ' + (editingParameter == parameter ? 'is-active' : '')"
+              @click="showExpressionEditor(parameter)"></el-button>
+            <el-button class="WorkflowDesignerTableDeleteButton" @click="removeItem(inputParameters, index)"></el-button>
+          </el-button-group>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div style="margin-bottom: 10px;">
+    <h4 class="WorkflowDesignerTitleWithCreate Underline">
+      {{ labels.OutputParameters }}
+      <a v-if="!readonly" @click="addOutputParameter()">{{ ButtonTextCreate }}</a>
+    </h4>
+    <table v-if="outputParameters.length > 0" class="WorkflowDesignerTable">
+      <tr>
+        <th></th>
+        <th>{{ labels.Target }}</th>
+        <th>{{ labels.Purpose }}</th>
+        <th>{{ labels.Expression }}</th>
+      </tr>
+      <tr
+        v-for="(parameter, index) in outputParameters"
+        :key="index"
+        :class="dragOverIndex == index && dragOverBlock == parameter ? 'dragOver' : ''"
+        @dragend="dragend($event)"
+        @dragover="dragover(parameter, index, $event)"
+        @dragstart="dragstart(index, $event, outputParameters)"
+      >
+        <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+          <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+        </td>
+        <td>
+          <el-select
+            v-model="parameter.Target"
+            :allow-create="true"
+            :disabled="readonly"
+            @change="onOutputParameterTargetChange"
+            :class="isEmpty(parameter.Target) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+            filterable
+          >
+            <el-option
+              v-for="schemeParameter in schemeParameters"
+              :key="schemeParameter.Name"
+              :label="schemeParameter.Name"
+              :value="schemeParameter.Name">
+            </el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-select
+            v-model="parameter.Purpose"
+            :disabled="readonly || !!findSchemeParameter(parameter.Target)"
+            :class="isEmpty(parameter.Purpose) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+            filterable
+          >
+            <el-option key="Temporary" :label="!!findSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'" value="Temporary"></el-option>
+            <el-option key="Persistence" label="Persistence" value="Persistence"></el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-input
+            v-model="parameter.Expression"
+            :readonly="readonly"
+            :class="isEmpty(parameter.Expression) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
+          ></el-input>
+        </td>
+        <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+          <el-button-group>
+            <el-button
+              :class="'WorkflowDesignerTableCodeActionsButton ' + (editingParameter == parameter ? 'is-active' : '')"
+              @click="showExpressionEditor(parameter)"></el-button>
+            <el-button class="WorkflowDesignerTableDeleteButton" @click="removeItem(outputParameters, index)"></el-button>
+          </el-button-group>
+        </td>
+      </tr>
+    </table>
+  </div>
 
   <el-button v-if="!readonly && !itemHasComment" circle icon="el-icon-s-comment" @click="showUserComment()"></el-button>
   <el-form-item v-if="itemHasComment" :label="labels.UserComment">
@@ -42,6 +189,13 @@
         labels: WorkflowDesignerConstants.ActivityFormLabel,
         ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        inputParameters: [], //: ParameterMapping[]
+        outputParameters: [], //: ParameterMapping[],
+        inlinedSchemeParameters: [], //: ParameterDefinition[]
+        schemeParameters: [], //: ParameterDefinition[]
+        editingParameter: null, //: ParameterMapping | null
+        saveTriggered: false, //: boolean
       });
     }
 
@@ -53,12 +207,37 @@
       FormData: {}
     });
 
+    var INPUT_PARAMETERS_ANNOTATION = '__inputParameters';
+    var OUTPUT_PARAMETERS_ANNOTATION = '__outputParameters';
+
     me.VueConfig.methods.onUpdate = function (item) {
       me.VueConfig.data.originalItem = item;
       me.VueConfig.data.FormData.Name = item.Name;
       me.VueConfig.data.FormData.SchemeCode = item.SchemeCode;
+      me.VueConfig.data.FormData.Annotations = item.Annotations || [];
       me.VueConfig.data.schemes = me.graph.data.AdditionalParams.InlinedSchemeCodes;
+
+      if (!!item.SchemeCode) {
+        me.VueConfig.data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[item.SchemeCode].map(parameter => new ParameterDefinition(parameter));
+      }
+
+      me.VueConfig.data.schemeParameters = me.graph.data.Parameters
+        .filter(parameter => parameter.Purpose !== 'System')
+        .map(parameter => new ParameterDefinition(parameter));
+
       me.VueConfig.data.itemHasComment = item.UserComment != null && item.UserComment.length > 0;
+
+      if (Array.isArray(item.Annotations)) {
+        item.Annotations.forEach(function (annotation) {
+          if (annotation.Name === INPUT_PARAMETERS_ANNOTATION) {
+            var inputParameters = JSON.parse(annotation.JsonValue);
+            me.VueConfig.data.inputParameters = inputParameters.map(json => new ParameterMapping(json));
+          } else if (annotation.Name === OUTPUT_PARAMETERS_ANNOTATION) {
+            var outputParameters = JSON.parse(annotation.JsonValue);
+            me.VueConfig.data.outputParameters = outputParameters.map(json => new ParameterMapping(json));
+          }
+        });
+      }
 
       me.VueConfig.data.readonly = me.graph.Settings.readonly;
     };
@@ -87,15 +266,49 @@
       return res;
     };
 
+    function validateParameterMapping(parameter /*: ParameterMapping*/) /*: boolean*/ {
+      return !!parameter.Target && !!parameter.Expression && !!parameter.Purpose;
+    }
+
     me.VueConfig.methods.onSave = function () {
+      me.VueConfig.data.saveTriggered = true;
+
       if (this.$refs && this.$refs.form) {
         this.$refs.form.validate(function (valid) {
           if (valid) {
+            if (me.VueConfig.data.inputParameters.some(parameter => !validateParameterMapping(parameter))) return;
+            if (me.VueConfig.data.outputParameters.some(parameter => !validateParameterMapping(parameter))) return;
+
+            var annotations = me.VueConfig.data.FormData.Annotations;
+
+            var inputParametersAnnotation = annotations.find(annotation => annotation.Name === INPUT_PARAMETERS_ANNOTATION);
+
+            if (!inputParametersAnnotation) {
+              inputParametersAnnotation = {
+                Name: INPUT_PARAMETERS_ANNOTATION,
+                JsonValue: JSON.stringify(me.VueConfig.data.inputParameters)
+              };
+              annotations.push(inputParametersAnnotation);
+            } else {
+              inputParametersAnnotation.JsonValue = JSON.stringify(me.VueConfig.data.inputParameters);
+            }
+
+            var outputParametersAnnotation = annotations.find(annotation => annotation.Name === OUTPUT_PARAMETERS_ANNOTATION);
+
+            if (!outputParametersAnnotation) {
+              outputParametersAnnotation = {
+                Name: OUTPUT_PARAMETERS_ANNOTATION,
+                JsonValue: JSON.stringify(me.VueConfig.data.outputParameters)
+              };
+              annotations.push(outputParametersAnnotation);
+            } else {
+              outputParametersAnnotation.JsonValue = JSON.stringify(me.VueConfig.data.outputParameters);
+            }
+
             me.onSuccess(me.VueConfig.data.FormData);
             me.onClose(true);
           }
         });
-
       }
     };
 
@@ -121,6 +334,102 @@
 
     me.VueConfig.methods.onCloseSave = function () {
       me.onClose(true);
+    };
+
+    me.VueConfig.methods.showExpressionEditor = function (parameter /*:ParameterMapping */) {
+      me.VueConfig.data.editingParameter = parameter;
+      me.editItem = parameter;
+
+      var onSuccess = function (value) {
+        if (me.editItem) {
+          me.editItem.Expression = value;
+          me.VueConfig.data.editingParameter = null;
+          delete me.editItem;
+        }
+      };
+
+      var onClose = function (value) {
+        me.VueConfig.data.editingParameter = null;
+      };
+
+      me.VueConfig.data.jsonform = me.showjson(parameter.Expression, {expression: true, expressiontype: 'object'}, onSuccess, onClose);
+    };
+
+    class ParameterDefinition {
+      Name //: string;
+      Purpose //: 'Temporary' | 'Persistent';
+      constructor(data) {
+        if (data) {
+          Object.assign(this, data);
+        }
+      }
+    }
+
+    me.VueConfig.methods.onSchemeChange = function (schemeCode /*: string*/) {
+      if (schemeCode) {
+        me.VueConfig.data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[schemeCode].map(parameter => new ParameterDefinition(parameter));
+      } else {
+        me.VueConfig.data.inlinedSchemeParameters = [];
+      }
+
+      for (var inputParameter of me.VueConfig.data.inputParameters) {
+        me.VueConfig.methods.onInputParameterTargetChange(inputParameter.Target);
+      }
+    };
+
+    me.VueConfig.methods.findInlinedSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
+      return me.VueConfig.data.inlinedSchemeParameters.find(parameter => parameter.Name === name);
+    };
+
+    me.VueConfig.methods.findSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
+      return me.VueConfig.data.schemeParameters.find(parameter => parameter.Name === name);
+    };
+
+    me.VueConfig.methods.onInputParameterTargetChange = function (target /*: string*/) {
+      var schemeParameter = me.VueConfig.methods.findInlinedSchemeParameter(target);
+      if (schemeParameter) {
+        var parameter = me.VueConfig.data.inputParameters.find(parameter => parameter.Target === target);
+        if (parameter) {
+          parameter.Purpose = 'Temporary';
+        }
+      }
+    };
+
+    me.VueConfig.methods.onOutputParameterTargetChange = function (target /*: string*/) {
+      var schemeParameter = me.VueConfig.methods.findSchemeParameter(target);
+      if (schemeParameter) {
+        var parameter = me.VueConfig.data.outputParameters.find(parameter => parameter.Target === target);
+        if (parameter) {
+          parameter.Purpose = 'Temporary';
+        }
+      }
+    };
+
+    class ParameterMapping {
+      Target = '' //: string;
+      Purpose = 'Temporary' //: 'Temporary' | 'Persistent';
+      Expression = '' //: string;
+      constructor(data) {
+        if (data) {
+          Object.assign(this, data);
+        }
+      }
+    }
+
+    me.VueConfig.methods.isEmpty = function (input/*: string | null| undefined*/) {
+      return !input;
+    }
+
+    me.VueConfig.methods.removeItem = function (items, index) {
+      items.splice(index, 1);
+    };
+
+    me.VueConfig.methods.addInputParameter = function () {
+      me.VueConfig.data.inputParameters.push(new ParameterMapping());
+    };
+
+    me.VueConfig.methods.addOutputParameter = function () {
+      me.VueConfig.data.outputParameters.push(new ParameterMapping());
     };
 
     me.showConfirm = function () {

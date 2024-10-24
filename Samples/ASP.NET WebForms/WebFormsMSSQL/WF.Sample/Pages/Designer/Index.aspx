@@ -12,9 +12,7 @@
             <a href="javascript:OnNew()" class="ui secondary button">New scheme</a>
             <a href="javascript:OnSave()" class="ui secondary button">Save scheme</a>
             <a href="javascript:DownloadScheme()" class="ui primary button">Download XML</a>
-            <a href="javascript:SelectScheme('wfe')" class="ui secondary button">Upload XML</a>
-            <a href="javascript:DownloadSchemeBPMN()" class="ui secondary button">Download BPMN2</a>
-            <a href="javascript:SelectScheme('bpmn')" class="ui secondary button">Upload BPMN2</a>
+            <a href="javascript:SelectScheme()" class="ui secondary button">Upload XML</a>
         </div>
         <input type="file" name="uploadFile" id="uploadFile" style="display:none" onchange="javascript: UploadScheme(this);">
     </div>
@@ -115,15 +113,7 @@
             wfdesigner.downloadscheme();
         }
     
-        function DownloadSchemeBPMN() {
-            wfdesigner.downloadschemeBPMN();
-        }
-    
-        var selectSchemeType;
-        function SelectScheme(type) {
-            if (type)
-                selectSchemeType = type;
-    
+        function SelectScheme() {
             var file = $('#uploadFile');
             file.trigger('click');
         }
@@ -133,17 +123,10 @@
             if (form.value=="")
             return;
 
-            if (selectSchemeType == "bpmn") {
-                wfdesigner.uploadschemeBPMN($('#uploadform')[0], function () {
-                    wfdesigner.autoarrangement();
-                    alert('The file is uploaded!');                
-                });
-            }
-            else {
-                wfdesigner.uploadscheme($('#uploadform')[0], function () {
-                    alert('The file is uploaded!');
-                });
-            }
+            wfdesigner.uploadscheme($('#uploadform')[0], function () {
+                alert('The file is uploaded!');
+            });
+            
         }
     
         function OnSave() {

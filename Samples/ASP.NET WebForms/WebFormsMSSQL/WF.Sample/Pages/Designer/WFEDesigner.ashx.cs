@@ -49,12 +49,6 @@ namespace Designer
                 context.Response.BinaryWrite(Encoding.UTF8.GetBytes(res));
                 context.Response.End();
             }
-            else if (pars["operation"].ToLower() == "downloadschemebpmn" && !hasError)
-            {
-                context.Response.ContentType = "file/xml";
-                context.Response.BinaryWrite(Encoding.UTF8.GetBytes(res));
-                context.Response.End();
-            }
             else
             {
                 context.Response.Write(res);

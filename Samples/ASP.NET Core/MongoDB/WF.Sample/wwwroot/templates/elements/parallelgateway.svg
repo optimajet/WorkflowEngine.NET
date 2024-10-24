@@ -1,0 +1,12 @@
+<svg width="{Math.max(item.TextWidth - 4, 62)}"
+     height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="{(Math.max(item.TextWidth, 62) - item.TextWidth) / 2}" y="1" width="{item.TextWidth + 2}" height="13" rx="4" fill="white"
+        visibility="{item.TextWidth > 0 ? 'visible' : 'hidden'}"/>
+  <text x="{(Math.max(item.TextWidth - 4, 62) - item.TextWidth) / 2 + 4}" y="11.1016" font-family="Arial" font-size="12" font-weight="600"
+        fill="black">{Name}
+  </text>
+  <path transform="translate({Math.max(item.TextWidth - 4, 62) / 2 - 30} 16)" fill="{Color}"
+        stroke="{item.Selected ? '#F39C12' : item.TextColor}" stroke-width="3"
+        d="M4.24264 31L31 4.24264L57.7574 31L31 57.7574L4.24264 31Z"/>
+  <path transform="translate({Math.max(item.TextWidth - 4, 62) / 2 - 14} 32)" fill-rule="evenodd" clip-rule="evenodd" d="M12 18V30H18V18H30V12H18V0H12V12H0V18H12Z" fill="{TextColor}"/>
+</svg>

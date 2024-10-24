@@ -1,0 +1,32 @@
+<Project ToolsVersion="4.0" xmlns="http://schemas.microsoft.com/developer/msbuild/2003">
+    <PropertyGroup>
+        <BasePath>$(MSBuildThisFileDirectory)..\packages\Microsoft.Data.SqlClient.SNI.5.2.0\build\net462\</BasePath>
+    </PropertyGroup>
+    
+    <ItemGroup>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.arm64.dll">
+            <Link>Microsoft.Data.SqlClient.SNI.arm64.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.arm64.pdb">
+            <Link>Microsoft.Data.SqlClient.SNI.arm64.pdb</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.x64.dll">
+            <Link>Microsoft.Data.SqlClient.SNI.x64.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.x64.pdb">
+            <Link>Microsoft.Data.SqlClient.SNI.x64.pdb</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.x86.dll">
+            <Link>Microsoft.Data.SqlClient.SNI.x86.dll</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+        <None Include="$(BasePath)Microsoft.Data.SqlClient.SNI.x86.pdb">
+            <Link>Microsoft.Data.SqlClient.SNI.x86.pdb</Link>
+            <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+        </None>
+    </ItemGroup>
+</Project>

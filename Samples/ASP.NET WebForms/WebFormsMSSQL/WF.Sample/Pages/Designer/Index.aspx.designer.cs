@@ -7,19 +7,23 @@
 // </auto-generated>
 //------------------------------------------------------------------------------
 
-namespace WF.Sample.Pages.Designer {
-    
-    
-    public partial class Index {
-        
+namespace WF.Sample.Pages.Designer
+{
+
+
+    public partial class Index
+    {
+
         /// <summary>
         /// Master property.
         /// </summary>
         /// <remarks>
         /// Auto-generated property.
         /// </remarks>
-        public new WF.Sample.SiteMaster Master {
-            get {
+        public new WF.Sample.SiteMaster Master
+        {
+            get
+            {
                 return ((WF.Sample.SiteMaster)(base.Master));
             }
         }

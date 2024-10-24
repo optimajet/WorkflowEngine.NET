@@ -1,0 +1,10 @@
+<svg width="{item.width = Math.max(item.InitialTextWidth + 2, 62)}"
+     height="80" fill="none" xmlns="http://www.w3.org/2000/svg">
+  <rect x="{(item.width - item.InitialTextWidth) / 2}" y="1" width="{item.InitialTextWidth + 2}" height="13" rx="4" fill="white" visibility="{item.InitialTextWidth > 0 ? 'visible' : 'hidden'}"/>
+  <text x="{(item.width - item.InitialTextWidth) / 2 + 2}" y="11.1016" font-family="Arial" font-size="12" font-weight="600"
+        fill="black">{Name}
+  </text>
+  <circle cx="{item.width / 2}" cy="48" r="28" fill="{Color}"
+          stroke="{item.Selected ? '#F39C12' : item.TextColor}" stroke-width="6"/>
+  <circle cx="{item.width / 2}" cy="48" r="18" fill="{item.TextColor }"/>
+</svg>
