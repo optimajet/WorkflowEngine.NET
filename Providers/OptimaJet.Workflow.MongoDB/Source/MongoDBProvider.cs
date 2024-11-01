@@ -452,6 +452,14 @@ namespace OptimaJet.Workflow.MongoDB
             {
                 throw new ProcessAlreadyExistsException(processInstance.ProcessId);
             }
+
+            IMongoCollection<WorkflowProcessScheme> processSchemeCollection =
+                Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
+            UpdateDefinition<WorkflowProcessScheme> updateDefinition = Builders<WorkflowProcessScheme>.Update
+                .Set(processScheme => processScheme.StartingTransition, processInstance.ProcessScheme.StartingTransition);
+            await processSchemeCollection.UpdateOneAsync(processScheme => processScheme.Id == processInstance.SchemeId,
+                updateDefinition);
+            
             var newProcess = new WorkflowProcessInstance
             {
                 Id = processInstance.ProcessId,

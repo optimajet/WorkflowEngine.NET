@@ -9,9 +9,9 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.EntityFrameworkCore.SqlServer" Version="6.0.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.0.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="16.0.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMSSQL" Version="16.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.1.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-FilesPlugin" Version="16.1.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMSSQL" Version="16.1.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />
