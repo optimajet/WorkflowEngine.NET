@@ -337,7 +337,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowProcessInstance> workflowProcessInstanceCollection =
                 Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
-            ConfiguredTaskAwaitable<long> count = workflowProcessInstanceCollection.CountDocumentsAsync(_ => true).ConfigureAwait(false);
+            long count = await workflowProcessInstanceCollection.CountDocumentsAsync(_ => true).ConfigureAwait(false);
             return Convert.ToInt32(count);
         }
 
@@ -389,7 +389,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowScheme> dbcoll =
                 Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
-            ConfiguredTaskAwaitable<long> count = dbcoll.CountDocumentsAsync(_ => true).ConfigureAwait(false);
+            long count = await dbcoll.CountDocumentsAsync(_ => true).ConfigureAwait(false);
             return Convert.ToInt32(count);
         }
        
@@ -1866,7 +1866,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             if (scheme == null)
             {
-                throw new InvalidOperationException($"Scheme with Code={code} not found");
+                throw SchemeNotFoundException.Create(code, SchemeLocation.WorkflowProcessScheme);
             }
 
             return XElement.Parse(scheme.Scheme);

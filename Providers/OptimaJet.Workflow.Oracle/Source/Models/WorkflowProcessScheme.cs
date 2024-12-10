@@ -81,7 +81,7 @@ namespace OptimaJet.Workflow.Oracle
         {
             string command = $"UPDATE {ObjectName} SET " +
                              $"{nameof(ProcessSchemeEntity.IsObsolete)} = 1 " +
-                             $"WHERE ({nameof(ProcessSchemeEntity.SchemeCode)} = :schemecode OR " + 
+                             $"WHERE ({nameof(ProcessSchemeEntity.SchemeCode)} = :schemecode " +
                              $"OR {nameof(ProcessSchemeEntity.RootSchemeCode)} = :schemecode) " +
                              $"AND DefiningParametersHash = :dphash";
 
