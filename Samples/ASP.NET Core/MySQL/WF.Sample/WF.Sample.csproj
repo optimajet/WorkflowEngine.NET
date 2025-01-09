@@ -16,7 +16,7 @@
     <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.2.1" />
   </ItemGroup>
   <ItemGroup>
-    <ProjectReference Include="..\WF.Sample.MongoDb\WF.Sample.MongoDb.csproj" />
+    <ProjectReference Include="..\WF.Sample.MySql\WF.Sample.MySql.csproj" />
   </ItemGroup>
   <ItemGroup>
     <Folder Include="Controllers\" />

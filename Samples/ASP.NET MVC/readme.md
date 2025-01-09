@@ -11,37 +11,12 @@ It can be fully integrated into your application, or be in the form of a specifi
 
 Demo on-line: https://demo.workflowengine.io/designer
 
-1. **MongoDB** - Sample for MongoDB
+This sample is no longer updated automatically. The last update for this sample was with version 16.2.0.
+If you need an updated version of this sample, please contact our support team at support@optimajet.com.
 
-   Check connection string in `WF.Sample\Configuration\AppSettings.config`
-    ```xml
-    <add key="Url" value="mongodb://localhost:27017"/>
-    <add key="Database" value="WorkflowEngineNET"/>
-    ```
-
-2. **MSSQL** - Sample for MS SQL Server
+1. **MSSQL** - Sample for MS SQL Server
 
    Check connection string in `WF.Sample\Configuration\ConnectionString.config`
 
-   The order of execution of scripts:
-    1. DB\CreatePersistenceObjects.sql
-    2. DB\CreateObjects.sql
-    3. DB\FillData.sql
-
-3. **MySQL** - Sample for MySQL
-
-   Check connection string in `WF.Sample\Configuration\ConnectionString.config`
-
-   The order of execution of scripts:
-    1. DB\CreatePersistenceObjects.sql
-    2. DB\CreateObjects.sql
-    3. DB\FillData.sql
-
-4. **PostgreSQL** - Sample for PostgreSQL
-
-   Check connection string in `WF.Sample\Configuration\ConnectionString.config`
-
-   The order of execution of scripts:
-    1. DB\CreatePersistenceObjects.sql
-    2. DB\CreateObjects.sql
-    3. DB\FillData.sql
+   Before running this project, you need to manually execute the scripts to create the database objects.
+   You can find the scripts and additional instructions in the `DB` folder.

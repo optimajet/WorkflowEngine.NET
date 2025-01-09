@@ -1,7 +1,7 @@
 <Project>
   <!-- Version -->
   <PropertyGroup>
-    <Version>16.2.0</Version>
+    <Version>16.2.1</Version>
     <AssemblyVersion>16.2.0</AssemblyVersion>
     <FileVersion>16.2.0</FileVersion>
   </PropertyGroup>
@@ -15,7 +15,7 @@
     <Company>Optimajet Limited</Company>
     <Product>Workflow Engine</Product>
     <Authors>Optimajet Limited</Authors>
-    <Copyright>OptimaJet Workflow Engine 2024</Copyright>
+    <Copyright>OptimaJet Workflow Engine 2025</Copyright>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
     <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/workflow-engine/</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>

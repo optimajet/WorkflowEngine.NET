@@ -6,8 +6,8 @@
   <ItemGroup>
     <PackageVersion Include="ConfigureAwait.Fody" Version="3.3.1" />
     <PackageVersion Include="Fody" Version="6.6.3" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="16.2.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="16.2.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="16.2.1" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="16.2.1" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>

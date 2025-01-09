@@ -1,33 +1,38 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.1</TargetFramework>
-    <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
+    <TargetFramework>netstandard2.0</TargetFramework>
+    <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
     <Description>
-      Contains dlls for Oracle Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
+      Contains dlls for MySQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
       DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
       DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
 
-      Steps for workflow runtime configuration with OracleProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
+      Steps for workflow runtime configuration with MySQLProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
       Create WorkflowRuntime section.
     </Description>
     <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageTags>workflow engine, oracle, ora, provider for oracle</PackageTags>
-    <RootNamespace>OptimaJet.Workflow.Oracle</RootNamespace>
-    <AssemblyName>OptimaJet.Workflow.Oracle</AssemblyName>
+    <PackageTags>workflow engine, MySQL, provider for MySQL</PackageTags>
+    <RootNamespace>OptimaJet.Workflow.MySQL</RootNamespace>
+    <AssemblyName>OptimaJet.Workflow.MySQL</AssemblyName>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
+    <DefineConstants>TRACE;RELEASE</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
+    <DefineConstants>TRACE;DEBUG</DefineConstants>
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
+  </PropertyGroup>
+  <PropertyGroup Condition="'$(Configuration)|$(TargetFramework)|$(Platform)'=='Debug|AnyCPU'">
+    <OutputPath>..\DLL\NETCORE\</OutputPath>
   </PropertyGroup>
   <ItemGroup>
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="FluentMigrator.Runner.Oracle" />
-    <PackageReference Include="Oracle.ManagedDataAccess.Core" />
+    <PackageReference Include="FluentMigrator.Runner.MySql" />
+    <PackageReference Include="MySql.Data" />
   </ItemGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|AnyCPU'">
-    <OutputPath>..\DLL\NETCORE\</OutputPath>
-  </PropertyGroup>
-  <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
-    <OutputPath>..\DLL\NETCORE\</OutputPath>
-  </PropertyGroup>
   <ItemGroup>
     <PackageReference Include="WorkflowEngine.NETCore-Core" />
     <PackageReference Include="WorkflowEngine.NETCore-Migrator" />
@@ -37,52 +42,32 @@
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
   </ItemGroup>
   <ItemGroup>
-    <None Remove="Scripts\CreateIndex_WorkflowApprovalHistory_IdentityId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowApprovalHistory_IdentityId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowApprovalHistory_ProcessId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowApprovalHistory_ProcessId.sql" />
+    <None Remove="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
+    <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowGlobalParameter_TypeName_2.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowInbox_IdentityId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_IdentityId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_Executor.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_Executor.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId_ParameterName.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId_ParameterName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowInbox_ProcessId_IdentityId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstancePersistence_ProcessId_ParameterName.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstancePersistence_ProcessId_ParameterName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_CalendarName.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstance_RootProcessId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceP_ProcessId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessInstances_Status.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstances_Status.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessInstances_StatusRuntimeId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstances_StatusRuntimeId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceStatus_Status.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceStatus_Status.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessInstanceStatus_StatusRuntimeId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessInstanceStatus_StatusRuntimeId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCode.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCode.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_NextExecutionDateTime.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_NextExecutionDateTime.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId.sql" />
     <None Remove="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
     <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTimer_ProcessId_Name.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessTransition_ExecutorIdentityId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTransition_ExecutorIdentityId.sql" />
-    <None Remove="Scripts\CreateIndex_WorkflowProcessTransition_ProcessId.sql" />
-    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessTransition_ProcessId.sql" />
     <None Remove="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowApprovalHistory.sql" />
     <None Remove="Scripts\CreateTable_WorkflowGlobalParameter.sql" />
@@ -93,27 +78,25 @@
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
     <None Remove="Scripts\CreateTable_WorkflowProcessInstance.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstance.sql" />
-    <None Remove="Scripts\CreateTable_WorkflowProcessInstanceP.sql" />
-    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstanceP.sql" />
-    <None Remove="Scripts\CreateTable_WorkflowProcessInstances.sql" />
-    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstances.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessInstancePersistence.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstancePersistence.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessInstanceStatus.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessInstanceStatus.sql" />
     <None Remove="Scripts\CreateTable_WorkflowProcessScheme.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessScheme.sql" />
     <None Remove="Scripts\CreateTable_WorkflowProcessTimer.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessTimer.sql" />
-    <None Remove="Scripts\CreateTable_WorkflowProcessTransition.sql" />
-    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessTransition.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessTransitionHistory.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessTransitionHistory.sql" />
     <None Remove="Scripts\CreateTable_WorkflowRuntime.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowRuntime.sql" />
     <None Remove="Scripts\CreateTable_WorkflowScheme.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowScheme.sql" />
     <None Remove="Scripts\CreateTable_WorkflowSync.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowSync.sql" />
+    <None Remove="Scripts\InsertIgnore_WorkflowSync.sql" />
+    <EmbeddedResource Include="Scripts\InsertIgnore_WorkflowSync.sql" />
     <None Remove="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
     <EmbeddedResource Include="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
-    <None Remove="Scripts\Insert_WorkflowSync.sql" />
-    <EmbeddedResource Include="Scripts\Insert_WorkflowSync.sql" />
-    <None Remove="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
-    <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
   </ItemGroup>
 </Project>

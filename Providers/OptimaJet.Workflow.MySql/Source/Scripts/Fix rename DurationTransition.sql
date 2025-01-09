@@ -1,1 +1,0 @@
-ALTER TABLE `workflowprocesstransitionhistory` RENAME COLUMN `DurationTransition` TO `TransitionDuration`

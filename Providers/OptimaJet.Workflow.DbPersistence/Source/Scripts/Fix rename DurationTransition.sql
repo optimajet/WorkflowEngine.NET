@@ -1,1 +1,0 @@
-EXEC sp_RENAME 'WorkflowProcessTransitionHistory.DurationTransition', 'TransitionDuration', 'COLUMN'

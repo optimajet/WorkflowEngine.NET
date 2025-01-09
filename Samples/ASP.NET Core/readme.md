@@ -21,44 +21,26 @@ Please note. All samples were assembled with NETCOREAPP 2.1. Please use VS2019.
 
     "Database": "wfsample"
 
-
 2. **MSSQL** - Sample for MS SQL Server
 
-   Check connection string in `WF.Sample\appsettings.json`
+    Check connection string in `WF.Sample\appsettings.json`
 
-    The order of execution of scripts:
-   1. DB\CreatePersistenceObjects.sql
-   2. DB\CreateObjects.sql
-   3. DB\FillData.sql
-
+    Automatic database migration is enabled by default.
 
 3. **Oracle** - Sample for Oracle
 
     Check connection string in `WF.Sample\appsettings.json`
 
-    The order of execution of scripts:
-   1. DB\CreatePersistenceObjects.sql
-   2. DB\CreateObjects.sql
-   3. DB\FillData.sql
-
+    Automatic database migration is enabled by default.
 
 4. **MySQL** - Sample for MySQL
 
     Check connection string in `WF.Sample\appsettings.json`
 
-    The order of execution of scripts:
-   1. DB\CreatePersistenceObjects.sql
-   2. DB\CreateObjects.sql
-   3. DB\FillData.sql
-
+    Automatic database migration is enabled by default.
 
 5. **PostgreSQL** - Sample for PostgreSQL
 
     Check connection string in `WF.Sample\appsettings.json`
 
-    The order of execution of scripts:
-   1. DB\CreatePersistenceObjects.sql
-   2. DB\CreateObjects.sql
-   3. DB\FillData.sql
-
-
+    Automatic database migration is enabled by default.
