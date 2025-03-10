@@ -13,7 +13,7 @@
     <PackageReference Include="AutoMapper.Extensions.Microsoft.DependencyInjection" Version="6.0.0" />
     <PackageReference Include="Microsoft.AspNetCore.Mvc.Razor.RuntimeCompilation" Version="6.0.25" />
     <PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.MsSql\WF.Sample.MsSql.csproj" />

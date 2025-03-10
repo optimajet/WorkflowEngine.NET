@@ -10,8 +10,8 @@
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Logging.Configuration" Version="3.1.4" />
     <PackageReference Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForPostgreSQL" Version="16.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="16.4.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForPostgreSQL" Version="16.4.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />
