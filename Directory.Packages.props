@@ -9,8 +9,8 @@
     <PackageVersion Include="Fody" Version="6.6.3" />
     <PackageVersion Include="NUnit" Version="3.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="16.4.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="16.4.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="17.0.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="17.0.0" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>
