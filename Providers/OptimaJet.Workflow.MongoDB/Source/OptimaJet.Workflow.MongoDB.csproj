@@ -25,7 +25,7 @@
     <Compile Remove="Properties\AssemblyInfo.cs" />
   </ItemGroup>
   <ItemGroup>
-    <PackageReference Include="MongoDB.Driver.signed" />
+    <PackageReference Include="MongoDB.Driver" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WorkflowEngine.NETCore-Core" />

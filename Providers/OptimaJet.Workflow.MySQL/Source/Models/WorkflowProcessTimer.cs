@@ -2,7 +2,7 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OptimaJet.Workflow.Core.Entities;
 
 // ReSharper disable once CheckNamespace
@@ -59,12 +59,13 @@ namespace OptimaJet.Workflow.MySQL
                                      $"WHERE `{nameof(ProcessTimerEntity.ProcessId)}` = @processid " +
                                      $"AND `{nameof(ProcessTimerEntity.Name)}` not in ({string.Join(",", parameters)})";
 
-                return await ExecuteCommandNonQueryAsync(connection, commandText, sqlParameters.ToArray()).ConfigureAwait(false);
+                return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, sqlParameters.ToArray()).ConfigureAwait(false);
             }
 
             return await ExecuteCommandNonQueryAsync(connection,
                     $"DELETE FROM {DbTableName} " +
                     $"WHERE `{nameof(ProcessTimerEntity.ProcessId)}` = @processid",
+                    transaction,
                     pProcessId)
                 .ConfigureAwait(false);
         }
@@ -102,7 +103,7 @@ namespace OptimaJet.Workflow.MySQL
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
-        public async Task<int> SetTimerIgnoreAsync(MySqlConnection connection, Guid timerId)
+        public async Task<int> SetTimerIgnoreAsync(MySqlConnection connection, Guid timerId, MySqlTransaction transaction = null)
         {
             string command = $"UPDATE {DbTableName} SET " +
                              $"`{nameof(ProcessTimerEntity.Ignore)}` = 1 " +
@@ -110,7 +111,7 @@ namespace OptimaJet.Workflow.MySQL
                              $"AND `{nameof(ProcessTimerEntity.Ignore)}` = 0";
 
             var p1 = new MySqlParameter("timerid", MySqlDbType.Binary) {Value = timerId.ToByteArray()};
-            return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
+            return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1).ConfigureAwait(false);
         }
 
         public async Task<ProcessTimerEntity[]> GetTopTimersToExecuteAsync(MySqlConnection connection, int top, DateTime now)

@@ -9,8 +9,18 @@
     <PackageVersion Include="Fody" Version="6.6.3" />
     <PackageVersion Include="NUnit" Version="3.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="17.0.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="17.0.0" />
+    <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
+    <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.10.0" />
+    <PackageVersion Include="System.Net.Security" Version="4.3.2" />
+    <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
+    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.72.1" />
+    <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.10.0" />
+    <PackageVersion Include="Azure.Identity" Version="1.14.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="17.1.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="17.1.0" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>
@@ -47,14 +57,14 @@
     <PackageVersion Include="FluentMigrator.Runner" Version="5.2.0" />
     <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
-    <PackageVersion Include="MongoDB.Driver.signed" Version="2.19.0" />
     <PackageVersion Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
-    <PackageVersion Include="MySql.Data" Version="8.0.30" />
     <PackageVersion Include="FluentMigrator.Runner.Oracle" Version="5.2.0" />
     <PackageVersion Include="Oracle.ManagedDataAccess.Core" Version="3.21.100" />
     <PackageVersion Include="FluentMigrator.Runner.Postgres" Version="5.2.0" />
     <PackageVersion Include="Npgsql" Version="8.0.3" />
     <PackageVersion Include="FluentMigrator.Runner.SQLite" Version="5.2.0" />
+    <PackageVersion Include="MongoDB.Driver" Version="2.30.0" />
+    <PackageVersion Include="MySqlConnector" Version="2.4.0" />
   </ItemGroup>
   <!-- EFSchema -->
   <ItemGroup>
@@ -73,6 +83,7 @@
     <PackageVersion Include="MSTest.TestAdapter" Version="3.2.1" />
     <PackageVersion Include="MSTest.TestFramework" Version="3.2.1" />
     <PackageVersion Include="AwesomeAssertions" Version="8.0.0" />
+    <PackageVersion Include="BouncyCastle.Cryptography" Version="2.6.0" />
     <!-- RealTimeTrackingPlugin -->
     <PackageVersion Include="Moq" Version="4.20.70" />
     <!-- Tests -->

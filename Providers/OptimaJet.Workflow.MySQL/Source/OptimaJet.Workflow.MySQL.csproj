@@ -31,7 +31,7 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentMigrator.Runner.MySql" />
-    <PackageReference Include="MySql.Data" />
+    <PackageReference Include="MySqlConnector" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WorkflowEngine.NETCore-Core" />

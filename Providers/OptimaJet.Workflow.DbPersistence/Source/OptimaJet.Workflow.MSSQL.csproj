@@ -31,7 +31,12 @@
     <None Remove="Properties\Settings.settings" />
   </ItemGroup>
   <ItemGroup>
+    <PackageReference Include="Azure.Identity" />
     <PackageReference Include="Microsoft.Data.SqlClient" />
+    <PackageReference Include="Microsoft.Identity.Client" />
+    <PackageReference Include="Microsoft.IdentityModel.JsonWebTokens" />
+    <PackageReference Include="System.IdentityModel.Tokens.Jwt" />
+    <PackageReference Include="System.Runtime.Caching" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WorkflowEngine.NETCore-Core" />

@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Data;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OptimaJet.Workflow.Core.Entities;
 
 // ReSharper disable once CheckNamespace

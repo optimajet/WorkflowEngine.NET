@@ -1,7 +1,7 @@
 using System;
 using System.Linq;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OptimaJet.Workflow.Core.Entities;
 
 namespace OptimaJet.Workflow.MySQL.Models

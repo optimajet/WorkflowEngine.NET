@@ -68,7 +68,7 @@ CREATE TABLE IF NOT EXISTS "WorkflowProcessInstanceStatus" (
 CREATE INDEX IF NOT EXISTS "WorkflowProcessInstanceStatus_Status_idx"  ON "WorkflowProcessInstanceStatus" USING btree ("Status");
 
 CREATE INDEX IF NOT EXISTS "WorkflowProcessInstanceStatus_Status_Runtime_ix"
-    ON public."WorkflowProcessInstanceStatus" USING btree
+    ON "WorkflowProcessInstanceStatus" USING btree
     ("Status" ASC NULLS LAST, "RuntimeId" ASC NULLS LAST)
 ;
 
@@ -222,7 +222,7 @@ CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_ProcessId_idx"  ON "Workflow
 CREATE INDEX IF NOT EXISTS "WorkflowApprovalHistory_IdentityId_idx" ON "WorkflowApprovalHistory" USING btree ("IdentityId");
 
 
-CREATE OR REPLACE FUNCTION public."DropUnusedWorkflowProcessScheme"()
+CREATE OR REPLACE FUNCTION "DropUnusedWorkflowProcessScheme"()
     RETURNS integer
     LANGUAGE 'plpgsql'
 AS $BODY$

@@ -1,6 +1,6 @@
 ﻿using System;
 using System.Threading.Tasks;
-using MySql.Data.MySqlClient;
+using MySqlConnector;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Persistence;
 
