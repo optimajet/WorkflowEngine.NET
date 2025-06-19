@@ -7,6 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Conventions;
+using FluentMigrator.Runner.Initialization;
+using FluentMigrator.Runner.VersionTableInfo;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using Npgsql;
 using OptimaJet.Workflow.Core;
@@ -1236,6 +1241,14 @@ namespace OptimaJet.Workflow.PostgreSQL
         ///<inheritdoc/>
         public void ConfigureMigrations(IMigrationRunnerBuilder builder, Assembly assembly)
         {
+            builder.Services.AddTransient<IVersionTableMetaData>(provider =>
+                new VersionTableMetaData(
+                    provider.GetRequiredService<IConventionSet>(),
+                    provider.GetRequiredService<IOptions<RunnerOptions>>(),
+                    SchemaName
+                )
+            );
+
             builder.AddPostgres();
             builder.WithGlobalConnectionString(ConnectionString);
             Assembly scanAssembly = assembly ?? typeof(PostgreSQLProvider).Assembly;

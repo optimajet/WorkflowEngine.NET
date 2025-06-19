@@ -7,6 +7,11 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Conventions;
+using FluentMigrator.Runner.Initialization;
+using FluentMigrator.Runner.VersionTableInfo;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Entities;
@@ -1231,6 +1236,14 @@ namespace OptimaJet.Workflow.Oracle
         ///<inheritdoc/>
         public void ConfigureMigrations(IMigrationRunnerBuilder builder, Assembly assembly)
         {
+            builder.Services.AddTransient<IVersionTableMetaData>(provider =>
+                new VersionTableMetaData(
+                    provider.GetRequiredService<IConventionSet>(),
+                    provider.GetRequiredService<IOptions<RunnerOptions>>(),
+                    SchemaName
+                )
+            );
+
             builder.AddOracleManaged();
             builder.WithGlobalConnectionString(ConnectionString);
             Assembly scanAssembly = assembly ?? typeof(OracleProvider).Assembly;

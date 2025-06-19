@@ -2,7 +2,12 @@ using System.Globalization;
 using System.Reflection;
 using System.Xml.Linq;
 using FluentMigrator.Runner;
+using FluentMigrator.Runner.Conventions;
+using FluentMigrator.Runner.Initialization;
+using FluentMigrator.Runner.VersionTableInfo;
 using Microsoft.Data.Sqlite;
+using Microsoft.Extensions.DependencyInjection;
+using Microsoft.Extensions.Options;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Entities;
@@ -1207,6 +1212,14 @@ namespace OptimaJet.Workflow.SQLite
         ///<inheritdoc/>
         public void ConfigureMigrations(IMigrationRunnerBuilder builder, Assembly assembly)
         {
+            builder.Services.AddTransient<IVersionTableMetaData>(provider =>
+                new VersionTableMetaData(
+                    provider.GetRequiredService<IConventionSet>(),
+                    provider.GetRequiredService<IOptions<RunnerOptions>>(),
+                    Options.SchemaName
+                )
+            );
+
             builder.AddSQLite();
             builder.WithGlobalConnectionString(Options.ConnectionString);
             Assembly scanAssembly = assembly ?? typeof(SqliteProvider).Assembly;
