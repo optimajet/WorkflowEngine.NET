@@ -1,14 +1,16 @@
 <Project>
   <!-- Version -->
   <PropertyGroup>
-    <Version>17.2.0</Version>
-    <AssemblyVersion>17.2.0</AssemblyVersion>
-    <FileVersion>17.2.0</FileVersion>
+    <Version>17.3.0</Version>
+    <AssemblyVersion>17.3.0</AssemblyVersion>
+    <FileVersion>17.3.0</FileVersion>
   </PropertyGroup>
   <!-- Build -->
   <PropertyGroup>
     <LangVersion>12</LangVersion>
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
+    <SignAssembly>True</SignAssembly>
+    <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
   </PropertyGroup>
   <!-- Nuget -->
   <PropertyGroup>

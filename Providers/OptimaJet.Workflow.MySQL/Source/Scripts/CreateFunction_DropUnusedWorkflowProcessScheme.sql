@@ -6,13 +6,17 @@ CREATE FUNCTION `DropUnusedWorkflowProcessScheme`()
 BEGIN
     DECLARE st INTEGER;
 
-DELETE FROM `workflowprocessscheme` AS wps
-WHERE wps.`IsObsolete` = 1
-  AND NOT EXISTS (SELECT * FROM `workflowprocessinstance` wpi WHERE wpi.`SchemeId` = wps.`Id` );
+DELETE FROM `workflowprocessscheme`
+WHERE `IsObsolete` = 1
+  AND NOT EXISTS (
+    SELECT 1 FROM `workflowprocessinstance`
+    WHERE `workflowprocessinstance`.`SchemeId` = `workflowprocessscheme`.`Id`
+);
 
-SELECT COUNT(*) into st
-FROM `workflowprocessinstance` wpi LEFT OUTER JOIN `workflowprocessscheme` wps ON wpi.`SchemeId` = wps.`Id`
-WHERE wps.`Id` IS NULL;
+SELECT COUNT(*) INTO st
+FROM `workflowprocessinstance`
+         LEFT JOIN `workflowprocessscheme` ON `workflowprocessinstance`.`SchemeId` = `workflowprocessscheme`.`Id`
+WHERE `workflowprocessscheme`.`Id` IS NULL;
 
 RETURN st;
-END;
+END

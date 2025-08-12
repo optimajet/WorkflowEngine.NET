@@ -49,12 +49,11 @@ namespace OptimaJet.Workflow.MySQL
         
         public async Task<int> UpsertAsync(MySqlConnection connection, TEntity entity, MySqlTransaction transaction = null)
         {
-            //"AS new" - alias for 'ON DUPLICATE KEY UPDATE' is the functionality for MySQL 8.0.19 and above
             var commandText =
                 $"INSERT INTO {DbTableName} ({String.Join(",", DBColumns.Select(c => $"`{c.Name}`"))}) " +
                 $"VALUES ({String.Join(",", DBColumns.Select(c => "@" + c.Name))}) " +
-                "AS new " +
-                $"ON DUPLICATE KEY UPDATE {String.Join(",", DBColumns.Select(c => $"`{c.Name}` = new.`{c.Name}`"))}";
+                $"ON DUPLICATE KEY UPDATE" +
+                $"{String.Join(",", DBColumns.Select(c => $"`{c.Name}` = VALUES(`{c.Name}`)"))}";
 
             var parameters = DBColumns.Select(c => CreateParameter(entity, c)).ToArray();
 
