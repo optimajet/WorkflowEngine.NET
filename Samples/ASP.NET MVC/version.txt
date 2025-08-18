@@ -1,1 +1,1 @@
-Workflow Engine 17.3.0 MVC Sample - 12/08/2025
+Workflow Engine 18.0.0 MVC Sample - 18/08/2025

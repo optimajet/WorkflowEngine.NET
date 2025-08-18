@@ -5,8 +5,8 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="Microsoft.Extensions.Configuration.Abstractions" Version="2.2.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="17.3.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMongoDB" Version="17.3.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="18.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMongoDB" Version="18.0.0" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />
