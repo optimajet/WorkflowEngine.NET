@@ -246,6 +246,23 @@
     "OverrideHint": "Override timer if exists",
     "Override": "Override"
   },
+  "FormActionFormLabel": {
+    "Title": "Init form parameters",
+    "FormName": "Form name",
+    "FormVersion": "Form version",
+    "InParameterName": "Process parameter name for initial form data",
+    "DraftParameterName": "Process parameter name for saving intermediate form data",
+    "OutParameterName": "Process parameter name for saving output form data",
+    "Name": "Name",
+    "State": "State",
+    "ManageForms": "Manage forms",
+    "AssociatedCommands": "Associated commands",
+    "NoCommandsWarning": "There are no outgoing transitions with commands for this activity – the form will not be displayed.",
+    "NoAssociatedCommands": "There are no associated commands – the form will not be displayed.",
+    "Command": "Command",
+    "SaveStrategy": "Save strategy",
+    "ButtonCreate": "Create"
+  },
   "AssignmentFormLabel": {
     "Title": "Assignments",
     "Code": "Code",

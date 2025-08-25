@@ -21,18 +21,22 @@
 		"ExceptionsHandling": "Gestione delle eccezioni",
 		"ExecutionTimeoutLabel": "Timeout di esecuzione",
 		"ExecutionTimeoutWarning": "Il timeout di esecuzione funziona solo con azioni asincrone. Controllare il token di cancellazione per la corretta gestione del timeout.",
+		"Expression": "Espressione",
 		"IdleTimeoutLabel": "Timeout di inattività",
 		"IgnoreLabel": "Ignorare",
 		"ImpAction": "Azione",
 		"ImpActionParameter": "Parametro azione",
 		"ImpOrder": "Ordine",
 		"Implementation": "Attuazione",
+		"InputParameters": "Parametri di input",
 		"IsAutoSchemeUpdate": "Aggiornamento automatico dello schema",
 		"IsFinal": "Finale",
 		"IsForSetState": "Per lo stato impostato",
 		"IsInitial": "Iniziale",
 		"Name": "Nome",
+		"OutputParameters": "Parametri di uscita",
 		"PreExecutionImplementation": "Implementazione della preesecuzione",
+		"Purpose": "Scopo",
 		"RetryCountLabel": "Conteggio tentativi",
 		"RetryLabel": "Ritentare",
 		"Scheme": "Schema in linea",
@@ -40,6 +44,7 @@
 		"SetStateLabel": "setState",
 		"State": "Stato",
 		"StateLabel": "Stato",
+		"Target": "Obiettivo",
 		"TimeoutsLabel": "Timeout",
 		"Title": "Attivita",
 		"TitleForInline": "Attività in linea",
@@ -417,11 +422,29 @@
 	"FieldMustBeUnique": "Il campo deve essere unico!",
 	"FieldMustContainAt": "Il campo deve contenere @",
 	"FileNotExist": "Il file non esiste",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Comandi associati",
+		"ButtonCreate": "Creare",
+		"Command": "Comando",
+		"DraftParameterName": "Nome del parametro di processo per il salvataggio dei dati del modulo intermedio",
+		"FormName": "Nome modulo",
+		"FormVersion": "Versione modulo",
+		"InParameterName": "Nome del parametro di processo per i dati del modulo iniziale",
+		"ManageForms": "Gestione moduli",
+		"Name": "Nome",
+		"NoAssociatedCommands": "Non ci sono comandi associati - il modulo non verrà visualizzato.",
+		"NoCommandsWarning": "Non ci sono transizioni in uscita con comandi per questa attività - il modulo non verrà visualizzato.",
+		"OutParameterName": "Nome del parametro di processo per il salvataggio dei dati del modulo di output",
+		"SaveStrategy": "Salva strategia",
+		"State": "Stato",
+		"Title": "Parametri del modulo Init"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Attivita: ",
 		"Command": "Comando: ",
 		"Transition": "Transizione: "
 	},
+	"InformationCopiedToClipboard": "Le informazioni vengono copiate negli appunti.",
 	"InformationCopiedToClipboardAndConsole": "Le informazioni vengono copiate negli appunti e visualizzate nella console del browser.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin richiesto:"
@@ -665,8 +688,10 @@
 		"MainSchemeCode": "Codice schema principale",
 		"OK": "OK",
 		"OverwriteExisting": "Sovrascrivi schemi precedentemente caricati",
+		"Rerender": "Rerender",
 		"Title": "Carica Bpmn",
-		"Upload": "Caricare"
+		"Upload": "Caricare",
+		"UploadHint": "Clicca su Carica per iniziare a caricare lo schema."
 	},
 	"Warning": "Avvertimento"
 }

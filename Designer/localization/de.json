@@ -21,18 +21,22 @@
 		"ExceptionsHandling": "Ausnahmebehandlung",
 		"ExecutionTimeoutLabel": "Ausführungs-Timeout",
 		"ExecutionTimeoutWarning": "Das Ausführungszeitlimit funktioniert nur bei asynchronen Aktionen. Überprüfen Sie das Stornierungstoken auf ordnungsgemäße Zeitüberschreitungsbehandlung.",
+		"Expression": "Ausdruck",
 		"IdleTimeoutLabel": "Leerlauf-Timeout",
 		"IgnoreLabel": "Ignorieren",
 		"ImpAction": "Aktion",
 		"ImpActionParameter": "Aktionsparameter",
 		"ImpOrder": "Bestellen",
 		"Implementation": "Umsetzung",
+		"InputParameters": "Eingabeparameter",
 		"IsAutoSchemeUpdate": "Automatisches Schema-Update",
 		"IsFinal": "Endgültig",
 		"IsForSetState": "Für eingestellten Zustand",
 		"IsInitial": "Ersten",
 		"Name": "Name",
+		"OutputParameters": "Ausgabeparameter",
 		"PreExecutionImplementation": "Implementierung vor der Ausführung",
+		"Purpose": "Zweck",
 		"RetryCountLabel": "Anzahl der Wiederholungen",
 		"RetryLabel": "Retry",
 		"Scheme": "Inline-Schema",
@@ -40,6 +44,7 @@
 		"SetStateLabel": "setStatus",
 		"State": "Staat",
 		"StateLabel": "Staat",
+		"Target": "Ziel",
 		"TimeoutsLabel": "Timeouts",
 		"Title": "Aktivität",
 		"TitleForInline": "Aktivität Inline",
@@ -417,11 +422,29 @@
 	"FieldMustBeUnique": "Feld muss eindeutig sein!",
 	"FieldMustContainAt": "Feld muss enthalten @",
 	"FileNotExist": "Die Datei existiert nicht",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Zugehörige Befehle",
+		"ButtonCreate": "Erstellen",
+		"Command": "Befehl",
+		"DraftParameterName": "Name des Prozessparameters zum Speichern von Zwischenformulardaten",
+		"FormName": "Name des Formulars",
+		"FormVersion": "Formularversion",
+		"InParameterName": "Prozessparametername für initiale Formulardaten",
+		"ManageForms": "Formulare verwalten",
+		"Name": "Name",
+		"NoAssociatedCommands": "Es sind keine Befehle zugeordnet - das Formular wird nicht angezeigt.",
+		"NoCommandsWarning": "Es gibt keine ausgehenden Übergänge mit Befehlen für diese Aktivität – das Formular wird nicht angezeigt.",
+		"OutParameterName": "Prozessparametername zum Speichern von Ausgabeformulardaten",
+		"SaveStrategy": "Strategie speichern",
+		"State": "Staat",
+		"Title": "Initialisieren von Formularparametern"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Aktivitäten: ",
 		"Command": "Menübefehle: ",
 		"Transition": "Nge: "
 	},
+	"InformationCopiedToClipboard": "Die Informationen werden in die Zwischenablage kopiert.",
 	"InformationCopiedToClipboardAndConsole": "Die Informationen werden in die Zwischenablage kopiert und in der Browserkonsole angezeigt.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin erforderlich:"
@@ -665,8 +688,10 @@
 		"MainSchemeCode": "Hauptsystemcode",
 		"OK": "Okay",
 		"OverwriteExisting": "Überschreiben zuvor hochgeladener Schemata",
+		"Rerender": "Rendern",
 		"Title": "BPM-Nummer hochladen",
-		"Upload": "Laden"
+		"Upload": "Laden",
+		"UploadHint": "Klicken Sie auf Hochladen, um den Upload des Schemas zu starten."
 	},
 	"Warning": "Warnung"
 }

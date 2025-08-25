@@ -21,18 +21,22 @@
 		"ExceptionsHandling": "Gestion des exceptions",
 		"ExecutionTimeoutLabel": "Délai d'exécution",
 		"ExecutionTimeoutWarning": "Le délai d'exécution ne fonctionne qu'avec les actions asynchrones. Vérifiez le jeton d'annulation pour une gestion appropriée du délai d'expiration.",
+		"Expression": "Expression",
 		"IdleTimeoutLabel": "Délai d'inactivité",
 		"IgnoreLabel": "Ignorer",
 		"ImpAction": "Action",
 		"ImpActionParameter": "Paramètre d'action",
 		"ImpOrder": "Ordre",
 		"Implementation": "Application",
+		"InputParameters": "Paramètres d'entrée",
 		"IsAutoSchemeUpdate": "Mise à jour automatique du schéma",
 		"IsFinal": "Final",
 		"IsForSetState": "Pour l'état défini",
 		"IsInitial": "Initial",
 		"Name": "Nom",
+		"OutputParameters": "Paramètres de sortie",
 		"PreExecutionImplementation": "Mise en Œuvre de la Pré-Exécution",
+		"Purpose": "Objet",
 		"RetryCountLabel": "Nombre de nouvelles tentatives",
 		"RetryLabel": "Réessayer",
 		"Scheme": "Schéma en ligne",
@@ -40,6 +44,7 @@
 		"SetStateLabel": "setState",
 		"State": "État",
 		"StateLabel": "État",
+		"Target": "Cible",
 		"TimeoutsLabel": "Timeouts",
 		"Title": "Activité",
 		"TitleForInline": "Activité En Ligne",
@@ -417,11 +422,29 @@
 	"FieldMustBeUnique": "Le champ doit être unique!",
 	"FieldMustContainAt": "Le champ doit contenir @",
 	"FileNotExist": "Le fichier n'existe pas",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Commandes associées",
+		"ButtonCreate": "Créer",
+		"Command": "Commande",
+		"DraftParameterName": "Nom du paramètre de processus pour l'enregistrement des données de formulaire intermédiaires",
+		"FormName": "Nom du formulaire",
+		"FormVersion": "Version du formulaire",
+		"InParameterName": "Nom du paramètre de processus pour les données de formulaire initiales",
+		"ManageForms": "Gérer les formulaires",
+		"Name": "Nom",
+		"NoAssociatedCommands": "Il n'y a pas de commandes associées – le formulaire ne sera pas affiché.",
+		"NoCommandsWarning": "Il n'y a pas de transitions sortantes avec des commandes pour cette activité – le formulaire ne sera pas affiché.",
+		"OutParameterName": "Nom du paramètre de processus pour enregistrer les données du formulaire de sortie",
+		"SaveStrategy": "Stratégie de sauvegarde",
+		"State": "État",
+		"Title": "Paramètres du formulaire d'initialisation"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Activité: ",
 		"Command": "Commande: ",
 		"Transition": "Transition: "
 	},
+	"InformationCopiedToClipboard": "Les informations sont copiées dans le presse-papiers.",
 	"InformationCopiedToClipboardAndConsole": "Les informations sont copiées dans le presse-papiers et affichées dans la console du navigateur.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin requis:"
@@ -665,8 +688,10 @@
 		"MainSchemeCode": "Code du régime principal",
 		"OK": "D'ACCORD",
 		"OverwriteExisting": "Écraser les schémas précédemment téléchargés",
+		"Rerender": "Rendre à Nouveau",
 		"Title": "Télécharger le BPM",
-		"Upload": "Télécharger"
+		"Upload": "Télécharger",
+		"UploadHint": "Cliquez sur Télécharger pour commencer à télécharger le schéma."
 	},
 	"Warning": "Avertissement"
 }

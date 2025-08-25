@@ -21,18 +21,22 @@
 		"ExceptionsHandling": "Manejo de excepciones",
 		"ExecutionTimeoutLabel": "Tiempo de espera de ejecución",
 		"ExecutionTimeoutWarning": "El tiempo de espera de ejecución solo funciona con acciones asíncronas. Verifique el token de cancelación para el manejo adecuado del tiempo de espera.",
+		"Expression": "Expresión",
 		"IdleTimeoutLabel": "Tiempo de espera inactivo",
 		"IgnoreLabel": "Ignorar",
 		"ImpAction": "Acto",
 		"ImpActionParameter": "Parámetro de acción",
 		"ImpOrder": "Orden",
 		"Implementation": "Aplicación",
+		"InputParameters": "Parámetros de entrada",
 		"IsAutoSchemeUpdate": "Actualización automática del esquema",
 		"IsFinal": "Final",
 		"IsForSetState": "Para establecer estado",
 		"IsInitial": "Inicial",
 		"Name": "Nombre",
+		"OutputParameters": "Parámetros de salida",
 		"PreExecutionImplementation": "Implementación previa a la Ejecución",
+		"Purpose": "Finalidad",
 		"RetryCountLabel": "Recuento de reintentos",
 		"RetryLabel": "Reintento",
 		"Scheme": "Esquema en línea",
@@ -40,6 +44,7 @@
 		"SetStateLabel": "Establecer estado",
 		"State": "Estado",
 		"StateLabel": "Estado",
+		"Target": "Objetivo",
 		"TimeoutsLabel": "Tiempos de espera",
 		"Title": "Actividad",
 		"TitleForInline": "Actividad En Línea",
@@ -417,11 +422,29 @@
 	"FieldMustBeUnique": "El campo debe ser único!",
 	"FieldMustContainAt": "El campo debe contener @",
 	"FileNotExist": "El archivo no existe",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Comandos asociados",
+		"ButtonCreate": "Crear",
+		"Command": "Mando",
+		"DraftParameterName": "Nombre del parámetro de proceso para guardar datos de formulario intermedios",
+		"FormName": "Nombre del formulario",
+		"FormVersion": "Versión del formulario",
+		"InParameterName": "Nombre del parámetro de proceso para los datos del formulario inicial",
+		"ManageForms": "Administrar formularios",
+		"Name": "Nombre",
+		"NoAssociatedCommands": "No hay comandos asociados; el formulario no se mostrará – ",
+		"NoCommandsWarning": "No hay transiciones salientes con comandos para esta actividad; el formulario no se mostrará.",
+		"OutParameterName": "Nombre del parámetro de proceso para guardar los datos del formulario de salida",
+		"SaveStrategy": "Estrategia de guardar",
+		"State": "Estado",
+		"Title": "Parámetros del formulario Init"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Actividad: ",
 		"Command": "Comando: ",
 		"Transition": "Transiciones: "
 	},
+	"InformationCopiedToClipboard": "La información se copia en el portapapeles.",
 	"InformationCopiedToClipboardAndConsole": "La información se copia en el portapapeles y se muestra en la consola del navegador.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin requerido:"
@@ -665,8 +688,10 @@
 		"MainSchemeCode": "Código del esquema principal",
 		"OK": "OK.",
 		"OverwriteExisting": "Sobrescribir esquemas cargados previamente",
+		"Rerender": "Reenvío",
 		"Title": "Subir Bpmn",
-		"Upload": "Subir"
+		"Upload": "Subir",
+		"UploadHint": "Haga clic en Cargar para comenzar a cargar el esquema."
 	},
 	"Warning": "Advertencia"
 }

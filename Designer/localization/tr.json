@@ -22,18 +22,22 @@
 		"ExceptionsHandling": "Özel durum işleme",
 		"ExecutionTimeoutLabel": "Yürütme zaman aşımı",
 		"ExecutionTimeoutWarning": "Yürütme zaman aşımı yalnızca zaman uyumsuz eylemlerle çalışır. Uygun zaman aşımı işleme için iptal belirtecini denetleyin.",
+		"Expression": "İfade",
 		"IdleTimeoutLabel": "Boşta kalma zaman aşımı",
 		"IgnoreLabel": "Görmezlikten gelmek",
 		"ImpAction": "Aksiyon",
 		"ImpActionParameter": "Eylem parametresi",
 		"ImpOrder": "Sipariş",
 		"Implementation": "Uygulama",
+		"InputParameters": "Giriş parametreleri",
 		"IsAutoSchemeUpdate": "Otomatik şema güncelleme",
 		"IsFinal": "Son",
 		"IsForSetState": "Ayarlanan durum için",
 		"IsInitial": "İlk",
 		"Name": "İsim",
+		"OutputParameters": "Çıkış parametreleri",
 		"PreExecutionImplementation": "PreExecution Uygulaması",
+		"Purpose": "Amaç",
 		"RetryCountLabel": "Yeniden deneme sayısı",
 		"RetryLabel": "Deneme",
 		"Scheme": "Satır içi şema",
@@ -41,6 +45,7 @@
 		"SetStateLabel": "SetState",
 		"State": "Devlet",
 		"StateLabel": "Devlet",
+		"Target": "Hedef",
 		"TimeoutsLabel": "Zamanaşımılar",
 		"Title": "Aktivite",
 		"TitleForInline": "Satır İçi Etkinlik",
@@ -418,11 +423,29 @@
 	"FieldMustBeUnique": "Alan benzersiz olmalı!",
 	"FieldMustContainAt": "Alan şunları içermelidir @",
 	"FileNotExist": "Dosya mevcut değil",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "İlişkili komutlar",
+		"ButtonCreate": "Yaratmak",
+		"Command": "Komut",
+		"DraftParameterName": "Ara form verilerini kaydetmek için işlem parametresi adı",
+		"FormName": "Form adı",
+		"FormVersion": "Form sürümü",
+		"InParameterName": "İlk form verileri için işlem parametresi adı",
+		"ManageForms": "Formları yönetme",
+		"Name": "İsim",
+		"NoAssociatedCommands": "İlişkili komut yok - form görüntülenmeyecek.",
+		"NoCommandsWarning": "Bu etkinlik için komutlarla giden geçişler yoktur - form görüntülenmeyecektir.",
+		"OutParameterName": "Çıktı formu verilerini kaydetmek için işlem parametresi adı",
+		"SaveStrategy": "Stratejiyi kaydet",
+		"State": "Devlet",
+		"Title": "Başlangıç formu parametreleri"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Etkinlikler: ",
 		"Command": "Komutlar: ",
 		"Transition": "Geçişler: "
 	},
+	"InformationCopiedToClipboard": "Bilgiler panoya kopyalanır.",
 	"InformationCopiedToClipboardAndConsole": "Bilgiler panoya kopyalanır ve tarayıcı konsolunda görüntülenir.",
 	"LibraryLabel": {
 		"PluginRequired": "Eklenti gerekli:"
@@ -666,8 +689,10 @@
 		"MainSchemeCode": "Ana şema kodu",
 		"OK": "tamam",
 		"OverwriteExisting": "Önceden yüklenmiş şemaların üzerine yaz",
+		"Rerender": "Rerender",
 		"Title": "Bpmn'yi Yükle",
-		"Upload": "Yükle"
+		"Upload": "Yükle",
+		"UploadHint": "Şemayı yüklemeye başlamak için Yükle'ye tıklayın."
 	},
 	"Warning": "Uyarı"
 }

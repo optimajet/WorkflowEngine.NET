@@ -22,18 +22,22 @@
 		"ExceptionsHandling": "Обработка исключений",
 		"ExecutionTimeoutLabel": "Тайм-аут выполнения",
 		"ExecutionTimeoutWarning": "Тайм-аут выполнения работает только с асинхронными действиями. Проверьте токен отмены на правильность обработки тайм-аута.",
+		"Expression": "Выражение",
 		"IdleTimeoutLabel": "Время ожидания в режиме ожидания",
 		"IgnoreLabel": "Игнорировать",
 		"ImpAction": "Действие",
 		"ImpActionParameter": "Параметр действия",
 		"ImpOrder": "Порядок",
 		"Implementation": "Реализация",
+		"InputParameters": "Входные параметры",
 		"IsAutoSchemeUpdate": "Автоматическое обновление схемы",
 		"IsFinal": "Конечный",
 		"IsForSetState": "Произвольная установка",
 		"IsInitial": "Начальный",
 		"Name": "Имя",
+		"OutputParameters": "Выходные параметры",
 		"PreExecutionImplementation": "Реализация PreExcecute",
+		"Purpose": "Цель",
 		"RetryCountLabel": "Количество повторных попыток",
 		"RetryLabel": "Повторить",
 		"Scheme": "Встроенная схема",
@@ -41,6 +45,7 @@
 		"SetStateLabel": "SetState",
 		"State": "Состояние",
 		"StateLabel": "Состояние",
+		"Target": "Цель",
 		"TimeoutsLabel": "Тайм-ауты",
 		"Title": "Деятельность",
 		"TitleForInline": "Встроеная Активность",
@@ -418,11 +423,29 @@
 	"FieldMustBeUnique": "Поле должно быть уникальным!",
 	"FieldMustContainAt": "Поле должно содержать @",
 	"FileNotExist": "Этот файл не существует",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Связанные команды",
+		"ButtonCreate": "Создавать",
+		"Command": "Команда",
+		"DraftParameterName": "Имя параметра процесса для сохранения данных промежуточной формы",
+		"FormName": "Название формы",
+		"FormVersion": "Версия формы",
+		"InParameterName": "Имя параметра процесса для исходных данных формы",
+		"ManageForms": "Управление формами",
+		"Name": "Имя",
+		"NoAssociatedCommands": "Связанных команд нет – форма отображаться не будет.",
+		"NoCommandsWarning": "Для этого действия нет исходящих переходов с командами – форма отображаться не будет.",
+		"OutParameterName": "Имя параметра процесса для сохранения данных выходной формы",
+		"SaveStrategy": "Стратегия экономии",
+		"State": "Государство",
+		"Title": "Параметры формы инициализации"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Состояния: ",
 		"Command": "Команды: ",
 		"Transition": "Переходы: "
 	},
+	"InformationCopiedToClipboard": "Информация копируется в буфер обмена.",
 	"InformationCopiedToClipboardAndConsole": "Информация копируется в буфер обмена и отображается в консоли браузера.",
 	"LibraryLabel": {
 		"PluginRequired": "Требуется плагин:"
@@ -666,8 +689,10 @@
 		"MainSchemeCode": "Код основной схемы",
 		"OK": "ОК",
 		"OverwriteExisting": "Перезаписать ранее загруженные схемы",
+		"Rerender": "Повторный просмотр",
 		"Title": "Загрузить Bpmn",
-		"Upload": "Загружать"
+		"Upload": "Загружать",
+		"UploadHint": "Нажмите на кнопку Загрузить, чтобы начать загрузку схемы."
 	},
 	"Warning": "Предупреждение"
 }

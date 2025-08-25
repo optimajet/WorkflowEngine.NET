@@ -22,18 +22,22 @@
 		"ExceptionsHandling": "التعامل مع الاستثناءات",
 		"ExecutionTimeoutLabel": "مهلة التنفيذ",
 		"ExecutionTimeoutWarning": "تعمل مهلة التنفيذ فقط مع الإجراءات غير المتزامنة. تحقق من رمز الإلغاء لمعالجة المهلة المناسبة.",
+		"Expression": "التعبير",
 		"IdleTimeoutLabel": "مهلة الخمول",
 		"IgnoreLabel": "تجاهل",
 		"ImpAction": "الإجراء",
 		"ImpActionParameter": "معلمة العمل",
 		"ImpOrder": "النظام",
 		"Implementation": "التنفيذ",
+		"InputParameters": "معلمات الإدخال",
 		"IsAutoSchemeUpdate": "تحديث مخطط السيارات",
 		"IsFinal": "النهائي",
 		"IsForSetState": "لمجموعة الدولة",
 		"IsInitial": "الأولي",
 		"Name": "الاسم",
+		"OutputParameters": "معلمات الإخراج",
 		"PreExecutionImplementation": "تنفيذ ما قبل التنفيذ",
+		"Purpose": "الغرض",
 		"RetryCountLabel": "إعادة المحاولة العد",
 		"RetryLabel": "إعادة المحاولة",
 		"Scheme": "مخطط مضمن",
@@ -41,6 +45,7 @@
 		"SetStateLabel": "سيتستات",
 		"State": "الدولة",
 		"StateLabel": "الدولة",
+		"Target": "الهدف",
 		"TimeoutsLabel": "المهلات",
 		"Title": "النشاط",
 		"TitleForInline": "النشاط مضمنة",
@@ -418,11 +423,29 @@
 	"FieldMustBeUnique": "يجب أن يكون الحقل فريدا!",
 	"FieldMustContainAt": "يجب أن يحتوي الحقل على @",
 	"FileNotExist": "الملف غير موجود",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "الأوامر المرتبطة",
+		"ButtonCreate": "إنشاء",
+		"Command": "القيادة",
+		"DraftParameterName": "اسم معلمة العملية لحفظ بيانات النموذج الوسيط",
+		"FormName": "اسم النموذج",
+		"FormVersion": "نسخة النموذج",
+		"InParameterName": "اسم معلمة العملية لبيانات النموذج الأولي",
+		"ManageForms": "إدارة النماذج",
+		"Name": "الاسم",
+		"NoAssociatedCommands": "لا توجد أوامر مرتبطة – لن يتم عرض النموذج.",
+		"NoCommandsWarning": "لا توجد انتقالات صادرة مع أوامر لهذا النشاط-لن يتم عرض النموذج.",
+		"OutParameterName": "اسم معلمة العملية لحفظ بيانات نموذج الإخراج",
+		"SaveStrategy": "حفظ الاستراتيجية",
+		"State": "الدولة",
+		"Title": "معلمات النموذج الأولي"
+	},
 	"InfoBlockLabel": {
 		"Activity": "الأنشطة: ",
 		"Command": "الأوامر: ",
 		"Transition": "التحولات: "
 	},
+	"InformationCopiedToClipboard": "يتم نسخ المعلومات إلى الحافظة.",
 	"InformationCopiedToClipboardAndConsole": "يتم نسخ المعلومات إلى الحافظة وعرضها في وحدة تحكم المتصفح.",
 	"LibraryLabel": {
 		"PluginRequired": "البرنامج المساعد المطلوبة:"
@@ -666,8 +689,10 @@
 		"MainSchemeCode": "رمز المخطط الرئيسي",
 		"OK": "حسنا",
 		"OverwriteExisting": "الكتابة فوق المخططات التي تم تحميلها مسبقا",
+		"Rerender": "ريندر",
 		"Title": "تحميل بمن",
-		"Upload": "تحميل"
+		"Upload": "تحميل",
+		"UploadHint": "انقر فوق تحميل لبدء تحميل المخطط."
 	},
 	"Warning": "تحذير"
 }

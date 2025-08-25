@@ -21,18 +21,22 @@
 		"ExceptionsHandling": "Excepcao",
 		"ExecutionTimeoutLabel": "Tempo limite de execução",
 		"ExecutionTimeoutWarning": "O tempo limite de execução funciona apenas com ações assíncronas. Verifique o token de cancelamento para obter o tratamento adequado do tempo limite.",
+		"Expression": "Expressão",
 		"IdleTimeoutLabel": "Inactividade",
 		"IgnoreLabel": "Ignorar",
 		"ImpAction": "Accao",
 		"ImpActionParameter": "Parâmetro de ação",
 		"ImpOrder": "Ordem",
 		"Implementation": "Implementacao",
+		"InputParameters": "Parâmetros de entrada",
 		"IsAutoSchemeUpdate": "Atualização do esquema automático",
 		"IsFinal": "Final",
 		"IsForSetState": "Para o estado definido",
 		"IsInitial": "Inicial",
 		"Name": "Nome",
+		"OutputParameters": "Parâmetros de saída",
 		"PreExecutionImplementation": "Implementação De Pré-Execução",
+		"Purpose": "Objectivo",
 		"RetryCountLabel": "Repetir Contagem",
 		"RetryLabel": "Repetir",
 		"Scheme": "Esquema em linha",
@@ -40,6 +44,7 @@
 		"SetStateLabel": "SetState",
 		"State": "Estado",
 		"StateLabel": "Estado",
+		"Target": "Alvo",
 		"TimeoutsLabel": "Limite",
 		"Title": "Actividade",
 		"TitleForInline": "Atividade Em Linha",
@@ -417,11 +422,29 @@
 	"FieldMustBeUnique": "O campo deve ser único!",
 	"FieldMustContainAt": "Campo deve conter @",
 	"FileNotExist": "O ficheiro não existe",
+	"FormActionFormLabel": {
+		"AssociatedCommands": "Comandos associados",
+		"ButtonCreate": "Criar",
+		"Command": "Comando",
+		"DraftParameterName": "Nome do parâmetro de processo para guardar dados de formulário intermédios",
+		"FormName": "Nome do formulário",
+		"FormVersion": "Versão do formulário",
+		"InParameterName": "Nome do parâmetro do processo para os dados iniciais do formulário",
+		"ManageForms": "Gerir formulários",
+		"Name": "Nome",
+		"NoAssociatedCommands": "Não há comandos associados – o formulário não será exibido.",
+		"NoCommandsWarning": "Não há transições de saída com comandos para esta atividade – o formulário não será exibido.",
+		"OutParameterName": "Nome do parâmetro do processo para guardar os dados do formulário de saída",
+		"SaveStrategy": "Salvar estratégia",
+		"State": "Estado",
+		"Title": "Parâmetros do formulário Init"
+	},
 	"InfoBlockLabel": {
 		"Activity": "Actividade: ",
 		"Command": "Comando: ",
 		"Transition": "Transicao: "
 	},
+	"InformationCopiedToClipboard": "As informações são copiadas para a área de transferência.",
 	"InformationCopiedToClipboardAndConsole": "As informações são copiadas para a área de transferência e exibidas no Console do navegador.",
 	"LibraryLabel": {
 		"PluginRequired": "Plugin necessário:"
@@ -665,8 +688,10 @@
 		"MainSchemeCode": "Código do regime principal",
 		"OK": "OK",
 		"OverwriteExisting": "Substituir esquemas carregados anteriormente",
+		"Rerender": "Rerender",
 		"Title": "Carregar Bpmn",
-		"Upload": "Carregar"
+		"Upload": "Carregar",
+		"UploadHint": "Clique em Carregar para começar a carregar o esquema."
 	},
 	"Warning": "Aviso"
 }
