@@ -4,7 +4,6 @@ using System.Collections.Generic;
 using System.Globalization;
 using System.Linq;
 using System.Linq.Expressions;
-using System.Runtime.CompilerServices;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Xml.Linq;
@@ -54,6 +53,8 @@ namespace OptimaJet.Workflow.MongoDB
             _writeToHistory = writeToHistory;
             _writeSubProcessToRoot = writeSubProcessToRoot;
         }
+
+        public string Id => PersistenceProviderId.Mongo;
 
         public IMongoDatabase Store { get; set; }
 

@@ -30,7 +30,9 @@ namespace OptimaJet.Workflow.Oracle
     public class OracleProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
-        
+
+        public string Id => PersistenceProviderId.Oracle;
+
         private PersistenceProviderOptions Options { get; }
 
         /// <summary>Database schema name for workflow persistence objects</summary>

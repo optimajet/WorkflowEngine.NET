@@ -25,6 +25,8 @@ namespace OptimaJet.Workflow.MySQL
     public class MySQLProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
+
+        public string Id => PersistenceProviderId.Mysql;
         
         private PersistenceProviderOptions Options { get; }
 

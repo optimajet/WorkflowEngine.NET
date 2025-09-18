@@ -30,6 +30,8 @@ namespace OptimaJet.Workflow.PostgreSQL
     public class PostgreSQLProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
+
+        public string Id => PersistenceProviderId.Postgres;
         
         private PersistenceProviderOptions Options { get; }
 

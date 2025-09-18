@@ -25,6 +25,8 @@ namespace OptimaJet.Workflow.SQLite
     public class SqliteProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
+
+        public string Id => PersistenceProviderId.Sqlite;
         
         private PersistenceProviderOptions Options { get; }
 

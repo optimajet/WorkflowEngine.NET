@@ -34,7 +34,9 @@ namespace OptimaJet.Workflow.DbPersistence
     public class MSSQLProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
-        
+
+        public string Id => PersistenceProviderId.Mssql;
+
         private PersistenceProviderOptions Options { get; }
 
         /// <summary>Database schema name for workflow persistence objects</summary>
