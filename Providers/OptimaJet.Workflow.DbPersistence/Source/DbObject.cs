@@ -303,7 +303,19 @@ namespace OptimaJet.Workflow.DbPersistence
         {
             try
             {
-                return await SelectInternalAsync(connection, commandText, parameters).ConfigureAwait(false);
+                return await SelectInternalAsync(connection, commandText, false, parameters).ConfigureAwait(false);
+            }
+            catch (Exception e)
+            {
+                throw e.ToQueryException();
+            }
+        }
+        
+        public async Task<TEntity[]> SelectWithTransactionAsync(SqlConnection connection, string commandText, params SqlParameter[] parameters)
+        {
+            try
+            {
+                return await SelectInternalAsync(connection, commandText, true, parameters).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -386,12 +398,14 @@ namespace OptimaJet.Workflow.DbPersistence
             }
         }
 
-        private async Task<TEntity[]> SelectInternalAsync(SqlConnection connection, string commandText, SqlParameter[] parameters)
+        private async Task<TEntity[]> SelectInternalAsync(SqlConnection connection, string commandText, bool createTransaction, SqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync().ConfigureAwait(false);
             }
+
+            using SqlTransaction transaction = createTransaction ? connection.BeginTransaction() : null;
 
             using (var command = connection.CreateCommand())
             {
@@ -400,6 +414,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
+                command.Transaction = transaction;
 
                 var entities = new List<TEntity>();
 
@@ -425,6 +440,7 @@ namespace OptimaJet.Workflow.DbPersistence
                     }
                 }
 
+                transaction?.Commit();
                 return entities.ToArray();
             }
         }

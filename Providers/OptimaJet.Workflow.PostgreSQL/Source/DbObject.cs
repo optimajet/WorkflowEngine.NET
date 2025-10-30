@@ -288,7 +288,12 @@ namespace OptimaJet.Workflow.PostgreSQL
             }
         }
 
-        public async Task<TEntity[]> SelectAsync(NpgsqlConnection connection, string commandText,
+        public async Task<TEntity[]> SelectAsync(NpgsqlConnection connection, string commandText, params NpgsqlParameter[] parameters)
+        {
+            return await SelectAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
+
+        public async Task<TEntity[]> SelectAsync(NpgsqlConnection connection, string commandText, NpgsqlTransaction transaction,
             params NpgsqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
@@ -299,19 +304,23 @@ namespace OptimaJet.Workflow.PostgreSQL
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
                 command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;
                 command.Parameters.AddRange(parameters);
-                
+
                 var entities = new List<TEntity>();
-                
+
                 using (var reader = await command.ExecuteReaderAsync().ConfigureAwait(false))
                 {
                     while (await reader.ReadAsync().ConfigureAwait(false))
                     {
                         var entity = new TEntity();
-                        
+
                         for (int i = 0; i < reader.FieldCount; i++)
                         {
                             var name = reader.GetName(i);

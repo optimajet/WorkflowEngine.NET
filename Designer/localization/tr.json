@@ -3,8 +3,7 @@
 		"code": "tr",
 		"dialect": "TR",
 		"name": "Türk",
-		"description": "Turkish",
-		"elementUICode": "tr-TR"
+		"description": "Turkish"
 	},
 	"ActivityFormLabel": {
 		"ActivityLabel": "Aktivite",

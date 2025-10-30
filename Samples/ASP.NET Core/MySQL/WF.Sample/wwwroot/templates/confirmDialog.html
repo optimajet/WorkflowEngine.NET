@@ -1,76 +1,89 @@
 <el-dialog
-  :before-close="function() {visible = false}"
   :title="title"
-  :visible="visible"
+  v-model="visible"
+  class="Dialog"
   width="30%"
   append-to-body>
-  <span v-html="message"></span>
-  <span slot="footer" class="dialog-footer">
-        <template v-if="typeof actions !== 'undefined' && actions.length > 0">
-            <el-button v-for="(action, index) in actions" :key="index" :type="action.type" @click="funcWrapper(action.onClick)">
-                {{ action.label }}
-            </el-button>
-        </template>
-        <template v-else>
-            <el-button v-if="!isAlert" type="primary" @click="onSuccessWrap">{{ yes }}</el-button>
-            <el-button v-if="!isAlert" @click="visible = false">{{ no }}</el-button>
-            <el-button v-if="isAlert" @click="onSuccessWrap">{{ ok }}</el-button>
-        </template>
-    </span>
+<span v-html="message"></span>
+<template #footer>
+  <footer>
+    <template v-if="typeof actions !== 'undefined' && actions.length > 0">
+      <el-button v-for="(action, index) in actions" :key="index" :type="action.type" @click="funcWrapper(action.onClick)">
+        {{ action.label }}
+      </el-button>
+    </template>
+    <template v-else>
+      <el-button v-if="!isAlert" type="primary" @click="onSuccessWrap">{{ yes }}</el-button>
+      <el-button v-if="!isAlert" @click="visible = false">{{ no }}</el-button>
+      <el-button v-if="isAlert" @click="onSuccessWrap">{{ ok }}</el-button>
+    </template>
+  </footer>
+</template>
 </el-dialog>
 <script type="application/javascript">
-  function confirmDialog_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        title: WorkflowDesignerConstants.DialogConfirmText,
-        message: WorkflowDesignerConstants.CloseWithoutSaving,
-        yes: WorkflowDesignerConstants.ButtonTextYes,
-        no: WorkflowDesignerConstants.ButtonTextNo,
-        ok: WorkflowDesignerConstants.ButtonTextOk,
-      });
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.methods.defaultInit = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        isAlert: false,
-        actions: undefined,
-        visible: true,
-      });
-    };
-
-    me.VueConfig.methods.defaultInit();
-
-    me.VueConfig.methods.onSuccessWrap = function () {
-      if (me.VueConfig.data.onSuccess) me.VueConfig.data.onSuccess();
-      me.VueConfig.data.visible = false;
-    };
-
-    me.VueConfig.methods.funcWrapper = function (func) {
-      if (func) func();
-      me.VueConfig.data.visible = false;
-    };
-
-    me.VueConfig.methods.onHideEvent = function () {
-      me.VueConfig.data.visible = false;
-    };
-
-    /**
-     * @param {Object} value
-     * @param {string} value.title
-     * @param {string} value.message
-     * @param {bool} value.isAlert
-     * @param {function} value.onSuccess - Used as default action if data.actions is empty
-     * @param {Object[]} value.actions
-     * @param {string} value.actions[].label
-     * @param {string} value.actions[].type
-     * @param {function} value.actions[].onClick
-     */
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.methods.defaultInit();
-      Object.assign(me.VueConfig.data, value);
-      if (!value.title && value.isAlert)
-        me.VueConfig.data.title = WorkflowDesignerConstants.AlertTitle;
-    };
+function confirmDialog_Data(me) {
+  return {
+    isAlert: false,
+    actions: undefined,
+    visible: true,
   }
+}
+
+function confirmDialog_Init(me) {
+  const {VueConfig} = me;
+  const {state: data, methods} = VueConfig
+
+  methods.UpdateLanguage = function () {
+    Object.assign(data, {
+      title: WorkflowDesignerConstants.DialogConfirmText,
+      message: WorkflowDesignerConstants.CloseWithoutSaving,
+      yes: WorkflowDesignerConstants.ButtonTextYes,
+      no: WorkflowDesignerConstants.ButtonTextNo,
+      ok: WorkflowDesignerConstants.ButtonTextOk,
+    });
+  }
+
+  methods.UpdateLanguage();
+  methods.defaultInit = function () {
+    Object.assign(data, {
+      isAlert: false,
+      actions: undefined,
+      visible: true,
+    });
+  };
+
+  methods.defaultInit();
+
+  methods.onSuccessWrap = function () {
+    if (data.onSuccess) data.onSuccess();
+    data.visible = false;
+  };
+
+  methods.funcWrapper = function (func) {
+    if (func) func();
+    data.visible = false;
+  };
+
+  methods.onHideEvent = function () {
+    data.visible = false;
+  };
+
+  /**
+   * @param {Object} value
+   * @param {string} value.title
+   * @param {string} value.message
+   * @param {bool} value.isAlert
+   * @param {function} value.onSuccess - Used as default action if data.actions is empty
+   * @param {Object[]} value.actions
+   * @param {string} value.actions[].label
+   * @param {string} value.actions[].type
+   * @param {function} value.actions[].onClick
+   */
+  methods.onUpdate = function (value) {
+    methods.defaultInit();
+    Object.assign(data, value);
+    if (!value.title && value.isAlert)
+      data.title = WorkflowDesignerConstants.AlertTitle;
+  };
+}
 </script>

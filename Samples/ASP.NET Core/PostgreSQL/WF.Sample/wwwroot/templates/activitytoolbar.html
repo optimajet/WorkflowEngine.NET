@@ -1,56 +1,72 @@
 <div class="WorkflowDesignerToolbarBlock Horizontal WorkflowDesignerElementToolbarBlock" style="display: flex;">
   <el-tooltip v-if="!graph.Settings.notshowwindows" :content="labels.ShowProperties">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon ShowProperties "
-                 @click="activity.ShowProperties()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" @click="activity.ShowProperties()">
+        <el-icon>
+          <div v-html="icons.showproperties"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.CreateTransition">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon CreateTransition"
-                 v-bind:disabled="preventMakeNewTansition()" @click="activity._onCreateTransition()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" :disabled="isTransitionPrevented" @click="createTransition">
+        <el-icon>
+          <div v-html="icons.createtransition"></div>
+        </el-icon>
+      </el-button>
+
     </div>
   </el-tooltip>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.CreateTransitionAndActivity">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon CreateTransitionAndActivity"
-                 v-bind:disabled="preventMakeNewTansition()" @click="activity._onCreateTransitionAndActivity()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" :disabled="isTransitionPrevented" @click="createTransitionAndActivity">
+        <el-icon>
+          <div v-html="icons.createtransitionandactivity"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Clone">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Clone" @click="activity.Clone()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" @click="activity.Clone()">
+        <el-icon>
+          <div v-html="icons.clone"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
   <div v-if="!graph.Settings.readonly" class="WorkflowDesignerElementToolbarIconContainer">
-    <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Color"></el-button>
+    <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon">
+      <el-icon>
+        <div v-html="icons.color"></div>
+      </el-icon>
+    </el-button>
   </div>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Color">
-    <el-color-picker v-if="!graph.Settings.readonly" v-model="Color" class="ColorPicker" :predefine="predefineColors" size="mini"
-                     @change="activity.UpdateColor(Color)"></el-color-picker>
+    <div>
+      <el-color-picker v-if="!graph.Settings.readonly" v-model="Color" class="ColorPicker" :predefine="predefineColors" size="small"
+                       @change="activity.UpdateColor(Color)"></el-color-picker>
+    </div>
   </el-tooltip>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Delete">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Delete " @click="activity._onDelete()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" @click="activity._onDelete()">
+        <el-icon>
+          <div v-html="icons.delete"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
 </div>
 <script type="application/javascript">
-  function activitytoolbar_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: {
-          ...WorkflowDesignerConstants.ElementToolbar,
-          ...WorkflowDesignerConstants.ActivityToolbar
-        },
-      });
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function activitytoolbar_Data(me) {
+    return {
+      icons: WorkflowDesignerConstants.icons,
       activity: undefined,
       Color: '',
       readonly: false,
+      isTransitionPrevented: false,
       predefineColors: [
         '#f44336',
         '#e91e63',
@@ -73,16 +89,39 @@
         '#607d8b'
       ],
       graph: me.value.graph
+    }
+  }
 
-    });
-    me.VueConfig.methods.onUpdate = function (activity) {
-      var data = me.VueConfig.data;
+  function activitytoolbar_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: {
+          ...WorkflowDesignerConstants.ElementToolbar,
+          ...WorkflowDesignerConstants.ActivityToolbar
+        },
+      });
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function (activity) {
       data.activity = activity;
       data.Color = activity.Color;
+      data.isTransitionPrevented = data?.activity?.preventMakeNewTransition?.();
     };
-    me.VueConfig.methods.preventMakeNewTansition = function () {
-      var f = me.VueConfig.data.activity.preventMakeNewTansition;
-      return !!(f && f());
-    };
+
+    methods.createTransition = () => {
+      data.activity._onCreateTransition();
+      data.isTransitionPrevented = data.activity?.preventMakeNewTransition?.();
+    }
+
+    methods.createTransitionAndActivity = () => {
+      data.activity._onCreateTransitionAndActivity();
+      data.isTransitionPrevented = data.activity?.preventMakeNewTransition?.();
+    }
+
   }
 </script>

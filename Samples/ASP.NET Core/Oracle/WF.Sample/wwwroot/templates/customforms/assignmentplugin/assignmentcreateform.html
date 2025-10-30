@@ -8,8 +8,8 @@
   <div v-if="Field.State != undefined" class="SettingsWithPadding">
     <div class="el-form--inline el-form--label-top">
       <el-form-item
-        :label="Field.Name.Label"
-        :prop="customLabels.Name"
+        :label="Field?.Name?.Label"
+        prop="Name"
         :rules="getFieldRules(Field.Name)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -18,7 +18,7 @@
 
       <el-form-item
         :label="customLabels.State"
-        :prop="Field.State.Name"
+        prop="State"
         :rules="getFieldRules(Field.State)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -33,7 +33,7 @@
   <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
     <el-form-item
       :label="customLabels.Name"
-      :prop="Field.AssignmentName.Name"
+      prop="AssignmentName"
       :rules="getFieldRules(Field.AssignmentName)">
       <el-input v-model="FormData.AssignmentName" :readonly="readonly"></el-input>
     </el-form-item>
@@ -41,7 +41,7 @@
     <div class="el-form--inline el-form--label-top" style="display: flex">
       <el-form-item
         :label="customLabels.Code"
-        :prop="Field.AssignmentCode.Name"
+        prop="AssignmentCode"
         :rules="getFieldRules(Field.AssignmentCode)"
         class="el-form-item"
         style="flex-grow: 4;">
@@ -49,7 +49,7 @@
       </el-form-item>
       <el-form-item
         :label="customLabels.Executors"
-        :prop="Field.Executors.Name"
+        prop="Executors"
         :rules="getExecutorsRules()"
         class="el-form-item"
         style="flex-grow: 4;">
@@ -62,34 +62,39 @@
           filterable
           multiple
           remote
-          reserve-keyword
+          :reserve-keyword="false"
           style="width:100%"
           @focus="onFocusSelectUser">
           <el-option-group>
-            <el-option v-for="item in actors" :key="item" :label="item" :value="{value:item,isActor:true, name: item}"></el-option>
+            <el-option v-for="item in actors"
+                       :key="item.value"
+                       :label="item.name"
+                       :value="item">
+            </el-option>
           </el-option-group>
           <el-option-group>
             <el-option
               v-for="user in userIdentities"
               :key="user.value"
-              :label="user.label"
-              :value="{value:user.value, isActor:false, name: user.label}">
+              :label="user.userName"
+              :value="user">
             </el-option>
           </el-option-group>
         </el-select>
       </el-form-item>
       <el-form-item
-        :prop="Field.IsActive.Name"
+        prop="IsActive"
         :rules="getFieldRules(Field.IsActive)"
         class="el-form-item"
         style="flex-grow: 1;">
-                <span slot="label">{{ customLabels.IsActive }}
-                    <span
-                      :style="parameterFromProcess.IsActive ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.IsActive = parameterFromProcess.IsActive ? false : null; parameterFromProcess.IsActive = !parameterFromProcess.IsActive}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.IsActive }}
+            <span
+              :style="parameterFromProcess.IsActive ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="toggleActive">
+              @
+            </span>
+          </template>
         <el-checkbox
           v-if="!parameterFromProcess.IsActive"
           v-model="FormData.IsActive"
@@ -102,7 +107,7 @@
 
     <el-form-item
       :label="customLabels.Description"
-      :prop="Field.Description.Name"
+      prop="Description"
       :rules="getFieldRules(Field.Description)">
       <el-input
         v-model="FormData.Description"
@@ -114,7 +119,7 @@
     <div class="el-form--inline el-form--label-top" style="display: flex">
       <el-form-item
         :label="customLabels.DeadlineToStart"
-        :prop="Field.DeadlineToStart.Name"
+        prop="DeadlineToStart"
         :rules="getDateStepRules(FormData.DeadlineToStart)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -124,7 +129,7 @@
 
       <el-form-item
         :label="customLabels.DeadlineToComplete"
-        :prop="Field.DeadlineToComplete.Name"
+        prop="DeadlineToComplete"
         :rules="getDateStepRules(FormData.DeadlineToComplete)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -136,7 +141,7 @@
     <div class="el-form--inline el-form--label-top" style="display: flex">
       <el-form-item
         :label="customLabels.Observers"
-        :prop="Field.Observers.Name"
+        prop="Observers"
         :rules="getFieldRules(Field.Observers)"
         style="width:100%">
         <el-select
@@ -148,14 +153,14 @@
           filterable
           multiple
           remote
-          reserve-keyword
+          :reserve-keyword="false"
           style="width:100%"
           @focus="onFocusSelectUser">
           <el-option
             v-for="user in userIdentities"
             :key="user.value"
-            :label="user.label"
-            :value="{value:user.value, identity:user.value, userName: user.label}">
+            :label="user.userName"
+            :value="user">
           </el-option>
         </el-select>
       </el-form-item>
@@ -163,7 +168,7 @@
     <div class="el-form--inline el-form--label-top" style="display: flex">
       <el-form-item
         :label="customLabels.Tags"
-        :prop="Field.Tags.Name"
+        prop="Tags"
         :rules="getFieldRules(Field.Tags)"
         style="width:100%">
         <el-tag
@@ -185,7 +190,7 @@
           size="small"
           style="line-height:normal;width: 150px;flex-grow: 1;"
           @blur="handleTagInputConfirm"
-          @keyup.enter.native="handleTagInputConfirm">
+          @keydown.enter="handleTagInputConfirm">
         </el-input>
         <el-button v-if="!inputTagVisible && !readonly" class="el-form-item" size="small" @click="showTagInput">+
           {{ customLabels.NewTag }}
@@ -202,20 +207,8 @@
 </div>
 
 <script type="application/javascript">
-  function customforms_assignmentplugin_assignmentcreateform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
-        labels: WorkflowDesignerConstants.EditParametersFormlabel,
-        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentCreate,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
-      })
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function customforms_assignmentplugin_assignmentcreateform_Data(me) {
+    return {
       customTitle: undefined,
       readonly: false,
       FormData: {},
@@ -228,13 +221,31 @@
       inputTagValue: '',
       userIdentities: [],
       loading: false
-    });
+    }
+  }
 
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+  function customforms_assignmentplugin_assignmentcreateform_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.AssignmentCreate,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       let fields = undefined;
@@ -257,10 +268,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           const tmp = {};
 
           fields.forEach(function (field) {
@@ -268,7 +279,7 @@
               field.DefaultValue = field.DefaultValue !== null && field.DefaultValue !== undefined && field.DefaultValue.toString() === 'true';
             }
 
-            if (typeof field.DefaultValue != 'undefined') {
+            if (typeof field.DefaultValue !== 'undefined') {
               tmp[field.Name] = field.DefaultValue;
             } else {
               tmp[field.Name] = null;
@@ -279,28 +290,30 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (key in me.VueConfig.data.FormData) {
-        if (me.VueConfig.data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
-          me.VueConfig.data.parameterFromProcess[key] = true;
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (const key in data.FormData) {
+        if (typeof data.parameterFromProcess[key] !== 'undefined' && WorkflowDesignerCommon.containsAt(data.FormData[key]))
+          data.parameterFromProcess[key] = true;
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData);
 
-      me.VueConfig.methods.initializeData();
+      methods.initializeData();
     };
 
 
-    me.VueConfig.methods.initializeData = function () {
-      const FormData = me.VueConfig.data.FormData;
-      me.VueConfig.data.actors = me.graph.getActorNames();
+    methods.initializeData = function () {
+      const FormData = data.FormData;
+      data.actors = me.graph.getActorNames().map(actor => {
+        return {value: actor, isActor: true, name: actor}
+      });
 
       FormData.DeadlineToStart = FormData.DeadlineToStart || '';
       FormData.DeadlineToComplete = FormData.DeadlineToComplete || '';
@@ -311,7 +324,7 @@
       } else {
         FormData.Observers = JSON.parse(observers);
         FormData.Observers.forEach(function (observers) {
-          me.VueConfig.data.userIdentities.push({value: observers.identity, label: observers.userName});
+          data.userIdentities.push({value: observers.identity, isActor: observers.isActor, identity: observers.identity, userName: observers.userName});
         });
       }
 
@@ -322,7 +335,7 @@
         FormData.Executors = JSON.parse(executors);
         FormData.Executors.forEach(function (executor) {
           if (!executor.isActor) {
-            me.VueConfig.data.userIdentities.push({value: executor.value, label: executor.name});
+            data.userIdentities.push({value: executor.value, isActor: executor.isActor, userName: executor.userName});
           }
         });
       }
@@ -330,44 +343,44 @@
       FormData.Tags = JSON.parse(FormData.Tags ?? '[]');
     };
 
-    me.VueConfig.methods.onFocusSelectUser = function (event) {
+    methods.onFocusSelectUser = function (event) {
       if (event.sourceCapabilities != null) {
-        me.VueConfig.methods.getUsers('');
+        methods.getUsers('');
       }
     };
 
-    me.VueConfig.methods.getUsers = function (query) {
-      me.VueConfig.data.loading = true;
+    methods.getUsers = function (query) {
+      data.loading = true;
       setTimeout(function () {
         const users = me.graph.designer.getuseridentities(query, 1, 20);
-        me.VueConfig.data.userIdentities = users.map(function (user) {
-          return {value: user.Identity, label: user.UserName};
+        data.userIdentities = users.map(function (user) {
+          return {value: user.Identity, isActor: false, identity: user.Identity, userName: user.UserName};
         });
-        me.VueConfig.data.loading = false;
+        data.loading = false;
       }, 200);
     };
 
-    me.VueConfig.methods.handleClose = function (items, item) {
+    methods.handleClose = function (items, item) {
       items.splice(items.indexOf(item), 1);
     };
 
-    me.VueConfig.methods.showTagInput = function () {
-      me.VueConfig.data.inputTagVisible = true;
+    methods.showTagInput = function () {
+      data.inputTagVisible = true;
       this.$nextTick(function (_) {
         this.$refs.saveTagInput.$refs.input.focus();
       });
     };
 
-    me.VueConfig.methods.handleTagInputConfirm = function () {
-      let inputValue = me.VueConfig.data.inputTagValue;
+    methods.handleTagInputConfirm = function () {
+      let inputValue = data.inputTagValue;
       if (inputValue) {
-        me.VueConfig.data.FormData.Tags.push(inputValue);
+        data.FormData.Tags.push(inputValue);
       }
-      me.VueConfig.data.inputTagVisible = false;
-      me.VueConfig.data.inputTagValue = '';
+      data.inputTagVisible = false;
+      data.inputTagValue = '';
     };
 
-    me.VueConfig.methods.getDateStepRules = function (interval) {
+    methods.getDateStepRules = function (interval) {
       const res = [];
       const validator = function (rule, value, callback) {
         if (interval == null || interval == '' || WorkflowDesignerCommon.containsAt(interval)) {
@@ -413,9 +426,9 @@
       return res;
     };
 
-    me.VueConfig.methods.getExecutorsRules = function () {
+    methods.getExecutorsRules = function () {
       const res = me.requiredRule();
-      const executors = me.VueConfig.data.FormData.Executors;
+      const executors = data.FormData.Executors;
       const validator = function (rule, value, callback) {
         if (executors == null || executors.length <= 0) {
           callback(new Error(rule.message));
@@ -423,24 +436,26 @@
           callback();
         }
       };
-      res.push({validator: validator, message: WorkflowDesignerConstants.FieldIsNotCorrected, trigger: 'blur'});
+      res.push({validator, message: WorkflowDesignerConstants.FieldIsNotCorrected, trigger: 'blur'});
       return res;
     }
 
-    me.VueConfig.methods.getFieldRules = function (field) {
+    methods.getFieldRules = function (field) {
+      if (!field) return [];
+
       const rules = field.IsRequired ? me.requiredRule() : [{required: false}];
 
-      if (me.VueConfig.data.parameterFromProcess[field.Name]) {
+      if (data.parameterFromProcess[field.Name]) {
         rules.push(WorkflowDesignerCommon.containsAtRule);
       }
 
       return rules;
     };
 
-    me.VueConfig.methods.onSave = function () {
+    methods.onSave = function () {
       this.$refs.form.validate(function (valid) {
         if (valid) {
-          const dataClone = WorkflowDesignerCommon.clone(me.VueConfig.data.FormData);
+          const dataClone = WorkflowDesignerCommon.clone(data.FormData);
           dataClone.Observers = JSON.stringify(dataClone.Observers);
           dataClone.Executors = JSON.stringify(dataClone.Executors);
           dataClone.Tags = JSON.stringify(dataClone.Tags);
@@ -452,9 +467,14 @@
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
+
+    methods.toggleActive = function () {
+      data.FormData.IsActive = data.parameterFromProcess.IsActive ? false : null;
+      data.parameterFromProcess.IsActive = !data.parameterFromProcess.IsActive
+    }
   }
 </script>
 

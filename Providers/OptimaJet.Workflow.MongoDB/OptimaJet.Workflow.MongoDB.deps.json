@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/19.0.0": {
+      "OptimaJet.Workflow.MongoDB/20.0.0": {
         "dependencies": {
           "MongoDB.Driver": "2.30.0",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "19.0.0",
-          "OptimaJet.Workflow.Core": "19.0.0.0"
+          "WorkflowEngine.NETCore-Core": "20.0.0",
+          "OptimaJet.Workflow.Core": "20.0.0.0"
         },
         "runtime": {
           "OptimaJet.Workflow.MongoDB.dll": {}
@@ -20,7 +20,7 @@
       },
       "AWSSDK.Core/3.7.100.14": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "5.0.0"
+          "Microsoft.Bcl.AsyncInterfaces": "9.0.5"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
@@ -52,14 +52,14 @@
           }
         }
       },
-      "Microsoft.Bcl.AsyncInterfaces/5.0.0": {
+      "Microsoft.Bcl.AsyncInterfaces/9.0.5": {
         "dependencies": {
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
+            "assemblyVersion": "9.0.0.5",
+            "fileVersion": "9.0.525.21509"
           }
         }
       },
@@ -70,7 +70,7 @@
           "System.Collections.Immutable": "5.0.0",
           "System.Memory": "4.5.5",
           "System.Reflection.Metadata": "5.0.0",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
           "System.Text.Encoding.CodePages": "5.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
@@ -349,7 +349,7 @@
       "MongoDB.Bson/2.30.0": {
         "dependencies": {
           "System.Memory": "4.5.5",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/MongoDB.Bson.dll": {
@@ -463,7 +463,7 @@
       "Snappier/1.0.0": {
         "dependencies": {
           "System.Memory": "4.5.5",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
           "System.Threading.Tasks.Extensions": "4.5.4"
         },
         "runtime": {
@@ -697,7 +697,7 @@
         "dependencies": {
           "System.Buffers": "4.5.1",
           "System.Numerics.Vectors": "4.4.0",
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/System.Memory.dll": {
@@ -833,11 +833,11 @@
           "Microsoft.NETCore.Targets": "1.1.3"
         }
       },
-      "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+      "System.Runtime.CompilerServices.Unsafe/6.0.0": {
         "runtime": {
           "lib/netstandard2.0/System.Runtime.CompilerServices.Unsafe.dll": {
-            "assemblyVersion": "5.0.0.0",
-            "fileVersion": "5.0.20.51904"
+            "assemblyVersion": "6.0.0.0",
+            "fileVersion": "6.0.21.52210"
           }
         }
       },
@@ -986,7 +986,7 @@
       },
       "System.Text.Encoding.CodePages/5.0.0": {
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/System.Text.Encoding.CodePages.dll": {
@@ -1001,6 +1001,35 @@
           "Microsoft.NETCore.Targets": "1.1.3",
           "System.Runtime": "4.3.1",
           "System.Text.Encoding": "4.3.0"
+        }
+      },
+      "System.Text.Encodings.Web/8.0.0": {
+        "dependencies": {
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Encodings.Web.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.23.53103"
+          }
+        }
+      },
+      "System.Text.Json/8.0.5": {
+        "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "9.0.5",
+          "System.Buffers": "4.5.1",
+          "System.Memory": "4.5.5",
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0",
+          "System.Text.Encodings.Web": "8.0.0",
+          "System.Threading.Tasks.Extensions": "4.5.4"
+        },
+        "runtime": {
+          "lib/netstandard2.0/System.Text.Json.dll": {
+            "assemblyVersion": "8.0.0.0",
+            "fileVersion": "8.0.1024.46610"
+          }
         }
       },
       "System.Text.RegularExpressions/4.3.1": {
@@ -1040,7 +1069,7 @@
       },
       "System.Threading.Tasks.Extensions/4.5.4": {
         "dependencies": {
-          "System.Runtime.CompilerServices.Unsafe": "5.0.0"
+          "System.Runtime.CompilerServices.Unsafe": "6.0.0"
         },
         "runtime": {
           "lib/netstandard2.0/System.Threading.Tasks.Extensions.dll": {
@@ -1104,7 +1133,7 @@
       },
       "ZstdSharp.Port/0.7.3": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "5.0.0",
+          "Microsoft.Bcl.AsyncInterfaces": "9.0.5",
           "System.Memory": "4.5.5"
         },
         "runtime": {
@@ -1114,37 +1143,39 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/19.0.0": {
+      "WorkflowEngine.NETCore-Core/20.0.0": {
         "dependencies": {
+          "Microsoft.Bcl.AsyncInterfaces": "9.0.5",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
           "Microsoft.Extensions.DependencyModel": "1.1.1",
           "Newtonsoft.Json": "13.0.3",
           "System.Collections.Specialized": "4.3.0",
           "System.Security.Cryptography.Csp": "4.3.0",
+          "System.Text.Json": "8.0.5",
           "System.Text.RegularExpressions": "4.3.1",
           "System.Xml.XmlDocument": "4.3.0",
           "ThomasLevesque.WeakEvent": "4.1.0"
         },
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "19.0.0",
-            "fileVersion": "19.0.0"
+            "assemblyVersion": "20.0.0",
+            "fileVersion": "20.0.0"
           }
         }
       },
-      "OptimaJet.Workflow.Core/19.0.0.0": {
+      "OptimaJet.Workflow.Core/20.0.0.0": {
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "19.0.0.0",
-            "fileVersion": "19.0.0.0"
+            "assemblyVersion": "20.0.0.0",
+            "fileVersion": "20.0.0.0"
           }
         }
       }
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/19.0.0": {
+    "OptimaJet.Workflow.MongoDB/20.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1170,12 +1201,12 @@
       "path": "dnsclient/1.6.1",
       "hashPath": "dnsclient.1.6.1.nupkg.sha512"
     },
-    "Microsoft.Bcl.AsyncInterfaces/5.0.0": {
+    "Microsoft.Bcl.AsyncInterfaces/9.0.5": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-W8DPQjkMScOMTtJbPwmPyj9c3zYSFGawDW3jwlBOOsnY+EzZFLgNQ/UMkK35JmkNOVPdCyPr2Tw7Vv9N+KA3ZQ==",
-      "path": "microsoft.bcl.asyncinterfaces/5.0.0",
-      "hashPath": "microsoft.bcl.asyncinterfaces.5.0.0.nupkg.sha512"
+      "sha512": "sha512-eNQDjbtFj8kOLxbckCbn2JXTsnzK8+xkA4jg7NULO9jhIvlOSngC9BFzmiqVPpw1INQaP1pQ3YteY2XhfWNjtQ==",
+      "path": "microsoft.bcl.asyncinterfaces/9.0.5",
+      "hashPath": "microsoft.bcl.asyncinterfaces.9.0.5.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Analyzers/3.3.3": {
       "type": "package",
@@ -1625,12 +1656,12 @@
       "path": "system.runtime/4.3.1",
       "hashPath": "system.runtime.4.3.1.nupkg.sha512"
     },
-    "System.Runtime.CompilerServices.Unsafe/5.0.0": {
+    "System.Runtime.CompilerServices.Unsafe/6.0.0": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-ZD9TMpsmYJLrxbbmdvhwt9YEgG5WntEnZ/d1eH8JBX9LBp+Ju8BSBhUGbZMNVHHomWo2KVImJhTDl2hIgw/6MA==",
-      "path": "system.runtime.compilerservices.unsafe/5.0.0",
-      "hashPath": "system.runtime.compilerservices.unsafe.5.0.0.nupkg.sha512"
+      "sha512": "sha512-/iUeP3tq1S0XdNNoMz5C9twLSrM/TH+qElHkXWaPvuNOt+99G75NrV0OS2EqHx5wMN7popYjpc8oTjC1y16DLg==",
+      "path": "system.runtime.compilerservices.unsafe/6.0.0",
+      "hashPath": "system.runtime.compilerservices.unsafe.6.0.0.nupkg.sha512"
     },
     "System.Runtime.Extensions/4.3.1": {
       "type": "package",
@@ -1730,6 +1761,20 @@
       "path": "system.text.encoding.extensions/4.3.0",
       "hashPath": "system.text.encoding.extensions.4.3.0.nupkg.sha512"
     },
+    "System.Text.Encodings.Web/8.0.0": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-yev/k9GHAEGx2Rg3/tU6MQh4HGBXJs70y7j1LaM1i/ER9po+6nnQ6RRqTJn1E7Xu0fbIFK80Nh5EoODxrbxwBQ==",
+      "path": "system.text.encodings.web/8.0.0",
+      "hashPath": "system.text.encodings.web.8.0.0.nupkg.sha512"
+    },
+    "System.Text.Json/8.0.5": {
+      "type": "package",
+      "serviceable": true,
+      "sha512": "sha512-0f1B50Ss7rqxXiaBJyzUu9bWFOO2/zSlifZ/UNMdiIpDYe4cY4LQQicP4nirK1OS31I43rn062UIJ1Q9bpmHpg==",
+      "path": "system.text.json/8.0.5",
+      "hashPath": "system.text.json.8.0.5.nupkg.sha512"
+    },
     "System.Text.RegularExpressions/4.3.1": {
       "type": "package",
       "serviceable": true,
@@ -1786,12 +1831,12 @@
       "path": "zstdsharp.port/0.7.3",
       "hashPath": "zstdsharp.port.0.7.3.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/19.0.0": {
+    "WorkflowEngine.NETCore-Core/20.0.0": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "OptimaJet.Workflow.Core/19.0.0.0": {
+    "OptimaJet.Workflow.Core/20.0.0.0": {
       "type": "reference",
       "serviceable": false,
       "sha512": ""

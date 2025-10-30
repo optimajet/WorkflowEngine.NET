@@ -2,8 +2,8 @@
   <el-input
     v-model="search"
     :placeholder="labels.TypeSomething"
-    prefix-icon="el-icon-search"
-    size="mini"
+    prefix-icon="IconSearch"
+    size="small"
     style="width: 300px; margin-left: 10px">
   </el-input>
 </h3>
@@ -16,7 +16,7 @@
   height="calc(100% - 100px)"
   style="width: 100%">
   <el-table-column type="expand">
-    <template slot-scope="props">
+    <template #default="props">
       <div style="padding-left: 10px;padding-right: 10px">
         <el-row v-if="props.row.Description != null" style="margin-bottom: 15px">
           <el-col>
@@ -54,7 +54,9 @@
                 {{ observer.Identity }}
                 <div slot="reference" style="white-space:nowrap">
                   {{ observer.UserName }}
-                  <i class="el-icon-info"></i>
+                  <el-icon>
+                    <icon-info-filled />
+                  </el-icon>
                 </div>
               </el-popover>
             </el-tag>
@@ -79,9 +81,9 @@
   <el-table-column
     :label="labels.Code"
     prop="AssignmentCode">
-    <template slot-scope="scope">
+    <template #default="scope">
       <div slot="reference" style="white-space:nowrap">
-        <i v-if="!scope.row.IsActive" class="el-icon-lock"></i>
+        <el-icon v-if="!scope.row.IsActive"><svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 1024 1024" ><path fill="currentColor" d="M224 448a32 32 0 0 0-32 32v384a32 32 0 0 0 32 32h576a32 32 0 0 0 32-32V480a32 32 0 0 0-32-32zm0-64h576a96 96 0 0 1 96 96v384a96 96 0 0 1-96 96H224a96 96 0 0 1-96-96V480a96 96 0 0 1 96-96"></path><path fill="currentColor" d="M512 544a32 32 0 0 1 32 32v192a32 32 0 1 1-64 0V576a32 32 0 0 1 32-32m192-160v-64a192 192 0 1 0-384 0v64zM512 64a256 256 0 0 1 256 256v128H256V320A256 256 0 0 1 512 64"></path></svg></el-icon>
         {{ scope.row.AssignmentCode }}
       </div>
     </template>
@@ -97,7 +99,7 @@
     :label="labels.Executor"
     min-width="150"
     prop="Executor">
-    <template slot-scope="scope">
+    <template #default="scope">
       <div style="white-space:nowrap">
         <el-popover
           :title="labels.ExecutorId"
@@ -105,11 +107,13 @@
           trigger="hover"
           width="200">
           {{ scope.row.Executor.Identity }}
-          <span slot="reference">
+          <template #reference>
                 {{ scope.row.Executor.UserName }}
-                    </span>
+          </template>
         </el-popover>
-        <i class="el-icon-info"></i>
+        <el-icon>
+          <icon-info-filled />
+        </el-icon>
       </div>
     </template>
   </el-table-column>
@@ -137,58 +141,64 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
+  function assignments_Data(me) {
+    return {
+      readonly: false,
+      assignments: [],
+      statuses: [],
+      search: '',
+    }
+  }
+
   function assignments_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.AssignmentFormLabel,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
       });
     };
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      readonly: false,
-      assignments: [],
-      statuses: [],
-      search: '',
-    });
+    methods.UpdateLanguage();
 
     me.VueConfig.created = function () {
-      var data = me.graph.designer.getprocessassignments();
-      me.VueConfig.data.assignments = data.Assignments;
-      me.VueConfig.data.statuses = data.Statuses;
+      const dataAssignments = me.graph.designer.getprocessassignments();
+      data.assignments = dataAssignments.Assignments;
+      data.statuses = dataAssignments.Statuses;
     };
 
-    me.VueConfig.methods.checkMatch = function (row) {
-      var search = me.VueConfig.data.search.toLowerCase();
+    methods.checkMatch = function (row) {
+      const search = data.search.toLowerCase();
       return !search
         || search.length == 0
         || row.Name.toLowerCase().includes(search)
         || row.Executor.UserName.toLowerCase().includes(search)
         || row.Executor.Identity.toLowerCase().includes(search)
-        || me.VueConfig.methods.getDate(row.DateCreation).toLowerCase().includes(search)
+        || methods.getDate(row.DateCreation).toLowerCase().includes(search)
     };
 
-    me.VueConfig.methods.getStatuses = function () {
-      var statuses = [];
-      me.VueConfig.data.statuses.forEach(function (st) {
+    methods.getStatuses = function () {
+      const statuses = [];
+      data.statuses.forEach(function (st) {
         statuses.push({text: st, value: st});
       });
       return statuses;
     };
 
-    me.VueConfig.methods.onUpdate = function () {
+    methods.onUpdate = function () {
     };
 
-    me.VueConfig.methods.filterTag = function (value, row) {
-      return row.StatusState == value;
+    methods.filterTag = function (value, row) {
+      return row.StatusState === value;
     };
 
-    me.VueConfig.methods.getFormatDate = function (a, b, stringDate, d) {
-      return me.VueConfig.methods.getDate(stringDate);
+    methods.getFormatDate = function (a, b, stringDate, d) {
+      return methods.getDate(stringDate);
     };
 
-    me.VueConfig.methods.getDate = function (stringDate) {
+    methods.getDate = function (stringDate) {
       let date = new Date(stringDate);
       let options = {
         hour12: false,
@@ -203,7 +213,7 @@
       return date.toLocaleString('en-US', options);
     };
 
-    me.VueConfig.methods.tableRowStyle = function (data) {
+    methods.tableRowStyle = function (data) {
       let row = data.row;
       let rowStyle = {};
 
@@ -213,7 +223,7 @@
       return rowStyle;
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
   }

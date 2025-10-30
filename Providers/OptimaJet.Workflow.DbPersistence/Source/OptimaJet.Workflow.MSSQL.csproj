@@ -51,5 +51,7 @@
     <EmbeddedResource Include="Scripts\InitialWorkflowEngineSchema.sql" />
     <None Remove="Scripts\CreateUniqueIndexes.sql" />
     <EmbeddedResource Include="Scripts\CreateUniqueIndexes.sql" />
+    <None Remove="Scripts\CreateWorkflowForms.sql" />
+    <EmbeddedResource Include="Scripts\CreateWorkflowForms.sql" />
   </ItemGroup>
 </Project>

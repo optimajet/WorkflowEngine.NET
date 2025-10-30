@@ -13,7 +13,9 @@ namespace OptimaJet.Workflow.SQLite
             {
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.Id), IsKey = true, Type = DbType.Guid},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.ActivityName)},
+#pragma warning disable CS0618 // Type or member is obsolete
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), Type = DbType.Boolean},
+#pragma warning restore CS0618 // Type or member is obsolete
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivity)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForDirect)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForReverse)},

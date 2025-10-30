@@ -98,6 +98,8 @@
     <EmbeddedResource Include="Scripts\InsertIgnore_WorkflowSync.sql" />
     <None Remove="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
     <EmbeddedResource Include="Scripts\DropIndex_WorkflowGlobalParameter_TypeName.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowForms.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowForms.sql" />
     <None Remove="Scripts\CreateFunction_BinToUUID.sql" />
     <EmbeddedResource Include="Scripts\CreateFunction_BinToUUID.sql" />
     <None Remove="Scripts\CreateFunction_UUIDToBin.sql" />

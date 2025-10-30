@@ -72,7 +72,8 @@
             :class="isEmpty(parameter.Purpose) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
             filterable
           >
-            <el-option key="Temporary" :label="!!findInlinedSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'" value="Temporary"></el-option>
+            <el-option key="Temporary" :label="!!findInlinedSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'"
+                       value="Temporary"></el-option>
             <el-option key="Persistent" label="Persistence" value="Persistence"></el-option>
           </el-select>
         </td>
@@ -142,7 +143,8 @@
             :class="isEmpty(parameter.Purpose) && saveTriggered ? 'WorkflowDesignerInputError' : ''"
             filterable
           >
-            <el-option key="Temporary" :label="!!findSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'" value="Temporary"></el-option>
+            <el-option key="Temporary" :label="!!findSchemeParameter(parameter.Target) ? 'Predefined' : 'Temporary'"
+                       value="Temporary"></el-option>
             <el-option key="Persistence" label="Persistence" value="Persistence"></el-option>
           </el-select>
         </td>
@@ -165,13 +167,13 @@
     </table>
   </div>
 
-  <el-button v-if="!readonly && !itemHasComment" circle icon="el-icon-s-comment" @click="showUserComment()"></el-button>
+  <el-button icon="IconComment" v-if="!readonly && !itemHasComment" circle @click="showUserComment()"></el-button>
   <el-form-item v-if="itemHasComment" :label="labels.UserComment">
     <el-input
       v-if="itemHasComment"
       v-model="FormData.UserComment"
       :placeholder="labels.UserComment"
-      rows="5"
+      :rows="5"
       type="textarea"
     >
     </el-input>
@@ -183,9 +185,23 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
+  function activityinline_Data(me) {
+    return {
+      readonly: false,
+      itemHasComment: false,
+      schemes: [],
+      FormData: {},
+      inputParameters: [],
+      outputParameters: []
+    }
+  }
+
   function activityinline_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.ActivityFormLabel,
         ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
@@ -199,58 +215,53 @@
       });
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      readonly: false,
-      itemHasComment: false,
-      schemes: [],
-      FormData: {}
-    });
+    methods.UpdateLanguage();
 
     var INPUT_PARAMETERS_ANNOTATION = '__inputParameters';
     var OUTPUT_PARAMETERS_ANNOTATION = '__outputParameters';
 
-    me.VueConfig.methods.onUpdate = function (item) {
-      me.VueConfig.data.originalItem = item;
-      me.VueConfig.data.FormData.Name = item.Name;
-      me.VueConfig.data.FormData.SchemeCode = item.SchemeCode;
-      me.VueConfig.data.FormData.Annotations = item.Annotations || [];
-      me.VueConfig.data.schemes = me.graph.data.AdditionalParams.InlinedSchemeCodes;
+    methods.onUpdate = function (item) {
+      data.originalItem = item;
+      data.FormData.Name = item.Name;
+      data.FormData.SchemeCode = item.SchemeCode;
+      data.FormData.Annotations = item.Annotations || [];
+      data.schemes = me.graph.data.AdditionalParams.InlinedSchemeCodes;
+
+      me.linkItem = item;
 
       if (!!item.SchemeCode) {
-        me.VueConfig.data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[item.SchemeCode].map(parameter => new ParameterDefinition(parameter));
+        data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[item.SchemeCode].map(parameter => new ParameterDefinition(parameter));
       }
 
-      me.VueConfig.data.schemeParameters = me.graph.data.Parameters
+      data.schemeParameters = me.graph.data.Parameters
         .filter(parameter => parameter.Purpose !== 'System')
         .map(parameter => new ParameterDefinition(parameter));
 
-      me.VueConfig.data.itemHasComment = item.UserComment != null && item.UserComment.length > 0;
+      data.itemHasComment = item.UserComment != null && item.UserComment.length > 0;
 
       if (Array.isArray(item.Annotations)) {
         item.Annotations.forEach(function (annotation) {
           if (annotation.Name === INPUT_PARAMETERS_ANNOTATION) {
             var inputParameters = JSON.parse(annotation.JsonValue);
-            me.VueConfig.data.inputParameters = inputParameters.map(json => new ParameterMapping(json));
+            data.inputParameters = inputParameters.map(json => new ParameterMapping(json));
           } else if (annotation.Name === OUTPUT_PARAMETERS_ANNOTATION) {
             var outputParameters = JSON.parse(annotation.JsonValue);
-            me.VueConfig.data.outputParameters = outputParameters.map(json => new ParameterMapping(json));
+            data.outputParameters = outputParameters.map(json => new ParameterMapping(json));
           }
         });
       }
 
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+      data.readonly = me.graph.Settings.readonly;
     };
 
-    me.VueConfig.methods.getFieldRules = function (field) {
+    methods.getFieldRules = function (field) {
       var res = [{required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}];
 
-      if (field == 'Name') {
+      if (field === 'Name') {
         var validator = function (rule, value, callback) {
-          var originalItem = me.VueConfig.data.originalItem;
           var isValid = true;
           me.graph.data.Activities.forEach(function (a) {
-            if (a != originalItem && a.Name == value) {
+            if (a !== me.linkItem && a.Name === value) {
               isValid = false;
             }
           });
@@ -261,7 +272,7 @@
             callback(new Error(rule.message));
           }
         };
-        res.push({validator: validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
+        res.push({validator, message: WorkflowDesignerConstants.FieldMustBeUnique});
       }
       return res;
     };
@@ -270,27 +281,27 @@
       return !!parameter.Target && !!parameter.Expression && !!parameter.Purpose;
     }
 
-    me.VueConfig.methods.onSave = function () {
-      me.VueConfig.data.saveTriggered = true;
+    methods.onSave = function () {
+      data.saveTriggered = true;
 
       if (this.$refs && this.$refs.form) {
         this.$refs.form.validate(function (valid) {
           if (valid) {
-            if (me.VueConfig.data.inputParameters.some(parameter => !validateParameterMapping(parameter))) return;
-            if (me.VueConfig.data.outputParameters.some(parameter => !validateParameterMapping(parameter))) return;
+            if (data.inputParameters.some(parameter => !validateParameterMapping(parameter))) return;
+            if (data.outputParameters.some(parameter => !validateParameterMapping(parameter))) return;
 
-            var annotations = me.VueConfig.data.FormData.Annotations;
+            var annotations = data.FormData.Annotations;
 
             var inputParametersAnnotation = annotations.find(annotation => annotation.Name === INPUT_PARAMETERS_ANNOTATION);
 
             if (!inputParametersAnnotation) {
               inputParametersAnnotation = {
                 Name: INPUT_PARAMETERS_ANNOTATION,
-                JsonValue: JSON.stringify(me.VueConfig.data.inputParameters)
+                JsonValue: JSON.stringify(data.inputParameters)
               };
               annotations.push(inputParametersAnnotation);
             } else {
-              inputParametersAnnotation.JsonValue = JSON.stringify(me.VueConfig.data.inputParameters);
+              inputParametersAnnotation.JsonValue = JSON.stringify(data.inputParameters);
             }
 
             var outputParametersAnnotation = annotations.find(annotation => annotation.Name === OUTPUT_PARAMETERS_ANNOTATION);
@@ -298,28 +309,28 @@
             if (!outputParametersAnnotation) {
               outputParametersAnnotation = {
                 Name: OUTPUT_PARAMETERS_ANNOTATION,
-                JsonValue: JSON.stringify(me.VueConfig.data.outputParameters)
+                JsonValue: JSON.stringify(data.outputParameters)
               };
               annotations.push(outputParametersAnnotation);
             } else {
-              outputParametersAnnotation.JsonValue = JSON.stringify(me.VueConfig.data.outputParameters);
+              outputParametersAnnotation.JsonValue = JSON.stringify(data.outputParameters);
             }
 
-            me.onSuccess(me.VueConfig.data.FormData);
+            me.onSuccess(data.FormData);
             me.onClose(true);
           }
         });
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
-      if (me.VueConfig.data.readonly) {
+    methods.onClose = function () {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-      var originalItem = me.VueConfig.data.originalItem;
-      var item = me.VueConfig.data.FormData;
+      var originalItem = data.originalItem;
+      var item = data.FormData;
 
       if (originalItem.Name === item.Name && originalItem.SchemeCode === item.SchemeCode) {
         me.onClose(true);
@@ -328,31 +339,31 @@
       }
     };
 
-    me.VueConfig.methods.showUserComment = function () {
-      me.VueConfig.data.itemHasComment = true;
+    methods.showUserComment = function () {
+      data.itemHasComment = true;
     }
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
-    me.VueConfig.methods.showExpressionEditor = function (parameter /*:ParameterMapping */) {
-      me.VueConfig.data.editingParameter = parameter;
+    methods.showExpressionEditor = function (parameter /*:ParameterMapping */) {
+      data.editingParameter = parameter;
       me.editItem = parameter;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem.Expression = value;
-          me.VueConfig.data.editingParameter = null;
+          data.editingParameter = null;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editingParameter = null;
+        data.editingParameter = null;
       };
 
-      me.VueConfig.data.jsonform = me.showjson(parameter.Expression, {expression: true, expressiontype: 'object'}, onSuccess, onClose);
+      data.jsonform = me.showjson(parameter.Expression, {expression: true, expressiontype: 'object'}, onSuccess, onClose);
     };
 
     class ParameterDefinition {
@@ -365,40 +376,40 @@
       }
     }
 
-    me.VueConfig.methods.onSchemeChange = function (schemeCode /*: string*/) {
+    methods.onSchemeChange = function (schemeCode /*: string*/) {
       if (schemeCode) {
-        me.VueConfig.data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[schemeCode].map(parameter => new ParameterDefinition(parameter));
+        data.inlinedSchemeParameters = me.graph.data.AdditionalParams.InlinedSchemeParameters[schemeCode].map(parameter => new ParameterDefinition(parameter));
       } else {
-        me.VueConfig.data.inlinedSchemeParameters = [];
+        data.inlinedSchemeParameters = [];
       }
 
-      for (var inputParameter of me.VueConfig.data.inputParameters) {
-        me.VueConfig.methods.onInputParameterTargetChange(inputParameter.Target);
+      for (var inputParameter of data.inputParameters) {
+        methods.onInputParameterTargetChange(inputParameter.Target);
       }
     };
 
-    me.VueConfig.methods.findInlinedSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
-      return me.VueConfig.data.inlinedSchemeParameters.find(parameter => parameter.Name === name);
+    methods.findInlinedSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
+      return data.inlinedSchemeParameters.find(parameter => parameter.Name === name);
     };
 
-    me.VueConfig.methods.findSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
-      return me.VueConfig.data.schemeParameters.find(parameter => parameter.Name === name);
+    methods.findSchemeParameter = function (name /*: string*/) /*: ParameterDefinition | undefined*/ {
+      return data.schemeParameters.find(parameter => parameter.Name === name);
     };
 
-    me.VueConfig.methods.onInputParameterTargetChange = function (target /*: string*/) {
-      var schemeParameter = me.VueConfig.methods.findInlinedSchemeParameter(target);
+    methods.onInputParameterTargetChange = function (target /*: string*/) {
+      var schemeParameter = methods.findInlinedSchemeParameter(target);
       if (schemeParameter) {
-        var parameter = me.VueConfig.data.inputParameters.find(parameter => parameter.Target === target);
+        var parameter = data.inputParameters.find(parameter => parameter.Target === target);
         if (parameter) {
           parameter.Purpose = 'Temporary';
         }
       }
     };
 
-    me.VueConfig.methods.onOutputParameterTargetChange = function (target /*: string*/) {
-      var schemeParameter = me.VueConfig.methods.findSchemeParameter(target);
+    methods.onOutputParameterTargetChange = function (target /*: string*/) {
+      var schemeParameter = methods.findSchemeParameter(target);
       if (schemeParameter) {
-        var parameter = me.VueConfig.data.outputParameters.find(parameter => parameter.Target === target);
+        var parameter = data.outputParameters.find(parameter => parameter.Target === target);
         if (parameter) {
           parameter.Purpose = 'Temporary';
         }
@@ -416,28 +427,28 @@
       }
     }
 
-    me.VueConfig.methods.isEmpty = function (input/*: string | null| undefined*/) {
+    methods.isEmpty = function (input/*: string | null| undefined*/) {
       return !input;
     }
 
-    me.VueConfig.methods.removeItem = function (items, index) {
+    methods.removeItem = function (items, index) {
       items.splice(index, 1);
     };
 
-    me.VueConfig.methods.addInputParameter = function () {
-      me.VueConfig.data.inputParameters.push(new ParameterMapping());
+    methods.addInputParameter = function () {
+      data.inputParameters.push(new ParameterMapping());
     };
 
-    me.VueConfig.methods.addOutputParameter = function () {
-      me.VueConfig.data.outputParameters.push(new ParameterMapping());
+    methods.addOutputParameter = function () {
+      data.outputParameters.push(new ParameterMapping());
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

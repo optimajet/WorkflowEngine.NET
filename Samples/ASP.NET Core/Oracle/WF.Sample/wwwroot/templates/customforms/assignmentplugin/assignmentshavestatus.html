@@ -7,19 +7,19 @@
   label-width="150px">
 
   <el-form-item
-    :prop="Field.StatusState.Name"
+    :prop="Field?.StatusState?.Name"
     :rules="getFieldRules(Field.StatusState)"
     style="width:100%">
-                <span slot="label">{{ customLabels.StatusState }}
-                    <span
-                      :style="parameterFromProcess.StatusState ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.StatusState = null; parameterFromProcess.StatusState = !parameterFromProcess.StatusState}">@
-                    </span>
-                </span>
+      <template #label>{{ customLabels.StatusState }}
+        <span
+          :style="parameterFromProcess.StatusState ? {color:parameterFromProcessColor}: {}"
+          class="WorkflowDesignerParameterFromProcess"
+          @click="toggleStatus">@
+        </span>
+      </template>
     <el-select v-if="!parameterFromProcess.StatusState" v-model="FormData.StatusState" :disabled="readonly" style="width: 100%">
       <el-option
-        v-for="item in Field.StatusState.DropdownValues"
+        v-for="item in Field?.StatusState?.DropdownValues"
         :key="item.Value"
         :label="item.Name"
         :value="item.Value">
@@ -29,9 +29,9 @@
   </el-form-item>
 
 
-    <h4 class="WorkflowDesignerTitleWithCreate SettingsHeader">
-      {{customLabels.Assignments}}
-      <a v-if="!readonly" @click="addValue(assignments)">{{ButtonTextCreate}}</a>
+  <h4 class="WorkflowDesignerTitleWithCreate SettingsHeader">
+    {{ customLabels.Assignments }}
+    <a v-if="!readonly" @click="addValue(assignments)">{{ ButtonTextCreate }}</a>
   </h4>
 
   <table class="WorkflowDesignerTable" style="margin-bottom: 10px">
@@ -54,7 +54,7 @@
           :readonly="readonly"
           style="width:100%">
           <el-option
-            v-for="item in Field.Assignments.DropdownValues"
+            v-for="item in Field?.Assignments?.DropdownValues"
             :key="item.Value"
             :label="item.Name"
             :value="item.Value">
@@ -83,9 +83,28 @@
 </div>
 
 <script type="application/javascript">
+  function customforms_assignmentplugin_assignmentshavestatus_Data(me) {
+    const isAny = me.options && me.options.parameterDefinition && me.options.parameterDefinition.name === 'AssignmentsAnyHaveCertainStatus';
+
+    return {
+      customTitle: undefined,
+      readonly: false,
+      FormData: {},
+      parameterFromProcess: {
+        StatusState: false
+      },
+      assignments: [{code: '', condition: isAny ? 'Any' : 'All', includeInactive: false}],
+      isAny,
+      Field: {},
+    };
+  }
+
   function customforms_assignmentplugin_assignmentshavestatus_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
         ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
         labels: WorkflowDesignerConstants.EditParametersFormlabel,
@@ -97,26 +116,13 @@
       })
     }
 
-    var isAny = me.options && me.options.parameterDefinition && me.options.parameterDefinition.name === 'AssignmentsAnyHaveCertainStatus';
+    methods.UpdateLanguage();
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      customTitle: undefined,
-      readonly: false,
-      FormData: {},
-      parameterFromProcess: {
-        StatusState: false
-      },
-      assignments: [{code: '', condition: isAny ? 'Any' : 'All', includeInactive: false}],
-      isAny: isAny,
-      Field: {},
-    });
-
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       var fields = undefined;
@@ -139,10 +145,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           var tmp = {};
 
           fields.forEach(function (field) {
@@ -150,7 +156,7 @@
               field.DefaultValue = field.DefaultValue !== null && field.DefaultValue !== undefined && field.DefaultValue.toString() === 'true';
             }
 
-            if (typeof field.DefaultValue != 'undefined') {
+            if (typeof field.DefaultValue !== 'undefined') {
               tmp[field.Name] = field.DefaultValue;
             } else {
               tmp[field.Name] = null;
@@ -161,89 +167,96 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (key in me.VueConfig.data.FormData) {
-        if (me.VueConfig.data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
-          me.VueConfig.data.parameterFromProcess[key] = true;
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (const key in data.FormData) {
+        if (typeof data.parameterFromProcess[key] !== 'undefined' && WorkflowDesignerCommon.containsAt(data.FormData[key]))
+          data.parameterFromProcess[key] = true;
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData)
 
-      me.VueConfig.methods.initializeData();
+      methods.initializeData();
     };
 
-    me.VueConfig.methods.initializeData = function () {
-      if (me.VueConfig.data.FormData.Assignments == null)
+    methods.initializeData = function () {
+      if (data.FormData.Assignments == null)
         return;
 
-      var assignments = JSON.parse(me.VueConfig.data.FormData.Assignments);
+      var assignments = JSON.parse(data.FormData.Assignments);
       if (assignments.length > 0) {
-        me.VueConfig.data.assignments = [];
+        data.assignments = [];
         assignments.forEach(function (item) {
-          me.VueConfig.data.assignments.push({'code': item.code, 'condition': item.condition, 'includeInactive': item.includeInactive});
+          data.assignments.push({'code': item.code, 'condition': item.condition, 'includeInactive': item.includeInactive});
         });
       }
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
-      if (name == 'Code' && (item == null || item.length == 0))
+    methods.validateField = function (name, item) {
+      if (name === 'Code' && (item == null || item.length == 0))
         return WorkflowDesignerConstants.FieldIsRequired;
     };
 
-    me.VueConfig.methods.validate = function () {
-      for (var i = 0; i < me.VueConfig.data.assignments.length; i++) {
-        if (me.VueConfig.data.assignments[i].code == null || me.VueConfig.data.assignments[i].code.length == 0) {
+    methods.validate = function () {
+      for (var i = 0; i < data.assignments.length; i++) {
+        if (data.assignments[i].code == null || data.assignments[i].code.length === 0) {
           return false;
         }
       }
       return true;
     };
 
-    me.VueConfig.methods.addValue = function (items) {
-      if (me.VueConfig.data.isAny) {
+    methods.addValue = function (items) {
+      if (data.isAny) {
         items.push({code: '', condition: 'Any', includeInactive: false});
       } else {
         items.push({code: '', condition: 'All', includeInactive: false});
       }
     };
 
-    me.VueConfig.methods.removeRow = function (items, index) {
+    methods.removeRow = function (items, index) {
       items.splice(index, 1);
     };
 
-    me.VueConfig.methods.getFieldRules = function (field) {
+    methods.getFieldRules = function (field) {
+      if (!field) return [];
+
       var rules = field.IsRequired ? me.requiredRule() : [{required: false}];
 
-      if (me.VueConfig.data.parameterFromProcess[field.Name]) {
+      if (data.parameterFromProcess[field.Name]) {
         rules.push(WorkflowDesignerCommon.containsAtRule);
       }
 
       return rules;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      me.VueConfig.data.FormData.Assignments = JSON.stringify(me.VueConfig.data.assignments).toString();
+    methods.onSave = function () {
+      data.FormData.Assignments = JSON.stringify(data.assignments).toString();
 
-      var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+      var value = WorkflowDesignerCommon.toString(data.FormData);
 
       this.$refs.form.validate(function (valid) {
-        if (valid && me.VueConfig.methods.validate()) {
+        if (valid && methods.validate()) {
           me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
           me.onClose(true);
         }
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
+
+    methods.toggleStatus = function () {
+      data.FormData.StatusState = null;
+      data.parameterFromProcess.StatusState = !data.parameterFromProcess.StatusState
+    }
   }
 </script>
 

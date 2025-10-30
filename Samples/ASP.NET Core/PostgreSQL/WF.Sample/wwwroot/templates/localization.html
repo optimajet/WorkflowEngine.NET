@@ -132,9 +132,21 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
+  function localization_Data(me) {
+    return {
+      readonly: false,
+      showPredefined: false,
+      predefined: me.graph.data.AdditionalParams.PredefinedLocalization,
+      items: []
+    }
+  }
+
   function localization_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.LocalizationFormLabel,
         ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
         ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
@@ -143,19 +155,15 @@
       });
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      readonly: false,
-      showPredefined: false,
-      predefined: me.graph.data.AdditionalParams.PredefinedLocalization
-    });
-    me.VueConfig.methods.onUpdate = function () {
-      me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.Localization);
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function () {
+      data.items = WorkflowDesignerCommon.clone(me.graph.data.Localization);
+      data.readonly = me.graph.Settings.readonly;
     };
 
-    me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({ObjectName: '', Type: '', Culture: '', Value: '', IsDefault: false});
+    methods.add = function () {
+      data.items.push({ObjectName: '', Type: '', Culture: '', Value: '', IsDefault: false});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerLocalizationList');
@@ -163,23 +171,23 @@
       }, 10);
     };
 
-    me.VueConfig.methods.remove = function (index) {
-      me.VueConfig.data.items.splice(index, 1);
+    methods.remove = function (index) {
+      data.items.splice(index, 1);
     };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
-      me.VueConfig.data.jsonform = me.showjson(item[name], function (value) {
+      data.jsonform = me.showjson(item[name], function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       })
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
+    methods.validateField = function (name, item) {
       if (name != 'ObjectName' && name != 'Type' && name != 'Culture' && name != 'Value')
         return;
 
@@ -188,9 +196,9 @@
       }
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
-      var items = me.VueConfig.data.items;
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (validateFunc('ObjectName', item) || validateFunc('Type', item) || validateFunc('Culture', item) || validateFunc('Value', item))
@@ -200,23 +208,23 @@
       return true;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
-        me.graph.UpdateData(me.graph.data.Localization, me.VueConfig.data.items);
+    methods.onSave = function () {
+      if (methods.validate && methods.validate()) {
+        me.graph.UpdateData(me.graph.data.Localization, data.items);
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
 
-      if (me.VueConfig.data.readonly) {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-      if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
+      if (!data.readonly && !WorkflowDesignerCommon.compareArray(
         me.graph.data.Localization,
-        me.VueConfig.data.items,
+        data.items,
         ['ObjectName', 'Type', 'Culture', 'Value', 'IsDefault'])) {
         me.showConfirm();
         return false;
@@ -225,22 +233,22 @@
       }
     };
 
-    me.VueConfig.methods.onChangeType = function (item) {
+    methods.onChangeType = function (item) {
       if (item.Type === 'Scheme') {
         item.ObjectName = me.graph.data.Name;
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

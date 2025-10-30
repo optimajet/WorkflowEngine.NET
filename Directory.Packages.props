@@ -7,6 +7,7 @@
     <PackageVersion Include="Castle.Core" Version="5.1.1" />
     <PackageVersion Include="ConfigureAwait.Fody" Version="3.3.1" />
     <PackageVersion Include="Fody" Version="6.6.3" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.5" />
     <PackageVersion Include="NUnit" Version="3.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
     <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
@@ -19,8 +20,8 @@
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.72.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.10.0" />
     <PackageVersion Include="Azure.Identity" Version="1.14.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="19.0.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="19.0.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="20.0.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="20.0.0" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>

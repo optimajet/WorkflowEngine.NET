@@ -1,552 +1,647 @@
 <div class="WorkflowDesignerToolbarMultiBlock">
-  <div v-if="!settings.hideElementsToolbar && !settings.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
-    <el-menu mode="horizontal">
-      <el-submenu index="1">
-        <template slot="title">
-          <div class="MainMenu">
-            <div v-html="icons.menu"></div>
-            <div class="Title">
-              <label class="Label">
-                {{ schemeCode ?? labels.UntitledScheme }}
-              </label>
-              <i class="el-icon-arrow-down"></i>
-            </div>
+<div v-if="!settings?.hideElementsToolbar && !settings?.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
+  <el-menu mode="horizontal" :collapse="false" :ellipsis="false" class="MainMenu" popper-class="WorkflowDesignerMainMenu">
+    <el-sub-menu index="1">
+      <template #title>
+        <div class="Menu">
+          <div class="Title">
+            <el-icon>
+              <div v-html="icons.menu"></div>
+            </el-icon>
+            <label class="Label">
+              {{ schemeCode ?? labels.UntitledScheme }}
+            </label>
           </div>
-        </template>
-        <el-menu-item index="1-0" @click="showSaveAsDialog(true)">
-          {{ labels.SaveAs }}
+        </div>
+      </template>
+      <el-menu-item index="1-0" @click="showSaveAsDialog(true)">
+        {{ labels.SaveAs }}
+      </el-menu-item>
+      <el-menu-item index="1-1-1" @click="uploadXML">
+        {{ labels.UploadScheme }}
+      </el-menu-item>
+      <el-menu-item v-if="uploadBpmnEnabled" index="1-1-2" @click="uploadBPMN">
+        {{ labels.UploadBPMN }}
+      </el-menu-item>
+      <el-menu-item index="1-1-3" @click="downloadXML">
+        {{ labels.DownloadScheme }}
+      </el-menu-item>
+      <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
+        {{ labels.SaveToImage }}
+      </el-menu-item>
+      <el-divider></el-divider>
+      <el-menu-item index="1-2-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
+      <el-menu-item index="1-2-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
+      <el-menu-item index="1-2-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
+      <el-menu-item index="1-2-5" @click="showExInfo" :class="getActiveClass(exinfo)">
+        {{ labels.Info }}
+        <el-icon>
+          <icon-check v-if="exinfo"></icon-check>
+        </el-icon>
+      </el-menu-item>
+      <el-menu-item index="1-2-6" @click="showLegend" :class="getActiveClass(legend)">
+        {{ labels.Legend }}
+        <el-icon>
+          <icon-check v-if="legend"></icon-check>
+        </el-icon>
+      </el-menu-item>
+      <el-menu-item index="1-4" @click="showInstanceInfo">{{ labels.InstanceInfo }}</el-menu-item>
+      <el-sub-menu index="1-3">
+        <template #title>{{ labels.Language }}</template>
+        <el-menu-item v-for="lang in languagesList" :key="lang.code" :class="getActiveClass(lang.code === language.code)" :index="lang.code" style="display: flex" @click="setLanguage(lang.code)">
+          <b style="margin-inline-end: 10px">{{ lang.dialect }}</b>
+          {{ lang.name }}
+          <el-icon v-if="lang.code === language.code">
+            <icon-check></icon-check>
+          </el-icon>
         </el-menu-item>
-        <el-menu-item index="1-1-1" @click="uploadXML">
-          {{ labels.UploadScheme }}
-        </el-menu-item>
-        <el-menu-item v-if="uploadBpmnEnabled" index="1-1-2" @click="uploadBPMN">
-          {{ labels.UploadBPMN }}
-        </el-menu-item>
-        <el-menu-item index="1-1-3" @click="downloadXML">
-          {{ labels.DownloadScheme }}
-        </el-menu-item>
-        <el-menu-item index="1-1-4" @click="showToImageDialog(true)">
-          {{ labels.SaveToImage }}
-        </el-menu-item>
-        <el-divider></el-divider>
-        <el-menu-item index="1-2-1" @click="refresh">{{ labels.Refresh }}</el-menu-item>
-        <el-menu-item index="1-2-2" @click="reset">{{ labels.ResetSettings }}</el-menu-item>
-        <el-menu-item index="1-2-4" @click="autoArrangement">{{ labels.AutoArrangement }}</el-menu-item>
-        <el-menu-item index="1-2-5" @click="showExInfo">
-          {{ labels.Info }}
-          <i v-if="exinfo" class="el-icon-check"></i>
-        </el-menu-item>
-        <el-menu-item index="1-2-6" @click="showLegend">
-          {{ labels.Legend }}
-          <i v-if="legend" class="el-icon-check"></i>
-        </el-menu-item>
-        <el-menu-item index="1-4" @click="showInstanceInfo">{{ labels.InstanceInfo }}</el-menu-item>
-        <el-submenu index="1-3">
-          <template slot="title">{{ labels.Language }}</template>
-          <el-menu-item v-for="lang in languagesList" :key="lang.code" style="display: flex" @click="setLanguage(lang.code)">
-            <b style="margin-inline-end: 10px">{{ lang.dialect }}</b>
-            {{ lang.name }}
-            <i v-if="lang.code === language.code" class="el-icon-check"></i>
-          </el-menu-item>
-        </el-submenu>
-        <el-menu-item index="1-5" @click="showAbout">{{ labels.About }}</el-menu-item>
-        <el-divider></el-divider>
-        <el-menu-item index="1-2-7" @click="clear">{{ labels.Clear }}</el-menu-item>
-      </el-submenu>
-    </el-menu>
-  </div>
+      </el-sub-menu>
+      <el-menu-item index="1-5" @click="showAbout">{{ labels.About }}</el-menu-item>
+      <el-divider></el-divider>
+      <el-menu-item index="1-2-7" @click="clear">{{ labels.Clear }}</el-menu-item>
+    </el-sub-menu>
+  </el-menu>
+</div>
 
-  <div v-if="!settings.hideElementsToolbar && !settings.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
-    <el-tooltip :content="labels.Save" v-if="settings.showSaveButton">
-      <el-button :class="getButtonClass()" @click="save()">
-        <div class="WorkflowDesignerToolbarIcon Save RTLIcon"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Undo">
-      <el-button :class="getButtonClass()" :disabled="undoDisabled" @click="undo()">
-        <div class="WorkflowDesignerToolbarIcon Undo RTLIcon"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Redo">
-      <el-button :class="getButtonClass()" :disabled="redoDisabled" @click="redo()">
-        <div class="WorkflowDesignerToolbarIcon Redo RTLIcon"></div>
-      </el-button>
-    </el-tooltip>
+<div v-if="!settings?.hideElementsToolbar && !settings?.readonly" class="WorkflowDesignerToolbarBlock Horizontal">
+  <el-tooltip :content="labels.Save" v-if="settings?.showSaveButton">
+    <el-button :class="getButtonClass()" @click="save()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon RTLIcon" v-html="icons.save"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Undo">
+    <el-button :class="getButtonClass()" :disabled="undoDisabled" @click="undo()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon RTLIcon" v-html="icons.undo"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Redo">
+    <el-button :class="getButtonClass()" :disabled="redoDisabled" @click="redo()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon RTLIcon" v-html="icons.redo"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip :content="labels.Elements">
-      <el-button :class="getButtonClass(elements)" @click="showElements()">
-        <div class="WorkflowDesignerToolbarIcon"><i class="el-icon-circle-plus" style="color: #28ae60;"></i></div>
-      </el-button>
-    </el-tooltip>
+  <el-tooltip :content="labels.Elements">
+    <el-button :class="getButtonClass(elements)" @click="showElements()">
+      <div class="WorkflowDesignerToolbarIcon">
+        <icon-circle-plus-filled style="color: #28ae60;"></icon-circle-plus-filled>
+      </div>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip :content="labels.CopySelected">
-      <el-button :class="getButtonClass()" :disabled="!selected" @click="copySelected()">
-        <div class="WorkflowDesignerToolbarIcon CopySelected RTLIcon"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Delete">
-      <el-button :class="getButtonClass()" :disabled="!selected" @click="deleteSelected()">
-        <div class="WorkflowDesignerToolbarIcon"><i class="el-icon-delete" style="font-weight: bolder"></i></div>
-      </el-button>
-    </el-tooltip>
-  </div>
+  <el-tooltip :content="labels.CopySelected">
+    <el-button :class="getButtonClass()" :disabled="!selected" @click="copySelected()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon RTLIcon" v-html="icons.clone"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Delete">
+    <el-button :class="getButtonClass()" :disabled="!selected" @click="deleteSelected()">
+      <div class="WorkflowDesignerToolbarIcon">
+        <icon-delete style="font-weight: bolder"></icon-delete>
+      </div>
+    </el-button>
+  </el-tooltip>
+</div>
 
-  <div v-if="!settings.hideElementsToolbar && !settings.notshowwindows"
-       class="WorkflowDesignerToolbarBlock Horizontal">
-    <el-tooltip :content="labels.Actors">
-      <el-button :class="getButtonClass(actors)" @click="showActors()">
-        <div class="WorkflowDesignerToolbarIcon Actors"></div>
-      </el-button>
-    </el-tooltip>
+<div v-if="!settings?.hideElementsToolbar && !settings?.notshowwindows"
+     class="WorkflowDesignerToolbarBlock Horizontal">
+  <el-tooltip :content="labels.Actors">
+    <el-button :class="getButtonClass(actors)" @click="showActors()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.actors"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip :content="labels.Commands">
-      <el-button :class="getButtonClass(commands)" @click="showCommands()">
-        <div class="WorkflowDesignerToolbarIcon Commands"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Timers">
-      <el-button :class="getButtonClass(timers)" @click="showTimers()">
-        <div class="WorkflowDesignerToolbarIcon Timers"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip v-if="settings.disableCodeActions !== true" :content="labels.CodeActions">
-      <el-button :class="getButtonClass(codeactions)" @click="showCodeActions()">
-        <div class="WorkflowDesignerToolbarIcon CodeActions"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Parameters ">
-      <el-button :class="getButtonClass(parameters)" @click="showParameters()">
-        <div class="WorkflowDesignerToolbarIcon Parameters"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip :content="labels.Localization ">
-      <el-button :class="getButtonClass(localization)" @click="showLocalization()">
-        <div class="WorkflowDesignerToolbarIcon Localization RTLIcon"></div>
-      </el-button>
-    </el-tooltip>
+  <el-tooltip :content="labels.Commands">
+    <el-button :class="getButtonClass(commands)" @click="showCommands()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.commands"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Timers">
+    <el-button :class="getButtonClass(timers)" @click="showTimers()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.timers"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip v-if="settings?.disableCodeActions !== true" :content="labels.CodeActions">
+    <el-button :class="getButtonClass(codeactions)" @click="showCodeActions()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.codeactions"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Parameters ">
+    <el-button :class="getButtonClass(parameters)" @click="showParameters()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.parameters"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+  <el-tooltip :content="labels.Localization ">
+    <el-button :class="getButtonClass(localization)" @click="showLocalization()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon RTLIcon" v-html="icons.localization"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip v-if="settings.readonly && hasAssignments" :content="labels.Assignments">
-      <el-button :class="getButtonClass(assignments)" @click="showAssignments()">
-        <div class="WorkflowDesignerToolbarIcon Assignments"></div>
-      </el-button>
-    </el-tooltip>
+  <el-tooltip v-if="settings?.readonly && hasAssignments" :content="labels.Assignments">
+    <el-button :class="getButtonClass(assignments)" @click="showAssignments()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.assignments"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip :content="labels.ProcessInfo">
-      <el-button :class="getButtonClass(processinfo)" @click="showProcessInfo()">
-        <div class="WorkflowDesignerToolbarIcon ProcessInfo"></div>
-      </el-button>
-    </el-tooltip>
+  <el-tooltip :content="labels.ProcessInfo">
+    <el-button :class="getButtonClass(processinfo)" @click="showProcessInfo()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="icons.processinfo"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip v-if="!settings.readonly" :content="labels.Inline">
-      <el-button :class="getButtonClass()" @click="inlinePress()">
-        <div :class="'WorkflowDesignerToolbarIcon ' + (canBeInlined ? 'Inline' : 'NotInline')"></div>
-      </el-button>
-    </el-tooltip>
+  <el-tooltip v-if="!settings?.readonly" :content="labels.Inline">
+    <el-button :class="getButtonClass()" @click="inlinePress()">
+      <el-icon>
+        <div class="WorkflowDesignerToolbarIcon" v-html="canBeInlined ? icons.inline : icons.notinline"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
 
-    <el-tooltip v-if="settings.readonly" :content="labels.Label">
-      <el-button :class="getButtonClass(logs)" @click="showLogs()">
-        <div :class="'WorkflowDesignerToolbarIcon ' + (LogEnabled ? 'LogsEnabled' : 'Logs')"></div>
-      </el-button>
-    </el-tooltip>
-    <el-tooltip v-if="!settings.readonly" :content="labels.Label">
+  <el-tooltip v-if="settings.readonly" :content="labels.Label">
+    <el-button :class="getButtonClass(logs)" @click="showLogs()">
+      <el-icon>
+        <div :class="'WorkflowDesignerToolbarIcon' + (LogEnabled ? 'enabled' : '')" v-html="icons.logs"></div>
+      </el-icon>
+    </el-button>
+  </el-tooltip>
+
+  <el-tooltip v-if="!settings?.readonly" :content="labels.Label">
+    <div>
       <el-popover placement="bottom" trigger="click" width="310">
         <div class="el-popover__title">
           {{ labels.Label }}
           <el-switch v-model="LogEnabled" @change="changeLogEnabled"></el-switch>
         </div>
         <div>{{ labels.Description }}</div>
-
-        <el-button slot="reference" :class="getButtonClass(logs)">
-          <div :class="'WorkflowDesignerToolbarIcon ' + (LogEnabled ? 'LogsEnabled' : 'Logs')"></div>
-        </el-button>
+        <template #reference>
+          <el-button :class="getButtonClass(logs)" text :type="LogEnabled ? 'primary' : 'default'">
+            <el-icon>
+              <div class="WorkflowDesignerToolbarIconLogs" v-html="icons.logs"></div>
+            </el-icon>
+          </el-button>
+        </template>
       </el-popover>
-    </el-tooltip>
-  </div>
+    </div>
+  </el-tooltip>
 
-  <form id="wfeDesignerToolbarUploadForm" enctype="multipart/form-data" method="post">
-    <input id="wfeDesignerToolbarUploadInput" name="wfeDesignerToolbarUploadInput" style="display:none" type="file" @change="uploadChange($event)"></input>
-  </form>
+</div>
 
-  <el-dialog
-    :before-close="() => showToImageDialog(false)"
-    :modal-append-to-body="false"
-    :title="labels.SaveToImage"
-    :visible="toImageDialogVisible"
-    width="30%">
-    <label>{{labels.ImageQuality}}</label>
-    <el-slider label="Quality" v-model="imageAspectRatio" :max="10" :min="1" @input="(value) => {imageAspectRatio = value}"></el-slider>
-    <el-checkbox v-model="showGrid" >{{labels.ShowGrid}}</el-checkbox>
-    <span slot="footer" class="dialog-footer">
-        <template>
-            <el-button @click="toImage" type="primary" >{{ labels.ButtonTextYes }}</el-button>
-            <el-button @click="showToImageDialog(false)">{{ labels.ButtonTextCancel }}</el-button>
-        </template>
-    </span>
-  </el-dialog>
+<form id="wfeDesignerToolbarUploadForm" enctype="multipart/form-data" method="post">
+  <input id="wfeDesignerToolbarUploadInput" name="wfeDesignerToolbarUploadInput" style="display:none" type="file"
+         @change="uploadChange($event)"></input>
+</form>
 
-  <el-dialog
-    :before-close="() => showAboutDialog = false"
-    :modal-append-to-body="false"
-    :title="labels.About"
-    :visible="showAboutDialog"
-    width="30%">
-    <div style="user-select: text">{{ aboutDialogDesignerVersionText }}</div>
-    <div style="user-select: text">{{ aboutDialogBackendVersionText }}</div>
-    <span slot="footer" class="dialog-footer">
-            <el-button @click="showAboutDialog = false">{{ labels.ButtonTextOk }}</el-button>
-    </span>
-  </el-dialog>
+<el-dialog
+  :modal-append-to-body="false"
+  :title="labels.SaveToImage"
+  v-model="toImageDialogVisible"
+  width="30%">
+  <label>{{ labels.ImageQuality }}</label>
+  <el-slider label="Quality" v-model="imageAspectRatio" :max="10" :min="1" @input="(value) => {imageAspectRatio = value}"></el-slider>
+  <el-checkbox v-model="showGrid">{{ labels.ShowGrid }}</el-checkbox>
+  <template #footer>
+    <footer>
+      <el-button @click="toImage" type="primary">{{ labels.ButtonTextYes }}</el-button>
+      <el-button @click="showToImageDialog(false)">{{ labels.ButtonTextCancel }}</el-button>
+    </footer>
+  </template>
+</el-dialog>
 
-  <el-dialog
-    :before-close="() => showSaveAsDialog(false)"
-    :title="labels.SaveAs"
-    :visible="renameDialogVisible"
-    width="30%"
-    append-to-body>
-    <el-form ref="form"
-             label-position="top"
-             :model="FormData"
-             onSubmit="return false"
-             class="WFEForm">
-      <el-form-item :label="labels.Name" :rules="requiredRule()"
-                    class="el-form-item" prop="SchemeName" style="flex-grow: 1;">
-        <el-input v-model="FormData.SchemeName" :placeholder="labels.Name"></el-input>
-      </el-form-item>
-    </el-form>
-    <span slot="footer" class="dialog-footer">
-        <template>
-            <el-button @click="saveRenamedScheme" type="primary">{{ labels.ButtonTextYes }}</el-button>
-            <el-button @click="showSaveAsDialog(false)">{{ labels.ButtonTextCancel }}</el-button>
-        </template>
-    </span>
-  </el-dialog>
+<el-dialog
+  :modal-append-to-body="false"
+  :title="labels.About"
+  v-model="showAboutDialog"
+  width="30%">
+  <div style="user-select: text">{{ aboutDialogDesignerVersionText }}</div>
+  <div style="user-select: text">{{ aboutDialogBackendVersionText }}</div>
+  <template #footer>
+    <footer>
+      <el-button @click="showAboutDialog = false">{{ labels.ButtonTextOk }}</el-button>
+    </footer>
+  </template>
+</el-dialog>
+
+<el-dialog
+  :title="labels.SaveAs"
+  v-model="renameDialogVisible"
+  width="30%"
+  append-to-body>
+  <el-form ref="form"
+           label-position="top"
+           :model="FormData"
+           onSubmit="return false"
+           class="WFEForm">
+    <el-form-item :label="labels.Name" :rules="requiredRule()"
+                  class="el-form-item" prop="SchemeName" style="flex-grow: 1;">
+      <el-input v-model="FormData.SchemeName" :placeholder="labels.Name"></el-input>
+    </el-form-item>
+  </el-form>
+  <template #footer>
+      <span class="dialog-footer">
+        <el-button @click="saveRenamedScheme" type="primary">{{ labels.ButtonTextYes }}</el-button>
+        <el-button @click="showSaveAsDialog(false)">{{ labels.ButtonTextCancel }}</el-button>
+      </span>
+  </template>
+</el-dialog>
 </div>
 
 <script type="application/javascript">
-  function toolbar_Init(me) {
-    const {data, methods} = me.VueConfig;
-    data.icons = WorkflowDesignerConstants.icons
-    me.VueConfig.methods.UpdateLanguage = function () {
-      data.labels = {
-        ...WorkflowDesignerConstants.ToolbarLabel,
-        ...WorkflowDesignerConstants.Logs,
-        ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
-        Name: WorkflowDesignerConstants.Name,
-        ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        DesignerVersion: WorkflowDesignerConstants.DesignerVersion,
-        BackendVersion: WorkflowDesignerConstants.BackendVersion,
-        ClipboardAccessDenied: WorkflowDesignerConstants.ClipboardAccessDenied
-      };
+function toolbar_Data(me) {
+  return {
+    icons: WorkflowDesignerConstants.icons,
+    toImageDialogVisible: false,
+    renameDialogVisible: false,
+    imageAspectRatio: 1,
+    FormData: {
+      SchemeName: '',
+    },
+    exinfo: false,
+    showGrid: false,
+    legend: false,
+    logs: false,
+    settings: { // || null
+      hideElementsToolbar: false,
+      readonly: false,
+      notshowwindows: false,
+      showSaveButton: false,
+      disableCodeActions: false
+    },
+    hasAssignments: false,
+    canBeInlined: false,
+    // LogEnabled: true,
+    LogEnabled: false,
+    language: {
+      code: ''
+    },
+    /*Array<{
+      code: string,
+      dialect: string,
+      name: string
+    }>*/
+    languagesList: [],
+    aboutDialogDesignerVersionText: '',
+    aboutDialogBackendVersionText: '',
+    uploadBpmnEnabled: false,
+    showAboutDialog: false,
+
+    schemeCode: null, // string
+    undoDisabled: false,
+    redoDisabled: false,
+    selected: false,        // If element is selected
+    elements: false,        // Window visibility states
+    actors: false,
+    commands: false,
+    timers: false,
+    codeactions: false,
+    parameters: false,
+    localization: false,
+    assignments: false,
+    processinfo: false
+  }
+}
+
+function toolbar_Init(me) {
+  const {VueConfig, graph} = me;
+  const {state: data, methods} = VueConfig;
+  const {designer} = graph;
+  const isProcess = !!designer.processid;
+
+  methods.UpdateLanguage = function () {
+    data.labels = {
+      ...WorkflowDesignerConstants.ToolbarLabel,
+      ...WorkflowDesignerConstants.Logs,
+      ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
+      Name: WorkflowDesignerConstants.Name,
+      ButtonTextYes: WorkflowDesignerConstants.ButtonTextYes,
+      ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      DesignerVersion: WorkflowDesignerConstants.DesignerVersion,
+      BackendVersion: WorkflowDesignerConstants.BackendVersion,
+      ClipboardAccessDenied: WorkflowDesignerConstants.ClipboardAccessDenied
+    };
+  }
+  methods.UpdateLanguage();
+
+  methods.changeLogEnabled = isProcess
+    ? designer.changelogenabled : me.graph.setLogEnabled;
+
+  const updateSchemeName = () => {
+    data.schemeCode = designer.schemecode;
+    data.FormData.SchemeName = data.schemeCode;
+  }
+
+  methods.onUpdateLogsStatus = function () {
+    data.LogEnabled = isProcess ? designer.LogEnabled : me.graph.data.LogEnabled;
+  }
+
+  methods.onUpdate = function () {
+    updateSchemeName();
+    data.settings = me.graph.Settings;
+    data.undoDisabled = me.graph.graphDataIndex <= 0;
+    data.redoDisabled = me.graph.graphData && me.graph.graphData.length <= (me.graph.graphDataIndex + 1);
+    data.selected = me.graph.selected;
+    data.exinfo = me.graph.getParam('exinfo');
+    data.legend = me.graph.getParam('legend');
+    data.canBeInlined = me.graph.data.CanBeInlined;
+    data.LogEnabled = isProcess ? designer.LogEnabled : me.graph.data.LogEnabled;
+
+    data.language = designer.getLanguage();
+    data.languagesList = Object.values(designer.localizationControl.localization).map(({LangInfo}) => LangInfo);
+
+    var plugins = me.graph.getPluginsNames();
+    data.uploadBpmnEnabled = plugins?.includes('BpmnPlugin');
+
+    for (var i = 0; i < plugins?.length; i++) {
+      if (plugins[i] === 'AssignmentPlugin') {
+        data.hasAssignments = true;
+        break;
+      }
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    const designer = me.graph.designer;
-    const isProcess = !!designer.processid;
-    data.toImageDialogVisible = false;
-    data.renameDialogVisible = false;
-    data.imageAspectRatio = 1;
-    data.FormData = {}
-    data.showGrid = false;
-    data.legend = false;
-    data.logs = false;
-    data.settings = null;
-    data.hasAssignments = false;
-    data.canBeInlined = false;
-    data.LogEnabled = false;
-    data.language = {};
-    data.languagesList = [];
-    data.aboutDialogDesignerVersionText = '';
-    data.aboutDialogBackendVersionText = '';
-    data.showAboutDialog = false;
-    me.VueConfig.methods.changeLogEnabled = isProcess
-      ? designer.changelogenabled : me.graph.setLogEnabled;
+    var windowsNames = [
+      {name: 'logs', show: methods.showLogs, editmode: true},
+      {name: 'legend', show: methods.showLegend, editmode: true},
+      {name: 'library', show: methods.showLibrary, editmode: true},
+      {name: 'elements', show: methods.showElements, editmode: true, openifnotclosed: true},
+      {name: 'actors', show: methods.showActors, editmode: false},
+      {name: 'timers', show: methods.showTimers, editmode: false},
+      {name: 'commands', show: methods.showCommands, editmode: false},
+      {name: 'parameters', show: methods.showParameters, editmode: false},
+      {name: 'codeactions', show: methods.showCodeActions, editmode: false},
+      {name: 'localization', show: methods.showLocalization, editmode: false},
+      {name: 'processinfo', show: methods.showProcessInfo, editmode: false}];
 
-    const updateSchemeName = () => {
-      data.schemeCode = designer.schemecode;
-      data.FormData.SchemeName = data.schemeCode;
+    if (data.hasAssignments) {
+      windowsNames.push({name: 'assignments', show: methods.showAssignments, editmode: false});
     }
 
-    me.VueConfig.methods.onUpdate = function () {
-      updateSchemeName();
-      data.settings = me.graph.Settings;
-      data.undoDisabled = me.graph.graphDataIndex <= 0;
-      data.redoDisabled = me.graph.graphData && me.graph.graphData.length <= (me.graph.graphDataIndex + 1);
-      data.selected = me.graph.selected;
-      data.exinfo = me.graph.getParam('exinfo');
-      data.canBeInlined = me.graph.data.CanBeInlined;
-      data.LogEnabled = isProcess ? designer.LogEnabled : me.graph.data.LogEnabled;
+    var restoreWindowState = function (obj) {
+      if (obj.editmode && data?.settings?.readonly)
+        return;
 
-      data.language = designer.getLanguage();
-      data.languagesList = Object.values(designer.localizationControl.localization).map(({LangInfo}) => LangInfo);
-
-      var plugins = me.graph.getPluginsNames();
-      data.uploadBpmnEnabled = plugins?.includes('BpmnPlugin');
-
-      for (var i = 0; i < plugins?.length; i++) {
-        if (plugins[i] == 'AssignmentPlugin') {
-          data.hasAssignments = true;
-          break;
-        }
+      data[obj.name] = me.graph.getParam(obj.name);
+      if ((data[obj.name] || (typeof data[obj.name] === 'undefined' && obj.openifnotclosed))
+        && typeof me[obj.name] === 'undefined') {
+        obj.show();
       }
-
-      var windowsNames = [
-        {name: 'logs', show: me.VueConfig.methods.showLogs, editmode: true},
-        {name: 'legend', show: me.VueConfig.methods.showLegend, editmode: true},
-        {name: 'library', show: me.VueConfig.methods.showLibrary, editmode: true},
-        {name: 'elements', show: me.VueConfig.methods.showElements, editmode: true, openifnotclosed: true},
-        {name: 'actors', show: me.VueConfig.methods.showActors, editmode: false},
-        {name: 'timers', show: me.VueConfig.methods.showTimers, editmode: false},
-        {name: 'commands', show: me.VueConfig.methods.showCommands, editmode: false},
-        {name: 'parameters', show: me.VueConfig.methods.showParameters, editmode: false},
-        {name: 'codeactions', show: me.VueConfig.methods.showCodeActions, editmode: false},
-        {name: 'localization', show: me.VueConfig.methods.showLocalization, editmode: false},
-        {name: 'processinfo', show: me.VueConfig.methods.showProcessInfo, editmode: false}];
-
-      if (data.hasAssignments) {
-        windowsNames.push({name: 'assignments', show: me.VueConfig.methods.showAssignments, editmode: false});
-      }
-
-      var restoreWindowState = function (obj) {
-        if (obj.editmode && data.settings.readonly)
-          return;
-
-        data[obj.name] = me.graph.getParam(obj.name);
-        if ((data[obj.name] || (data[obj.name] == undefined && obj.openifnotclosed))
-          && me[obj.name] == undefined) {
-          obj.show();
-        }
-      }
-
-      if (!data.settings.hideElementsToolbar) {
-        windowsNames.forEach(function (w) {
-          restoreWindowState(w);
-        });
-      }
-    };
-
-    me.VueConfig.methods.getButtonClass = function (isActive) {
-      var res = 'WorkflowDesignerToolbarIconContainer'
-      if (isActive) {
-        res += ' ' + 'WorkflowDesignerToolbarButtonActive';
-      }
-      return res;
-    };
-
-    me.VueConfig.methods.reset = function () {
-      designer.resetLocalStorage();
-      location.reload();
-    };
-
-    me.VueConfig.methods.showToImageDialog = function (visible) {
-      data.toImageDialogVisible = visible;
-    };
-
-    me.VueConfig.methods.showSaveAsDialog = function (visible) {
-      if (visible) updateSchemeName();
-      data.renameDialogVisible = visible;
-    };
-
-    me.VueConfig.methods.toImage = function () {
-      me.graph.toImage(data.imageAspectRatio, data.showGrid);
-      me.VueConfig.methods.showToImageDialog(false);
-    };
-
-    const isSchemeExists = (schemecode, onExists, onNotExists) => {
-      const {processid, schemeid} = designer;
-      const onSuccess = response => {
-        if (response?.data) {
-          onExists();
-          return;
-        }
-        onNotExists();
-      }
-      designer.exists({schemecode, processid, schemeid}, onSuccess);
     }
 
-    me.VueConfig.methods.saveRenamedScheme = function () {
-      const newName = data.FormData.SchemeName;
-      const save = () => {
-        const {notify} = me.VueConfig.methods;
-        me.graph.designer?.save(() => {
-          notify(WorkflowDesignerConstants.SchemeSaved);
-          data.schemeCode = designer.schemecode = newName;
-          data.renameDialogVisible = false;
-        }, undefined, newName);
-      }
-      const confirmToReplace = () => me.VueConfig.methods.showConfirm({
-        message: WorkflowDesignerConstants.ReplaceSchemeConfirm,
-        onSuccess: save
+    if (!data?.settings?.hideElementsToolbar) {
+      windowsNames.forEach(function (w) {
+        restoreWindowState(w);
       });
-      if (this.$refs && WorkflowDesignerCommon.validateForms(this.$refs)) {
+    }
+  };
+
+  methods.getButtonClass = function (isActive) {
+    var res = 'WorkflowDesignerToolbarIconContainer'
+    if (isActive) {
+      res += ' ' + 'WorkflowDesignerToolbarButtonActive';
+    }
+    return res;
+  };
+
+  methods.getActiveClass = function (isActive) {
+    return isActive ? 'WorkflowDesignerMenuItemActive' : undefined;
+  };
+
+  methods.reset = function () {
+    designer.resetLocalStorage();
+    location.reload();
+  };
+
+  methods.showToImageDialog = function (visible) {
+    data.toImageDialogVisible = visible;
+  };
+
+  methods.showSaveAsDialog = function (visible) {
+    if (visible) updateSchemeName();
+    data.renameDialogVisible = visible;
+  };
+
+  methods.toImage = function () {
+    me.graph.toImage(data.imageAspectRatio, data.showGrid);
+    methods.showToImageDialog(false);
+  };
+
+  const isSchemeExists = (schemecode, onExists, onNotExists) => {
+    const {processid, schemeid} = designer;
+    const onSuccess = response => {
+      if (response?.data) {
+        onExists();
+        return;
+      }
+      onNotExists();
+    }
+    designer.exists({schemecode, processid, schemeid}, onSuccess);
+  }
+
+  methods.saveRenamedScheme = function () {
+    const newName = data.FormData.SchemeName;
+    const save = () => {
+      designer?.save(() => {
+        methods.notify(WorkflowDesignerConstants.SchemeSaved);
+        data.schemeCode = designer.schemecode = newName;
+        data.renameDialogVisible = false;
+      }, undefined, newName);
+    }
+    const confirmToReplace = () => methods.showConfirm({
+      message: WorkflowDesignerConstants.ReplaceSchemeConfirm,
+      onSuccess: save
+    });
+    if (this.$refs) {
+      WorkflowDesignerCommon.validateForms(this.$refs).then(isValid => {
         if (newName !== data.schemeCode) {
           isSchemeExists(newName, confirmToReplace, save);
           return;
         }
         save();
-      }
-    };
-
-    me.VueConfig.methods.uploadXML = function () {
-      document.getElementById('wfeDesignerToolbarUploadInput').click();
-      me._uploadCallback = designer.uploadscheme;
-    };
-
-    me.VueConfig.methods.uploadBPMN = function () {
-      const uploader = document.getElementById('wfeDesignerToolbarUploadInput');
-      me._uploadCallback = form => {
-        methods.showPropertyWindow('uploadBpmn', undefined, form);
-      };
-      uploader.value = "";
-      uploader.click();
-    };
-
-    me.VueConfig.methods.uploadChange = function () {
-      const form = document.getElementById('wfeDesignerToolbarUploadForm');
-      me._uploadCallback(form);
+      }).catch(() => {}) // Validation failed
     }
+  };
 
-    me.VueConfig.methods.downloadXML = function () {
-      designer.downloadscheme();
+  methods.uploadXML = function () {
+    document.getElementById('wfeDesignerToolbarUploadInput').click();
+    me._uploadCallback = designer.uploadscheme;
+  };
+
+  methods.uploadBPMN = function () {
+    const uploader = document.getElementById('wfeDesignerToolbarUploadInput');
+    me._uploadCallback = form => {
+      methods.showPropertyWindow('uploadBpmn', undefined, form);
     };
+    uploader.value = '';
+    uploader.click();
+  };
 
-    me.VueConfig.methods.clear = function () {
-      designer.create(designer.schemecode);
-    };
+  methods.uploadChange = function () {
+    const form = document.getElementById('wfeDesignerToolbarUploadForm');
+    me._uploadCallback(form);
+  }
 
-    me.VueConfig.methods.save = function () {
-      const {notify} = me.VueConfig.methods;
-      const notSavedMessage = `
+  methods.downloadXML = function () {
+    designer.downloadscheme();
+  };
+
+  methods.clear = function () {
+    designer.create(designer.schemecode);
+  };
+
+  methods.save = function () {
+    // TODO unused const
+    const notSavedMessage = `
         ${WorkflowDesignerConstants.SchemeNotSaved}.
         ${WorkflowDesignerConstants.ErrorInBrowserConsole}
       `
-      me.graph.designer?.save(() => notify(WorkflowDesignerConstants.SchemeSaved));
-    };
+    designer?.save(() => methods.notify(WorkflowDesignerConstants.SchemeSaved));
+  };
 
-    me.VueConfig.methods.undo = function () {
-      me.graph.Undo();
-    };
+  methods.undo = function () {
+    me.graph.Undo();
+  };
 
-    me.VueConfig.methods.redo = function () {
-      me.graph.Redo();
-    };
+  methods.redo = function () {
+    me.graph.Redo();
+  };
 
-    me.VueConfig.methods.copySelected = function () {
-      me.graph.CopySelected();
-    };
+  methods.copySelected = function () {
+    me.graph.CopySelected();
+  };
 
-    me.VueConfig.methods.deleteSelected = function () {
-      me.graph.DeleteSelected();
-    };
+  methods.deleteSelected = function () {
+    me.graph.DeleteSelected();
+  };
 
-    me.VueConfig.methods.showActors = function () {
-      me.VueConfig.methods.showPropertyWindow('actors', 'WorkflowDesignerActors');
-    };
+  methods.showActors = function () {
+    methods.showPropertyWindow('actors', 'WorkflowDesignerActors');
+  };
 
-    me.VueConfig.methods.showTimers = function () {
-      me.VueConfig.methods.showPropertyWindow('timers', 'WorkflowDesignerTimers');
-    };
+  methods.showTimers = function () {
+    methods.showPropertyWindow('timers', 'WorkflowDesignerTimers');
+  };
 
-    me.VueConfig.methods.showCommands = function () {
-      me.VueConfig.methods.showPropertyWindow('commands', 'WorkflowDesignerCommands');
-    };
+  methods.showCommands = function () {
+    methods.showPropertyWindow('commands', 'WorkflowDesignerCommands');
+  };
 
-    me.VueConfig.methods.showCodeActions = function () {
-      me.VueConfig.methods.showPropertyWindow('codeactions', 'WorkflowDesignerCodeActions');
-    };
+  methods.showCodeActions = function () {
+    methods.showPropertyWindow('codeactions', 'WorkflowDesignerCodeActions');
+  };
 
-    me.VueConfig.methods.showParameters = function () {
-      me.VueConfig.methods.showPropertyWindow('parameters', 'WorkflowDesignerParameters');
-    };
-    me.VueConfig.methods.showAssignments = function () {
-      me.VueConfig.methods.showPropertyWindow('assignments', 'WorkflowDesignerParameters');
-    };
+  methods.showParameters = function () {
+    methods.showPropertyWindow('parameters', 'WorkflowDesignerParameters');
+  };
+  methods.showAssignments = function () {
+    methods.showPropertyWindow('assignments', 'WorkflowDesignerParameters');
+  };
 
-    me.VueConfig.methods.showLocalization = function () {
-      me.VueConfig.methods.showPropertyWindow('localization', 'WorkflowDesignerLocalization');
-    };
+  methods.showLocalization = function () {
+    methods.showPropertyWindow('localization', 'WorkflowDesignerLocalization');
+  };
 
-    me.VueConfig.methods.showProcessInfo = function () {
-      me.VueConfig.methods.showPropertyWindow('processinfo', 'WorkflowDesignerProcessInfo');
-    };
+  methods.showProcessInfo = function () {
+    methods.showPropertyWindow('processinfo', 'WorkflowDesignerProcessInfo');
+  };
 
-    me.VueConfig.methods.showLogs = function () {
-      me.VueConfig.methods.showPropertyWindow('logs', 'WorkflowDesignerLogs');
-    };
+  methods.showLogs = function () {
+    methods.showPropertyWindow('logs', 'WorkflowDesignerLogs');
+  };
 
-    me.VueConfig.methods.showLegend = function () {
-      me.VueConfig.methods.showPropertyWindow('legend', 'WorkflowDesignerLegend');
-    };
+  methods.showLegend = function () {
+    methods.showPropertyWindow('legend', 'WorkflowDesignerLegend');
+  };
 
-    me.VueConfig.methods.showElements = function () {
-      me.VueConfig.methods.showPropertyWindow('elements', 'WorkflowDesignerElements');
-    };
+  methods.showElements = function () {
+    methods.showPropertyWindow('elements', 'WorkflowDesignerElements');
+  };
 
-    me.VueConfig.methods.showLibrary = function () {
-      me.VueConfig.methods.showPropertyWindow('library', 'WorkflowDesignerLibrary');
-    };
+  methods.showLibrary = function () {
+    methods.showPropertyWindow('library', 'WorkflowDesignerLibrary');
+  };
 
-    me.VueConfig.methods.setLanguage = designer.setLanguage;
+  methods.setLanguage = designer.setLanguage;
 
-    me.VueConfig.methods.onFullScreenClick = function () {
-      me.graph.onFullScreenClick();
-    };
+  methods.onFullScreenClick = function () {
+    me.graph.onFullScreenClick();
+  };
 
-    me.VueConfig.methods.showPropertyWindow = function (name, className, value) {
-      if (!me[name]) {
-        var options = {
-          move: true,
-          resize: true,
-          savePosition: true,
-          class: className,
-          onClose: function () {
-            me.graph.setParam(name, false);
-            me.VueConfig.data[name] = false;
-          }
-        };
-        me[name] = me.graph.CreateWindow(name, options);
-      }
-
-      if (me[name].isOpen)
-        me[name].onClose();
-      else {
-        me[name].show(name, value);
-        me.graph.setParam(name, true);
-        me.VueConfig.data[name] = true;
-      }
-    };
-
-    me.VueConfig.methods.inlinePress = function () {
-      if (me.graph.data.CanBeInlined)
-        me.graph.setInlinedFlag(false);
-      else
-        me.graph.setInlinedFlag(true);
-    };
-
-    me.VueConfig.methods.refresh = function () {
-      me.graph.Refresh();
-    };
-
-    me.VueConfig.methods.autoArrangement = function () {
-      me.graph.AutoArrangement();
-    };
-
-    me.VueConfig.methods.showExInfo = function () {
-      var value = me.graph.getParam('exinfo');
-      value = !value;
-      me.graph.setParam('exinfo', value);
-      me.graph.Draw();
+  methods.showPropertyWindow = function (name, className, value) {
+    if (!me[name]) {
+      var options = {
+        move: true,
+        resize: true,
+        savePosition: true,
+        class: className,
+        onClose: function () {
+          me.graph.setParam(name, false);
+          data[name] = false;
+        }
+      };
+      me[name] = me.graph.CreateWindow(name, options);
     }
 
-    me.VueConfig.methods.showInstanceInfo = function () {
-      me.graph.designer?.getInstanceInfo(me.copyToClipboard);
+    if (me[name].isOpen)
+      me[name].onClose();
+    else {
+      me[name].show(name, value);
+      me.graph.setParam(name, true);
+      data[name] = true;
     }
+  };
 
-    me.VueConfig.methods.showAbout = function () {
-      const versionInfo = me.graph.designer?.getAbout();
-      this.aboutDialogDesignerVersionText = me.VueConfig.data.labels.DesignerVersion + ": " + versionInfo.designerVersion;
-      this.aboutDialogBackendVersionText = me.VueConfig.data.labels.BackendVersion + ": " + me.graph.designer.backendVersion;
-      this.showAboutDialog = true;
-    }
+  methods.inlinePress = function () {
+    if (me.graph.data.CanBeInlined)
+      me.graph.setInlinedFlag(false);
+    else
+      me.graph.setInlinedFlag(true);
+  };
+
+  methods.refresh = function () {
+    me.graph.Refresh();
+  };
+
+  methods.autoArrangement = function () {
+    me.graph.AutoArrangement();
+  };
+
+  methods.showExInfo = function () {
+    var value = me.graph.getParam('exinfo');
+    value = !value;
+    me.graph.setParam('exinfo', value);
+    me.graph.Draw();
   }
+
+  methods.showInstanceInfo = function () {
+    designer?.getInstanceInfo(me.copyToClipboard);
+  }
+
+  methods.showAbout = function () {
+    const versionInfo = designer?.getAbout();
+    this.aboutDialogDesignerVersionText = data.labels.DesignerVersion + ': ' + versionInfo.designerVersion;
+    this.aboutDialogBackendVersionText = data.labels.BackendVersion + ': ' + designer.backendVersion;
+    this.showAboutDialog = true;
+  }
+}
 </script>

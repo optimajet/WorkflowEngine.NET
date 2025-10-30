@@ -306,13 +306,19 @@ namespace OptimaJet.Workflow.SQLite
                 return obj;
             }
         }
+        
+        public async Task<TEntity[]> SelectAsync(SqliteConnection connection, string commandText, 
+            params SqliteParameter[] parameters)
+        {
+            return await SelectAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
 
-        public async Task<TEntity[]> SelectAsync(SqliteConnection connection, string commandText,
+        public async Task<TEntity[]> SelectAsync(SqliteConnection connection, string commandText,SqliteTransaction transaction,
             params SqliteParameter[] parameters)
         {
             try
             {
-                return await SelectInternalAsync(connection, commandText, parameters).ConfigureAwait(false);
+                return await SelectInternalAsync(connection, commandText,transaction, parameters).ConfigureAwait(false);
             }
             catch (Exception e)
             {
@@ -320,7 +326,7 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
-        private async Task<TEntity[]> SelectInternalAsync(SqliteConnection connection, string commandText,
+        private async Task<TEntity[]> SelectInternalAsync(SqliteConnection connection, string commandText, SqliteTransaction transaction,
             params SqliteParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
@@ -331,6 +337,10 @@ namespace OptimaJet.Workflow.SQLite
             using (var command = connection.CreateCommand())
             {
                 command.Connection = connection;
+                if (transaction != null)
+                {
+                    command.Transaction = transaction;
+                }
                 command.CommandTimeout = CommandTimeout;
                 command.CommandText = commandText;
                 command.CommandType = CommandType.Text;

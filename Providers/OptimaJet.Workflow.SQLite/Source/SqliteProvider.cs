@@ -30,6 +30,8 @@ namespace OptimaJet.Workflow.SQLite
         
         private PersistenceProviderOptions Options { get; }
 
+        public string ConnectionString => Options.ConnectionString;
+
         //Entity Providers (DbObject<TEntity>)
         public WorkflowProcessInstance WorkflowProcessInstance { get; }
         public WorkflowProcessInstanceStatus WorkflowProcessInstanceStatus { get; }
@@ -45,6 +47,7 @@ namespace OptimaJet.Workflow.SQLite
         public WorkflowScheme WorkflowScheme { get; }
         public WorkflowSync WorkflowSync { get; }
         public ProcessInstanceTree ProcessInstanceTree { get; }
+        public Models.WorkflowForm WorkflowForm { get; }
 
         public virtual void Init(WorkflowRuntime runtime)
         {
@@ -82,6 +85,7 @@ namespace OptimaJet.Workflow.SQLite
             WorkflowScheme = new WorkflowScheme(Options.SchemaName, Options.GlobalCommandTimeout);
             WorkflowSync = new WorkflowSync(Options.SchemaName, Options.GlobalCommandTimeout);
             ProcessInstanceTree = new ProcessInstanceTree(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowForm = new Models.WorkflowForm(Options.SchemaName, Options.GlobalCommandTimeout);
         }
 
         #region IPersistenceProvider
@@ -128,7 +132,9 @@ namespace OptimaJet.Workflow.SQLite
                 Description = form.Description,
                 Executor = form.Executor,
                 ProcessId = processId,
+#pragma warning disable CS0618 // Type or member is obsolete
                 StatusState = AssignmentPlugin.DefaultStatus,
+#pragma warning restore CS0618 // Type or member is obsolete
                 IsDeleted = false,
                 IsActive = form.IsActive,
                 DeadlineToComplete = form.DeadlineToComplete,
@@ -230,7 +236,9 @@ namespace OptimaJet.Workflow.SQLite
             {
                 ActivityName = pi.ActivityName,
                 Id = pi.Id,
+#pragma warning disable CS0618 // Type or member is obsolete
                 IsDeterminingParametersChanged = pi.IsDeterminingParametersChanged,
+#pragma warning restore CS0618 // Type or member is obsolete
                 PreviousActivity = pi.PreviousActivity,
                 PreviousActivityForDirect = pi.PreviousActivityForDirect,
                 PreviousActivityForReverse = pi.PreviousActivityForReverse,
@@ -368,7 +376,9 @@ namespace OptimaJet.Workflow.SQLite
 
             if (resetIsDeterminingParametersChanged)
             {
+#pragma warning disable CS0618 // Type or member is obsolete
                 oldProcess.IsDeterminingParametersChanged = false;
+#pragma warning restore CS0618 // Type or member is obsolete
             }
 
             await WorkflowProcessInstance.UpdateAsync(connection, oldProcess).ConfigureAwait(false);
@@ -1263,7 +1273,9 @@ namespace OptimaJet.Workflow.SQLite
 
             SchemeDefinition<XElement> schemeDefinition =
                 await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
+#pragma warning disable CS0618 // Type or member is obsolete
             schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
+#pragma warning restore CS0618 // Type or member is obsolete
             return schemeDefinition;
         }
 
@@ -1285,7 +1297,9 @@ namespace OptimaJet.Workflow.SQLite
             Guid? rootSchemeId, bool ignoreObsolete)
         {
             IEnumerable<ProcessSchemeEntity> processSchemes;
+#pragma warning disable CS0618 // Type or member is obsolete
             string hash = HashHelper.GenerateStringHash(definingParameters);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             using var connection = new SqliteConnection(Options.ConnectionString);
             {
@@ -1320,8 +1334,10 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             string definingParameters = DefiningParametersSerializer.Serialize(parameters);
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, definingParametersHash).ConfigureAwait(false);
@@ -1335,8 +1351,10 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task<SchemeDefinition<XElement>> SaveSchemeAsync(SchemeDefinition<XElement> scheme)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             using var connection = new SqliteConnection(Options.ConnectionString);
             var oldSchemes = await WorkflowProcessScheme.SelectAsync(connection,
@@ -1377,8 +1395,10 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task UpsertSchemeAsync(SchemeDefinition<XElement> scheme)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             string definingParameters = scheme.DefiningParameters;
             string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
+#pragma warning restore CS0618 // Type or member is obsolete
 
             var newProcessScheme = new ProcessSchemeEntity
             {
@@ -1524,12 +1544,14 @@ namespace OptimaJet.Workflow.SQLite
 
         private SchemeDefinition<XElement> ConvertToSchemeDefinition(ProcessSchemeEntity workflowProcessScheme)
         {
+#pragma warning disable CS0618 // Type or member is obsolete
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
                 XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
                 JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
                 workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
+#pragma warning restore CS0618 // Type or member is obsolete
         }
 
         private async Task<Tuple<int, WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime,
@@ -1710,5 +1732,80 @@ namespace OptimaJet.Workflow.SQLite
         }
 
         #endregion IApprovalProvider
+        
+        #region IFormDataProvider
+
+        public async Task<WorkflowForm> GetFormAsync(string name, int? version = null)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            WorkflowFormEntity entity = await WorkflowForm.GetFormAsync(connection, name, version).ConfigureAwait(false);
+            return entity?.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<string>> GetFormNamesAsync()
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            return await WorkflowForm.GetFormNamesAsync(connection).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<int>> GetFormVersionsAsync(string name)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            return await WorkflowForm.GetFormVersionsAsync(connection, name).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<WorkflowForm> CreateNewFormVersionAsync(string name, string defaultDefinition, int? version = null)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            var entity = await WorkflowForm.CreateNewFormVersionAsync(connection, _runtime.RuntimeDateTimeNow, name, defaultDefinition,
+                version).ConfigureAwait(false);
+
+            return entity is null ? throw new Exception("The form with the specified name and version was not found.") : entity.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<WorkflowForm> CreateNewFormIfNotExistsAsync(string name, string defaultDefinition)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            WorkflowFormEntity entity = await WorkflowForm
+                .CreateNewFormIfNotExistsAsync(connection, _runtime.RuntimeDateTimeNow, name, defaultDefinition).ConfigureAwait(false);
+            return entity is null ? throw new Exception("Unable to create new form.") : entity.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<int> UpdateFormAsync(string name, int version, int lockValue, string definition)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            int newLock = lockValue == int.MaxValue ? 0 : lockValue + 1;
+            int result = await WorkflowForm.UpdateFormAsync(connection, name, version, lockValue, newLock, definition,
+                _runtime.RuntimeDateTimeNow).ConfigureAwait(false);
+
+            if (result != 1)
+            {
+                throw new Exception(
+                    $"The form '{name}' with version '{version}' was either updated earlier or does not exist. Unable to update the form.");
+            }
+
+            return newLock;
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteFormVersionAsync(string name, int version)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            await WorkflowForm.DeleteFormVersionAsync(connection, name, version).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteFormAsync(string name)
+        {
+            using var connection = new SqliteConnection(Options.ConnectionString);
+            await WorkflowForm.DeleteFormAsync(connection, name).ConfigureAwait(false);
+        }
+        
+        #endregion
     }
 }

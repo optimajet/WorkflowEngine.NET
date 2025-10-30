@@ -115,5 +115,7 @@
     <EmbeddedResource Include="Scripts\Insert_WorkflowSync.sql" />
     <None Remove="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
     <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowForms.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowForms.sql" />
   </ItemGroup>
 </Project>

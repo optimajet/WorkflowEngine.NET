@@ -6,31 +6,37 @@
 </div>
 
 <script type="application/javascript">
+  function activitygroup_Data(me) {
+    return {
+      designer_container: me.id + '_designer',
+    }
+  }
+
   function activitygroup_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data,{
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data,{
         labels: WorkflowDesignerConstants.EditExpressionLabel,
         ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
         title: me.options.title
       })
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      designer_container: me.id + '_designer',
-    });
+    methods.UpdateLanguage();
 
-    me.VueConfig.methods.onUpdate = function (value) {
+    methods.onUpdate = function (value) {
       setTimeout(function () {
-        me.VueConfig.methods.renderDesigner(value);
+        methods.renderDesigner(value);
       }, 1);
     };
 
-    me.VueConfig.methods.renderDesigner = function (value) {
+    methods.renderDesigner = function (value) {
       if (me.designer != undefined)
         me.designer.destroy();
 
-      var containerName = me.VueConfig.data.designer_container;
+      var containerName = data.designer_container;
       var container = $('#' + containerName);
 
       me.designer = new WorkflowDesigner({
@@ -51,19 +57,19 @@
       me.designer.render();
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
 
-    me.VueConfig.methods.onHideEvent = function () {
+    methods.onHideEvent = function () {
       if (me.designer) {
         me.designer.destroy();
         delete me.designer;
       }
     }
 
-    me.VueConfig.methods.resize = function () {
-      var containerName = me.VueConfig.data.designer_container;
+    methods.resize = function () {
+      var containerName = data.designer_container;
       var container = $('#' + containerName);
       if (me.designer && container.length > 0) {
         me.designer.resize(container.width(), container.height());

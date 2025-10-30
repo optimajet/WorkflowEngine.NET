@@ -1,10 +1,9 @@
-<el-form class="mx-auto" class="WorkflowDesignerWindowForm" style="height: calc(100% - 10px);" @drop="drop($event)">
-  <el-tabs v-model="activeTab" id="ElementsTabs" style="height: 100%; display: flex; flex-direction: column"
-           :class="hasBpmn && 'wf-elements-tabs with-bpmn'">
-    <el-input clearable v-model="search" prefix-icon="el-icon-search" size="medium"
+<el-form class="WorkflowDesignerWindowForm" style="height: calc(100% - 10px);" @drop="drop($event)">
+  <el-tabs v-model="activeTab" id="ElementsTabs" :class="hasBpmn && 'wf-elements-tabs with-bpmn'" style="height: 100%; display: flex; flex-direction: column-reverse">
+    <el-input clearable v-model="search" prefix-icon="IconSearch" size="default"
               style="margin-bottom: 15px"></el-input>
     <el-tab-pane :label="labels.Activities" name="activities">
-      <div v-for="(item, index) in getFiltered()" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
+      <div v-for="(item, index) in getFiltered()" :key="index" :draggable="true" style="cursor:grab; overflow-y: auto;
         flex: 1;" @dblclick="createActivity(item)"
            @dragend="dragend($event)" @dragstart="dragstart(item, $event, 'activity')" @drop="drop($event)">
         <el-card body-style="padding:15px">
@@ -21,7 +20,7 @@
       </div>
     </el-tab-pane>
     <el-tab-pane v-if="hasBpmn" :label="labels.BPMN" name="bpmnActivities">
-      <div v-for="(item, index) in getFiltered()" :key="index" draggable="true" style="cursor:grab; overflow-y: auto;
+      <div v-for="(item, index) in getFiltered()" :key="index" :draggable="true" style="cursor:grab; overflow-y: auto;
         flex: 1;" @dblclick="createActivity(item)"
            @dragend="dragend($event)" @dragstart="dragstart(item, $event, 'activity')" @drop="drop($event)">
         <el-card body-style="padding:15px">
@@ -60,27 +59,34 @@
 </el-form>
 
 <script type="application/javascript">
+  function elements_Data(me) {
+    return {
+      activeTab: 'activities',
+      icons: WorkflowDesignerConstants.icons,
+      search: '',
+      activities: [],
+      templates: [],
+      hasBpmn: false,
+      loading: true,
+    }
+  }
+
   function elements_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig, graph} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.Elements,
       });
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    const data = Object.assign(me.VueConfig.data, {
-      activeTab: 'activities',
-      activities: [],
-      templates: [],
-      loading: true,
-    });
-    data.icons = WorkflowDesignerConstants.icons
+    methods.UpdateLanguage();
 
     me.VueConfig.mounted = function () {
       me.addMoveHandlers($.find('#ElementsTabs > .el-tabs__header')[0]);
     }
-
-    me.VueConfig.methods.onUpdate = function () {
+    methods.onUpdate = function () {
       data.search = '';
       data.activities = [];
       data.bpmnActivities = [];
@@ -145,10 +151,10 @@
         Type: 'Comment'
       });
 
-      if (me.graph.data?.AdditionalParams) {
-        const {InlinedSchemeCodes} = me.graph.data.AdditionalParams;
+      if (graph.data?.AdditionalParams) {
+        const {InlinedSchemeCodes} = graph.data.AdditionalParams;
 
-        me.graph.designer.customActivities?.forEach?.(item => {
+        graph.designer.customActivities?.forEach?.(item => {
           item.Class = 'Custom';
           if (item.PluginName === 'BpmnPlugin') {
             data.hasBpmn = true;
@@ -174,13 +180,13 @@
       }
 
       data.activities.forEach(item =>
-        me.VueConfig.methods.getLocalizationItem(
+        methods.getLocalizationItem(
           item,
           item.Class === 'Custom' ? item.Type : item.Class
         ));
 
       const validateTemplates = templates => {
-        const pluginsNames = me.graph.designer.getpluginsnames();
+        const pluginsNames = graph.designer.getpluginsnames();
         const hasInPlugins = name => pluginsNames?.includes(name.trim())
 
         templates
@@ -197,13 +203,13 @@
         data.loading = false;
       }
 
-      me.graph.designer.loadFile('library.json',
+      graph.designer.loadFile('library.json',
         data => onLoad(typeof data === 'string' ? JSON.parse(data) : data),
         () => onLoad(Array.from(WFELibrary))
       );
     };
 
-    me.VueConfig.methods.getLocalizationItem = function (item, key) {
+    methods.getLocalizationItem = function (item, key) {
       if (data.labels[key] != undefined) {
         if (data.labels[key].Title != undefined) {
           item.Title = data.labels[key].Title;
@@ -214,7 +220,7 @@
       }
     };
 
-    me.VueConfig.methods.createActivity = function (item, pos) {
+    methods.createActivity = function (item, pos) {
       var activity = {
         Name: item.Type,
         IsInitial: item.IsInitial == true,
@@ -232,7 +238,7 @@
         if (typeof value !== 'undefined') activity[key] = value
       }
 
-      const customActivity = me.graph.GetCustomActivityByType(item.Type);
+      const customActivity = graph.GetCustomActivityByType(item.Type);
 
       for (const parameter of item.Parameters ?? []) {
         if (typeof customActivity !== 'undefined' &&  (customActivity?.OrdinaryActivityParameters?.includes(parameter.Name) ?? false)) {
@@ -250,14 +256,14 @@
         setValue(key, item.DefaultValues[key])
       }
 
-      me.graph.CreateActivity(pos, activity);
+      graph.CreateActivity(pos, activity);
     }
 
-    me.VueConfig.methods.savePos = function (e) {
+    methods.savePos = function (e) {
       me.lastPos = e.originalEvent
     }
 
-    me.VueConfig.methods.insertScheme = function (item, pos) {
+    methods.insertScheme = function (item, pos) {
       var e = me.lastPos;
       var loadingSpinner = $('<div class=\'WorkflowDesignerWindowLoaderOverlay Compact\'><div class=\'cv-spinner\'><span class=\'spinner\'></span></div></div>')
       $('body').append(loadingSpinner);
@@ -265,7 +271,7 @@
       loadingSpinner.css('top', e.pageY + 'px');
       loadingSpinner.show();
 
-      me.graph.insertSchemeFromLibrary(item.File, pos, function () {
+      graph.insertSchemeFromLibrary(item.File, pos, function () {
         loadingSpinner.remove()
       });
     }
@@ -275,12 +281,12 @@
       me.pageY = e.pageY;
     }
 
-    me.VueConfig.methods.dragstart = function (item, e, type) {
+    methods.dragstart = function (item, e, type) {
       this.draggingItem = item;
       this.draggingItemType = type;
       this.targetStyle = e.target.style;
       this.targetStyle.opacity = 0.6;
-      me.parentContainer.on('dragover', me.VueConfig.methods.savePos);
+      me.parentContainer.on('dragover', methods.savePos);
 
       try {
         e.originalEvent.dataTransfer.setData('text/plain', 'anything'); //hack for drag&drop in FF
@@ -293,10 +299,10 @@
       });
     };
 
-    me.VueConfig.methods.dragend = function (e) {
+    methods.dragend = function (e) {
       this.targetStyle.opacity = 1;
       me.parentContainer.off('dragover.elementsbar');
-      me.parentContainer.off('dragover', me.VueConfig.methods.savePos);
+      me.parentContainer.off('dragover', methods.savePos);
 
       if (this.draggingItem !== undefined) {
         const e = me.lastPos;
@@ -313,13 +319,13 @@
       }
     };
 
-    me.VueConfig.methods.drop = function (e) {
+    methods.drop = function (e) {
       this.draggingItem = undefined;
       this.targetStyle.opacity = 1;
       me.parentContainer.off('dragover.elementsbar');
     };
 
-    me.VueConfig.methods.getFiltered = function () {
+    methods.getFiltered = function () {
       const search = data.search.toLowerCase();
       const list = data[data.activeTab];
       if (!search) return list;

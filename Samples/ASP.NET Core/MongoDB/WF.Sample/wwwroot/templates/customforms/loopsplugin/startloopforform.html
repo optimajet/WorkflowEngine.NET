@@ -67,46 +67,49 @@
         prop="CounterType"
         style="flex-grow: 1;">
         <el-select v-model="FormData.CounterType" :disabled="readonly" placeholder="" @change="updateDropdowns()">
-          <el-option
-            v-for="item in Field.CounterType.DropdownValues"
+          <template
+            v-for="item in Field?.CounterType?.DropdownValues"
             :key="item.Value"
-            :label="item.Name"
-            :value="item.Value">
-          </el-option>
+          >
+            <el-option
+              :label="item.Name"
+              :value="item.Value">
+            </el-option>
+          </template>
         </el-select>
       </el-form-item>
     </div>
 
-    <div v-if="FormData.CounterType == 'Int'" class="el-form--inline el-form--label-top" style="display: flex; flex-wrap: wrap">
+    <div v-if="FormData.CounterType === 'Int'" class="el-form--inline el-form--label-top" style="display: flex; flex-wrap: wrap">
       <el-form-item :rules="getFieldRules('StartValue')" prop="StartValue">
-                <span slot="label">{{ customLabels.StartValue }}
-                    <span :style="parameterFromProcess.StartValue ? {color:parameterFromProcessColor}: {}"
-                          class="WorkflowDesignerParameterFromProcess"
-                          @click="function(){FormData.StartValue = null; changeParameterInput('StartValue')}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.StartValue }}
+          <span :style="parameterFromProcess.StartValue ? {color:parameterFromProcessColor}: {}"
+                class="WorkflowDesignerParameterFromProcess"
+                @click="handleStartValue">@
+          </span>
+        </template>
         <el-input v-if="!parameterFromProcess.StartValue" v-model="FormData.StartValue" :disabled="readonly" style="width:180px"
                   type="number"></el-input>
         <el-input v-if="parameterFromProcess.StartValue" v-model="FormData.StartValue" :disabled="readonly" style="width:180px"></el-input>
       </el-form-item>
       <el-form-item :rules="getFieldRules('EndValue')" prop="EndValue">
-                <span slot="label">{{ customLabels.EndValue }}
-                    <span :style="parameterFromProcess.EndValue ? {color:parameterFromProcessColor}: {}"
-                          class="WorkflowDesignerParameterFromProcess"
-                          @click="function(){FormData.EndValue = null; changeParameterInput('EndValue')}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.EndValue }}
+          <span :style="parameterFromProcess.EndValue ? {color:parameterFromProcessColor}: {}"
+                class="WorkflowDesignerParameterFromProcess"
+                @click="handleEndValue">@
+          </span>
+        </template>
         <el-input v-if="!parameterFromProcess.EndValue" v-model="FormData.EndValue" :disabled="readonly" style="width:180px"
                   type="number"></el-input>
         <el-input v-if="parameterFromProcess.EndValue" v-model="FormData.EndValue" :disabled="readonly" style="width:180px"></el-input>
       </el-form-item>
       <el-form-item :rules="getFieldRules('Step')" prop="Step">
-                <span slot="label">{{ customLabels.Step }}
-                    <span :style="parameterFromProcess.Step ? {color:parameterFromProcessColor}: {}"
-                          class="WorkflowDesignerParameterFromProcess"
-                          @click="function(){FormData.Step = null; changeParameterInput('Step')}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.Step }}
+          <span :style="parameterFromProcess.Step ? {color:parameterFromProcessColor}: {}"
+                class="WorkflowDesignerParameterFromProcess"
+                @click="handleStep">@
+          </span>
+        </template>
         <el-input v-if="!parameterFromProcess.Step" v-model="FormData.Step" :disabled="readonly" style="width:180px"
                   type="number"></el-input>
         <el-input v-if="parameterFromProcess.Step" v-model="FormData.Step" :disabled="readonly" style="width:180px"></el-input>
@@ -118,12 +121,12 @@
         v-if="!(parameterFromProcess.EndValue || parameterFromProcess.StartValue)"
         :rules="getDateRangeRules()"
         prop="DateRange">
-                <span slot="label">{{ customLabels.DateRange }}
-                    <span
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.DateRange =['',''];parameterFromProcess.EndValue = true; parameterFromProcess.StartValue = true}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.DateRange }}
+            <span
+              class="WorkflowDesignerParameterFromProcess"
+              @click="handleDateRange">@
+            </span>
+          </template>
         <el-date-picker
           v-model="FormData.DateRange"
           :end-placeholder="customLabels.EndDate"
@@ -137,14 +140,14 @@
       <el-form-item
         v-if="parameterFromProcess.StartValue || parameterFromProcess.EndValue "
         :rules="getFieldRules('StartValue')"
-        prop="StartValue">
-                <span slot="label">{{ customLabels.StartValue }}
-                    <span
-                      :style="parameterFromProcess.StartValue ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.DateRange[0] = ''; parameterFromProcess.StartValue = !parameterFromProcess.StartValue}">@
-                    </span>
-                </span>
+        prop="DateRange.0">
+          <template #label>{{ customLabels.StartValue }}
+            <span
+              :style="parameterFromProcess.StartValue ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="handleDateRangeStart">@
+            </span>
+          </template>
         <el-date-picker
           v-if="!parameterFromProcess.StartValue"
           v-model="FormData.DateRange[0]"
@@ -160,13 +163,13 @@
       <el-form-item
         v-if="parameterFromProcess.StartValue || parameterFromProcess.EndValue"
         :rules="getFieldRules('EndValue')"
-        prop="EndValue">
-                <span slot="label">{{ customLabels.EndValue }}
-                    <span :style="parameterFromProcess.EndValue ? {color:parameterFromProcessColor}: {}"
-                          class="WorkflowDesignerParameterFromProcess"
-                          @click="function(){FormData.DateRange[1] = '';parameterFromProcess.EndValue = !parameterFromProcess.EndValue}">@
-                    </span>
-                </span>
+        prop="DateRange.1">
+          <template #label>{{ customLabels.EndValue }}
+            <span :style="parameterFromProcess.EndValue ? {color:parameterFromProcessColor}: {}"
+                  class="WorkflowDesignerParameterFromProcess"
+                  @click="handleDateRangeEnd">@
+            </span>
+          </template>
         <el-date-picker
           v-if="!parameterFromProcess.EndValue"
           v-model="FormData.DateRange[1]"
@@ -188,31 +191,33 @@
 
     <div class="el-form--inline el-form--label-top">
       <el-form-item :rules="getFieldRules('StepType')" prop="StepType">
-                <span slot="label">{{ customLabels.StepType }}
-                    <span
-                      :style="parameterFromProcess.StepType ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.StepType =parameterFromProcess.StepType ? Field.StepType.DropdownValues[0].Value : null; changeParameterInput(Field.StepType.Name)}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.StepType }}
+          <span
+            :style="parameterFromProcess.StepType ? {color:parameterFromProcessColor}: {}"
+            class="WorkflowDesignerParameterFromProcess"
+            @click="handleStepType">@
+          </span>
+        </template>
         <el-select v-if="!parameterFromProcess.StepType" v-model="FormData.StepType" :disabled="readonly" style="width:180px">
-          <el-option
-            v-for="item in Field.StepType.DropdownValues"
+          <template
+            v-for="item in Field?.StepType?.DropdownValues"
             :key="item.Value"
-            :label="item.Name"
-            :value="item.Value">
-          </el-option>
+          >
+            <el-option :label="item.Name"
+                       :value="item.Value">
+            </el-option>
+          </template>
         </el-select>
         <el-input v-if="parameterFromProcess.StepType" v-model="FormData.StepType" :disabled="readonly" style="width:180px"></el-input>
       </el-form-item>
       <el-form-item :rules="getFieldRules('IncludeLastValue')" prop="IncludeLastValue">
-                <span slot="label">{{ customLabels.IncludeLastValue }}
-                    <span
-                      :style="parameterFromProcess.IncludeLastValue ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.IncludeLastValue = parameterFromProcess.IncludeLastValue ? false : null; parameterFromProcess.IncludeLastValue = !parameterFromProcess.IncludeLastValue}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.IncludeLastValue }}
+          <span
+            :style="parameterFromProcess.IncludeLastValue ? {color:parameterFromProcessColor}: {}"
+            class="WorkflowDesignerParameterFromProcess"
+            @click="handleIncludeLastValue">@
+          </span>
+        </template>
         <el-checkbox
           v-if="!parameterFromProcess.IncludeLastValue"
           v-model="FormData.IncludeLastValue"
@@ -234,19 +239,8 @@
 </div>
 
 <script type="application/javascript">
-  function customforms_loopsplugin_startloopforform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.EditParametersFormlabel,
-        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.StartLoopFor,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
-      })
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function customforms_loopsplugin_startloopforform_Data(me) {
+    return {
       customTitle: undefined,
       readonly: false,
       FormData: {},
@@ -258,13 +252,31 @@
         StepType: false,
         IncludeLastValue: false
       },
-    });
+    }
+  }
 
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+  function customforms_loopsplugin_startloopforform_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+    const {FormData} = data;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.StartLoopFor,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       var fields = undefined;
@@ -288,10 +300,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           var tmp = {};
 
           fields.forEach(function (field) {
@@ -310,79 +322,80 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (key in me.VueConfig.data.FormData) {
-        if (me.VueConfig.data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
-          me.VueConfig.data.parameterFromProcess[key] = true;
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (key in data.FormData) {
+        if (typeof data.parameterFromProcess[key] !== 'undefined' && WorkflowDesignerCommon.containsAt(data.FormData[key]))
+          data.parameterFromProcess[key] = true;
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData)
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData)
 
-      me.VueConfig.methods.initializeData();
+      methods.initializeData();
     };
 
-    me.VueConfig.methods.updateDropdowns = function () {
-      for (key in me.VueConfig.data.parameterFromProcess) {
-        me.VueConfig.data.parameterFromProcess[key] = false;
+    methods.updateDropdowns = function () {
+      for (key in data.parameterFromProcess) {
+        data.parameterFromProcess[key] = false;
       }
 
-      me.VueConfig.data.FormData.DateRange = '';
-      me.VueConfig.data.FormData.StartValue = '';
-      me.VueConfig.data.FormData.EndValue = '';
-      me.VueConfig.data.FormData.Step = '';
+      data.FormData.DateRange = '';
+      data.FormData.StartValue = '';
+      data.FormData.EndValue = '';
+      data.FormData.Step = '';
     }
 
-    me.VueConfig.methods.initializeData = function () {
-      var counterType = me.VueConfig.data.FormData.CounterType;
-      var step = me.VueConfig.data.FormData.Step;
-      var stepType = me.VueConfig.data.FormData.StepType;
-      var endValue = me.VueConfig.data.FormData.EndValue;
-      var startValue = me.VueConfig.data.FormData.StartValue;
-      if (counterType == 'DateTime') {
-        var endValueDate = me.VueConfig.data.parameterFromProcess.EndValue ? endValue : new Date(endValue);
-        var startValueDate = me.VueConfig.data.parameterFromProcess.StartValue ? startValue : new Date(startValue);
+    methods.initializeData = function () {
+      var counterType = data.FormData.CounterType;
+      var step = data.FormData.Step;
+      var stepType = data.FormData.StepType;
+      var endValue = data.FormData.EndValue;
+      var startValue = data.FormData.StartValue;
+      if (counterType === 'DateTime') {
+        var endValueDate = data.parameterFromProcess.EndValue ? endValue : new Date(endValue);
+        var startValueDate = data.parameterFromProcess.StartValue ? startValue : new Date(startValue);
 
-        me.VueConfig.data.FormData.Step = step;
-        if (stepType == 'Decrement') {
-          me.VueConfig.data.FormData.DateRange = [endValueDate, startValueDate];
+        data.FormData.Step = step;
+        if (stepType === 'Decrement') {
+          data.FormData.DateRange = [endValueDate, startValueDate];
         } else {
-          me.VueConfig.data.FormData.DateRange = [startValueDate, endValueDate];
+          data.FormData.DateRange = [startValueDate, endValueDate];
         }
       }
 
-      if (counterType == 'Int') {
-        me.VueConfig.data.FormData.StartValue = startValue != null ? startValue : '';
-        me.VueConfig.data.FormData.EndValue = endValue != null ? endValue : '';
-        me.VueConfig.data.FormData.Step = step != null ? step : '';
-        me.VueConfig.data.FormData.DateRange = '';
+      if (counterType === 'Int') {
+        data.FormData.StartValue = startValue != null ? startValue : '';
+        data.FormData.EndValue = endValue != null ? endValue : '';
+        data.FormData.Step = step != null ? step : '';
+        data.FormData.DateRange = '';
       }
     }
 
-    me.VueConfig.methods.parameterFromProcess = function (fieldName) {
-      if (me.VueConfig.data.Field[fieldName].FromProcess != undefined && me.VueConfig.data.Field[fieldName].FromProcess == true) {
+    methods.isFromProcess = function (fieldName) {
+      if (typeof data.Field[fieldName].FromProcess !== 'undefined'
+        && data.Field[fieldName].FromProcess == true) {
         return true;
       }
       return false;
     }
 
-    me.VueConfig.methods.changeParameterInput = function (fieldName) {
-      me.VueConfig.data.parameterFromProcess[fieldName] = !me.VueConfig.data.parameterFromProcess[fieldName];
+    methods.changeParameterInput = function (fieldName) {
+      data.parameterFromProcess[fieldName] = !data.parameterFromProcess[fieldName];
     }
 
-    me.VueConfig.methods.getDateRangeRules = function () {
+    methods.getDateRangeRules = function () {
       var res = [
         {required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: ['change', 'blur']}
       ];
       var validator = function (rule, value, callback) {
         var isValid = true;
-        var dateRange = me.VueConfig.data.FormData.DateRange;
+        var dateRange = data.FormData.DateRange;
         if (!dateRange
           || dateRange.length !== 2
           || dateRange.includes(null)
@@ -401,12 +414,12 @@
       return res;
     };
 
-    me.VueConfig.methods.getDateStepRules = function () {
+    methods.getDateStepRules = function () {
       var res = [
         {required: true, message: WorkflowDesignerConstants.FieldIsRequired, trigger: 'blur'}
       ];
       var validator = function (rule, value, callback) {
-        var step = me.VueConfig.data.FormData.Step
+        var step = data.FormData.Step
         if (WorkflowDesignerCommon.containsAt(step)) {
           callback();
           return
@@ -451,16 +464,15 @@
     };
 
 
-    me.VueConfig.methods.getFieldRules = function (fieldName) {
-      var isRequired = me.VueConfig.data.Field[fieldName].IsRequired;
-
+    methods.getFieldRules = function (fieldName) {
+      var isRequired = data?.Field[fieldName]?.IsRequired ?? false;
       var rules = isRequired ? me.requiredRule() : [{required: false}];
 
-      if (me.VueConfig.data.parameterFromProcess[fieldName]) {
+      if (data.parameterFromProcess[fieldName]) {
         rules.push(WorkflowDesignerCommon.containsAtRule);
       }
 
-      if (isRequired && me.VueConfig.data.FormData.CounterType === 'DateTime' && (fieldName === 'EndValue' || fieldName === 'StartValue')) {
+      if (isRequired && data.FormData.CounterType === 'DateTime' && (fieldName === 'EndValue' || fieldName === 'StartValue')) {
         var validator = function (rule, value, callback) {
           if (value != null && value != '') {
             callback();
@@ -474,26 +486,26 @@
       return rules;
     };
 
-    me.VueConfig.methods.onSave = function () {
+    methods.onSave = function () {
 
       this.$refs.form.validate(function (valid) {
         if (valid) {
-          if (me.VueConfig.data.FormData.CounterType == 'DateTime') {
+          if (data.FormData.CounterType == 'DateTime') {
             var dateFormat = WorkflowDesignerConstants.DateTimeFormat;
-            var dateRange = me.VueConfig.data.FormData.DateRange;
-            var endValueDate = me.VueConfig.data.parameterFromProcess.EndValue ? dateRange[1] : moment(dateRange[1]).format(dateFormat);
-            var startValueDate = me.VueConfig.data.parameterFromProcess.StartValue ? dateRange[0] : moment(dateRange[0]).format(dateFormat);
+            var dateRange = data.FormData.DateRange;
+            var endValueDate = data.parameterFromProcess.EndValue ? dateRange[1] : moment(dateRange[1]).format(dateFormat);
+            var startValueDate = data.parameterFromProcess.StartValue ? dateRange[0] : moment(dateRange[0]).format(dateFormat);
 
-            if (me.VueConfig.data.FormData.StepType == 'Decrement') {
-              me.VueConfig.data.FormData.EndValue = startValueDate;
-              me.VueConfig.data.FormData.StartValue = endValueDate
+            if (data.FormData.StepType == 'Decrement') {
+              data.FormData.EndValue = startValueDate;
+              data.FormData.StartValue = endValueDate
             } else {
-              me.VueConfig.data.FormData.EndValue = endValueDate;
-              me.VueConfig.data.FormData.StartValue = startValueDate;
+              data.FormData.EndValue = endValueDate;
+              data.FormData.StartValue = startValueDate;
             }
           }
 
-          var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+          var value = WorkflowDesignerCommon.toString(data.FormData);
 
           me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
           me.onClose(true);
@@ -501,8 +513,49 @@
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
+    };
+
+    methods.handleStartValue = () => {
+      data.FormData.StartValue = null;
+      methods.changeParameterInput('StartValue');
+    };
+
+    methods.handleEndValue = () => {
+      data.FormData.EndValue = null;
+      methods.changeParameterInput('EndValue');
+    };
+
+    methods.handleStep = () => {
+      data.FormData.Step = null;
+      methods.changeParameterInput('Step')
+    };
+
+    methods.handleDateRange = () => {
+      data.FormData.DateRange = ['', ''];
+      data.parameterFromProcess.EndValue = true;
+      data.parameterFromProcess.StartValue = true
+    };
+
+    methods.handleDateRangeStart = () => {
+      data.FormData.DateRange[0] = '';
+      data.parameterFromProcess.StartValue = !data.parameterFromProcess.StartValue;
+    };
+
+    methods.handleDateRangeEnd = () => {
+      data.FormData.DateRange[1] = '';
+      data.parameterFromProcess.EndValue = !data.parameterFromProcess.EndValue;
+    };
+
+    methods.handleStepType = () => {
+      data.FormData.StepType = data.parameterFromProcess.StepType ? data.Field.StepType?.DropdownValues[0]?.Value : null;
+      methods.changeParameterInput(data.Field.StepType.Name)
+    };
+
+    methods.handleIncludeLastValue = () => {
+        data.FormData.IncludeLastValue = data.parameterFromProcess.IncludeLastValue ? false : null;
+        data.parameterFromProcess.IncludeLastValue = !data.parameterFromProcess.IncludeLastValue;
     };
   };
 </script>

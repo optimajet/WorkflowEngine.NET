@@ -1,33 +1,40 @@
 <div class="WorkflowDesignerToolbarBlock Horizontal WorkflowDesignerElementToolbarBlock" style="display: flex;">
   <el-tooltip v-if="!graph.Settings.notshowwindows" :content="labels.ShowProperties">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon ShowProperties "
-                 @click="transition.ShowProperties()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon " @click="transition.ShowProperties()">
+        <el-icon>
+          <div v-html="icons.showproperties"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
   <div v-if="!graph.Settings.readonly" class="WorkflowDesignerElementToolbarIconContainer">
-    <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Color"></el-button>
+    <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon">
+      <el-icon>
+        <div v-html="icons.color"></div>
+      </el-icon>
+    </el-button>
   </div>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Color">
-    <el-color-picker v-if="!graph.Settings.readonly" v-model="Color" :predefine="predefineColors" size="mini" class="ColorPicker"
-                     @change="transition.UpdateColor(Color)"></el-color-picker>
+    <div>
+      <el-color-picker v-if="!graph.Settings.readonly" v-model="Color" :predefine="predefineColors" size="small" class="ColorPicker"
+                       @change="transition.UpdateColor(Color)"></el-color-picker>
+    </div>
   </el-tooltip>
   <el-tooltip v-if="!graph.Settings.readonly" :content="labels.Delete">
     <div class="WorkflowDesignerElementToolbarIconContainer">
-      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon Delete " @click="transition._onDelete()"></el-button>
+      <el-button class="WorkflowDesignerElementToolbarIcon WorkflowDesignerToolbarIcon" @click="transition._onDelete()">
+        <el-icon>
+          <div v-html="icons.delete"></div>
+        </el-icon>
+      </el-button>
     </div>
   </el-tooltip>
 </div>
 <script type="application/javascript">
-  function transitiontoolbar_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.ElementToolbar,
-      });
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function transitiontoolbar_Data(me) {
+    return {
+      icons: WorkflowDesignerConstants.icons,
       transition: undefined,
       Color: '',
       predefineColors: [
@@ -53,9 +60,22 @@
       ],
       readonly: false,
       graph: me.value.graph
-    });
-    me.VueConfig.methods.onUpdate = function (transition) {
-      var data = me.VueConfig.data;
+    }
+  }
+
+  function transitiontoolbar_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.ElementToolbar,
+      });
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function (transition) {
       data.transition = transition;
       data.Color = transition.Color;
     };

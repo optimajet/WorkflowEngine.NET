@@ -19,7 +19,7 @@
 
       <el-form-item
         :label="customLabels.State"
-        :prop="Field.State.Name"
+        :prop="Field?.State?.Name"
         :rules="getFieldRules(Field.State)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -34,7 +34,7 @@
     <div class="el-form--inline el-form--label-top" style="display: flex">
       <el-form-item
         :label="customLabels.LoopName"
-        :prop="Field.LoopName.Name"
+        :prop="Field?.LoopName?.Name"
         :rules="getFieldRules(Field.LoopName)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -42,8 +42,8 @@
       </el-form-item>
       <el-form-item
         :label="customLabels.LoopStateParameterName"
-        :prop="Field.LoopStateParameterName.Name"
-        :rules="getFieldRules(Field.LoopStateParameterName)"
+        :prop="Field?.LoopStateParameterName?.Name"
+        :rules="getFieldRules(Field?.LoopStateParameterName)"
         class="el-form-item"
         style="flex-grow: 1;">
         <el-input v-model="FormData.LoopStateParameterName" :readonly="readonly"></el-input>
@@ -53,7 +53,7 @@
 
     <el-form-item
       :label="customLabels.LoopCounterValueParameterName"
-      :prop="Field.LoopCounterValueParameterName.Name"
+      :prop="Field?.LoopCounterValueParameterName?.Name"
       :rules="getFieldRules(Field.LoopCounterValueParameterName)">
       <el-input v-model="FormData.LoopCounterValueParameterName" :readonly="readonly"></el-input>
     </el-form-item>
@@ -63,43 +63,45 @@
   <table class="WorkflowDesignerTable" style="margin-bottom: 10px">
     <tr>
       <th></th>
-                <th class="WorkflowDesignerTitleWithCreate">
-                    {{customLabels.Values}}
+      <th class="WorkflowDesignerTitleWithCreate">
+        {{ customLabels.Values }}
         <span :style="{color: isRequiredColor ,marginRight:'4px'}">*</span>
-                    <a v-if="!readonly" @click="addValue(values)">{{ButtonTextCreate}}</a>
+        <a v-if="!readonly" @click="addValue(values)">{{ ButtonTextCreate }}</a>
       </th>
     </tr>
-    <tr v-for="(value, index) in values" :key="index"
-        :class="dragOverIndex == index && dragOverBlock  == value ? 'dragOver' : ''"
-        @dragend="dragend($event)"
-        @dragover="dragover(value, index, $event)"
-        @dragstart="dragstart(index, $event, values)">
+    <template v-for="(value, index) in values" :key="index">
+      <tr :class="dragOverIndex == index && dragOverBlock  == value ? 'dragOver' : ''"
+          @dragend="dragend($event)"
+          @dragover="dragover(value, index, $event)"
+          @dragstart="dragstart(index, $event, values)">
 
-      <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
-        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
-      </td>
-      <td style="position: relative">
-        <el-input v-model="value.value" :readonly="readonly" :rules="{ required: true, message: FieldIsRequired, trigger: 'change'}" clearable
-                  style="width: 100%;"></el-input>
-        <div v-if="index == values.length -1 && !isCorrectValues" class="el-form-item__error">{{ customLabels.ValuesError }}</div>
-      </td>
-      <td v-if="!readonly && values.length > 1">
-        <el-button class="WorkflowDesignerTableDeleteButton" @click="removeRow(values, index)"></el-button>
-      </td>
-    </tr>
+        <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+          <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+        </td>
+        <td style="position: relative">
+          <el-input v-model="value.value" :readonly="readonly" :rules="{ required: true, message: FieldIsRequired, trigger: 'change'}"
+                    clearable
+                    style="width: 100%;"></el-input>
+          <div v-if="index == values.length -1 && !isCorrectValues" class="el-form-item__error">{{ customLabels.ValuesError }}</div>
+        </td>
+        <td v-if="!readonly && values.length > 1">
+          <el-button class="WorkflowDesignerTableDeleteButton" @click="removeRow(values, index)"></el-button>
+        </td>
+      </tr>
+    </template>
   </table>
 
   <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
     <el-form-item
-      :prop="Field.Reverse.Name"
+      :prop="Field?.Reverse?.Name"
       :rules="getFieldRules(Field.Reverse)">
-                <span slot="label">{{ customLabels.Reverse }}
-                    <span
-                      :style="parameterFromProcess.Reverse ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.Reverse = parameterFromProcess.Reverse ? false : null; changeParameterInput('Reverse')}">@
-                    </span>
-                </span>
+        <template #label>{{ customLabels.Reverse }}
+            <span
+              :style="parameterFromProcess.Reverse ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="Reverse">@
+            </span>
+        </template>
       <el-checkbox
         v-if="!parameterFromProcess.Reverse"
         v-model="FormData.Reverse"
@@ -109,10 +111,7 @@
       <el-input v-if="parameterFromProcess.Reverse" v-model="FormData.Reverse" :disabled="readonly" style="width:200px"></el-input>
     </el-form-item>
   </div>
-
-
 </el-form>
-
 
 <div class="WorkflowDesignerButtons">
   <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
@@ -120,9 +119,27 @@
 </div>
 
 <script type="application/javascript">
+  function customforms_loopsplugin_startloopforeachform_Data(me) {
+    return {
+      customTitle: undefined,
+      readonly: false,
+      FormData: {},
+      Field: {},
+      parameterFromProcess: {
+        Reverse: false
+      },
+      values: [{value: ''}],
+      separator: null,
+      isCorrectValues: true
+    }
+  }
+
   function customforms_loopsplugin_startloopforeachform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         FieldIsRequired: WorkflowDesignerConstants.FieldIsRequired,
         ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
         labels: WorkflowDesignerConstants.EditParametersFormlabel,
@@ -134,25 +151,18 @@
       })
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      customTitle: undefined,
-      readonly: false,
-      FormData: {},
-      Field: {},
-      parameterFromProcess: {
-        Reverse: false
-      },
-      values: [{value: ''}],
-      separator: null,
-      isCorrectValues: true
-    });
+    methods.UpdateLanguage();
 
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    methods.Reverse = function () {
+      data.FormData.Reverse = data.parameterFromProcess.Reverse ? false : null;
+      methods.changeParameterInput('Reverse')
+    }
+
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       var fields = undefined;
@@ -175,10 +185,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           var tmp = {};
 
           fields.forEach(function (field) {
@@ -186,7 +196,7 @@
               field.DefaultValue = field.DefaultValue !== null && field.DefaultValue !== undefined && field.DefaultValue.toString() === 'true';
             }
 
-            if (typeof field.DefaultValue != 'undefined') {
+            if (typeof field.DefaultValue !== 'undefined') {
               tmp[field.Name] = field.DefaultValue;
             } else {
               tmp[field.Name] = null;
@@ -197,87 +207,87 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (key in me.VueConfig.data.FormData) {
-        if (me.VueConfig.data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
-          me.VueConfig.data.parameterFromProcess[key] = true;
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (key in data.FormData) {
+        if (typeof data.parameterFromProcess[key] !== 'undefined' && WorkflowDesignerCommon.containsAt(data.FormData[key]))
+          data.parameterFromProcess[key] = true;
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData);
 
-      me.VueConfig.methods.initializeData();
+      methods.initializeData();
     };
 
-    me.VueConfig.methods.initializeData = function () {
-      var separator = me.VueConfig.data.FormData.Separator;
-      var values = me.VueConfig.data.FormData.Values;
+    methods.initializeData = function () {
+      var separator = data.FormData.Separator;
+      var values = data.FormData.Values;
 
-      me.VueConfig.data.separator = separator != null ? separator : ',';
-      if (me.VueConfig.data.FormData.Values != null) {
-        me.VueConfig.data.values = [];
+      data.separator = separator != null ? separator : ',';
+      if (data.FormData.Values != null) {
+        data.values = [];
 
-        var list = values.split(me.VueConfig.data.separator);
+        var list = values.split(data.separator);
         for (var i = 0; i < list.length; i++) {
-          me.VueConfig.data.values.push({value: list[i]});
+          data.values.push({value: list[i]});
         }
       }
     }
 
-    me.VueConfig.methods.changeParameterInput = function (fieldName) {
-      me.VueConfig.data.parameterFromProcess[fieldName] = !me.VueConfig.data.parameterFromProcess[fieldName];
+    methods.changeParameterInput = function (fieldName) {
+      data.parameterFromProcess[fieldName] = !data.parameterFromProcess[fieldName];
     }
 
-    me.VueConfig.methods.getFieldRules = function (field) {
-      var rules = field.IsRequired ? me.requiredRule() : [{required: false}];
+    methods.getFieldRules = function (field) {
+      var rules = field?.IsRequired ? me.requiredRule() : [{required: false}];
 
-      if (me.VueConfig.data.parameterFromProcess[field.Name]) {
+      if (data.parameterFromProcess[field?.Name]) {
         rules.push(WorkflowDesignerCommon.containsAtRule);
       }
 
       return rules;
     };
 
-    me.VueConfig.methods.addValue = function (items) {
+    methods.addValue = function (items) {
       items.push({value: ''});
     };
 
-    me.VueConfig.methods.removeRow = function (items, index) {
+    methods.removeRow = function (items, index) {
       items.splice(index, 1);
     };
 
-    me.VueConfig.methods.onSave = function () {
+    methods.onSave = function () {
       var isValid = true;
       var stringValues = [];
-      me.VueConfig.data.values.forEach(function (valueObj) {
+      data.values.forEach(function (valueObj) {
         if (valueObj.value != '') {
           stringValues.push(valueObj.value);
         } else {
           isValid = false;
         }
       });
-      me.VueConfig.data.isCorrectValues = isValid;
+      data.isCorrectValues = isValid;
 
-      me.VueConfig.data.FormData.Separator = me.VueConfig.data.separator;
-      me.VueConfig.data.FormData.Values = stringValues.join(me.VueConfig.data.separator);
+      data.FormData.Separator = data.separator;
+      data.FormData.Values = stringValues.join(data.separator);
 
-      var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+      var value = WorkflowDesignerCommon.toString(data.FormData);
 
       this.$refs.form.validate(function (valid) {
-        if (valid && me.VueConfig.data.isCorrectValues) {
+        if (valid && data.isCorrectValues) {
           me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
           me.onClose(true);
         }
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
   }

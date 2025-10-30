@@ -14,7 +14,7 @@
     </el-form-item>
     <el-checkbox-group v-if="expertMode && (disableAllPersist || isIndeterminate)" v-model="checkedPersists"
                        @change="handleCheckedPersistsChange">
-      <el-checkbox v-for="persist in persists" :key="persist" :disabled="readonly" :label="persist">{{ persist }}</el-checkbox>
+      <el-checkbox v-for="persist in persists" :key="persist" :disabled="readonly" :label="persist" :value="persist">{{ persist }}</el-checkbox>
     </el-checkbox-group>
   </div>
   <div style="margin-bottom: 10px;">
@@ -22,7 +22,7 @@
       {{ labels.Implementation }}
       <a v-if="!readonly" @click="addActionRow(FormData.Implementation)">{{ ButtonTextCreate }}</a>
     </h4>
-    <table v-if="FormData.Implementation.length > 0" class="WorkflowDesignerTable">
+    <table v-if="FormData?.Implementation?.length > 0" class="WorkflowDesignerTable">
       <tr>
         <th></th>
         <th>{{ labels.ImpAction }}</th>
@@ -153,7 +153,7 @@
       {{ labels.ExceptionsHandling }}
       <a v-if="!readonly" @click="addRow(FormData.ExceptionsHandlers)">{{ ButtonTextCreate }}</a>
     </h4>
-    <table v-if="FormData.ExceptionsHandlers.length > 0" class="WorkflowDesignerTable">
+    <table v-if="FormData?.ExceptionsHandlers?.length > 0" class="WorkflowDesignerTable">
       <tr>
         <th></th>
         <th>{{ labels.Exceptions }}</th>
@@ -245,38 +245,26 @@
     </table>
   </div>
   <div style="margin-bottom: 10px;">
-    <el-button v-if="!readonly && !itemHasComment" circle icon="el-icon-s-comment" @click="showUserComment()"></el-button>
+    <el-button icon="IconComment" v-if="!readonly && !itemHasComment" circle @click="showUserComment()"></el-button>
     <h4 v-if="itemHasComment" style="padding-bottom: 1px;border-bottom: 1px solid rgba(34,36,38,.15);">{{ labels.UserComment }}</h4>
     <el-input
       v-if="itemHasComment"
       v-model="FormData.UserComment"
       :placeholder="labels.UserComment"
-      rows="5"
+      :rows="5"
       type="textarea"
     >
     </el-input>
   </div>
 </el-form>
 <div class="WorkflowDesignerButtons">
-  <el-button type="text" @click="expertMode = !expertMode">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
+  <el-button link @click="expertMode = !expertMode">{{ expertMode ? SwitchToDefaultMode : SwitchToExpertMode }}</el-button>
   <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-  function customforms_bpmnplugin_servicetask_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: Object.assign(WorkflowDesignerConstants.ActivityFormLabel, WorkflowDesignerConstants.BpmnPlugin),
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-        SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
-        SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode
-      });
-    }
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function customforms_bpmnplugin_servicetask_Data(me) {
+    return {
       readonly: false,
       expertMode: false,
       actions: [],
@@ -290,16 +278,35 @@
       isIndeterminate: false,
       persists: [],
       checkedPersists: []
-    });
+    }
+  }
+
+  function customforms_bpmnplugin_servicetask_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: Object.assign(WorkflowDesignerConstants.ActivityFormLabel, WorkflowDesignerConstants.BpmnPlugin),
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        SwitchToDefaultMode: WorkflowDesignerConstants.SwitchToDefaultMode,
+        SwitchToExpertMode: WorkflowDesignerConstants.SwitchToExpertMode
+      });
+    }
+
+    methods.UpdateLanguage();
 
     me.VueConfig.watch = {
       actionsStore: function (val) {
-        me.VueConfig.data.actions = me.graph.getActionNames();
+        data.actions = me.graph.getActionNames();
       },
     }
 
-    me.VueConfig.methods.onUpdate = function (item) {
-      var formData = me.VueConfig.data.FormData;
+    methods.onUpdate = function (item) {
+      var formData = data.FormData;
       formData.Name = item.Name;
       formData.ExecutionTimeout = item.ExecutionTimeout ? WorkflowDesignerCommon.clone(item.ExecutionTimeout) : {RetryCount: '1'};
       formData.ExceptionsHandlers = Array.isArray(item.ExceptionsHandlers) ? WorkflowDesignerCommon.clone(item.ExceptionsHandlers) : [];
@@ -314,12 +321,12 @@
       formData.Implementation = Array.isArray(item.Implementation) ? WorkflowDesignerCommon.clone(item.Implementation) : [];
 
       me.linkItem = item;
-      me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formData);
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
-      me.VueConfig.data.actions = me.graph.getActionNames();
-      me.VueConfig.data.itemHasComment = formData.UserComment != null && formData.UserComment.length > 0;
+      data.originalItem = WorkflowDesignerCommon.clone(formData);
+      data.readonly = me.graph.Settings.readonly;
+      data.actions = me.graph.getActionNames();
+      data.itemHasComment = formData.UserComment != null && formData.UserComment.length > 0;
 
-      const {activities, states} = me.VueConfig.data;
+      const {activities, states} = data;
       me.graph.data.Activities.forEach(({Name, State}) => {
         if (item.Name === Name) return;
 
@@ -330,35 +337,35 @@
       activities.sort();
       states.sort();
 
-      me.VueConfig.data.disableAllPersist = formData.DisablePersistState && formData.DisablePersistTransitionHistory && formData.DisablePersistParameters;
-      me.VueConfig.data.isIndeterminate = formData.DisablePersistState || formData.DisablePersistTransitionHistory || formData.DisablePersistParameters;
-      me.VueConfig.data.persists = [
-        me.VueConfig.data.labels.DisablePersists.DisablePersistState,
-        me.VueConfig.data.labels.DisablePersists.DisablePersistParameters,
-        me.VueConfig.data.labels.DisablePersists.DisablePersistTransitionHistory
+      data.disableAllPersist = formData.DisablePersistState && formData.DisablePersistTransitionHistory && formData.DisablePersistParameters;
+      data.isIndeterminate = formData.DisablePersistState || formData.DisablePersistTransitionHistory || formData.DisablePersistParameters;
+      data.persists = [
+        data.labels.DisablePersists.DisablePersistState,
+        data.labels.DisablePersists.DisablePersistParameters,
+        data.labels.DisablePersists.DisablePersistTransitionHistory
       ];
-      me.VueConfig.data.checkedPersists = [];
+      data.checkedPersists = [];
       if (formData.DisablePersistState !== undefined && formData.DisablePersistState) {
-        me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistState);
+        data.checkedPersists.push(data.labels.DisablePersists.DisablePersistState);
       }
       if (formData.DisablePersistParameters !== undefined && formData.DisablePersistParameters) {
-        me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistParameters);
+        data.checkedPersists.push(data.labels.DisablePersists.DisablePersistParameters);
       }
       if (formData.DisablePersistTransitionHistory !== undefined && formData.DisablePersistTransitionHistory) {
-        me.VueConfig.data.checkedPersists.push(me.VueConfig.data.labels.DisablePersists.DisablePersistTransitionHistory);
+        data.checkedPersists.push(data.labels.DisablePersists.DisablePersistTransitionHistory);
       }
 
-      var objectCorrect = me.VueConfig.methods.objectCorrect;
+      var objectCorrect = methods.objectCorrect;
 
       if (objectCorrect(formData.ExecutionTimeout.Type)
         || formData.ExceptionsHandlers.length > 0
-        || me.VueConfig.data.disableAllPersist
-        || me.VueConfig.data.isIndeterminate) {
-        me.VueConfig.data.expertMode = true;
+        || data.disableAllPersist
+        || data.isIndeterminate) {
+        data.expertMode = true;
       }
     };
 
-    me.VueConfig.methods.activityNameRules = function () {
+    methods.activityNameRules = function () {
       var res = me.requiredRule();
 
       var validator = function (rule, value, callback) {
@@ -372,7 +379,7 @@
       return res;
     }
 
-    me.VueConfig.methods.validateField = function (rules, value) {
+    methods.validateField = function (rules, value) {
       var value = arguments[arguments.length - 1];
 
       for (var i = 0; i < arguments.length - 1; i++) {
@@ -382,9 +389,9 @@
       }
     };
 
-    me.VueConfig.methods.notEmpty = function (value) {
+    methods.notEmpty = function (value) {
       var isValid = true;
-      if (!me.VueConfig.methods.objectCorrect(value))
+      if (!methods.objectCorrect(value))
         isValid = false;
 
 
@@ -397,64 +404,64 @@
         return WorkflowDesignerConstants.FieldIsRequired;
     }
 
-    me.VueConfig.methods.handleCheckAllPersistsChange = function (val) {
-      me.VueConfig.data.checkedPersists = val ? me.VueConfig.data.persists : [];
-      me.VueConfig.data.isIndeterminate = false;
+    methods.handleCheckAllPersistsChange = function (val) {
+      data.checkedPersists = val ? data.persists : [];
+      data.isIndeterminate = false;
     };
 
-    me.VueConfig.methods.handleCheckedPersistsChange = function (value) {
+    methods.handleCheckedPersistsChange = function (value) {
       let checkedCount = value.length;
-      me.VueConfig.data.disableAllPersist = checkedCount === me.VueConfig.data.persists.length;
-      me.VueConfig.data.isIndeterminate = checkedCount > 0 && checkedCount < me.VueConfig.data.persists.length;
+      data.disableAllPersist = checkedCount === data.persists.length;
+      data.isIndeterminate = checkedCount > 0 && checkedCount < data.persists.length;
     }
 
-    me.VueConfig.methods.setCurrentItem = function (item) {
+    methods.setCurrentItem = function (item) {
       this.currentItem = item;
     };
-    me.VueConfig.methods.querySearch = function (queryString, cb) {
-      if (me.VueConfig.data.readonly)
+    methods.querySearch = function (queryString, cb) {
+      if (data.readonly)
         return cb([]);
 
       var res = me.graph.getAutoCompleteSuggestions2('actionparameter', this.currentItem.ActionName, queryString);
       cb(res);
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
-      var data = me.VueConfig.data.FormData;
-      var notEmptyRule = me.VueConfig.methods.notEmpty;
-      for (var i = 0; i < data.Implementation.length; i++) {
-        var item = data.Implementation[i];
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
+      var formData = data.FormData;
+      var notEmptyRule = methods.notEmpty;
+      for (var i = 0; i < formData.Implementation.length; i++) {
+        var item = formData.Implementation[i];
         if (validateFunc(notEmptyRule, item.ActionName)) {
           return false;
         }
       }
 
-      if (data.ExecutionTimeout.Type) {
-        if (validateFunc(notEmptyRule, data.ExecutionTimeout.Timer)) {
+      if (formData.ExecutionTimeout.Type) {
+        if (validateFunc(notEmptyRule, formData.ExecutionTimeout.Timer)) {
           return false;
         }
       }
-      if (data.ExecutionTimeout.Timer) {
-        if (validateFunc(notEmptyRule, data.ExecutionTimeout.Type)) {
-          return false;
-        }
-      }
-
-      if (data.ExecutionTimeout.Type === 'SetActivity' || data.ExecutionTimeout.Type === 'SetState') {
-        if (validateFunc(notEmptyRule, data.ExecutionTimeout.NameForSet)) {
+      if (formData.ExecutionTimeout.Timer) {
+        if (validateFunc(notEmptyRule, formData.ExecutionTimeout.Type)) {
           return false;
         }
       }
 
-      if (data.ExecutionTimeout.Type === 'Retry') {
-        if (validateFunc(notEmptyRule, data.ExecutionTimeout.RetryCount)) {
+      if (formData.ExecutionTimeout.Type === 'SetActivity' || formData.ExecutionTimeout.Type === 'SetState') {
+        if (validateFunc(notEmptyRule, formData.ExecutionTimeout.NameForSet)) {
           return false;
         }
       }
 
-      for (var i = 0; i < data.ExceptionsHandlers.length; i++) {
-        var item = data.ExceptionsHandlers[i];
+      if (formData.ExecutionTimeout.Type === 'Retry') {
+        if (validateFunc(notEmptyRule, formData.ExecutionTimeout.RetryCount)) {
+          return false;
+        }
+      }
+
+      for (var i = 0; i < formData.ExceptionsHandlers.length; i++) {
+        var item = formData.ExceptionsHandlers[i];
         if (validateFunc(notEmptyRule, item.Exceptions) ||
           validateFunc(notEmptyRule, item.Type)) {
           return false;
@@ -475,79 +482,84 @@
       return true;
     };
 
-    me.VueConfig.methods.showUserComment = function () {
-      me.VueConfig.data.itemHasComment = true;
+    methods.showUserComment = function () {
+      data.itemHasComment = true;
     }
 
-    me.VueConfig.methods.addRow = function (items) {
+    methods.addRow = function (items) {
       items.push({});
     };
 
-    me.VueConfig.methods.addActionRow = function (items) {
+    methods.addActionRow = function (items) {
       items.push({ActionParameter: ''});
     };
 
-    me.VueConfig.methods.removeRow = function (items, index) {
+    methods.removeRow = function (items, index) {
       items.splice(index, 1);
     };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editItem = undefined;
+        data.editItem = undefined;
       };
 
       var params = {
         name: item['ActionName'],
         type: ['Action']
       };
-      me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
-    me.VueConfig.methods.onSave = function () {
-      me.VueConfig.data.FormData.DisablePersistState = false;
-      me.VueConfig.data.FormData.DisablePersistParameters = false;
-      me.VueConfig.data.FormData.DisablePersistTransitionHistory = false;
+    methods.onSave = function () {
+      data.FormData.DisablePersistState = false;
+      data.FormData.DisablePersistParameters = false;
+      data.FormData.DisablePersistTransitionHistory = false;
 
-      const persists = me.VueConfig.data.checkedPersists;
+      const persists = data.checkedPersists;
       for (var i = 0; i < persists.length; i++) {
         switch (persists[i]) {
-          case  me.VueConfig.data.labels.DisablePersists.DisablePersistState:
-            me.VueConfig.data.FormData.DisablePersistState = true;
+          case  data.labels.DisablePersists.DisablePersistState:
+            data.FormData.DisablePersistState = true;
             break;
-          case me.VueConfig.data.labels.DisablePersists.DisablePersistParameters:
-            me.VueConfig.data.FormData.DisablePersistParameters = true;
+          case data.labels.DisablePersists.DisablePersistParameters:
+            data.FormData.DisablePersistParameters = true;
             break;
-          case me.VueConfig.data.labels.DisablePersists.DisablePersistTransitionHistory:
-            me.VueConfig.data.FormData.DisablePersistTransitionHistory = true;
+          case data.labels.DisablePersists.DisablePersistTransitionHistory:
+            data.FormData.DisablePersistTransitionHistory = true;
             break;
         }
       }
 
-      if (this.$refs && WorkflowDesignerCommon.validateForms(this.$refs) && me.VueConfig.methods.validate()) {
-        me.onSuccess(me.VueConfig.data.FormData);
-        me.onClose(true);
-      }
+      if (this.$refs) {
+        WorkflowDesignerCommon.validateForms(this.$refs).then(isValid => {
+        WorkflowDesignerCommon.validateForms(this.$refs).then(isValid => {
+          if (isValid && methods.validate()) {
+            me.onSuccess(data.FormData);
+            me.onClose(true);
+          }
+        }).catch(() => { }) // Validation failed
+      })}
     };
 
-    me.VueConfig.methods.onClose = function () {
-      if (me.VueConfig.data.readonly) {
+    methods.onClose = function () {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-      var originalItem = me.VueConfig.data.originalItem;
-      var item = me.VueConfig.data.FormData;
+      var originalItem = data.originalItem;
+      var item = data.FormData;
 
       if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
         me.onClose(true);
@@ -557,16 +569,16 @@
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

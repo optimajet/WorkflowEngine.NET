@@ -32,13 +32,13 @@
     </div>
     <el-form-item class="el-form-item" :label="labels.Alignment">
       <el-radio-group v-model="FormData.Alignment" size="small">
-        <el-radio-button label="left">
+        <el-radio-button value="left">
           <div class="WorkflowDesignerToolbarIcon AlignLeft"></div>
         </el-radio-button>
-        <el-radio-button label="center">
+        <el-radio-button value="center">
           <div class="WorkflowDesignerToolbarIcon AlignCenter"></div>
         </el-radio-button>
-        <el-radio-button label="right">
+        <el-radio-button value="right">
           <div class="WorkflowDesignerToolbarIcon AlignRight"></div>
         </el-radio-button>
       </el-radio-group>
@@ -57,8 +57,8 @@
       </el-select>
     </el-form-item>
     <el-form-item :label="labels.TextFormatting">
-      <el-checkbox-group size="mini" v-model="FormatText">
-        <el-checkbox-button v-for="(btn, index) in FormatTextButtons" :key="btn.icon + index" :label="btn.value">
+      <el-checkbox-group size="small" v-model="FormatText">
+        <el-checkbox-button v-for="(btn, index) in FormatTextButtons" :key="btn.icon + index" :value="btn.value">
           <div class="WorkflowDesignerToolbarIcon" :class="btn.icon"></div>
         </el-checkbox-button>
       </el-checkbox-group>
@@ -70,17 +70,8 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-  function comment_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.Elements.Comment,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      });
-    }
-
-    me.VueConfig.methods.UpdateLanguage()
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function comment_Data(me) {
+    return {
       readonly: false,
       FormatText: [],
       FormData: {
@@ -95,8 +86,25 @@
         {icon: 'UnderlineText', value: 'underline'},
         {icon: 'LineThroughText', value: 'line-through'},
       ]
-    });
+    }
+  }
+
+  function comment_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.Elements.Comment,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
+
+    methods.UpdateLanguage()
+
     me.VueConfig.computed = {
+      // TODO check
       commentFontsize: function () {
         return this.FormData.FontSize + 'px';
       },
@@ -123,36 +131,36 @@
         return result;
       },
     }
-    me.VueConfig.methods.onChangeSelect = function (n) {
+    methods.onChangeSelect = function (n) {
       var regex = /[0-9]|\./;
       if (!regex.test(n)) {
         this.FontSize = 12;
       }
     }
-    me.VueConfig.methods.FormatTextToFormData = function(){
-      if(this.FormatText.includes('bold')){
+    methods.FormatTextToFormData = function () {
+      if (this.FormatText.includes('bold')) {
         this.FormData.BoldText = true;
       } else {
         delete this.FormData.BoldText
       }
-      if(this.FormatText.includes('italic')){
+      if (this.FormatText.includes('italic')) {
         this.FormData.ItalicText = true;
       } else {
         delete this.FormData.ItalicText
       }
-      if(this.FormatText.includes('underline')){
+      if (this.FormatText.includes('underline')) {
         this.FormData.UnderlineText = true;
       } else {
         delete this.FormData.UnderlineText
       }
-      if(this.FormatText.includes('line-through')){
+      if (this.FormatText.includes('line-through')) {
         this.FormData.LineThroughText = true;
       } else {
         delete this.FormData.LineThroughText
       }
     }
-    me.VueConfig.methods.onUpdate = function (item) {
-      var formdata = me.VueConfig.data.FormData;
+    methods.onUpdate = function (item) {
+      var formdata = data.FormData;
 
       formdata.Name = item.Name;
       formdata.Value = item.Value;
@@ -160,28 +168,28 @@
       formdata.Annotations = Array.isArray(item.Annotations) ? WorkflowDesignerCommon.clone(item.Annotations) : [];
       formdata.Alignment = item.Alignment ?? 'left';
       formdata.FontSize = item.FontSize ?? 12;
-      item.BoldText ? me.VueConfig.data.FormatText.push('bold') : '';
-      item.ItalicText ? me.VueConfig.data.FormatText.push('italic') : '';
-      item.UnderlineText ? me.VueConfig.data.FormatText.push('underline') : '';
-      item.LineThroughText ? me.VueConfig.data.FormatText.push('line-through') : '';
+      item.BoldText ? data.FormatText.push('bold') : '';
+      item.ItalicText ? data.FormatText.push('italic') : '';
+      item.UnderlineText ? data.FormatText.push('underline') : '';
+      item.LineThroughText ? data.FormatText.push('line-through') : '';
       formdata.Rotation = item.Rotation;
       formdata.Width = item.Width;
       me.linkItem = item;
-      me.VueConfig.data.originalItem = WorkflowDesignerCommon.clone(formdata);
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+      data.originalItem = WorkflowDesignerCommon.clone(formdata);
+      data.readonly = me.graph.Settings.readonly;
     }
-    me.VueConfig.methods.onSave = function () {
+    methods.onSave = function () {
       this.FormatTextToFormData();
-      me.onSuccess(me.VueConfig.data.FormData);
+      me.onSuccess(data.FormData);
       me.onClose(true);
     }
-    me.VueConfig.methods.onClose = function () {
-      if (me.VueConfig.data.readonly) {
+    methods.onClose = function () {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
-      var originalItem = me.VueConfig.data.originalItem;
-      var item = me.VueConfig.data.FormData;
+      var originalItem = data.originalItem;
+      var item = data.FormData;
       if (WorkflowDesignerCommon.deepCompare(originalItem, item)) {
         me.onClose(true);
       } else {
@@ -189,15 +197,15 @@
         return false;
       }
     }
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     }
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

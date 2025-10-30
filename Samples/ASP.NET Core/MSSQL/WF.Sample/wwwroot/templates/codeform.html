@@ -1,4 +1,4 @@
-<h3>{{ ParentItem.Name ? ParentItem.Name : "Unnamed code action" }} {{ labels.Title }}</h3>
+<h3>{{ ParentItem.Name ? ParentItem.Name : 'Unnamed code action' }} {{ labels.Title }}</h3>
 <b class="CustomLabel">{{ labels.Usings }}</b>
 <el-select
   v-model="UsingsValue"
@@ -10,44 +10,39 @@
   placeholder="Select"
   style="width: 100%; margin-bottom: 15px;"
   @change="onUsingsChange">
-  <el-option
-    v-for="item in Usings"
-    :key="item"
-    :label="item"
-    :value="item">
-  </el-option>
+<el-option
+  v-for="item in Usings"
+  :key="item"
+  :label="item"
+  :value="item">
+</el-option>
 </el-select>
 <div dir="ltr">{{ ReturnValue }} <b>{{ ParentItem.Name }}</b> ({{ FuncSignature }}) {</div>
 <div :id="editor_container" class="WorkflowDesignerJsonEditor" style="height: calc(100% - 215px)"></div>
 <div class="WorkflowDesignerButtons">
-  <el-button v-if="!readonly" type="info" @click="onCompile">{{ labels.Compile }}</el-button>
-  <el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
-  <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
+<el-button v-if="!readonly" type="info" @click="onCompile">{{ labels.Compile }}</el-button>
+<el-button v-if="!readonly" type="primary" @click="onSave">{{ ButtonTextSave }}</el-button>
+<el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <el-dialog
-  :before-close="function() {infodialog.visible = false}"
+  v-model="infodialog.visible"
   :modal-append-to-body="false"
   :title="infodialog.title"
   :visible="infodialog.visible"
   width="50%">
-  <span v-html="infodialog.message"></span>
-  <span slot="footer" class="dialog-footer">
-        <el-button @click="infodialog.visible = false">{{ labels.OK }}</el-button>
-    </span>
+<span v-html="infodialog.message"></span>
+<template #footer>
+      <span class="dialog-footer">
+      <el-button @click="infodialog.visible = false">{{ labels.OK }}</el-button>
+  </span>
+</template>
 </el-dialog>
 <script type="application/javascript">
-  function codeform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.EditCodeLabel,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-      });
-    }
+  var funcSignature = 'ProcessInstance processInstance, WorkflowRuntime runtime, string parameter'
 
-    me.VueConfig.methods.UpdateLanguage();
-    var funcSignature = 'ProcessInstance processInstance, WorkflowRuntime runtime, string parameter';
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function codeform_Data(me) {
+    return {
+      ParentItem: {},
       editor_container: me.id + '_editor',
       readonly: false,
       Usings: null,
@@ -59,22 +54,32 @@
         title: '',
         message: '',
         visible: false,
-        onSuccess: function () {
-          me.VueConfig.data.infodialog.visible = false;
-          me.onClose(true);
-        }
-      },
-    });
+      }
+    }
+  }
+
+  function codeform_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.EditCodeLabel,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel
+      });
+    }
+
+    methods.UpdateLanguage();
 
     var updateDataFromParent = function () {
-      var data = me.VueConfig.data;
       var ParentItem = data.ParentItem;
       data.Name = ParentItem.Name;
       data.Type = ParentItem.Type;
       data.IsAsync = ParentItem.IsAsync;
 
       if (!ParentItem.IsGlobal) {
-        var commonUsings = me.VueConfig.data.CommonUsings;
+        var commonUsings = data.CommonUsings;
         var additionalUsings = ParentItem.Usings ? decodeURIComponent(ParentItem.Usings).split(';') : [];
         var excludedUsings = ParentItem.ExcludedUsings ? decodeURIComponent(ParentItem.ExcludedUsings).split(';') : [];
         additionalUsings = additionalUsings.filter(function (additionalUsing) {
@@ -163,27 +168,26 @@
       }
 
       setTimeout(function () {
-        me.VueConfig.methods.renderEditor(decodeURIComponent(code));
+        methods.renderEditor(decodeURIComponent(code));
       }, 10);
     }
 
-    me.VueConfig.methods.onUpdate = function (dataFromParent) {
-      var data = me.VueConfig.data;
+    methods.onUpdate = function (dataFromParent) {
       data.readonly = me.graph.Settings.readonly;
       data.ParentItem = dataFromParent.item;
-      data.CommonUsings = dataFromParent.commonUsings;
+      data.CommonUsings = dataFromParent.commonUsings
       updateDataFromParent();
-    };
-
-    me.VueConfig.methods.onShow = function () {
-      me.unwatch = me.VueApp.$watch('ParentItem', function () {
-        updateDataFromParent();
-      }, {deep: true});
     }
 
-    me.VueConfig.methods.renderEditor = function (value) {
+    methods.onShow = function () {
+      me.unwatch = me.Root.$watch('ParentItem', function () {
+        updateDataFromParent();
+      }, {deep: true})
+    }
+
+    methods.renderEditor = function (value) {
       if (!me.editor) {
-        me.editor = ace.edit(me.VueConfig.data.editor_container);
+        me.editor = ace.edit(data.editor_container);
         var session = me.editor.getSession();
         session.setMode('ace/mode/csharp');
         session.setOption('useWorker', false);
@@ -202,30 +206,29 @@
       me.editor.setOptions({readOnly: me.graph.Settings.readonly});
       me.editor.setValue(value ? value : '');
       me.editor.clearSelection();
-    };
+    }
 
-    me.VueConfig.methods.onUsingsChange = function (values) {
+    methods.onUsingsChange = function (values) {
       if (!values || !values.length) {
         return;
       }
-      var data = me.VueConfig.data;
+
       values.forEach(function (value) {
         if (!data.Usings.includes(value)) {
           data.Usings.push(value);
         }
       });
       data.Usings.sort();
-    };
+    }
 
-    me.VueConfig.methods.onSave = function () {
-
+    methods.onSave = function () {
       var actionCode = encodeURIComponent(me.editor.getValue());
       var usings = [];
       var exludedUsings = [];
 
-      if (!me.VueConfig.data.ParentItem.IsGlobal) {
-        var selectedUsings = me.VueConfig.data.UsingsValue;
-        var commonUsings = me.VueConfig.data.CommonUsings;
+      if (!data.ParentItem.IsGlobal) {
+        var selectedUsings = data.UsingsValue;
+        var commonUsings = data.CommonUsings;
 
         selectedUsings.forEach(function (selectedUsing) {
           if (!commonUsings.includes(selectedUsing)) {
@@ -239,9 +242,10 @@
           }
         });
       } else {
-        usings = me.VueConfig.data.UsingsValue;
+        usings = data.UsingsValue;
         exludedUsings = [];
       }
+
       var usingsString = usings.join(';');
       if (usingsString !== '') {
         usingsString += ';'; //for compatibility with older versions
@@ -257,16 +261,15 @@
         ActionCode: actionCode
       });
       me.onClose(true);
-    };
+    }
 
-    me.VueConfig.methods.onClose = function () {
-      me.VueConfig.data.infodialog.visible = false;
+    methods.onClose = function () {
+      data.infodialog.visible = false;
       me.unwatch();
       me.onClose(true);
-    };
+    }
 
-    me.VueConfig.methods.onCompile = function () {
-      var data = me.VueConfig.data;
+    methods.onCompile = function () {
       var item = {
         Name: data.Name,
         Type: data.Type,
@@ -277,17 +280,17 @@
       }
 
       var callbackfn = function (response) {
-        var infodialog = me.VueConfig.data.infodialog;
+        var infodialog = data.infodialog;
         infodialog.title = response.Success ? WorkflowDesignerConstants.EditCodeLabel.Success : WorkflowDesignerConstants.EditCodeLabel.Error;
         infodialog.message = response.Success ? WorkflowDesignerConstants.EditCodeLabel.CompileSucceeded : response.Message;
         infodialog.visible = true;
       }
 
       me.graph.designer.compile(item, callbackfn);
-    };
+    }
 
-    me.VueConfig.methods.onHideEvent = function () {
-      me.graph.setParam('codeform_showusings', me.VueConfig.data.showusings);
+    methods.onHideEvent = function () {
+      me.graph.setParam('codeform_showusings', data.showusings);
 
       if (me.editor) {
         me.editor.destroy();

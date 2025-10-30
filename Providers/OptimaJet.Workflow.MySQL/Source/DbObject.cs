@@ -269,8 +269,13 @@ namespace OptimaJet.Workflow.MySQL
             command.Parameters.AddRange(parameters);
             return await command.ExecuteScalarAsync().ConfigureAwait(false);
         }
-
+        
         public async Task<TEntity[]> SelectAsync(MySqlConnection connection, string commandText, params MySqlParameter[] parameters)
+        {
+            return await SelectAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
+
+        public async Task<TEntity[]> SelectAsync(MySqlConnection connection, string commandText, MySqlTransaction transaction, params MySqlParameter[] parameters)
         {
             if (connection.State != ConnectionState.Open)
             {
@@ -279,6 +284,11 @@ namespace OptimaJet.Workflow.MySQL
 
             using MySqlCommand command = connection.CreateCommand();
             command.Connection = connection;
+            if (transaction != null)
+            {
+                command.Transaction = transaction;
+            }
+            
             command.CommandTimeout = CommandTimeout;
             command.CommandText = commandText;
             command.CommandType = CommandType.Text;

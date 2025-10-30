@@ -30,31 +30,40 @@
   </el-tooltip>
 </div>
 <script type="application/javascript">
-    function toolbarinfo_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.ToolbarLabel
-        });
-      }
+  function toolbarinfo_Data(me) {
+    return {
+      info: {},
+      settings: {}
+    }
+  }
 
-      me.VueConfig.methods.UpdateLanguage();
-        var data = me.VueConfig.data;
+  function toolbarinfo_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
 
-        me.VueConfig.methods.onUpdate = function(){
-            data.settings = me.graph.Settings;
-            data.info = {
-                activity: 0,
-                transition: 0,
-                command: 0,
-                activityLimit: undefined,
-                transitionLimit: undefined,
-                commandLimit: undefined,
-            };
 
-            if (me.graph.data != undefined) {
-                data.info.activity = me.graph.data.Activities.length;
-                data.info.transition = me.graph.data.Transitions.length;
-                data.info.command = me.graph.data.Commands.length;
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.ToolbarLabel
+      });
+    }
+
+    methods.UpdateLanguage();
+    methods.onUpdate = function () {
+      data.settings = me.graph.Settings;
+      data.info = {
+        activity: 0,
+        transition: 0,
+        command: 0,
+        activityLimit: undefined,
+        transitionLimit: undefined,
+        commandLimit: undefined,
+      };
+
+      if (me.graph.data != undefined) {
+        data.info.activity = me.graph.data.Activities.length;
+        data.info.transition = me.graph.data.Transitions.length;
+        data.info.command = me.graph.data.Commands.length;
 
         if (me.graph.data.AdditionalParams != undefined) {
           var addparams = me.graph.data.AdditionalParams;

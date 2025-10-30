@@ -4,7 +4,7 @@
     <el-switch v-model="LogEnabled" style="margin-left: 5px" @change="designer.changelogenabled"></el-switch>
   </div>
   <div style="display: flex; gap: 10px;">
-    <el-button :disabled="!LogEnabled" icon="el-icon-refresh" plain style="padding: 6px" type="primary" @click="onRefresh">
+    <el-button :disabled="!LogEnabled" icon="IconRefresh" plain style="padding: 6px" type="primary" @click="onRefresh">
       {{ labels.Refresh }}
     </el-button>
     <el-checkbox v-model="autoRefresh" :disabled="!LogEnabled" :label="labels.AutoRefresh" border
@@ -19,15 +19,18 @@
   </div>
 </h3>
 
-<el-table
+<!--
   :cell-style="tableCellStyle"
-  :data="tableData"
-  :row-style="tableRowStyle"
-  class="infinite-loading__table"
   fit
-  height="calc(100% - 75px)"
-  row-key="id"
   style="height: 100%; width: 100%"
+  :row-style="tableRowStyle"
+-->
+<el-table
+  v-el-table-infinite-scroll="infiniteHandler"
+  class="infinite-loading__table"
+  :data="tableData"
+  fit
+  row-key="id"
   @cell-mouse-enter="onHoveringRow">
   <el-table-column
     :formatter="getFormatDate"
@@ -38,72 +41,65 @@
   <el-table-column
     :label="labels.Message"
     prop="Message">
-    <template slot-scope="scope">
+    <template v-slot:default="scope">
       <div style="white-space:nowrap">
         <el-popover
           placement="bottom"
           trigger="hover">
           <el-row
+            v-if="!!scope?.row?.Properties"
             v-for="(key) in Object.keys(scope.row.Properties).filter(function(x) {if (scope.row.Properties[x]) return x;})"
             style="width: 560px" :key="key">
             <el-col :span="12">{{ key }}</el-col>
             <el-col :span="12">{{ scope.row.Properties[key] || labels.Empty }}</el-col>
           </el-row>
-
-          <span slot="reference">
-                        <i class="el-icon-info"></i>
-                    </span>
+          <temaplte #reference>
+              <el-icon>
+                <icon-info-filled></icon-info-filled>
+              </el-icon>
+          </temaplte>
         </el-popover>
-        {{ scope.row.Message }}
+        {{ scope?.row?.Message }}
       </div>
     </template>
   </el-table-column>
   <el-table-column
     :label="labels.Exception"
     width="90">
-    <template slot-scope="scope">
-      <el-button v-if="scope.row.Exception != null" size="mini" type="danger"
+    <template v-slot:default="scope">
+      <el-button v-if="scope?.row?.Exception != null" size="mini" type="danger"
                  @click="handleDialogOpen(scope.row.Exception)">{{ labels.Show }}
       </el-button>
     </template>
   </el-table-column>
-  <infinite-loading
-    slot="append"
-    force-use-infinite-wrapper=".el-table__body-wrapper"
-    @infinite="infiniteHandler">
-    <div slot="no-results"></div>
-  </infinite-loading>
 </el-table>
 <el-dialog
   :modal=false
   :title="labels.ExceptionInfo"
-  :visible.sync="dialog.visible"
+  v-model:visible="dialog.visible"
   top="40vh"
   width="500px">
   <p>{{ dialog.data.ClassName }}</p>
   <p v-if="dialog.data.Message">{{ dialog.data.Message }}</p>
-  <el-button type="text" @click="dialog.showDetails = !dialog.showDetails">
+  <el-button link @click="dialog.showDetails = !dialog.showDetails">
     {{ dialog.showDetails ? labels.HideDetails : labels.ShowDetails }}
   </el-button>
   <pre v-if="dialog.showDetails" class="CodeBlock"><code>{{ dialog.data }}</code></pre>
-  <el-button slot="footer" type="primary" @click="dialog.visible = false">{{ ButtonTextOk }}</el-button>
+  <template #footer>
+    <el-button type="primary" @click="dialog.visible = false">{{ ButtonTextOk }}</el-button>
+  </template>
 </el-dialog>
 
 <script type="application/javascript">
 
-  function logs_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.Logs,
-        ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
-        header: WorkflowDesignerConstants.Logs.Label,
-      });
-    }
+  // TODO https://element-plus.org/en-US/component/table-v2
 
-    me.VueConfig.methods.UpdateLanguage();
-    const designer = me.graph.designer;
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      designer: me.graph.designer,
+  function logs_Data(me) {
+    const {graph} = me;
+    const {designer} = graph;
+
+    return {
+      designer,
       count: 20,
       items: [],
       tableDataSource: [],
@@ -118,149 +114,172 @@
         data: {},
         showDetails: false
       },
-      folder: me.graph.Settings.templatefolder
-    });
-    me.VueConfig.methods = {
-      onAutoRefresh: function () {
-        if (this.autoRefresh && designer.LogEnabled) {
-          this.onRefresh();
-          setTimeout(this.onAutoRefresh, this.speedOfRefresh * 1000);
-        }
-      },
+      folder: graph.Settings.templatefolder
+    }
+  }
 
-      handleDialogOpen: function (data) {
-        this.dialog.data = data;
-        this.dialog.visible = true;
-      },
+  function logs_Init(me) {
+    const {VueConfig, graph} = me;
+    const {state: data, methods} = VueConfig
+    const {designer} = graph;
 
-      tableCellStyle: function (data) {
-        let row = data.row;
-        let cellStyle = {};
-        if (row['Properties'] && row['Properties']['EventType'] != 'EndExecution' && data.columnIndex == 0 && row.level == 0) {
-          cellStyle.paddingLeft = '22px'
-        } else {
-          if (row['Properties'] && row['Properties']['EventType'] == 'EndExecution' && row.level != 0) {
-            cellStyle.paddingLeft = ((row.level) * 22) + 'px'
-          } else if (row['Properties'] && row['Properties']['EventType'] != 'EndExecution' && row.level != 0) {
-            cellStyle.paddingLeft = ((row.level) * 24) + 'px'
-          }
-        }
-
-        return cellStyle;
-      },
-
-      tableRowStyle: function (data) {
-        let row = data.row;
-        let rowStyle = {};
-
-        if (row['isNew']) {
-          rowStyle.background = 'rgba(64,158,255,0.1)';
-        } else if (row['Exception'] != null) {
-          rowStyle.background = 'rgba(245,108,108,0.1)';
-        }
-
-        if (row['Properties'] && ['StartExecution', 'EndExecution'].includes(row['Properties']['EventType'])) {
-          rowStyle.fontWeight = 'bold';
-          rowStyle.fontSize = '15px';
-        }
-
-        return rowStyle;
-      },
-      onHoveringRow: function (row) {
-        if (row.isNew) {
-          row.isNew = false;
-        }
-      },
-      onRefresh: function () {
-        var additionalLogs = designer.getprocesslogs({suboperation: 'Last', count: this.count});
-        if (additionalLogs.length) {
-          this.tableDataSource = additionalLogs;
-          this.tableData = this.sortTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
-        }
-      },
-      infiniteHandler: function ($state) {
-        if (this.tableData.length === 0) {
-          $state.loaded();
-          $state.complete();
-          return;
-        }
-        var dateTime = this.findMinDateTime(this.tableDataSource);
-        var additionalLogs = designer.getprocesslogs({
-          suboperation: 'Early',
-          dateTime: dateTime,
-          count: this.count
-        });
-
-        var lastSourceItem = JSON.stringify(this.tableDataSource[this.tableDataSource.length - 1]);
-        var lastNewItem = JSON.stringify(additionalLogs[additionalLogs.length - 1]);
-        var isEqualLastItems = lastSourceItem === lastNewItem;
-
-        if (additionalLogs.length && !isEqualLastItems) {
-          this.tableDataSource = this.tableDataSource.concat(additionalLogs)
-          this.tableData = this.sortTableData(JSON.parse(JSON.stringify(this.tableDataSource)));
-          if (additionalLogs.length < this.count)
-            $state.complete();
-          else
-            $state.loaded();
-        } else {
-          $state.complete();
-        }
-      },
-      findMinDateTime: function (arr) {
-        var len = arr.length, min = arr[0]['CreatedOn'];
-        while (len--) {
-          if (arr[len]['CreatedOn'] < min) {
-            min = arr[len]['CreatedOn'];
-          }
-        }
-        return min;
-      },
-      findMaxDateTime: function (arr) {
-        var len = arr.length, max = arr[0]['CreatedOn'];
-        while (len--) {
-          if (arr[len]['CreatedOn'] > max) {
-            max = arr[len]['CreatedOn'];
-          }
-        }
-        return max;
-      },
-      getFormatDate: function (a, b, stringDate, d) {
-        let date = new Date(stringDate);
-        return date.toISOString();
-      },
-      sortTableData: function (data) {
-        return data.sort(function (a, b) {
-          return me.VueConfig.methods.compareDatesWithMicroseconds(a.Timestamp, b.Timestamp)
-        })
-      },
-      compareDatesWithMicroseconds: function (a, b) {
-        var dateA = new Date(a).getTime();
-        var dateB = new Date(b).getTime();
-        if (dateA < dateB) return 1;
-        else if (dateA > dateB) return -1;
-        else {
-          var microSecondsA = me.VueConfig.methods.getMicroseconds(a);
-          var microSecondsB = me.VueConfig.methods.getMicroseconds(b);
-
-          if (microSecondsA < microSecondsB) return 1;
-          else if (microSecondsA > microSecondsB) return -1;
-          return 0;
-        }
-
-      },
-      getMicroseconds(timeString) {
-        if (timeString.lastIndexOf('+') > -1) {
-          return parseFloat(timeString.substring(timeString.lastIndexOf('.'), timeString.lastIndexOf('+')));
-        }
-
-        return parseFloat(timeString.substring(timeString.lastIndexOf('.')));
-      }
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.Logs,
+        ButtonTextOk: WorkflowDesignerConstants.ButtonTextOk,
+        header: WorkflowDesignerConstants.Logs.Label,
+      });
     }
 
-    me.VueConfig.created = function () {
-      var dataSource = designer.getprocesslogs({suboperation: 'Last', count: this.count});
-      this.tableDataSource = dataSource;
-      this.tableData = this.sortTableData(JSON.parse(JSON.stringify(dataSource)));
+    methods.UpdateLanguage();
+
+    methods.onAutoRefresh = function () {
+      if (data.autoRefresh && designer.LogEnabled) {
+        methods.onRefresh();
+        setTimeout(methods.onAutoRefresh, data.speedOfRefresh * 1000);
+      }
+    };
+
+    methods.handleDialogOpen = function (data) {
+      data.dialog.data = data;
+      data.dialog.visible = true;
+    };
+
+    methods.tableCellStyle = function (data) {
+      let row = data.row;
+      let cellStyle = {};
+      if (row['Properties'] && row['Properties']['EventType'] !== 'EndExecution' && data.columnIndex == 0 && row.level == 0) {
+        cellStyle.paddingLeft = '22px'
+      } else {
+        if (row['Properties'] && row['Properties']['EventType'] === 'EndExecution' && row.level != 0) {
+          cellStyle.paddingLeft = ((row.level) * 22) + 'px'
+        } else if (row['Properties'] && row['Properties']['EventType'] !== 'EndExecution' && row.level != 0) {
+          cellStyle.paddingLeft = ((row.level) * 24) + 'px'
+        }
+      }
+
+      return cellStyle;
+    };
+
+    methods.tableRowStyle = function (data) {
+      let row = data.row;
+      let rowStyle = {};
+
+      if (row['isNew']) {
+        rowStyle.background = 'rgba(64,158,255,0.1)';
+      } else if (row['Exception'] != null) {
+        rowStyle.background = 'rgba(245,108,108,0.1)';
+      }
+
+      if (row['Properties'] && ['StartExecution', 'EndExecution'].includes(row['Properties']['EventType'])) {
+        rowStyle.fontWeight = 'bold';
+        rowStyle.fontSize = '15px';
+      }
+
+      return rowStyle;
+    };
+
+    methods.onHoveringRow = function (row) {
+      if (row.isNew) {
+        row.isNew = false;
+      }
+    };
+
+    methods.onRefresh = function () {
+      var additionalLogs = designer.getprocesslogs({suboperation: 'Last', count: this.count});
+      if (additionalLogs.length) {
+        data.tableDataSource = additionalLogs;
+        data.tableData = methods.sortTableData(JSON.parse(JSON.stringify(data.tableDataSource)));
+      }
+    };
+
+    console.log(data.tableData, data.tableDataSource)
+
+    methods.infiniteHandler = function () {
+
+      if (data.tableData.length === 0) {
+        // no logs, nothing todo
+        return;
+      }
+
+      var dateTime = methods.findMinDateTime(data.tableDataSource);
+      var additionalLogs = designer.getprocesslogs({
+        suboperation: 'Early',
+        dateTime: dateTime,
+        count: data.count
+      });
+
+      var lastSourceItem = JSON.stringify(data.tableDataSource[data.tableDataSource.length - 1]);
+      var lastNewItem = JSON.stringify(additionalLogs[additionalLogs.length - 1]);
+      var isEqualLastItems = lastSourceItem === lastNewItem;
+
+      if (additionalLogs.length > 0 && !isEqualLastItems) {
+        data.tableDataSource = data.tableDataSource.concat(additionalLogs)
+        data.tableData = methods.sortTableData(JSON.parse(JSON.stringify(data.tableDataSource)));
+      } else {
+        // TODO ?? set infinite-scroll-disabled
+      }
+    };
+
+    methods.findMinDateTime = function (arr) {
+      var len = arr.length, min = arr[0]['CreatedOn'];
+      while (len--) {
+        if (arr[len]['CreatedOn'] < min) {
+          min = arr[len]['CreatedOn'];
+        }
+      }
+      return min;
+    };
+
+    methods.findMaxDateTime = function (arr) {
+      var len = arr.length, max = arr[0]['CreatedOn'];
+      while (len--) {
+        if (arr[len]['CreatedOn'] > max) {
+          max = arr[len]['CreatedOn'];
+        }
+      }
+      return max;
+    };
+
+    methods.getFormatDate = function (a, b, stringDate, d) {
+      let date = new Date(stringDate);
+      return date.toISOString();
+    };
+
+    methods.sortTableData = function (data) {
+      return data.sort(function (a, b) {
+        return methods.compareDatesWithMicroseconds(a.Timestamp, b.Timestamp)
+      })
+    };
+
+    methods.compareDatesWithMicroseconds = function (a, b) {
+      var dateA = new Date(a).getTime();
+      var dateB = new Date(b).getTime();
+      if (dateA < dateB) return 1;
+      else if (dateA > dateB) return -1;
+      else {
+        var microSecondsA = methods.getMicroseconds(a);
+        var microSecondsB = methods.getMicroseconds(b);
+
+        if (microSecondsA < microSecondsB) return 1;
+        else if (microSecondsA > microSecondsB) return -1;
+        return 0;
+      }
+
+    };
+
+    methods.getMicroseconds = function (timeString) {
+      if (timeString.lastIndexOf('+') > -1) {
+        return parseFloat(timeString.substring(timeString.lastIndexOf('.'), timeString.lastIndexOf('+')));
+      }
+
+      return parseFloat(timeString.substring(timeString.lastIndexOf('.')));
+    }
+
+    VueConfig.created = function () {
+      var dataSource = designer.getprocesslogs({suboperation: 'Last', count: data.count});
+      data.tableDataSource = dataSource;
+      data.tableData = methods.sortTableData(JSON.parse(JSON.stringify(dataSource)));
     }
   }
 

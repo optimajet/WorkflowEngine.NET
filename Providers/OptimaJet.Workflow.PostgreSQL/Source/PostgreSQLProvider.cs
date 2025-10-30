@@ -59,6 +59,7 @@ namespace OptimaJet.Workflow.PostgreSQL
         public WorkflowScheme WorkflowScheme { get; }
         public WorkflowSync WorkflowSync { get; }
         public ProcessInstanceTree ProcessInstanceTree { get; }
+        public Models.WorkflowForm WorkflowForm { get; }
 
         public virtual void Init(WorkflowRuntime runtime)
         {
@@ -96,6 +97,7 @@ namespace OptimaJet.Workflow.PostgreSQL
             WorkflowScheme = new WorkflowScheme(Options.SchemaName, Options.GlobalCommandTimeout);
             WorkflowSync = new WorkflowSync(Options.SchemaName, Options.GlobalCommandTimeout);
             ProcessInstanceTree = new ProcessInstanceTree(Options.SchemaName, Options.GlobalCommandTimeout);
+            WorkflowForm = new Models.WorkflowForm(Options.SchemaName, Options.GlobalCommandTimeout);
         }
 
         /// <summary> Opens a new database connection </summary>
@@ -1740,5 +1742,80 @@ namespace OptimaJet.Workflow.PostgreSQL
         }
 
         #endregion IApprovalProvider
+        
+        #region IFormDataProvider
+
+        public async Task<WorkflowForm> GetFormAsync(string name, int? version = null)
+        {
+            using var connection = OpenConnection();
+            WorkflowFormEntity entity = await WorkflowForm.GetFormAsync(connection, name, version).ConfigureAwait(false);
+            return entity?.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<List<string>> GetFormNamesAsync()
+        {
+            using var connection = OpenConnection();
+            return await WorkflowForm.GetFormNamesAsync(connection).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<List<int>> GetFormVersionsAsync(string name)
+        {
+            using var connection = OpenConnection();
+            return await WorkflowForm.GetFormVersionsAsync(connection, name).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task<WorkflowForm> CreateNewFormVersionAsync(string name, string defaultDefinition, int? version = null)
+        {
+            using var connection = OpenConnection();
+            var entity = await WorkflowForm
+                .CreateNewFormVersionAsync(connection, _runtime.RuntimeDateTimeNow, name, defaultDefinition, version).ConfigureAwait(false);
+
+            return entity is null ? throw new Exception("The form with the specified name and version was not found.") : entity.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<WorkflowForm> CreateNewFormIfNotExistsAsync(string name, string defaultDefinition)
+        {
+            using var connection = OpenConnection();
+            WorkflowFormEntity entity = await WorkflowForm
+                .CreateNewFormIfNotExistsAsync(connection, _runtime.RuntimeDateTimeNow, name, defaultDefinition).ConfigureAwait(false);
+            return entity is null ? throw new Exception("Unable to create new form.") : entity.ToModel();
+        }
+
+        /// <inheritdoc />
+        public async Task<int> UpdateFormAsync(string name, int version, int lockValue, string definition)
+        {
+            using var connection = OpenConnection();
+            int newLock = lockValue == int.MaxValue ? 0 : lockValue + 1;
+            int result = await WorkflowForm.UpdateFormAsync(connection, name, version, lockValue, newLock, definition,
+                _runtime.RuntimeDateTimeNow).ConfigureAwait(false);
+
+            if (result != 1)
+            {
+                throw new Exception(
+                    $"The form '{name}' with version '{version}' was either updated earlier or does not exist. Unable to update the form.");
+            }
+
+            return newLock;
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteFormVersionAsync(string name, int version)
+        {
+            using var connection = OpenConnection();
+            await WorkflowForm.DeleteFormVersionAsync(connection, name, version).ConfigureAwait(false);
+        }
+
+        /// <inheritdoc />
+        public async Task DeleteFormAsync(string name)
+        {
+            using var connection = OpenConnection();
+            await WorkflowForm.DeleteFormAsync(connection, name).ConfigureAwait(false);
+        }
+        
+        #endregion
     }
 }

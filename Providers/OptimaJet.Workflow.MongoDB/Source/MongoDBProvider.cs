@@ -12,6 +12,7 @@ using MongoDB.Driver;
 using MongoDB.Driver.Linq;
 using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
+using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Model;
 using OptimaJet.Workflow.Core.Persistence;
@@ -21,6 +22,7 @@ using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.MongoDB.Models;
 using OptimaJet.Workflow.Plugins;
 using SortDirection = OptimaJet.Workflow.Core.Persistence.SortDirection;
+using WorkflowForm = OptimaJet.Workflow.Core.Persistence.WorkflowForm;
 using WorkflowRuntime = OptimaJet.Workflow.Core.Runtime.WorkflowRuntime;
 
 namespace OptimaJet.Workflow.MongoDB
@@ -36,7 +38,7 @@ namespace OptimaJet.Workflow.MongoDB
         public const string WorkflowGlobalParameterCollectionName = "WorkflowGlobalParameter";
         public const string WorkflowRuntimeCollectionName = "WorkflowRuntime";
         public const string WorkflowSyncCollectionName = "WorkflowSync";
-    
+        public const string WorkflowFormCollectionName = "WorkflowForm";
         public const string WorkflowApprovalHistoryCollectionName = "WorkflowApprovalHistory";
         public const string WorkflowInboxCollectionName = "WorkflowInbox";
     }
@@ -47,14 +49,20 @@ namespace OptimaJet.Workflow.MongoDB
         private readonly bool _writeToHistory;
         private readonly bool _writeSubProcessToRoot;
 
-        public MongoDBProvider(IMongoDatabase store,bool writeToHistory = true, bool writeSubProcessToRoot = false)
+        public MongoDBProvider(string connectionString, bool writeToHistory = true, bool writeSubProcessToRoot = false)
         {
-            Store = store;
+            string databaseName = MongoUrl.Create(connectionString).DatabaseName;
+            var client = new MongoClient(connectionString);
+            Store = client.GetDatabase(databaseName);
+
+            ConnectionString = connectionString;
             _writeToHistory = writeToHistory;
             _writeSubProcessToRoot = writeSubProcessToRoot;
         }
 
         public string Id => PersistenceProviderId.Mongo;
+
+        public string ConnectionString { get; }
 
         public IMongoDatabase Store { get; set; }
 
@@ -2181,6 +2189,176 @@ namespace OptimaJet.Workflow.MongoDB
         
         
         #endregion IApprovalProvider
+        
+        #region IFormDataProvider
+
+        public async Task<WorkflowForm> GetFormAsync(string name, int? version = null)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            var filter = Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name);
+
+            if (version.HasValue)
+            {
+                filter = Builders<Models.WorkflowForm>.Filter.And(
+                    filter,
+                    Builders<Models.WorkflowForm>.Filter.Eq(f => f.Version, version.Value)
+                );
+            }
+
+            Models.WorkflowForm entity = await formCollection
+                .Find(filter)
+                .SortByDescending(f => f.Version)
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+
+            return entity?.ToModel();
+        }
+
+        public async Task<List<string>> GetFormNamesAsync()
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            return await formCollection.Distinct<string>(nameof(WorkflowFormEntity.Name), FilterDefinition<Models.WorkflowForm>.Empty)
+                .ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<List<int>> GetFormVersionsAsync(string name)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            var filter = Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name);
+            return await formCollection.Distinct<int>(nameof(WorkflowFormEntity.Version), filter).ToListAsync().ConfigureAwait(false);
+        }
+
+        public async Task<WorkflowForm> CreateNewFormVersionAsync(string name, string defaultDefinition, int? version = null)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+
+            DateTime now = _runtime.RuntimeDateTimeNow;
+
+            Models.WorkflowForm latest = await formCollection
+                .Find(x => x.Name == name)
+                .SortByDescending(x => x.Version)
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+
+            int newVersion = latest != null ? latest.Version + 1 : 0;
+
+            string definition;
+
+            if (version == null)
+            {
+                definition = latest?.Definition ?? defaultDefinition;
+            }
+            else
+            {
+                Models.WorkflowForm existing = await formCollection
+                    .Find(x => x.Name == name && x.Version == version.Value)
+                    .FirstOrDefaultAsync()
+                    .ConfigureAwait(false);
+
+                if (existing == null)
+                {
+                    throw new InvalidOperationException("The form with the specified name and version was not found.");
+                }
+
+                definition = existing.Definition;
+            }
+
+            var entity = new Models.WorkflowForm
+            {
+                Id = Guid.NewGuid(),
+                Name = name,
+                Version = newVersion,
+                CreationDate = now,
+                UpdatedDate = now,
+                Definition = definition,
+                Lock = 0
+            };
+
+            await formCollection.InsertOneAsync(entity).ConfigureAwait(false);
+
+            return entity.ToModel();
+        }
+
+        public async Task<WorkflowForm> CreateNewFormIfNotExistsAsync(string name, string defaultDefinition)
+        {
+            IMongoCollection<Models.WorkflowForm> formCollection =
+                Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+
+            FilterDefinition<Models.WorkflowForm> filter = Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name);
+
+            DateTime now = _runtime.RuntimeDateTimeNow;
+
+            UpdateDefinition<Models.WorkflowForm> update = Builders<Models.WorkflowForm>.Update
+                .SetOnInsert(f => f.Id, Guid.NewGuid())
+                .SetOnInsert(f => f.Name,name)
+                .SetOnInsert(f => f.Version, 0)
+                .SetOnInsert(f => f.CreationDate, now)
+                .SetOnInsert(f => f.UpdatedDate, now)
+                .SetOnInsert(f => f.Definition, defaultDefinition)
+                .SetOnInsert(f => f.Lock, 0);
+
+            var options = new UpdateOptions { IsUpsert = true };
+
+            await formCollection.UpdateOneAsync(filter, update, options).ConfigureAwait(false);
+
+            Models.WorkflowForm resultForm = await formCollection.Find(filter)
+                .SortByDescending(f => f.Version)
+                .FirstOrDefaultAsync()
+                .ConfigureAwait(false);
+
+            if (resultForm == null)
+            {
+                throw new Exception("Unable to create a new form.");
+            }
+
+            return resultForm.ToModel();
+        }
+
+        public async Task<int> UpdateFormAsync(string name, int version, int lockValue, string definition)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            var filter = Builders<Models.WorkflowForm>.Filter.And(
+                Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name),
+                Builders<Models.WorkflowForm>.Filter.Eq(f => f.Version, version),
+                Builders<Models.WorkflowForm>.Filter.Eq(f => f.Lock, lockValue)
+            );
+
+            var newLockValue = lockValue == int.MaxValue ? 0 : lockValue + 1;
+            var update = Builders<Models.WorkflowForm>.Update
+                .Set(f => f.Definition, definition)
+                .Set(f => f.UpdatedDate, _runtime.RuntimeDateTimeNow)
+                .Set(f => f.Lock, newLockValue);
+
+            var result = await formCollection.UpdateOneAsync(filter, update).ConfigureAwait(false);
+
+            if (result.ModifiedCount != 1)
+            {
+                throw new Exception(
+                    $"The form '{name}' with version '{version}' was either updated earlier or does not exist. Unable to update the form.");
+            }
+
+            return newLockValue;
+        }
+
+        public async Task DeleteFormVersionAsync(string name, int version)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            var filter = Builders<Models.WorkflowForm>.Filter.And(
+                Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name),
+                Builders<Models.WorkflowForm>.Filter.Eq(f => f.Version, version)
+            );
+
+            await formCollection.DeleteOneAsync(filter).ConfigureAwait(false);
+        }
+
+        public async Task DeleteFormAsync(string name)
+        {
+            var formCollection = Store.GetCollection<Models.WorkflowForm>(MongoDBConstants.WorkflowFormCollectionName);
+            var filter = Builders<Models.WorkflowForm>.Filter.Eq(f => f.Name, name);
+            await formCollection.DeleteManyAsync(filter).ConfigureAwait(false);
+        }
+        
+        #endregion
 
         private void CheckInitialData()
         {

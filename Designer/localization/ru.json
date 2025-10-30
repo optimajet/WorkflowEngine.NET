@@ -3,8 +3,7 @@
 		"code": "ru",
 		"dialect": "RU",
 		"name": "Русский",
-		"description": "Russian (Standard)",
-		"elementUICode": "ru-RU"
+		"description": "Russian (Standard)"
 	},
 	"ActivityFormLabel": {
 		"ActivityLabel": "Активность",

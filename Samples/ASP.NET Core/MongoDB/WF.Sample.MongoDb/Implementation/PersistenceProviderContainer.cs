@@ -22,8 +22,7 @@ namespace WF.Sample.MongoDb.Implementation
 
         public PersistenceProviderContainer(IConfiguration config)
         {
-            var mongoClient = new MongoClient(new MongoUrl(config["Url"]));
-            _provider = new MongoDBProvider(mongoClient.GetDatabase(config["Database"]));
+            _provider = new MongoDBProvider(config["Url"]);
             Provider = _provider;
 
             if(_provider.Store.GetCollection<Business.Model.Role>("Role").CountDocuments(new BsonDocument()) == 0)

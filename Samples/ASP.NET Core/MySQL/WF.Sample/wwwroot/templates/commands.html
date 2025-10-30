@@ -1,6 +1,6 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{labels.Title}}
-  <a v-if="!readonly" @click="add()">{{ButtonTextCreate}}</a>
+  {{ labels.Title }}
+  <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerCommandsList" class="WorkflowDesignerWindowForm">
   <table class="WorkflowDesignerTable">
@@ -15,9 +15,9 @@
       <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
         <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
       </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
+      <td>
+        <el-input
+          v-model="item.Name"
           :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
           :readonly="readonly"
           :title="validateField('Name', item)"
@@ -27,7 +27,7 @@
         <el-button-group>
           <el-button :class="'WorkflowDesignerTableCodeParametersButton ' + (editParametersItem == item ? 'is-active' : '')"
                      v-on:click="showparameters(item)"></el-button>
-          <el-button class="WorkflowDesignerTableCommentButton el-icon-" v-on:click="showComment(item)"></el-button>
+          <el-button icon="IconComment" class="WorkflowDesignerTableCommentButton" v-on:click="showComment(item)"></el-button>
           <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
         </el-button-group>
       </td>
@@ -39,29 +39,36 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function commands_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.CommandFormLabel,
-          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
-      }
+  function commands_Data(me) {
+    return {
+      readonly: false,
+      editItem: undefined,
+      editParametersItem: undefined,
+      items: []
+    }
+  }
 
-      me.VueConfig.methods.UpdateLanguage();
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            editItem: undefined,
-            editParametersItem: undefined
-        });
+  function commands_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
 
-    me.VueConfig.methods.setCurrentItem = function (item) {
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.CommandFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
+
+    methods.UpdateLanguage();
+
+    methods.setCurrentItem = function (item) {
       this.currentItem = item;
     };
 
-    me.VueConfig.methods.onUpdate = function () {
+    methods.onUpdate = function () {
       var clonedItems = WorkflowDesignerCommon.clone(me.graph.data.Commands);
       clonedItems.forEach(function (item) {
         if (!Array.isArray(item.InputParameters)) {
@@ -71,12 +78,12 @@
           if (!parameterItem.Parameter) parameterItem.Parameter = {};
         })
       });
-      me.VueConfig.data.items = clonedItems;
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+      data.items = clonedItems;
+      data.readonly = me.graph.Settings.readonly;
     };
 
-    me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({Name: '', InputParameters: []});
+    methods.add = function () {
+      data.items.push({Name: '', InputParameters: []});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerCommandsList');
@@ -84,32 +91,32 @@
       }, 10);
     };
 
-    me.VueConfig.methods.remove = function (index) {
-      me.VueConfig.data.items.splice(index, 1);
+    methods.remove = function (index) {
+      data.items.splice(index, 1);
     };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
-      me.VueConfig.data.jsonform = me.showjson(item[name], {}, function (value) {
+      data.jsonform = me.showjson(item[name], {}, function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       })
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
-      if (name != 'Name')
+    methods.validateField = function (name, item) {
+      if (name !== 'Name')
         return;
 
       if (!item[name]) {
         return WorkflowDesignerConstants.FieldIsRequired;
       }
 
-      if (name == 'Name') {
-        var res = me.VueConfig.data.items.filter(function (i) {
+      if (name === 'Name') {
+        var res = data.items.filter(function (i) {
           return i != item && i.Name == item.Name
         });
         if (res.length > 0) {
@@ -118,45 +125,45 @@
       }
     };
 
-    me.VueConfig.methods.showparameters = function (item) {
-      me.VueConfig.data.editParametersItem = me.editParametersItem = item;
+    methods.showparameters = function (item) {
+      data.editParametersItem = me.editParametersItem = item;
 
       var windowId = me.id + '_commandParameters';
 
       var onSuccess = function (res) {
         if (me.editParametersItem) {
           me.editParametersItem.ParameterDefinitions = WorkflowDesignerCommon.clone(res);
-          me.VueConfig.data.editParametersItem = undefined;
+          data.editParametersItem = undefined;
           delete me.editParametersItem;
         }
       };
 
       var onClose = function () {
         if (me.editParametersItem) {
-          me.VueConfig.data.editParametersItem = undefined;
+          data.editParametersItem = undefined;
           delete me.editParametersItem;
         }
       }
 
-            if(!me.parametersform){
-                var options = {
-                    move: true,
-                    resize: true,
-                    savePosition: true,
-                    class: 'WorkflowDesignerParametersForm',
-                    onSuccess: onSuccess,
-                    onClose: onClose,
-                    parameterDefinition: {}
-                };
-                me.parametersform = me.graph.CreateWindow(windowId, options);
-            }
+      if (!me.parametersform) {
+        var options = {
+          move: true,
+          resize: true,
+          savePosition: true,
+          class: 'WorkflowDesignerParametersForm',
+          onSuccess: onSuccess,
+          onClose: onClose,
+          parameterDefinition: {}
+        };
+        me.parametersform = me.graph.CreateWindow(windowId, options);
+      }
 
       me.parametersform.show('commandParameters', item);
     };
 
-    me.VueConfig.methods.showComment = function (item) {
-      const name = "Comment";
-      const title = "Edit comment";
+    methods.showComment = function (item) {
+      const name = 'Comment';
+      const title = 'Edit comment';
       const type = WorkflowDesignerConstants.ParameterTypes.TextArea;
 
       me.editItem = item;
@@ -175,10 +182,10 @@
       });
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
 
-      var items = me.VueConfig.data.items;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (validateFunc('Name', item))
@@ -188,23 +195,23 @@
       return true;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
-        me.graph.UpdateData(me.graph.data.Commands, me.VueConfig.data.items);
+    methods.onSave = function () {
+      if (methods.validate && methods.validate()) {
+        me.graph.UpdateData(me.graph.data.Commands, data.items);
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
 
-            if(me.VueConfig.data.readonly){
-                me.onClose(true);
-                return;
-            }
-            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
-                me.graph.data.Commands,
-                me.VueConfig.data.items,
-        ['Name', 'InputParameters', "Comment"])) {
+      if (data.readonly) {
+        me.onClose(true);
+        return;
+      }
+      if (!data.readonly && !WorkflowDesignerCommon.compareArray(
+        me.graph.data.Commands,
+        data.items,
+        ['Name', 'InputParameters', 'Comment'])) {
 
         me.showConfirm();
         return false;
@@ -213,16 +220,16 @@
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

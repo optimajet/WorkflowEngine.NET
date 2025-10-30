@@ -1,55 +1,55 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{ parentItem.Name }} {{labels.Title}}
-  <a v-if="!readonly" @click="add()">{{ButtonTextCreate}}</a>
+  {{ parentItem?.Name }} {{ labels.Title }}
+  <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerCodeActionsParametersList" class="WorkflowDesignerWindowForm">
-    <table class="WorkflowDesignerTable">
-        <tr>
-            <th></th>
-            <th>{{labels.InputParametersParameter}}</th>
-            <th>{{labels.InputParametersName}}</th>
-            <th>{{labels.InputParametersIsRequired}}</th>
-            <th>{{labels.InputParametersDefaultValue}}</th>
-        </tr>
-        <tr v-for="(item, index) in items" :key="index">
-            <td></td>
-            <td>
-                <el-select
-                    v-model="item.Parameter.Name"
+  <table class="WorkflowDesignerTable">
+    <tr>
+      <th></th>
+      <th>{{ labels.InputParametersParameter }}</th>
+      <th>{{ labels.InputParametersName }}</th>
+      <th>{{ labels.InputParametersIsRequired }}</th>
+      <th>{{ labels.InputParametersDefaultValue }}</th>
+    </tr>
+    <tr v-for="(item, index) in items" :key="index">
+      <td></td>
+      <td>
+        <el-select
+          v-model="item.Parameter.Name"
           :class="validateField('Parameter', item) ? 'WorkflowDesignerInputError' : ''"
           :disabled="readonly"
           :title="validateField('Parameter', item)"
-                    filterable placeholder=""
+          filterable placeholder=""
           style="width: 100%;"
-          @change="parameterOnChange(item)">
-                    <el-option v-for="p in parameters" :key="p.Name" :label="p.Name" :value="p.Name"></el-option>
-                </el-select>
-            </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
+          >
+          <el-option v-for="p in parameters" :key="p.Name" :label="p.Name" :value="p.Name"></el-option>
+        </el-select>
+      </td>
+      <td>
+        <el-input
+          v-model="item.Name"
           :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
           :readonly="readonly"
           :title="validateField('Name', item)"
-                ></el-input>
-            </td>
-            <td>
-                <el-checkbox
-                    v-model="item.IsRequired"
-                    :disabled="readonly"
-                ></el-checkbox>
-            </td>
-            <td>
-                <el-input
-                    v-model="item.DefaultValue"
-                    :readonly="readonly"
-                ></el-input>
-            </td>
-            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Triple">
-                <el-button-group>
+        ></el-input>
+      </td>
+      <td>
+        <el-checkbox
+          v-model="item.IsRequired"
+          :disabled="readonly"
+        ></el-checkbox>
+      </td>
+      <td>
+        <el-input
+          v-model="item.DefaultValue"
+          :readonly="readonly"
+        ></el-input>
+      </td>
+      <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Triple">
+        <el-button-group>
           <el-button :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"
                      @click="showjson('DefaultValue', item)"></el-button>
-          <el-button class="WorkflowDesignerTableCommentButton el-icon-" v-on:click="showComment(item)"></el-button>
+          <el-button icon="IconComment" class="WorkflowDesignerTableCommentButton" v-on:click="showComment(item)"></el-button>
           <el-button class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
         </el-button-group>
       </td>
@@ -61,87 +61,95 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function commandParameters_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.CommandParametersFormLabel,
-          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
+  function commandParameters_Data(me) {
+    return {
+      readonly: false,
+      editItem: undefined,
+      parametersStore: me.graph.data.Parameters,
+
+      items: [],
+      parentItem: {
+        Name: '',
+        Title: ''
       }
+    };
+  }
 
-      me.VueConfig.methods.UpdateLanguage();
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            editItem: undefined,
-            parametersStore: me.graph.data.Parameters,
-        });
+  function commandParameters_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
 
-        me.VueConfig.watch = {
-            parametersStore:function(val) {
-                me.VueConfig.data.parameters = me.graph.getNonSystemParameters();
-            },
-        }
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.CommandParametersFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    }
 
-        me.VueConfig.methods.setCurrentItem = function(item) {
-            this.currentItem = item;
-        };
+    methods.UpdateLanguage();
 
-        me.VueConfig.methods.typeOnChange = function(item){
-            item.DefaultValue = undefined;
-        }
+    me.VueConfig.watch = {
+      // TODO check
+      parametersStore: function (val) {
+        data.parameters = me.graph.getNonSystemParameters();
+      },
+    }
 
-        me.VueConfig.methods.onUpdate = function(item){
-            me.VueConfig.data.parameters = me.graph.getNonSystemParameters();
-            me.VueConfig.data.parentItem = item;
-            me.VueConfig.data.items = WorkflowDesignerCommon.clone(item.InputParameters);
-            me.VueConfig.data.readonly = me.graph.Settings.readonly;
-        };
-
-    me.VueConfig.methods.add = function () {
-      if (!Array.isArray(me.VueConfig.data.items))
-        me.VueConfig.data.items = [];
-
-      me.VueConfig.data.items.push({Parameter: {}, Name: '', IsRequired: false, DefaultValue: ''});
+    methods.setCurrentItem = function (item) {
+      this.currentItem = item;
     };
 
-        me.VueConfig.methods.remove = function(index){
-            me.VueConfig.data.items.splice(index, 1);
-        };
+    methods.typeOnChange = function (item) {
+      item.DefaultValue = undefined;
+    }
 
-        me.VueConfig.methods.parameterOnChange = function(ip){
-            if(!ip.Name)
-                ip.Name = ip.Parameter.Name;
-        };
+    methods.onUpdate = function (item) {
+      data.parameters = me.graph.getNonSystemParameters();
+      data.parentItem = item;
+      data.items = WorkflowDesignerCommon.clone(item.InputParameters);
+      data.readonly = me.graph.Settings.readonly;
+    };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.add = function () {
+      if (!Array.isArray(data.items))
+        data.items = [];
+
+      data.items.push({Parameter: {}, Name: '', IsRequired: false, DefaultValue: ''});
+    };
+
+    methods.remove = function (index) {
+      data.items.splice(index, 1);
+    };
+
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editItem = undefined;
+        data.editItem = undefined;
       };
 
       var params = {
         name: item['Rule'],
         type: ['RuleCheck', 'RuleGet']
       };
-      me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
-    me.VueConfig.methods.showComment = function (item) {
-      const name = "Comment";
-      const title = "Edit comment";
+    methods.showComment = function (item) {
+      const name = 'Comment';
+      const title = 'Edit comment';
       const type = WorkflowDesignerConstants.ParameterTypes.TextArea;
 
       me.editItem = item;
@@ -160,23 +168,23 @@
       })
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
+    methods.validateField = function (name, item) {
       if (name !== 'Name' && name !== 'Parameter')
         return;
 
-      if (!item[name]) {
+      if (!item?.[name]) {
         return WorkflowDesignerConstants.FieldIsRequired;
       }
 
-      if (name === 'Parameter' && !item['Parameter']['Name']) {
-                return WorkflowDesignerConstants.FieldIsRequired;
-            }
-        };
+      if (name === 'Parameter' && !item?.['Parameter']?.['Name']) {
+        return WorkflowDesignerConstants.FieldIsRequired;
+      }
+    };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
 
-      var items = me.VueConfig.data.items;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (validateFunc('Name', item))
@@ -192,22 +200,22 @@
       return true;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
-        me.graph.UpdateData(me.VueConfig.data.parentItem.InputParameters, me.VueConfig.data.items);
+    methods.onSave = function () {
+      if (methods.validate && methods.validate()) {
+        me.graph.UpdateData(data.parentItem.InputParameters, data.items);
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
-      if (me.VueConfig.data.readonly) {
+    methods.onClose = function () {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
-                me.VueConfig.data.parentItem.InputParameters,
-                me.VueConfig.data.items,
+      if (!data.readonly && !WorkflowDesignerCommon.compareArray(
+        data.parentItem.InputParameters,
+        data.items,
         ['Name', 'IsRequired', 'DefaultValue', 'Comment'])) {
 
         me.showConfirm();
@@ -217,16 +225,16 @@
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

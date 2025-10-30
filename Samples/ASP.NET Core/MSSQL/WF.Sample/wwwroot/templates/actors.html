@@ -1,6 +1,6 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{labels.Title}}
-  <a v-if="!readonly" @click="add()">{{ButtonTextCreate}}</a>
+  {{ labels.Title }}
+  <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerActorsList" class="WorkflowDesignerWindowForm">
   <div style="display: flex; justify-content: flex-end; margin-bottom: 5px;">
@@ -13,46 +13,48 @@
       <th>{{ labels.Rule }}</th>
       <th>{{ labels.Value }}</th>
     </tr>
-    <tr v-for="(item, index) in items" :key="index" v-if="showPredefined || item.IsPredefined!=true"
-        :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
-        @dragend="dragend($event)" @dragover="dragover(item, index, $event)"
-        @dragstart="dragstart(index, $event)">
-      <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
-        <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
-      </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
-          :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
-          :readonly="readonly || item.IsPredefined === true"
-          :title="validateField('Name', item)"
-                ></el-input>
-            </td>
-            <td>
-                <el-select
-                    v-model="item.Rule"
-          :class="validateField('Rule', item) ? 'WorkflowDesignerInputError' : ''"
-          :disabled="readonly || item.IsPredefined === true"
-          :title="validateField('Rule', item)" clearable
-          filterable
-                    placeholder=""
-          style="width: 100%;">
-          <el-option v-for="item in conditions" :key="item" :label="item" :value="item"></el-option>
-        </el-select>
-      </td>
-      <td>
-        <el-autocomplete v-model="item.Value" :fetch-suggestions="querySearch" :readonly="readonly || item.IsPredefined === true"
-                         @focus="setCurrentItem(item)"></el-autocomplete>
-      </td>
-
-      <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
-        <el-button-group>
-          <el-button v-if="item.IsPredefined != true" :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"
-                     @click="showjson('Value', item)"></el-button>
-          <el-button v-if="item.IsPredefined != true" class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
-        </el-button-group>
-      </td>
-    </tr>
+    <template v-for="(item, index) in items" :key="index">
+      <tr v-if="showPredefined || item.IsPredefined !== true"
+          :class="dragOverIndex == index && dragOverBlock  == item ? 'dragOver' : ''"
+          @dragend="dragend($event)" @dragover="dragover(item, index, $event)"
+          @dragstart="dragstart(index, $event)">
+        <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
+          <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
+        </td>
+        <td>
+          <el-input
+            v-model="item.Name"
+            :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
+            :readonly="readonly || item.IsPredefined === true"
+            :title="validateField('Name', item)"
+          ></el-input>
+        </td>
+        <td>
+          <el-select
+            v-model="item.Rule"
+            :class="validateField('Rule', item) ? 'WorkflowDesignerInputError' : ''"
+            :disabled="readonly || item.IsPredefined === true"
+            :title="validateField('Rule', item)" clearable
+            filterable
+            placeholder=""
+            style="width: 100%;">
+            <el-option v-for="item in conditions" :key="item" :label="item" :value="item"></el-option>
+          </el-select>
+        </td>
+        <td>
+          <el-autocomplete v-model="item.Value" :fetch-suggestions="querySearch" :readonly="readonly || item.IsPredefined === true"
+                           @focus="setCurrentItem(item)"></el-autocomplete>
+        </td>
+        <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+          <el-button-group>
+            <el-button v-if="item.IsPredefined != true"
+                       :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"
+                       @click="showjson('Value', item)"></el-button>
+            <el-button v-if="item.IsPredefined != true" class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
+          </el-button-group>
+        </td>
+      </tr>
+    </template>
   </table>
 </div>
 <div class="WorkflowDesignerButtons">
@@ -60,43 +62,50 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function actors_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.ActorFormLabel,
-          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        });
-      };
+  function actors_Data(me) {
+    return {
+      readonly: false,
+      editItem: undefined,
+      showPredefined: false,
+      items: []
+    }
+  }
 
-      me.VueConfig.methods.UpdateLanguage();
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            editItem: undefined,
-            showPredefined: false
-        });
+  function actors_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
 
-        me.VueConfig.methods.setCurrentItem = function(item) {
-            this.currentItem = item;
-        };
-        me.VueConfig.methods.querySearch = function(queryString, cb) {
-            if(me.VueConfig.data.readonly)
-                return cb([]);
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.ActorFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+      });
+    };
+
+    methods.UpdateLanguage();
+
+    methods.setCurrentItem = function (item) {
+      this.currentItem = item;
+    };
+    methods.querySearch = function (queryString, cb) {
+      if (data.readonly)
+        return cb([]);
 
       var res = me.graph.getAutoCompleteSuggestions2('ruleparameter', this.currentItem.Rule, queryString);
       cb(res);
     };
 
-    me.VueConfig.methods.onUpdate = function () {
-      me.VueConfig.data.conditions = me.graph.getActorRules();
-      me.VueConfig.data.items = WorkflowDesignerCommon.clone(me.graph.data.Actors);
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    methods.onUpdate = function () {
+      data.conditions = me.graph.getActorRules();
+      data.items = WorkflowDesignerCommon.clone(me.graph.data.Actors);
+      data.readonly = me.graph.Settings.readonly;
     };
 
-    me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({Name: '', Rule: '', Value: ''});
+    methods.add = function () {
+      data.items.push({Name: '', Rule: '', Value: ''});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerActorsList');
@@ -104,43 +113,43 @@
       }, 10);
     };
 
-    me.VueConfig.methods.remove = function (index) {
-      me.VueConfig.data.items.splice(index, 1);
+    methods.remove = function (index) {
+      data.items.splice(index, 1);
     };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editItem = undefined;
+        data.editItem = undefined;
       };
 
       var params = {
         name: item['Rule'],
         type: ['RuleCheck', 'RuleGet']
       };
-      me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
-      if (name != 'Name' && name != 'Rule')
+    methods.validateField = function (name, item) {
+      if (name !== 'Name' && name !== 'Rule')
         return;
 
       if (!item[name]) {
         return WorkflowDesignerConstants.FieldIsRequired;
       }
 
-      if (name == 'Name') {
-        var res = me.VueConfig.data.items.filter(function (i) {
+      if (name === 'Name') {
+        var res = data.items.filter(function (i) {
           return i != item && i.Name == item.Name
         });
         if (res.length > 0) {
@@ -149,9 +158,9 @@
       }
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
-      var items = me.VueConfig.data.items;
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (validateFunc('Name', item) || validateFunc('Rule', item))
@@ -161,23 +170,23 @@
       return true;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
-        me.graph.UpdateData(me.graph.data.Actors, me.VueConfig.data.items);
+    methods.onSave = function () {
+      if (methods.validate && methods.validate()) {
+        me.graph.UpdateData(me.graph.data.Actors, data.items);
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
 
-      if (me.VueConfig.data.readonly) {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-            if (!WorkflowDesignerCommon.compareArray(
-                me.graph.data.Actors,
-                me.VueConfig.data.items,
+      if (!WorkflowDesignerCommon.compareArray(
+        me.graph.data.Actors,
+        data.items,
         ['Name', 'Rule', 'Value'])) {
 
         me.showConfirm();
@@ -187,16 +196,16 @@
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

@@ -12,7 +12,7 @@
         </el-form-item>
         <el-form-item :label="labels.TagsLabel">
           <el-select v-model="Tags" :disabled="readonly" :placeholder="labels.TagsInputPlaceholder" allow-create filterable multiple
-                     style="width: 100%;"></el-select>
+                     style="width: 100%;" :reserve-keyword="false"></el-select>
         </el-form-item>
         <el-form-item :label="labels.WorkCalendar">
           <el-select
@@ -43,7 +43,7 @@
           <el-switch v-model="IsObsolete" :active-text="labels.IsObsolete" :disabled="readonly"></el-switch>
         </el-form-item>
         <el-form-item v-if="Id" :label="labels.DefiningParameters">
-          <el-input v-model="DefiningParameters" :readonly="readonly" rows="4" type="textarea"></el-input>
+          <el-input v-model="DefiningParameters" :readonly="readonly" :rows="4" type="textarea"></el-input>
         </el-form-item>
       </el-form>
     </el-tab-pane>
@@ -66,7 +66,8 @@
                 <el-input v-model="item.Value" :readonly="true"></el-input>
               </td>
               <td class="WorkflowDesignerTableEditButtons">
-                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"
+                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''"
+                           class="WorkflowDesignerTableCodeActionsButton"
                            @click="showjson('Value', item)"></el-button>
               </td>
             </tr>
@@ -90,7 +91,8 @@
                 <el-input v-model="item.Value" :readonly="true"></el-input>
               </td>
               <td class="WorkflowDesignerTableEditButtons">
-                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"
+                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''"
+                           class="WorkflowDesignerTableCodeActionsButton"
                            @click="showjson('Value', item)"></el-button>
               </td>
             </tr>
@@ -117,7 +119,8 @@
                 <el-input v-model="item.Value" :readonly="true"></el-input>
               </td>
               <td class="WorkflowDesignerTableEditButtons">
-                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"
+                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''"
+                           class="WorkflowDesignerTableCodeActionsButton"
                            @click="showjson('Value', item)"></el-button>
               </td>
             </tr>
@@ -141,7 +144,8 @@
                 <el-input v-model="item.Value" :readonly="true"></el-input>
               </td>
               <td class="WorkflowDesignerTableEditButtons">
-                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''" class="WorkflowDesignerTableCodeActionsButton"
+                <el-button :style="editItem == item ? 'background-color: rgba(0,0,0,.15);' : ''"
+                           class="WorkflowDesignerTableCodeActionsButton"
                            @click="showjson('Value', item)"></el-button>
               </td>
             </tr>
@@ -218,10 +222,12 @@
                   trigger="hover"
                   width="200">
                   {{ item.ExecutorIdentityId }}
-                  <div slot="reference" style="white-space:nowrap">
+                  <template #reference style="white-space:nowrap">
                     {{ item.ExecutorName }}
-                    <i class="el-icon-info"></i>
-                  </div>
+                    <el-icon>
+                      <icon-info-filled />
+                    </el-icon>
+                  </template>
                 </el-popover>
               </td>
               <td>
@@ -232,10 +238,12 @@
                   trigger="hover"
                   width="200">
                   {{ item.ActorIdentityId }}
-                  <div slot="reference" style="white-space:nowrap">
+                  <template #reference style="white-space:nowrap">
                     {{ item.ActorName }}
-                    <i class="el-icon-info"></i>
-                  </div>
+                    <el-icon>
+                      <icon-info-filled />
+                    </el-icon>
+                  </template>
                 </el-popover>
               </td>
               <td>{{ item.TransitionClassifier == 0 ? 'Not Specified' : (item.TransitionClassifier == 1 ? 'Direct' : 'Reverse') }}</td>
@@ -258,7 +266,9 @@
         </el-collapse-item>
         <el-collapse-item v-for="(SubprocessItem, SubprocessIndex) in SubprocessInfo"
                           v-if="SubprocessInfo"
-                          :name="SubprocessIndex " :title="SubprocessIndex + ' \| CurrentPage: ' + SubprocessItem.CurrentPage+ ' \| Items count: ' + SubprocessItem.ProcessHistoryCount" :key="SubprocessIndex">
+                          :name="SubprocessIndex "
+                          :title="SubprocessIndex + ' \| CurrentPage: ' + SubprocessItem.CurrentPage+ ' \| Items count: ' + SubprocessItem.ProcessHistoryCount"
+                          :key="SubprocessIndex">
           <table class="WorkflowDesignerTable">
             <tr>
               <th></th>
@@ -288,10 +298,12 @@
                   trigger="hover"
                   width="200">
                   {{ item.ExecutorIdentityId }}
-                  <div slot="reference" style="white-space:nowrap">
+                  <template #reference style="white-space:nowrap">
                     {{ item.ExecutorName }}
-                    <i class="el-icon-info"></i>
-                  </div>
+                    <el-icon>
+                      <icon-info-filled />
+                    </el-icon>
+                  </template>
                 </el-popover>
               </td>
               <td>
@@ -302,10 +314,12 @@
                   trigger="hover"
                   width="200">
                   {{ item.ActorIdentityId }}
-                  <div slot="reference" style="white-space:nowrap">
+                  <template #reference style="white-space:nowrap">
                     {{ item.ActorName }}
-                    <i class="el-icon-info"></i>
-                  </div>
+                    <el-icon>
+                      <icon-info-filled />
+                    </el-icon>
+                  </template>
                 </el-popover>
               </td>
               <td>{{ item.TransitionClassifier == 0 ? 'Not Specified' : (item.TransitionClassifier == 1 ? 'Direct' : 'Reverse') }}</td>
@@ -342,27 +356,18 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-  function processinfo_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
-        InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
-        LogEnabledLabel: WorkflowDesignerConstants.Logs.Label,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel
-      });
-    }
+  function processinfo_Data(me) {
+    const {graph} = me;
+    const {designer} = graph;
 
-    me.VueConfig.methods.UpdateLanguage();
-    const designer = me.graph.designer;
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    return {
       readonly: false,
       editItem: undefined,
       activeProcesses: ['Root'],
       FormData: {},
       Tags: [],
       CanBeInlined: null,
-      LogEnabled: me.graph.designer.LogEnabled,
+      LogEnabled: !!designer.processId ? designer.LogEnabled : me.graph.data.LogEnabled,
       IsObsolete: false,
       DefiningParameters: undefined,
       ProcessTimers: [],
@@ -380,22 +385,40 @@
       LoadedCalendars: [],
       ShownCalendars: [],
       CalendarLoading: false
-    });
+    }
+  }
 
-    me.VueConfig.methods.onUpdate = function () {
-      var data = me.VueConfig.data;
+  function processinfo_Init(me) {
+    const {VueConfig, graph} = me;
+    const {state: data, methods} = VueConfig;
+    const {designer} = graph;
+    const isProcess = !!designer.processId;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.ProcessInfoFormLabel,
+        InlineLabel: WorkflowDesignerConstants.Elements.InlineHeader,
+        LogEnabledLabel: WorkflowDesignerConstants.Logs.Label,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel
+      });
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function () {
       data.CalendarName = me.graph.data.CalendarName;
-      data.Tags = WorkflowDesignerCommon.clone(me.graph.data.Tags);
-      data.CanBeInlined = me.graph.data.CanBeInlined;
-      data.LogEnabled = me.graph.designer.LogEnabled;
-      data.Name = me.graph.data.Name;
-      if (me.graph.data.Id && me.graph.data.Id !== '00000000-0000-0000-0000-000000000000') {
-        data.Id = me.graph.data.Id
+      data.Tags = WorkflowDesignerCommon.clone(graph.data.Tags);
+      data.CanBeInlined = graph.data.CanBeInlined;
+      data.LogEnabled = isProcess ? designer.LogEnabled : me.graph.data.LogEnabled;
+      data.Name = graph.data.Name;
+      if (graph.data.Id && graph.data.Id !== '00000000-0000-0000-0000-000000000000') {
+        data.Id = graph.data.Id
       } else {
         data.Id = undefined;
       }
 
-      var additionalParams = me.graph.data.AdditionalParams;
+      var additionalParams = graph.data.AdditionalParams;
 
       data.IsObsolete = additionalParams.IsObsolete;
       data.DefiningParameters = additionalParams.DefiningParameters;
@@ -417,11 +440,11 @@
       data.LastPage = WorkflowDesignerCommon.clone(additionalParams.LastPage);
       data.ProcessId = WorkflowDesignerCommon.clone(additionalParams.ProcessId);
       data.ProcessHistoryCount = WorkflowDesignerCommon.clone(additionalParams.ProcessHistoryCount);
-      data.readonly = me.graph.Settings.readonly;
-      data.LoadedCalendars = me.VueConfig.methods.LoadCalendars();
+      data.readonly = graph.Settings.readonly;
+      data.LoadedCalendars = methods.LoadCalendars();
     };
 
-    me.VueConfig.methods.getFormatDate = function (stringDate) {
+    methods.getFormatDate = function (stringDate) {
       let date = new Date(stringDate);
       let options = {
         hour12: false,
@@ -436,54 +459,55 @@
     }
 
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editItem = undefined;
+        data.editItem = undefined;
       };
 
       var params = {
         name: item['LastError'],
         type: item['Type']
       };
-      me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
-    me.VueConfig.methods.onSave = function () {
-      var data = me.graph.data;
-      data.CalendarName = me.VueConfig.data.CalendarName;
-      data.Tags = WorkflowDesignerCommon.clone(me.VueConfig.data.Tags);
-      data.CanBeInlined = me.VueConfig.data.CanBeInlined;
-      me.graph.setInlinedFlag(data.CanBeInlined);
-      if (this.LogEnabled !== designer.LogEnabled) designer.changelogenabled();
+    methods.onSave = function () {
+      graph.data.CalendarName = data.CalendarName;
+      graph.data.Tags = WorkflowDesignerCommon.clone(data.Tags);
+      graph.data.CanBeInlined = data.CanBeInlined;
+      graph.setInlinedFlag(graph.data.CanBeInlined);
+      if (this.LogEnabled !== (isProcess ? designer.LogEnabled : me.graph.data.LogEnabled)) {
+        isProcess ? designer.changelogenabled() : me.graph.setLogEnabled(this.LogEnabled);
+      }
       me.onClose(true);
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
 
-      if (me.VueConfig.data.readonly) {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-      if (!me.VueConfig.data.readonly
-        && (!WorkflowDesignerCommon.compareArray(me.graph.data.Tags, me.VueConfig.data.Tags)
-          || me.graph.data.CanBeInlined !== me.VueConfig.data.CanBeInlined
-          || me.graph.data.LogEnabled !== me.VueConfig.data.LogEnabled)) {
+      if (!data.readonly
+        && (!WorkflowDesignerCommon.compareArray(graph.data.Tags, data.Tags)
+          || graph.data.CanBeInlined !== data.CanBeInlined
+          || graph.data.LogEnabled !== data.LogEnabled)) {
 
         me.showConfirm();
         return false;
@@ -493,32 +517,30 @@
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }
 
-    me.VueConfig.methods.LoadProcessHistory = function (page, ProcessId) {
-      var data = me.VueConfig.data;
+    methods.LoadProcessHistory = function (page, ProcessId) {
       var params = {};
       params.processidforrequest = ProcessId;
       params.pagingindex = page;
       params.pagingsize = data.PageSize;
-      var history = me.graph.designer.getprocesshistorypage(params);
+      var history = designer.getprocesshistorypage(params);
       data.ProcessHistory = WorkflowDesignerCommon.clone(history);
       data.CurrentPage = page;
     };
-    me.VueConfig.methods.LoadSubprocessHistory = function (page, ProcessId) {
-      var data = me.VueConfig.data;
+    methods.LoadSubprocessHistory = function (page, ProcessId) {
       var params = {};
       params.processidforrequest = ProcessId;
       params.pagingindex = page;
       params.pagingsize = data.PageSize;
-      var history = me.graph.designer.getprocesshistorypage(params);
+      var history = designer.getprocesshistorypage(params);
 
       for (subprocess in data.SubprocessInfo) {
         if (data.SubprocessInfo[subprocess].ProcessId == ProcessId) {
@@ -528,23 +550,22 @@
       }
     };
 
-    me.VueConfig.methods.CreateFilter = function (queryString) {
+    methods.CreateFilter = function (queryString) {
       return link => link.toLowerCase().indexOf(queryString.toLowerCase()) > -1
     }
 
-    me.VueConfig.methods.CalendarClear = function () {
-      me.VueConfig.data.ShownCalendars = [];
+    methods.CalendarClear = function () {
+      data.ShownCalendars = [];
     }
 
-    me.VueConfig.methods.LoadCalendars = function () {
-      return me.graph.designer.getcalendars();
+    methods.LoadCalendars = function () {
+      return designer.getcalendars();
     }
 
-    me.VueConfig.methods.SearchCalendar = function (query) {
-      const data = me.VueConfig.data;
+    methods.SearchCalendar = function (query) {
       if (query !== '') {
         data.CalendarLoading = true;
-        const createFilter = me.VueConfig.methods.CreateFilter;
+        const createFilter = methods.CreateFilter;
         const calendars = data.LoadedCalendars;
         data.ShownCalendars = calendars.filter(createFilter(query));
         data.CalendarLoading = false;
@@ -553,9 +574,8 @@
       }
     }
 
-    me.VueConfig.methods.CalendarExists = function (calendarName) {
-      if (calendarName !== "" && calendarName !== null) {
-        const data = me.VueConfig.data;
+    methods.CalendarExists = function (calendarName) {
+      if (calendarName !== '' && calendarName !== null) {
         const calendar = data.LoadedCalendars.find(item => item === calendarName);
         return !!calendar
       }

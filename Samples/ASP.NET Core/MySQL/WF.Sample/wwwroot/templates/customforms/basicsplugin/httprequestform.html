@@ -10,7 +10,7 @@
     <div class="el-form--inline el-form--label-top">
       <el-form-item
         :label="customLabels.Name"
-        :prop="Field.Name.Name"
+        prop="Name"
         :rules="getFieldRules(Field.Name)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -19,7 +19,7 @@
 
       <el-form-item
         :label="customLabels.State"
-        :prop="Field.State.Name"
+        prop="State"
         :rules="getFieldRules(Field.State)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -32,20 +32,20 @@
     {{ customLabels.Heading }}</h4>
 
   <div :class="Field.State != undefined ?'SettingsWithPadding' : '' " style="margin-bottom: 10px;">
-    <el-form-item :label="customLabels.Url" :prop="Field.Url.Name" :rules="getFieldRules(Field.Url)">
+    <el-form-item :label="customLabels.Url" prop="Url" :rules="getFieldRules(Field.Url)">
       <el-input v-model="FormData.Url" :readonly="readonly"></el-input>
     </el-form-item>
 
     <div class="el-form--inline el-form--label-top">
       <el-form-item
-        :prop="Field.Post.Name"
+        prop="Post"
         :rules="getFieldRules(Field.Post)">
-                <span slot="label">{{ customLabels.Post }}
-                    <span :style="parameterFromProcess.Post ? {color:parameterFromProcessColor}: {}"
-                          class="WorkflowDesignerParameterFromProcess"
-                          @click="function(){FormData.Post = parameterFromProcess.Post ? false : null; changeParameterInput('Post')}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.Post }}
+            <span :style="parameterFromProcess.Post ? {color:parameterFromProcessColor}: {}"
+                  class="WorkflowDesignerParameterFromProcess"
+                  @click="togglePost">@
+            </span>
+          </template>
         <el-checkbox
           v-if="!parameterFromProcess.Post"
           v-model="FormData.Post"
@@ -55,15 +55,15 @@
         <el-input v-if="parameterFromProcess.Post" v-model="FormData.Post" :disabled="readonly" style="width:180px"></el-input>
       </el-form-item>
       <el-form-item
-        :prop="Field.StoreResponse.Name"
+        prop="StoreResponse"
         :rules="getFieldRules(Field.StoreResponse)">
-                <span slot="label">{{ customLabels.StoreResponse }}
-                    <span
-                      :style="parameterFromProcess.StoreResponse ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.StoreResponse = parameterFromProcess.StoreResponse ? false : null; changeParameterInput('StoreResponse')}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.StoreResponse }}
+            <span
+              :style="parameterFromProcess.StoreResponse ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="toggleStoreResponse">@
+            </span>
+          </template>
         <el-checkbox
           v-if="!parameterFromProcess.StoreResponse"
           v-model="FormData.StoreResponse"
@@ -84,7 +84,7 @@
     <div v-if="useAuth" class="el-form--inline el-form--label-top">
       <el-form-item
         :label="customLabels.Username"
-        :prop="Field.Username.Name"
+        prop="Username"
         :rules="getFieldRules(Field.Username)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -92,7 +92,7 @@
       </el-form-item>
       <el-form-item
         :label="customLabels.Password"
-        :prop="Field.Password.Name"
+        prop="Password"
         :rules="getFieldRules(Field.Password)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -103,24 +103,24 @@
     <div v-if="FormData.StoreResponse || parameterFromProcess.StoreResponse" class="el-form--inline el-form--label-top">
       <el-form-item
         :label="customLabels.ParameterName"
-        :prop="Field.ParameterName.Name"
+        prop="ParameterName"
         :rules="getFieldRules(Field.ParameterName)"
         class="el-form-item"
         style="flex-grow: 1;">
         <el-input v-model="FormData.ParameterName" :readonly="readonly"></el-input>
       </el-form-item>
       <el-form-item
-        :prop="Field.ParameterPurpose.Name"
+        prop="ParameterPurpose"
         :rules="getFieldRules(Field.ParameterPurpose)"
         class="el-form-item"
         style="flex-grow: 1;">
-                <span slot="label">{{ customLabels.ParameterPurpose }}
-                    <span
-                      :style="parameterFromProcess.ParameterPurpose ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.ParameterPurpose = parameterFromProcess.ParameterPurpose ? Field.ParameterPurpose.DropdownValues[0].Value : null; changeParameterInput('ParameterPurpose')}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.ParameterPurpose }}
+            <span
+              :style="parameterFromProcess.ParameterPurpose ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="togglePurpose">@
+            </span>
+          </template>
         <el-select v-if="!parameterFromProcess.ParameterPurpose" v-model="FormData.ParameterPurpose" :disabled="readonly"
                    style="width:200px">
           <el-option
@@ -137,15 +137,15 @@
 
     <div v-if="FormData.Post || parameterFromProcess.Post ">
       <el-form-item
-        :prop="Field.ContentType.Name"
+        prop="ContentType"
         :rules="getFieldRules(Field.ContentType)">
-                <span slot="label">{{ customLabels.ContentType }}
-                    <span
-                      :style="parameterFromProcess.ContentType ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.ContentType = parameterFromProcess.ContentType ? Field.ContentType.DropdownValues[0].Value : null; changeParameterInput('ContentType')}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.ContentType }}
+            <span
+              :style="parameterFromProcess.ContentType ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="toggleContentType">@
+            </span>
+          </template>
         <el-select v-if="!parameterFromProcess.ContentType" v-model="FormData.ContentType" :disabled="readonly">
           <el-option
             v-for="item in Field.ContentType.DropdownValues"
@@ -157,15 +157,15 @@
         <el-input v-if="parameterFromProcess.ContentType" v-model="FormData.ContentType" :disabled="readonly"></el-input>
       </el-form-item>
       <el-form-item
-        :prop="Field.AddProcessInstanceParameters.Name"
+        prop="AddProcessInstanceParameters"
         :rules="getFieldRules(Field.AddProcessInstanceParameters)">
-                <span slot="label">{{ customLabels.AddProcessInstanceParameters }}
-                    <span
-                      :style="parameterFromProcess.AddProcessInstanceParameters ? {color:parameterFromProcessColor}: {}"
-                      class="WorkflowDesignerParameterFromProcess"
-                      @click="function(){FormData.AddProcessInstanceParameters = parameterFromProcess.AddProcessInstanceParameters? false : null; changeParameterInput('AddProcessInstanceParameters')}">@
-                    </span>
-                </span>
+          <template #label>{{ customLabels.AddProcessInstanceParameters }}
+            <span
+              :style="parameterFromProcess.AddProcessInstanceParameters ? {color:parameterFromProcessColor}: {}"
+              class="WorkflowDesignerParameterFromProcess"
+              @click="toggleInstanceParameters">@
+            </span>
+          </template>
         <el-checkbox
           v-if="!parameterFromProcess.AddProcessInstanceParameters"
           v-model="FormData.AddProcessInstanceParameters"
@@ -177,17 +177,17 @@
       </el-form-item>
       <el-form-item
         :label="customLabels.Parameters"
-        :prop="Field.Parameters.Name"
+        prop="Parameters"
         :rules="getFieldRules(Field.Parameters)">
-        <el-input v-model="FormData.Parameters" :readonly="readonly" rows="5" type="textarea"></el-input>
+        <el-input v-model="FormData.Parameters" :readonly="readonly" :rows="5" type="textarea"></el-input>
       </el-form-item>
     </div>
 
     <el-form-item
       :label="customLabels.Headers"
-      :prop="Field.Headers.Name"
+      prop="Headers"
       :rules="getFieldRules(Field.Headers)">
-      <el-input v-model="FormData.Headers" :readonly="readonly" rows="5" type="textarea"></el-input>
+      <el-input v-model="FormData.Headers" :readonly="readonly" :rows="5" type="textarea"></el-input>
     </el-form-item>
   </div>
 </el-form>
@@ -197,23 +197,46 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-  function customforms_basicsplugin_httprequestform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
-        labels: WorkflowDesignerConstants.EditParametersFormlabel,
-        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.HTTPRequest,
-        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
-      })
-    }
-
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
+  function customforms_basicsplugin_httprequestform_Data(me) {
+    return {
       customTitle: undefined,
       readonly: false,
       FormData: {},
-      Field: {},
+      Field: {
+        Name: {
+          Name: '',
+          Title: '',
+          Comment: '',
+          Type: '',
+          IsRequired: false,
+          DefaultValue: null
+        },
+        State: { /* same structure as Name field */},
+        Url: { /* same structure as Name field */},
+        Post: { /* same structure as Name field */},
+        StoreResponse: { /* same structure as Name field */},
+        Username: { /* same structure as Name field */},
+        Password: { /* same structure as Name field */},
+        ParameterName: { /* same structure as Name field */},
+        ParameterPurpose: {
+          DropdownValues: [
+//            {
+//              'Value': 'string | number',
+            //             'Name': 'string'
+//            }
+          ]
+        },
+        ContentType: {
+          'DropdownValues': [
+            //{
+              //'Value': 'string | number',
+              //'Name': 'string'
+            //}
+          ]
+        },
+        AddProcessInstanceParameters: { /* same structure as Name field */},
+        Headers: { /* same structure as Name field */}
+      },
       parameterFromProcess: {
         Post: false,
         StoreResponse: false,
@@ -222,13 +245,31 @@
         ContentType: false
       },
       useAuth: false
-    });
+    }
 
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+  }
+
+  function customforms_basicsplugin_httprequestform_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.EditParametersFormlabel,
+        customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.HTTPRequest,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        parameterFromProcessColor: WorkflowDesignerConstants.ParameterFromProcessColor,
+      })
+    }
+
+    methods.UpdateLanguage();
+
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       var fields = undefined;
@@ -251,10 +292,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           var tmp = {};
 
           fields.forEach(function (field) {
@@ -273,46 +314,51 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (key in me.VueConfig.data.FormData) {
-        if (me.VueConfig.data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(me.VueConfig.data.FormData[key]))
-          me.VueConfig.data.parameterFromProcess[key] = true;
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (key in data.FormData) {
+        if (data.parameterFromProcess[key] != undefined && WorkflowDesignerCommon.containsAt(data.FormData[key]))
+          data.parameterFromProcess[key] = true;
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData);
 
-      me.VueConfig.data.useAuth = me.VueConfig.data.FormData.Username != null || me.VueConfig.data.FormData.Password != null;
+      data.useAuth = data.FormData.Username != null || data.FormData.Password != null;
     };
 
-    me.VueConfig.methods.changeParameterInput = function (fieldName) {
-      me.VueConfig.data.parameterFromProcess[fieldName] = !me.VueConfig.data.parameterFromProcess[fieldName];
+    methods.changeParameterInput = function (fieldName) {
+      data.parameterFromProcess[fieldName] = !data.parameterFromProcess[fieldName];
     }
 
-    me.VueConfig.methods.getFieldRules = function (field) {
-      var rules = field.IsRequired ? me.requiredRule() : [{required: false}];
+    methods.getFieldRules = function (field) {
+      try {
+        var rules = field.IsRequired ? me.requiredRule() : [{required: false}];
 
-      if (me.VueConfig.data.parameterFromProcess[field.Name]) {
-        rules.push(WorkflowDesignerCommon.containsAtRule);
+        if (data.parameterFromProcess[field.Name]) {
+          rules.push(WorkflowDesignerCommon.containsAtRule);
+        }
+
+      } catch (e) {
+        console.warn(e);
       }
 
       return rules;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (!me.VueConfig.data.useAuth) {
-        me.VueConfig.data.FormData.Password = null;
-        me.VueConfig.data.FormData.Username = null;
+    methods.onSave = function () {
+      if (!data.useAuth) {
+        data.FormData.Password = null;
+        data.FormData.Username = null;
       }
 
       var value = undefined;
-      value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+      value = WorkflowDesignerCommon.toString(data.FormData);
 
       this.$refs.form.validate(function (valid) {
         if (valid) {
@@ -322,8 +368,33 @@
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
+
+    methods.togglePost = function () {
+      data.FormData.Post = data.parameterFromProcess.Post ? false : null;
+      methods.changeParameterInput('Post');
+    }
+
+    methods.toggleStoreResponse = function () {
+      data.FormData.StoreResponse = data.parameterFromProcess.StoreResponse ? false : null;
+      methods.changeParameterInput('StoreResponse');
+    }
+
+    methods.togglePurpose = function () {
+      data.FormData.ParameterPurpose = data.parameterFromProcess.ParameterPurpose ? data.Field.ParameterPurpose.DropdownValues[0].Value : null;
+      methods.changeParameterInput('ParameterPurpose');
+    }
+
+    methods.toggleContentType = function () {
+      data.FormData.ContentType = data.parameterFromProcess.ContentType ? data.Field.ContentType.DropdownValues[0].Value : null;
+      methods.changeParameterInput('ContentType');
+    }
+
+    methods.toggleInstanceParameters = function () {
+      data.FormData.AddProcessInstanceParameters = data.parameterFromProcess.AddProcessInstanceParameters ? false : null;
+      methods.changeParameterInput('AddProcessInstanceParameters');
+    }
   }
 </script>

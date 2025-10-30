@@ -1,0 +1,1 @@
+﻿db.WorkflowForm.createIndex({Name: 1, Version: 1}, {unique: true});

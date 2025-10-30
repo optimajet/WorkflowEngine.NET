@@ -1,6 +1,6 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{labels.Title}}
-  <a v-if="!readonly" @click="add()">{{ButtonTextCreate}}</a>
+  {{ labels.Title }}
+  <a v-if="!readonly" @click="add()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerCodeActionsList" class="WorkflowDesignerWindowForm">
   <b class="CustomLabel">{{ labels.CommonUsings }}</b>
@@ -36,22 +36,22 @@
       <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol'>
         <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
       </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
+      <td>
+        <el-input
+          v-model="item.Name"
           :class="validateField('Name', item) ? 'WorkflowDesignerInputError' : ''"
           :readonly="readonly"
           :title="validateField('Name', item)"
-                ></el-input>
-            </td>
-            <td>
-                <el-select
-                    v-model="item.Type"
+        ></el-input>
+      </td>
+      <td>
+        <el-select
+          v-model="item.Type"
           :class="validateField('Type', item) ? 'WorkflowDesignerInputError' : ''"
           :disabled="readonly"
           :title="validateField('Type', item)"
-                    filterable
-                    placeholder=""
+          filterable
+          placeholder=""
           style="width: 100%;">
           <el-option key="Action" label="Action" value="Action"></el-option>
           <el-option key="Condition" label="Condition" value="Condition"></el-option>
@@ -83,36 +83,42 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
-    function codeactions_Init(me){
-      me.VueConfig.methods.UpdateLanguage = function () {
-        me.VueConfig.data = Object.assign(me.VueConfig.data, {
-          labels: WorkflowDesignerConstants.CodeActionsFormLabel,
-          ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
-          ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
-          ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
-          ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
-          EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
-        });
-      };
+  function codeactions_Data(me) {
+    return {
+      readonly: false,
+      editItem: undefined,
+      Usings: null,
+      UsingsValue: null,
+      editCodeItem: undefined,
+      editParametersItem: undefined,
+      items: []
+    }
+  }
 
-      me.VueConfig.methods.UpdateLanguage();
-         me.VueConfig.data = Object.assign(me.VueConfig.data, {
-            readonly: false,
-            editItem: undefined,
-            Usings: null,
-            UsingsValue: null,
-            editCodeItem: undefined,
-            editParametersItem: undefined
-        });
+  function codeactions_Init(me) {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig
 
-        me.VueConfig.methods.setCurrentItem = function(item) {
-            this.currentItem = item;
-        };
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
+        labels: WorkflowDesignerConstants.CodeActionsFormLabel,
+        ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
+        ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
+        ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
+        ButtonTextCancel: WorkflowDesignerConstants.ButtonTextCancel,
+        EditCodeLabel: WorkflowDesignerConstants.EditCodeLabel.EditCodeButton,
+      });
+    };
 
-        me.VueConfig.methods.onUpdate = function(){
-            var data = me.VueConfig.data;
-            data.items = WorkflowDesignerCommon.clone(me.graph.data.CodeActions);
-            data.readonly = me.graph.Settings.readonly;
+    methods.UpdateLanguage();
+
+    methods.setCurrentItem = function (item) {
+      this.currentItem = item;
+    };
+
+    methods.onUpdate = function () {
+      data.items = WorkflowDesignerCommon.clone(me.graph.data.CodeActions);
+      data.readonly = me.graph.Settings.readonly;
 
       data.Usings = WorkflowDesignerCommon.clone(me.graph.data.AdditionalParams.Usings);
       var commonUsings = me.graph.data.CodeActionsCommonUsings ?
@@ -121,11 +127,10 @@
         }) :
         me.graph.data.AdditionalParams.Usings;
       data.UsingsValue = WorkflowDesignerCommon.clone(commonUsings);
-      me.VueConfig.methods.onUsingsChange(data.UsingsValue);
+      methods.onUsingsChange(data.UsingsValue);
     };
 
-    me.VueConfig.methods.onUsingsChange = function (values) {
-      var data = me.VueConfig.data;
+    methods.onUsingsChange = function (values) {
       values.forEach(function (value) {
         if (!data.Usings.includes(value)) {
           data.Usings.push(value);
@@ -134,8 +139,8 @@
       data.Usings.sort();
     };
 
-    me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({Name: '', Type: 'Action', ParameterDefinitions: [], IsAsync: false, IsGlobal: false});
+    methods.add = function () {
+      data.items.push({Name: '', Type: 'Action', ParameterDefinitions: [], IsAsync: false, IsGlobal: false});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerCodeActionsList');
@@ -143,19 +148,19 @@
       }, 10);
     };
 
-    me.VueConfig.methods.remove = function (index, item) {
+    methods.remove = function (index, item) {
       if (item.IsGlobal) {
         me.graph.showConfirm({
           message: WorkflowDesignerConstants.CodeActionsFormLabel.GlobalDeleteMessage, onSuccess: function () {
-            me.VueConfig.data.items.splice(index, 1);
+            data.items.splice(index, 1);
             return true;
           }
         });
       } else {
-                me.VueConfig.data.items.splice(index, 1);
-            }
-        };
-        me.VueConfig.methods.isGlobalOnChange = function(item){
+        data.items.splice(index, 1);
+      }
+    };
+    methods.isGlobalOnChange = function (item) {
       if (!item.IsGlobal) {
         me.graph.showConfirm({
             message: WorkflowDesignerConstants.CodeActionsFormLabel.UnGlobalMessage,
@@ -164,12 +169,12 @@
               return true;
             }
           }
-                );
-            }
-        };
-        me.VueConfig.methods.showcode = function(item) {
+        );
+      }
+    };
+    methods.showcode = function (item) {
 
-      me.VueConfig.data.editCodeItem = me.editCodeItem = item;
+      data.editCodeItem = me.editCodeItem = item;
 
       var windowId = me.id + '_codeform';
 
@@ -178,59 +183,59 @@
           me.editCodeItem['ActionCode'] = res.ActionCode;
           me.editCodeItem['Usings'] = res.Usings;
           me.editCodeItem['ExcludedUsings'] = res.ExcludedUsings;
-          me.VueConfig.data.editCodeItem = undefined;
+          data.editCodeItem = undefined;
           delete me.editCodeItem;
         }
       };
 
       var onClose = function () {
         if (me.editCodeItem) {
-          me.VueConfig.data.editCodeItem = undefined;
+          data.editCodeItem = undefined;
           delete me.editCodeItem;
         }
       }
 
-            if(!me.codeform){
-                var options = {
-                    move: true,
-                    resize: true,
-                    savePosition: true,
+      if (!me.codeform) {
+        var options = {
+          move: true,
+          resize: true,
+          savePosition: true,
           class: 'WorkflowDesignerCodeForm',
-                    onSuccess: onSuccess,
-                    onClose: onClose,
-                    parameterDefinition: {}
-                };
-                me.codeform = me.graph.CreateWindow(windowId, options);
-            }
+          onSuccess: onSuccess,
+          onClose: onClose,
+          parameterDefinition: {}
+        };
+        me.codeform = me.graph.CreateWindow(windowId, options);
+      }
 
-      me.codeform.show('codeform', {item: item, commonUsings: me.VueConfig.data.UsingsValue});
+      me.codeform.show('codeform', {item: item, commonUsings: data.UsingsValue});
     };
 
-    me.VueConfig.methods.showparameters = function (item) {
-      me.VueConfig.data.editParametersItem = me.editParametersItem = item;
+    methods.showparameters = function (item) {
+      data.editParametersItem = me.editParametersItem = item;
 
       var windowId = me.id + '_parametersform';
 
       var onSuccess = function (res) {
         if (me.editParametersItem) {
           me.editParametersItem.ParameterDefinitions = WorkflowDesignerCommon.clone(res);
-          me.VueConfig.data.editParametersItem = undefined;
+          data.editParametersItem = undefined;
           delete me.editParametersItem;
         }
       };
 
       var onClose = function () {
         if (me.editParametersItem) {
-          me.VueConfig.data.editParametersItem = undefined;
+          data.editParametersItem = undefined;
           delete me.editParametersItem;
         }
       }
 
-            if(!me.parametersform){
-                var options = {
-                    move: true,
-                    resize: true,
-                    savePosition: true,
+      if (!me.parametersform) {
+        var options = {
+          move: true,
+          resize: true,
+          savePosition: true,
           class: 'WorkflowDesignerParametersForm',
           onSuccess: onSuccess,
           onClose: onClose,
@@ -242,7 +247,7 @@
     };
 
 
-    me.VueConfig.methods.validateField = function (name, item) {
+    methods.validateField = function (name, item) {
       if (name != 'Name' && name != 'Type')
         return;
 
@@ -251,7 +256,7 @@
       }
 
       if (name == 'Name') {
-        var res = me.VueConfig.data.items.filter(function (i) {
+        var res = data.items.filter(function (i) {
           return i != item && i.Name == item.Name && item.Type == i.Type
         });
         if (res.length > 0) {
@@ -260,9 +265,9 @@
       }
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateField;
-      var items = me.VueConfig.data.items;
+    methods.validate = function () {
+      var validateFunc = methods.validateField;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
         if (validateFunc('Name', item) || validateFunc('Type', item))
@@ -272,9 +277,9 @@
       return true;
     };
 
-        me.VueConfig.methods.getGlobalCodeActionsForDelete = function(original, target) {
-            var names = [];
-            original.forEach(function(ca){
+    methods.getGlobalCodeActionsForDelete = function (original, target) {
+      var names = [];
+      original.forEach(function (ca) {
         if (ca.IsGlobal) {
           var isSameName = false;
           for (var i = 0; i < original.length; i++) {
@@ -305,13 +310,13 @@
       });
       return names;
     }
-        me.VueConfig.methods.onSave = function(){
-            if(!(me.VueConfig.methods.validate && me.VueConfig.methods.validate())) {
-                return;
-            }
+    methods.onSave = function () {
+      if (!(methods.validate && methods.validate())) {
+        return;
+      }
 
-            for (var j = 0; j <me.VueConfig.data.items.length; j++) {
-                var dataItem = me.VueConfig.data.items[j];
+      for (var j = 0; j < data.items.length; j++) {
+        var dataItem = data.items[j];
         if (typeof dataItem.ActionCode === 'undefined') {
           if (dataItem.Type === 'Action') {
             dataItem.ActionCode = 'return;'
@@ -321,22 +326,22 @@
             dataItem.ActionCode = 'return new List<string>();'
           } else if (dataItem.Type === 'RuleCheck') {
             dataItem.ActionCode = 'return false;'
-                    }
-                }
+          }
+        }
 
         if (typeof dataItem.Usings === 'undefined') {
           dataItem.Usings = '';
-                }
-            }
+        }
+      }
 
-            var names = me.VueConfig.methods.getGlobalCodeActionsForDelete(me.graph.data.CodeActions, me.VueConfig.data.items);
+      var names = methods.getGlobalCodeActionsForDelete(me.graph.data.CodeActions, data.items);
       if (names.length > 0) {
         me.graph.designer.deleteGlobalCodeAction(names);
       }
 
-      me.graph.UpdateData(me.graph.data.CodeActions, me.VueConfig.data.items);
+      me.graph.UpdateData(me.graph.data.CodeActions, data.items);
 
-      var usingsString = me.VueConfig.data.UsingsValue.join(';');
+      var usingsString = data.UsingsValue.join(';');
       if (usingsString !== '') {
         usingsString += ';'; //for unification with legacy usings
       }
@@ -345,16 +350,16 @@
       me.onClose(true);
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
 
-      if (me.VueConfig.data.readonly) {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
-                me.graph.data.CodeActions,
-                me.VueConfig.data.items,
+      if (!data.readonly && !WorkflowDesignerCommon.compareArray(
+        me.graph.data.CodeActions,
+        data.items,
         ['Name', 'Type', 'IsAsync', 'IsGlobal', 'Usings', 'ActionCode', 'ParameterDefinitions'])) {
 
         me.showConfirm();
@@ -364,16 +369,16 @@
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

@@ -302,6 +302,12 @@ namespace OptimaJet.Workflow.Oracle
 
         public async Task<TEntity[]> SelectAsync(OracleConnection connection, string commandText, params OracleParameter[] parameters)
         {
+            return await SelectAsync(connection, commandText, null, parameters).ConfigureAwait(false);
+        }
+
+        public async Task<TEntity[]> SelectAsync(OracleConnection connection, string commandText, OracleTransaction transaction,
+            params OracleParameter[] parameters)
+        {
             if (connection.State != ConnectionState.Open)
             {
                 await connection.OpenAsync().ConfigureAwait(false);
@@ -310,6 +316,10 @@ namespace OptimaJet.Workflow.Oracle
             using OracleCommand command = connection.CreateCommand();
 
             command.Connection = connection;
+            if (transaction != null)
+            {
+                command.Transaction = transaction;
+            }
             command.CommandTimeout = CommandTimeout;
 
 #pragma warning disable CA2100 // Review SQL queries for security vulnerabilities

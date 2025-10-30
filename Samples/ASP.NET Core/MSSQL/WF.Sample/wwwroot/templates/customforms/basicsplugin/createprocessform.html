@@ -10,7 +10,7 @@
     <div class="el-form--inline el-form--label-top">
       <el-form-item
         :label="customLabels.Name"
-        :prop="Field.Name.Name"
+        prop="Name"
         :rules="getFieldRules(Field.Name)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -19,7 +19,7 @@
 
       <el-form-item
         :label="customLabels.State"
-        :prop="Field.State.Name"
+        prop="State"
         :rules="getFieldRules(Field.State)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -34,7 +34,7 @@
     <div class="el-form--inline el-form--label-top">
       <el-form-item
         :label="customLabels.Scheme"
-        :prop="Field.Scheme.Name"
+        prop="Scheme"
         :rules="getFieldRules(Field.Scheme)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -43,7 +43,7 @@
 
       <el-form-item
         :label="customLabels.ProcessId"
-        :prop="Field.ProcessId.Name"
+        prop="ProcessId"
         :rules="getFieldRules(Field.ProcessId)"
         class="el-form-item"
         style="flex-grow: 1;">
@@ -118,9 +118,23 @@
 </div>
 
 <script type="application/javascript">
+  function customforms_basicsplugin_createprocessform_Data(me) {
+    return {
+      customTitle: undefined,
+      readonly: false,
+      editItem: undefined,
+      FormData: {},
+      Field: {},
+      items: []
+    }
+  }
+
   function customforms_basicsplugin_createprocessform_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.EditParametersFormlabel,
         customLabels: WorkflowDesignerConstants.EditParametersFormlabel.CustomForms.CreateProcess,
         ButtonTextSave: WorkflowDesignerConstants.ButtonTextSave,
@@ -129,21 +143,13 @@
       })
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      customTitle: undefined,
-      readonly: false,
-      editItem: undefined,
-      FormData: {},
-      Field: {},
-      items: []
-    });
+    methods.UpdateLanguage();
 
-    me.VueConfig.methods.onUpdate = function (value) {
-      me.VueConfig.data.readonly = me.graph.Settings.readonly;
+    methods.onUpdate = function (value) {
+      data.readonly = me.graph.Settings.readonly;
 
       if (me.options && me.options.customTitle) {
-        me.VueConfig.data.customTitle = me.options.customTitle;
+        data.customTitle = me.options.customTitle;
       }
 
       var fields = undefined;
@@ -166,10 +172,10 @@
             field.Label = field.Label + ' (' + field.Comment + ')';
           }
 
-          me.VueConfig.data.Field[field.Name] = field;
+          data.Field[field.Name] = field;
         });
 
-        if (!value && !me.VueConfig.data.readonly) {
+        if (!value && !data.readonly) {
           var tmp = {};
 
           fields.forEach(function (field) {
@@ -188,31 +194,31 @@
         }
       }
 
-      me.VueConfig.data.FormData = WorkflowDesignerCommon.toJSON(value);
+      data.FormData = WorkflowDesignerCommon.toJSON(value);
 
-      if (!me.VueConfig.data.FormData)
-        me.VueConfig.data.FormData = {};
+      if (!data.FormData)
+        data.FormData = {};
 
-      for (var key in me.VueConfig.data.FormData) {
-        if (key !== '__customtype' && me.VueConfig.data.FormData.hasOwnProperty(key))
-          if (!me.VueConfig.data.Field.hasOwnProperty(key))
-            delete me.VueConfig.data.FormData[key];
+      for (var key in data.FormData) {
+        if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
+          if (!data.Field.hasOwnProperty(key))
+            delete data.FormData[key];
       }
 
-      me.VueConfig.data.FormData = me.graph.insertDefaultValuesInForm(me.VueConfig.data.Field, me.VueConfig.data.FormData);
+      data.FormData = me.graph.insertDefaultValuesInForm(data.Field, data.FormData);
 
-      var params = JSON.parse(me.VueConfig.data.FormData.ProcessCreationParameters);
+      var params = JSON.parse(data.FormData.ProcessCreationParameters);
       if (params != null) {
-        me.VueConfig.data.items = []
+        data.items = []
         params.forEach(function (item) {
           var purpose = item.persist ? 'Persistence' : 'Temporary';
-          me.VueConfig.data.items.push({'Purpose': purpose, 'Value': item.value, 'Name': item.name});
+          data.items.push({'Purpose': purpose, 'Value': item.value, 'Name': item.name});
         });
       }
     };
 
-    me.VueConfig.methods.add = function () {
-      me.VueConfig.data.items.push({Name: '', Purpose: '', Value: ''});
+    methods.add = function () {
+      data.items.push({Name: '', Purpose: '', Value: ''});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerParametersList');
@@ -220,27 +226,27 @@
       }, 10);
     };
 
-    me.VueConfig.methods.showjson = function (name, item) {
-      me.VueConfig.data.editItem = item;
+    methods.showjson = function (name, item) {
+      data.editItem = item;
       me.editItem = item;
 
       var onSuccess = function (value) {
         if (me.editItem) {
           me.editItem[name] = value;
-          me.VueConfig.data.editItem = undefined;
+          data.editItem = undefined;
           delete me.editItem;
         }
       };
 
       var onClose = function (value) {
-        me.VueConfig.data.editItem = undefined;
+        data.editItem = undefined;
       };
 
       var params = {};
-      me.VueConfig.data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
     };
 
-    me.VueConfig.methods.validateField = function (name, item) {
+    methods.validateField = function (name, item) {
       if (name != 'Name' && name != 'Purpose')
         return;
 
@@ -249,7 +255,7 @@
       }
 
       if (name == 'Name') {
-        var res = me.VueConfig.data.items.filter(function (i) {
+        var res = data.items.filter(function (i) {
           return i != item && i.Name == item.Name
         });
         if (res.length > 0) {
@@ -258,29 +264,29 @@
       }
     };
 
-    me.VueConfig.methods.remove = function (index) {
-      me.VueConfig.data.items.splice(index, 1);
+    methods.remove = function (index) {
+      data.items.splice(index, 1);
     };
 
-    me.VueConfig.methods.getFieldRules = function (field) {
-      return field.IsRequired ? me.requiredRule() : [];
+    methods.getFieldRules = function (field) {
+      return field?.IsRequired ? me.requiredRule() : [];
     };
 
-    me.VueConfig.methods.onSave = function () {
+    methods.onSave = function () {
 
-      me.VueConfig.data.FormData.ProcessCreationParameters = [];
+      data.FormData.ProcessCreationParameters = [];
 
-      me.VueConfig.data.items.forEach(function (item) {
-        me.VueConfig.data.FormData.ProcessCreationParameters.push({
+      data.items.forEach(function (item) {
+        data.FormData.ProcessCreationParameters.push({
           'persist': item.Purpose == 'Persistence',
           'value': item.Value,
           'name': item.Name
         });
       });
 
-      me.VueConfig.data.FormData.ProcessCreationParameters = JSON.stringify(me.VueConfig.data.FormData.ProcessCreationParameters).toString();
+      data.FormData.ProcessCreationParameters = JSON.stringify(data.FormData.ProcessCreationParameters).toString();
 
-      var value = WorkflowDesignerCommon.toString(me.VueConfig.data.FormData);
+      var value = WorkflowDesignerCommon.toString(data.FormData);
       this.$refs.form.validate(function (valid) {
         if (valid) {
           me.onSuccess(WorkflowDesignerCommon.toCompactJSON(value));
@@ -289,7 +295,7 @@
       });
     };
 
-    me.VueConfig.methods.onClose = function () {
+    methods.onClose = function () {
       me.onClose(true);
     };
   }

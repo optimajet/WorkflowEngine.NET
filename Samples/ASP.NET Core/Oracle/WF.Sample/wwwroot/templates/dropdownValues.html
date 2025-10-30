@@ -1,6 +1,6 @@
 <h3 class="WorkflowDesignerTitleWithCreate">
-  {{(name || labels.Dropdown) + " " + labels.Values}}
-  <a v-if="!readonly" @click="addDropdownValues()">{{ButtonTextCreate}}</a>
+  {{ (name || labels.Dropdown) + " " + labels.Values }}
+  <a v-if="!readonly" @click="addDropdownValues()">{{ ButtonTextCreate }}</a>
 </h3>
 <div id="WorkflowDesignerDropdownValues" class="WorkflowDesignerWindowForm">
   <table class="WorkflowDesignerTable">
@@ -16,24 +16,24 @@
       <td :draggable="!readonly" class='WorkflowDesignerTableMoveCol' style="cursor:grab;">
         <div v-if="!readonly" class='WorkflowDesignerTableMoveButton'></div>
       </td>
-            <td>
-                <el-input
-                    v-model="item.Name"
+      <td>
+        <el-input
+          v-model="item.Name"
           :class="validateFieldDD('Name', item) ? 'WorkflowDesignerInputError' : ''"
           :readonly="readonly"
           :title="validateFieldDD('Name', item)">
-                </el-input>
-            </td>
-            <td>
-                <el-input v-model="item.Value"
+        </el-input>
+      </td>
+      <td>
+        <el-input v-model="item.Value"
                   :class="validateFieldDD('Name', item) ? 'WorkflowDesignerInputError' : ''"
                   :readonly="readonly"
                   :title="validateFieldDD('Name', item)">
-                </el-input>
-            </td>
+        </el-input>
+      </td>
 
-            <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
-                <el-button-group>
+      <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
+        <el-button-group>
           <el-button class="WorkflowDesignerTableDeleteButton" @click="removeDropdownValues(item, index)"></el-button>
         </el-button-group>
       </td>
@@ -45,9 +45,20 @@
   <el-button @click="onClose">{{ ButtonTextCancel }}</el-button>
 </div>
 <script type="application/javascript">
+  function dropdownValues_Data(me) {
+    return {
+      readonly: false,
+      name: undefined,
+      items: []
+    }
+  }
+
   function dropdownValues_Init(me) {
-    me.VueConfig.methods.UpdateLanguage = function () {
-      me.VueConfig.data = Object.assign(me.VueConfig.data, {
+    const {VueConfig} = me;
+    const {state: data, methods} = VueConfig;
+
+    methods.UpdateLanguage = function () {
+      Object.assign(data, {
         labels: WorkflowDesignerConstants.DropdownValues,
         ButtonTextCreate: WorkflowDesignerConstants.ButtonTextCreate,
         ButtonTextDelete: WorkflowDesignerConstants.ButtonTextDelete,
@@ -56,30 +67,26 @@
       });
     }
 
-    me.VueConfig.methods.UpdateLanguage();
-    me.VueConfig.data = Object.assign(me.VueConfig.data, {
-      readonly: false,
-      name: undefined,
-    });
+    methods.UpdateLanguage();
 
-        me.VueConfig.methods.onUpdate = function(parentItem){
-            me.parentItem = parentItem;
+    methods.onUpdate = function (parentItem) {
+      me.parentItem = parentItem;
 
-            me.VueConfig.data.items = WorkflowDesignerCommon.clone(parentItem.DropdownValues);
-            me.VueConfig.data.name = parentItem.Name;
-            me.VueConfig.data.readonly = me.graph.Settings.readonly;
-        };
-
-    me.VueConfig.methods.addDropdownValues = function () {
-      me.VueConfig.data.items.push({value: '', name: ''});
+      data.items = WorkflowDesignerCommon.clone(parentItem.DropdownValues);
+      data.name = parentItem.Name;
+      data.readonly = me.graph.Settings.readonly;
     };
 
-    me.VueConfig.methods.removeDropdownValues = function (item, index) {
-      me.VueConfig.data.items.splice(index, 1);
+    methods.addDropdownValues = function () {
+      data.items.push({value: '', name: ''});
     };
 
-    me.VueConfig.methods.validateFieldDD = function (name, item) {
-      if (name != 'Name' && name != 'Value')
+    methods.removeDropdownValues = function (item, index) {
+      data.items.splice(index, 1);
+    };
+
+    methods.validateFieldDD = function (name, item) {
+      if (name !== 'Name' && name !== 'Value')
         return;
 
       if (!item[name]) {
@@ -87,9 +94,9 @@
       }
     };
 
-    me.VueConfig.methods.validate = function () {
-      var validateFunc = me.VueConfig.methods.validateFieldDD;
-      var items = me.VueConfig.data.items;
+    methods.validate = function () {
+      var validateFunc = methods.validateFieldDD;
+      var items = data.items;
       for (var i = 0; i < items.length; i++) {
         var item = items[i];
 
@@ -100,41 +107,41 @@
       return true;
     };
 
-    me.VueConfig.methods.onSave = function () {
-      if (me.VueConfig.methods.validate && me.VueConfig.methods.validate()) {
-        me.graph.UpdateData(me.parentItem.DropdownValues, me.VueConfig.data.items);
+    methods.onSave = function () {
+      if (methods.validate && methods.validate()) {
+        me.graph.UpdateData(me.parentItem.DropdownValues, data.items);
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onClose = function () {
-      if (me.VueConfig.data.readonly) {
+    methods.onClose = function () {
+      if (data.readonly) {
         me.onClose(true);
         return;
       }
 
-            if (!me.VueConfig.data.readonly && !WorkflowDesignerCommon.compareArray(
-                me.parentItem.DropdownValues,
-                me.VueConfig.data.items,
+      if (!data.readonly && !WorkflowDesignerCommon.compareArray(
+        me.parentItem.DropdownValues,
+        data.items,
         ['Name', 'Value'])) {
 
-                me.showConfirm();
-                return false;
+        me.showConfirm();
+        return false;
       } else {
         me.onClose(true);
       }
     };
 
-    me.VueConfig.methods.onCloseSave = function () {
+    methods.onCloseSave = function () {
       me.onClose(true);
     };
 
     me.showConfirm = function () {
-      me.VueConfig.methods.showConfirm({
+      methods.showConfirm({
         title: WorkflowDesignerConstants.DialogConfirmText,
         message: WorkflowDesignerConstants.CloseWithoutSaving,
         onSuccess: function () {
-          me.VueConfig.methods.onCloseSave();
+          methods.onCloseSave();
         }
       });
     }

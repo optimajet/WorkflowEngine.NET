@@ -47,5 +47,7 @@
     <EmbeddedResource Include="Scripts\CreateUniqueIndexes.sql">
       <CopyToOutputDirectory>Always</CopyToOutputDirectory>
     </EmbeddedResource>
+    <None Remove="Scripts\CreateWorkflowForms.sql" />
+    <EmbeddedResource Include="Scripts\CreateWorkflowForms.sql" />
   </ItemGroup>
 </Project>

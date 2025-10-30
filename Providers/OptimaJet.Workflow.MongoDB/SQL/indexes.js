@@ -41,3 +41,5 @@ db.WorkflowSync.createIndex({Name: 1});
 
 db.WorkflowApprovalHistory.createIndex({ProcessId: 1});
 db.WorkflowApprovalHistory.createIndex({IdentityId: 1});
+
+db.WorkflowForm.createIndex({Name: 1, Version: 1}, {unique: true});
