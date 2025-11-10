@@ -7,7 +7,7 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MSSQL/20.0.0": {
+      "OptimaJet.Workflow.MSSQL/20.0.1": {
         "dependencies": {
           "Azure.Identity": "1.14.0",
           "Microsoft.Data.SqlClient": "5.2.0",
@@ -16,8 +16,8 @@
           "NETStandard.Library": "2.0.3",
           "System.IdentityModel.Tokens.Jwt": "8.10.0",
           "System.Runtime.Caching": "8.0.1",
-          "WorkflowEngine.NETCore-Core": "20.0.0",
-          "WorkflowEngine.NETCore-Migrator": "20.0.0",
+          "WorkflowEngine.NETCore-Core": "20.0.1",
+          "WorkflowEngine.NETCore-Migrator": "20.0.1",
           "OptimaJet.Workflow.Core": "20.0.0.0",
           "OptimaJet.Workflow.Migrator": "20.0.0.0"
         },
@@ -1698,7 +1698,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/20.0.0": {
+      "WorkflowEngine.NETCore-Core/20.0.1": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "9.0.5",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
@@ -1714,12 +1714,12 @@
         },
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "20.0.0",
+            "assemblyVersion": "20.0.1",
             "fileVersion": "20.0.0"
           }
         }
       },
-      "WorkflowEngine.NETCore-Migrator/20.0.0": {
+      "WorkflowEngine.NETCore-Migrator/20.0.1": {
         "dependencies": {
           "Azure.Identity": "1.14.0",
           "FluentMigrator": "5.2.0",
@@ -1729,11 +1729,11 @@
           "Microsoft.IdentityModel.JsonWebTokens": "8.10.0",
           "System.IdentityModel.Tokens.Jwt": "8.10.0",
           "System.Runtime.Caching": "8.0.1",
-          "WorkflowEngine.NETCore-Core": "20.0.0"
+          "WorkflowEngine.NETCore-Core": "20.0.1"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {
-            "assemblyVersion": "20.0.0",
+            "assemblyVersion": "20.0.1",
             "fileVersion": "20.0.0"
           }
         }
@@ -1757,7 +1757,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MSSQL/20.0.0": {
+    "OptimaJet.Workflow.MSSQL/20.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2707,12 +2707,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/20.0.0": {
+    "WorkflowEngine.NETCore-Core/20.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/20.0.0": {
+    "WorkflowEngine.NETCore-Migrator/20.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""

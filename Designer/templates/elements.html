@@ -1,5 +1,6 @@
 <el-form class="WorkflowDesignerWindowForm" style="height: calc(100% - 10px);" @drop="drop($event)">
-  <el-tabs v-model="activeTab" id="ElementsTabs" :class="hasBpmn && 'wf-elements-tabs with-bpmn'" style="height: 100%; display: flex; flex-direction: column-reverse">
+  <el-tabs v-model="activeTab" id="ElementsTabs" :class="hasBpmn && 'wf-elements-tabs with-bpmn'"
+           style="height: 100%; display: flex; flex-direction: column;">
     <el-input clearable v-model="search" prefix-icon="IconSearch" size="default"
               style="margin-bottom: 15px"></el-input>
     <el-tab-pane :label="labels.Activities" name="activities">

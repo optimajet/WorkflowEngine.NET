@@ -375,6 +375,7 @@ td .el-checkbox__input {
 .WorkflowDesignerElements .el-tabs__header {
   display: flex;
   justify-content: center;
+  flex-direction: column;
   cursor: move;
   margin: -10px 10px 10px;
 }
