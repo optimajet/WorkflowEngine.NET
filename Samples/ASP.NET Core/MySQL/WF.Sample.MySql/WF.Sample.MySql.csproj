@@ -5,8 +5,8 @@
   <ItemGroup>
     <PackageReference Include="AutoMapper" Version="8.0.0" />
     <PackageReference Include="MySql.EntityFrameworkCore" Version="6.0.4" />
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="20.0.2" />
-    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMySQL" Version="20.0.2" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="20.0.3" />
+    <PackageReference Include="WorkflowEngine.NETCore-ProviderForMySQL" Version="20.0.3" />
   </ItemGroup>
   <ItemGroup>
     <ProjectReference Include="..\WF.Sample.Business\WF.Sample.Business.csproj" />

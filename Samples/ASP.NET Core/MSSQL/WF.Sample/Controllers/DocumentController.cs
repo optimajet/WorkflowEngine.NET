@@ -207,7 +207,7 @@ namespace WF.Sample.Controllers
         {
             var result = new List<DocumentCommandModel>();
             
-            var commands = WorkflowInit.Runtime.GetAvailableCommands(id, CurrentUserSettings.GetCurrentUser(HttpContext).ToString());
+            var commands = await WorkflowInit.Runtime.GetAvailableCommandsAsync(id, CurrentUserSettings.GetCurrentUser(HttpContext).ToString());
             foreach (var workflowCommand in commands)
             {
                 if (result.Count(c => c.key == workflowCommand.CommandName) == 0)
