@@ -3,7 +3,6 @@ using System.Collections;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using Npgsql;
 using NpgsqlTypes;
 using OptimaJet.Workflow.Core.Entities;
@@ -64,8 +63,8 @@ namespace OptimaJet.Workflow.PostgreSQL
                 DeadlineToComplete = entity.DeadlineToComplete,
                 Description = entity.Description,
                 Executor = entity.Executor,
-                Tags = JsonConvert.DeserializeObject<List<string>>(entity.Tags),
-                Observers = JsonConvert.DeserializeObject<List<string>>(entity.Observers)
+                Tags = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(entity.Tags),
+                Observers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(entity.Observers)
             };
         }
 

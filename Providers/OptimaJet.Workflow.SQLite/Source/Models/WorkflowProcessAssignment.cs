@@ -1,6 +1,5 @@
 ﻿using System.Collections;
 using System.Data;
-using Newtonsoft.Json;
 using Microsoft.Data.Sqlite;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
@@ -59,8 +58,8 @@ namespace OptimaJet.Workflow.SQLite
                 DeadlineToComplete = entity.DeadlineToComplete,
                 Description = entity.Description,
                 Executor = entity.Executor,
-                Tags = JsonConvert.DeserializeObject<List<string>>(entity.Tags),
-                Observers = JsonConvert.DeserializeObject<List<string>>(entity.Observers)
+                Tags = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(entity.Tags),
+                Observers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(entity.Observers)
             };
         }
 

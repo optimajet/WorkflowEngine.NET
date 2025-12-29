@@ -5,7 +5,6 @@ using System.Data;
 using Microsoft.Data.SqlClient;
 using System.Linq;
 using System.Threading.Tasks;
-using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Model;
@@ -64,8 +63,8 @@ namespace OptimaJet.Workflow.MSSQL.Models
                 DeadlineToComplete = assigment.DeadlineToComplete,
                 Description = assigment.Description,
                 Executor = assigment.Executor,
-                Tags = JsonConvert.DeserializeObject<List<string>>(assigment.Tags),
-                Observers = JsonConvert.DeserializeObject<List<string>>(assigment.Observers)
+                Tags = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(assigment.Tags),
+                Observers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(assigment.Observers)
             };
         }
         

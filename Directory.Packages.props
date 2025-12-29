@@ -20,8 +20,8 @@
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.72.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.10.0" />
     <PackageVersion Include="Azure.Identity" Version="1.14.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="20.0.3" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="20.0.3" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="20.0.4" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="20.0.4" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>
@@ -77,6 +77,11 @@
     <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
     <PackageVersion Include="Oracle.EntityFrameworkCore" Version="8.23.40" />
     <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+  </ItemGroup>
+  <!-- Benchmark -->
+  <ItemGroup>
+    <PackageVersion Include="BenchmarkDotNet" Version="0.13.12" />
+    <PackageVersion Include="CommandLineParser" Version="2.9.1" />
   </ItemGroup>
   <!-- Tests -->
   <ItemGroup>

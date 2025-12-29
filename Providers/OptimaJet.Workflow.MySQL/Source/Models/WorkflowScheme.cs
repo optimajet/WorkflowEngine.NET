@@ -4,7 +4,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using MySqlConnector;
-using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Builder;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;

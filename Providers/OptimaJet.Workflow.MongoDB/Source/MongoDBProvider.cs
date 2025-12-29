@@ -10,7 +10,6 @@ using System.Xml.Linq;
 using MongoDB.Bson;
 using MongoDB.Driver;
 using MongoDB.Driver.Linq;
-using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
@@ -1147,14 +1146,14 @@ namespace OptimaJet.Workflow.MongoDB
                     Id = Guid.NewGuid(),
                     Name = name,
                     Type = type,
-                    Value = JsonConvert.SerializeObject(value)
+                    Value = Newtonsoft.Json.JsonConvert.SerializeObject(value)
                 };
 
                 await dbcoll.InsertOneAsync(parameter).ConfigureAwait(false);
             }
             else
             {
-                parameter.Value = JsonConvert.SerializeObject(value);
+                parameter.Value = Newtonsoft.Json.JsonConvert.SerializeObject(value);
                 await SaveAsync(dbcoll, parameter, doc => doc.Id == parameter.Id).ConfigureAwait(false);
             }
         }
@@ -1167,7 +1166,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             if (parameter != null)
             {
-                return JsonConvert.DeserializeObject<T>(parameter.Value);
+                return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(parameter.Value);
             }
 
             return default;
@@ -1188,7 +1187,7 @@ namespace OptimaJet.Workflow.MongoDB
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
             {
-                dict[parameter.Name] = JsonConvert.DeserializeObject<T>(parameter.Value);
+                dict[parameter.Name] = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(parameter.Value);
             }
             
             return dict;
@@ -1207,7 +1206,7 @@ namespace OptimaJet.Workflow.MongoDB
             var asyncCursor = await findAsync.ConfigureAwait(false);
             var parameters = await asyncCursor.ToListAsync().ConfigureAwait(false);
             
-            return parameters.Select(gp => JsonConvert.DeserializeObject<T>(gp.Value)).ToList();
+            return parameters.Select(gp => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(gp.Value)).ToList();
         }
         
         public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null,
@@ -1232,7 +1231,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             return new PagedResponse<T>()
             {
-                Data = parameters.Select(c => JsonConvert.DeserializeObject<T>(c.Value)).ToList(),
+                Data = parameters.Select(c => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(c.Value)).ToList(),
                 Count = count
             };
         }

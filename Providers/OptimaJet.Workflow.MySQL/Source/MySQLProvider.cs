@@ -8,7 +8,6 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using FluentMigrator.Runner;
 using MySqlConnector;
-using Newtonsoft.Json;
 using OptimaJet.Workflow.Core;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
@@ -147,8 +146,8 @@ namespace OptimaJet.Workflow.MySQL
                 IsActive = form.IsActive,
                 DeadlineToComplete = form.DeadlineToComplete,
                 DeadlineToStart = form.DeadlineToStart,
-                Observers = JsonConvert.SerializeObject(form.Observers),
-                Tags = JsonConvert.SerializeObject(form.Tags),
+                Observers = Newtonsoft.Json.JsonConvert.SerializeObject(form.Observers),
+                Tags = Newtonsoft.Json.JsonConvert.SerializeObject(form.Tags),
                 DateCreation = _runtime.RuntimeDateTimeNow
             };
 
@@ -179,8 +178,8 @@ namespace OptimaJet.Workflow.MySQL
             assignment.IsDeleted = a.IsDeleted;
             assignment.DeadlineToComplete = a.DeadlineToComplete;
             assignment.DeadlineToStart = a.DeadlineToStart;
-            assignment.Observers = JsonConvert.SerializeObject(a.Observers ?? new List<string>());
-            assignment.Tags = JsonConvert.SerializeObject(a.Tags ?? new List<string>());
+            assignment.Observers = Newtonsoft.Json.JsonConvert.SerializeObject(a.Observers ?? new List<string>());
+            assignment.Tags = Newtonsoft.Json.JsonConvert.SerializeObject(a.Tags ?? new List<string>());
 
             await WorkflowProcessAssignment.UpdateAsync(connection, assignment).ConfigureAwait(false);
         }
@@ -970,14 +969,14 @@ namespace OptimaJet.Workflow.MySQL
                     Id = Guid.NewGuid(),
                     Type = type,
                     Name = name,
-                    Value = JsonConvert.SerializeObject(value)
+                    Value = Newtonsoft.Json.JsonConvert.SerializeObject(value)
                 };
 
                 await WorkflowGlobalParameter.InsertAsync(connection, parameter).ConfigureAwait(false);
             }
             else
             {
-                parameter.Value = JsonConvert.SerializeObject(value);
+                parameter.Value = Newtonsoft.Json.JsonConvert.SerializeObject(value);
 
                 await WorkflowGlobalParameter.UpdateAsync(connection, parameter).ConfigureAwait(false);
             }
@@ -994,7 +993,7 @@ namespace OptimaJet.Workflow.MySQL
                 return default;
             }
 
-            return JsonConvert.DeserializeObject<T>(parameter.Value);
+            return Newtonsoft.Json.JsonConvert.DeserializeObject<T>(parameter.Value);
         }
 
         public async Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type, Sorting sort = null)
@@ -1006,7 +1005,7 @@ namespace OptimaJet.Workflow.MySQL
             var dict = new Dictionary<string, T>();
             foreach (var parameter in parameters)
             {
-                dict[parameter.Name] = JsonConvert.DeserializeObject<T>(parameter.Value);
+                dict[parameter.Name] = Newtonsoft.Json.JsonConvert.DeserializeObject<T>(parameter.Value);
             }
 
             return dict;
@@ -1018,7 +1017,7 @@ namespace OptimaJet.Workflow.MySQL
             var parameters = await WorkflowGlobalParameter.SelectByTypeAndNameAsync(connection, type, null, sort)
                 .ConfigureAwait(false);
 
-            return parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList();
+            return parameters.Select(p => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
 
         public virtual async Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging, string name = null, Sorting sort = null)
@@ -1031,7 +1030,7 @@ namespace OptimaJet.Workflow.MySQL
                 .ConfigureAwait(false);
             return new PagedResponse<T>()
             {
-                Data = parameters.Select(p => JsonConvert.DeserializeObject<T>(p.Value)).ToList(),
+                Data = parameters.Select(p => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(p.Value)).ToList(),
                 Count = count
             };
         }
@@ -1395,7 +1394,7 @@ namespace OptimaJet.Workflow.MySQL
                 SchemeCode = scheme.SchemeCode,
                 RootSchemeCode = scheme.RootSchemeCode,
                 RootSchemeId = scheme.RootSchemeId,
-                AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
+                AllowedActivities = Newtonsoft.Json.JsonConvert.SerializeObject(scheme.AllowedActivities),
                 StartingTransition = scheme.StartingTransition,
                 IsObsolete = scheme.IsObsolete
             };
@@ -1419,7 +1418,7 @@ namespace OptimaJet.Workflow.MySQL
                 SchemeCode = scheme.SchemeCode,
                 RootSchemeCode = scheme.RootSchemeCode,
                 RootSchemeId = scheme.RootSchemeId,
-                AllowedActivities = JsonConvert.SerializeObject(scheme.AllowedActivities),
+                AllowedActivities = Newtonsoft.Json.JsonConvert.SerializeObject(scheme.AllowedActivities),
                 StartingTransition = scheme.StartingTransition,
                 IsObsolete = scheme.IsObsolete
             };
@@ -1440,7 +1439,7 @@ namespace OptimaJet.Workflow.MySQL
                 Scheme = scheme,
                 CanBeInlined = canBeInlined,
                 InlinedSchemes = inlinedSchemes.Any()
-                    ? JsonConvert.SerializeObject(inlinedSchemes)
+                    ? Newtonsoft.Json.JsonConvert.SerializeObject(inlinedSchemes)
                     : null,
                 Tags = TagHelper.ToTagStringForDatabase(tags)
             };
@@ -1558,7 +1557,7 @@ namespace OptimaJet.Workflow.MySQL
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
                 XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
-                JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
+                Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
                 workflowProcessScheme.StartingTransition,
                 workflowProcessScheme.DefiningParameters);
         }

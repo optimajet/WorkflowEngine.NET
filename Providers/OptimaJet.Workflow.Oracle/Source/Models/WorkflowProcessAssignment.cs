@@ -4,8 +4,6 @@ using System.Collections.Generic;
 using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
-
-using Newtonsoft.Json;
 using OptimaJet.Workflow.Core.Entities;
 using OptimaJet.Workflow.Core.Fault;
 using OptimaJet.Workflow.Core.Helpers;
@@ -65,8 +63,8 @@ namespace OptimaJet.Workflow.Oracle
                 DeadlineToComplete = assigment.DeadlineToComplete,
                 Description = assigment.Description,
                 Executor = assigment.Executor,
-                Tags = JsonConvert.DeserializeObject<List<string>>(assigment.Tags),
-                Observers = JsonConvert.DeserializeObject<List<string>>(assigment.Observers)
+                Tags = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(assigment.Tags),
+                Observers = Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(assigment.Observers)
             };
         }
         
