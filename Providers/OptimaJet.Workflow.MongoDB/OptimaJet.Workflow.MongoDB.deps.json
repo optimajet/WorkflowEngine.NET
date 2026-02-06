@@ -7,11 +7,11 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/20.0.4": {
+      "OptimaJet.Workflow.MongoDB/20.0.5": {
         "dependencies": {
           "MongoDB.Driver": "2.30.0",
           "NETStandard.Library": "2.0.3",
-          "WorkflowEngine.NETCore-Core": "20.0.4",
+          "WorkflowEngine.NETCore-Core": "20.0.5",
           "OptimaJet.Workflow.Core": "20.0.0.0"
         },
         "runtime": {
@@ -1143,7 +1143,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/20.0.4": {
+      "WorkflowEngine.NETCore-Core/20.0.5": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "9.0.5",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
@@ -1159,7 +1159,7 @@
         },
         "runtime": {
           "OptimaJet.Workflow.Core.dll": {
-            "assemblyVersion": "20.0.4",
+            "assemblyVersion": "20.0.5",
             "fileVersion": "20.0.0"
           }
         }
@@ -1175,7 +1175,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/20.0.4": {
+    "OptimaJet.Workflow.MongoDB/20.0.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1831,7 +1831,7 @@
       "path": "zstdsharp.port/0.7.3",
       "hashPath": "zstdsharp.port.0.7.3.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/20.0.4": {
+    "WorkflowEngine.NETCore-Core/20.0.5": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
