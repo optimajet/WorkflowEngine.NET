@@ -755,7 +755,7 @@
         name: item['ActionName'],
         type: ['Action']
       };
-      data.jsonform = me.showjson(item[name], params, onSuccess, onClose, me.VueConfig.data.FormData);
+      data.jsonform = me.showjson(item[name], params, onSuccess, onClose, data.FormData);
     };
 
     methods.onSave = function () {

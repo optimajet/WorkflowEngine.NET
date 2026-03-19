@@ -373,6 +373,7 @@ namespace OptimaJet.Workflow.DbPersistence
             await BindProcessToNewSchemeAsync(processInstance, false).ConfigureAwait(false);
         }
 
+        [Obsolete("Use BindProcessToNewSchemeAsync(ProcessInstance processInstance) instead.")]
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
             using var connection = OpenConnection();
@@ -1296,6 +1297,15 @@ namespace OptimaJet.Workflow.DbPersistence
             return ConvertToSchemeDefinition(processScheme);
         }
 
+        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode,
+            Guid? rootSchemeId, bool ignoreObsolete)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await GetProcessSchemeWithParametersAsync(schemeCode, "{}", rootSchemeId, ignoreObsolete).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        [Obsolete("Use GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete) instead.")]
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters,
             Guid? rootSchemeId, bool ignoreObsolete)
         {
@@ -1332,6 +1342,7 @@ namespace OptimaJet.Workflow.DbPersistence
             throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
+        [Obsolete("Use SetSchemeIsObsoleteAsync(string schemeCode) instead.")]
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
         {
             string definingParameters = DefiningParametersSerializer.Serialize(parameters);
@@ -1508,6 +1519,12 @@ namespace OptimaJet.Workflow.DbPersistence
 
         #region IWorkflowGenerator
 
+        public virtual async Task<XElement> GenerateAsync(string schemeCode)
+        {
+            return await GetSchemeAsync(schemeCode).ConfigureAwait(false);
+        }
+
+        [Obsolete("Use GenerateAsync(string schemeCode) instead.")]
         public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
         {
             if (parameters.Count > 0)
@@ -1515,7 +1532,7 @@ namespace OptimaJet.Workflow.DbPersistence
                 throw new InvalidOperationException("Parameters not supported");
             }
 
-            return await GetSchemeAsync(schemeCode).ConfigureAwait(false);
+            return await GenerateAsync(schemeCode).ConfigureAwait(false);
         }
 
         #endregion

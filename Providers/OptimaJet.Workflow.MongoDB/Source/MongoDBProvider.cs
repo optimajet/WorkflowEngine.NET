@@ -490,6 +490,7 @@ namespace OptimaJet.Workflow.MongoDB
             await BindProcessToNewSchemeAsync(processInstance, false).ConfigureAwait(false);
         }
 
+        [Obsolete("Use BindProcessToNewSchemeAsync(ProcessInstance processInstance) instead.")]
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
         {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
@@ -1590,6 +1591,14 @@ namespace OptimaJet.Workflow.MongoDB
         }
 
 
+        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete)
+        {
+#pragma warning disable CS0618 // Type or member is obsolete
+            return await GetProcessSchemeWithParametersAsync(schemeCode, "{}", rootSchemeId, ignoreObsolete).ConfigureAwait(false);
+#pragma warning restore CS0618 // Type or member is obsolete
+        }
+
+        [Obsolete("Use GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete) instead.")]
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters, Guid? rootSchemeId, bool ignoreObsolete)
         {
             string hash = HashHelper.GenerateStringHash(definingParameters);
@@ -1627,6 +1636,7 @@ namespace OptimaJet.Workflow.MongoDB
             throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
         }
 
+        [Obsolete("Use SetSchemeIsObsoleteAsync(string schemeCode) instead.")]
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
         {
             string definingParameters = DefiningParametersSerializer.Serialize(parameters);
@@ -1858,13 +1868,8 @@ namespace OptimaJet.Workflow.MongoDB
 
         private readonly IDictionary<string, string> _templateTypeMapping = new Dictionary<string, string>();
 
-        public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
+        public virtual async Task<XElement> GenerateAsync(string schemeCode)
         {
-            if (parameters.Count > 0)
-            {
-                throw new InvalidOperationException("Parameters not supported");
-            }
-
             string code = !_templateTypeMapping.ContainsKey(schemeCode.ToLower()) ? schemeCode : _templateTypeMapping[schemeCode.ToLower()];
 
             IMongoCollection<WorkflowScheme> dbcoll = Store.GetCollection<WorkflowScheme>(MongoDBConstants.WorkflowSchemeCollectionName);
@@ -1878,6 +1883,16 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             return XElement.Parse(scheme.Scheme);
+        }
+
+        [Obsolete("Use GenerateAsync(string schemeCode) instead.")]
+        public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
+        {
+            if (parameters.Count > 0)
+            {
+                throw new InvalidOperationException("Parameters not supported");
+            }
+            return await GenerateAsync(schemeCode).ConfigureAwait(false);
         }
 
         // ReSharper disable once UnusedMember.Global

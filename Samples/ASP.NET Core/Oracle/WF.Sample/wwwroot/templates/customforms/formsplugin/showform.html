@@ -292,15 +292,17 @@
         data.originalActivityName = me.options.callerElement.Name;
       } else {
         me.linkItem = value;
-        formData.Name = value.Name;
-        formData.State = value.State;
-        formData.AssociatedCommands = JSON.parse(value.Annotations.find(a => a.Name === 'AssociatedCommands')?.JsonValue ?? '[]');
-        formData.FormName = value.Annotations.find(a => a.Name === 'FormName')?.JsonValue;
-        const formVersionString = value.Annotations.find(a => a.Name === 'FormVersion')?.JsonValue;
+        const annotations = value?.Annotations ?? [];
+        const getAnnotationValue = (name, fallback) => annotations.find(a => a.Name === name)?.JsonValue ?? fallback;
+        formData.Name = value?.Name;
+        formData.State = value?.State;
+        formData.AssociatedCommands = JSON.parse(getAnnotationValue('AssociatedCommands', '[]'));
+        formData.FormName = getAnnotationValue('FormName');
+        const formVersionString = getAnnotationValue('FormVersion');
         formData.FormVersion = formVersionString ? parseInt(formVersionString) : 'latest';
-        formData.InParameterName = value.Annotations.find(a => a.Name === 'InParameterName')?.JsonValue;
-        formData.DraftParameterName = value.Annotations.find(a => a.Name === 'DraftParameterName')?.JsonValue;
-        formData.OutParameterName = value.Annotations.find(a => a.Name === 'OutParameterName')?.JsonValue;
+        formData.InParameterName = getAnnotationValue('InParameterName');
+        formData.DraftParameterName = getAnnotationValue('DraftParameterName');
+        formData.OutParameterName = getAnnotationValue('OutParameterName');
         data.originalActivityName = formData.Name;
       }
 
@@ -310,8 +312,8 @@
       data.prevInParamName = formData.InParameterName;
 
       data.currentActivityCommands = getCurrentActivityCommands();
-      methods.LoadFormNames().then(data => {
-        data.currentFormNames = data ?? [];
+      methods.LoadFormNames().then(names => {
+        data.currentFormNames = names ?? [];
       })
       if (formData.FormName) {
         methods.LoadFormVersions(formData.FormName).then((data) => {
