@@ -66,7 +66,6 @@
       <div style="display:flex; flex-wrap: nowrap">
         <el-select
           v-model="FormData.Trigger.Command.Name"
-          style="width: 100%; margin-inline-end: 10px;"
           :disabled="readonly"
           allow-create
           clearable
@@ -145,6 +144,7 @@
           <el-button-group>
             <el-button class="WorkflowDesignerTableDeleteButton" @click="removeRow(FormData.Restrictions, index)"></el-button>
           </el-button-group>
+        </td>
       </tr>
     </table>
 

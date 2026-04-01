@@ -260,7 +260,7 @@
         if (!data.FormData)
           data.FormData = {};
 
-        for (key in data.FormData) {
+        for (const key in data.FormData) {
           if (data.FormData.hasOwnProperty(key)) {
             if (key !== '__customtype') {
               var found = false;
