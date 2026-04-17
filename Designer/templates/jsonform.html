@@ -121,7 +121,7 @@
       if (parameterDefinition && parameterDefinition.name) {
         data.actionType = parameterDefinition.name;
         if (Array.isArray(parameterDefinition.type)) {
-          for (var i = 0; i <= parameterDefinition.type.length; i++) {
+          for (var i = 0; i < parameterDefinition.type.length; i++) {
             fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
             if (fields && fields.length > 0)
               break;

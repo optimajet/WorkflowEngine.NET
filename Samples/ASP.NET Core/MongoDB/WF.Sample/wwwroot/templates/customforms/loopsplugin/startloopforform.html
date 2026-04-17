@@ -283,7 +283,7 @@
       var parameterDefinition = me.options.parameterDefinition;
 
       if (parameterDefinition && parameterDefinition.name) {
-        for (var i = 0; i <= parameterDefinition.type.length; i++) {
+        for (var i = 0; i < parameterDefinition.type.length; i++) {
           fields = me.graph.getActionParameterDefinition(parameterDefinition.name, parameterDefinition.type[i]);
           if (fields && fields.length > 0)
             break;
@@ -327,7 +327,7 @@
       if (!data.FormData)
         data.FormData = {};
 
-      for (key in data.FormData) {
+      for (const key in data.FormData) {
         if (typeof data.parameterFromProcess[key] !== 'undefined' && WorkflowDesignerCommon.containsAt(data.FormData[key]))
           data.parameterFromProcess[key] = true;
         if (key !== '__customtype' && data.FormData.hasOwnProperty(key))
@@ -341,7 +341,7 @@
     };
 
     methods.updateDropdowns = function () {
-      for (key in data.parameterFromProcess) {
+      for (const key in data.parameterFromProcess) {
         data.parameterFromProcess[key] = false;
       }
 
