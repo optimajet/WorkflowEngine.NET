@@ -117,5 +117,13 @@
     <EmbeddedResource Include="Scripts\CreateFunction_DropUnusedWorkflowProcessScheme.sql" />
     <None Remove="Scripts\CreateTable_WorkflowForms.sql" />
     <EmbeddedResource Include="Scripts\CreateTable_WorkflowForms.sql" />
+    <None Remove="Scripts\DropIndex_WorkflowProcessScheme_SchemeCodeHashIsObsolete.sql" />
+    <EmbeddedResource Include="Scripts\DropIndex_WorkflowProcessScheme_SchemeCodeHashIsObsolete.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCodeIsObsolete.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessScheme_SchemeCodeIsObsolete.sql" />
+    <None Remove="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParametersHash.sql" />
+    <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParametersHash.sql" />
+    <None Remove="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParameters.sql" />
+    <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParameters.sql" />
   </ItemGroup>
 </Project>

@@ -42,9 +42,6 @@
         <el-form-item v-if="Id">
           <el-switch v-model="IsObsolete" :active-text="labels.IsObsolete" :disabled="readonly"></el-switch>
         </el-form-item>
-        <el-form-item v-if="Id" :label="labels.DefiningParameters">
-          <el-input v-model="DefiningParameters" :readonly="readonly" :rows="4" type="textarea"></el-input>
-        </el-form-item>
       </el-form>
     </el-tab-pane>
     <el-tab-pane v-if="Id" :label="labels.ProcessParametersTabName">
@@ -369,7 +366,6 @@
       CanBeInlined: null,
       LogEnabled: !!designer.processId ? designer.LogEnabled : me.graph.data.LogEnabled,
       IsObsolete: false,
-      DefiningParameters: undefined,
       ProcessTimers: [],
       ProcessParameters: [],
       SystemProcessParameters: [],
@@ -421,7 +417,6 @@
       var additionalParams = graph.data.AdditionalParams;
 
       data.IsObsolete = additionalParams.IsObsolete;
-      data.DefiningParameters = additionalParams.DefiningParameters;
       data.ProcessTimers = WorkflowDesignerCommon.clone(additionalParams.ProcessTimers);
 
       if (Array.isArray(additionalParams.ProcessParameters)) {

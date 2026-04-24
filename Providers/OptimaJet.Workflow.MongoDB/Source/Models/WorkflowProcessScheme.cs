@@ -6,8 +6,6 @@ namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowProcessScheme : DynamicEntity
     {
-        public string DefiningParameters { get; set; }
-        public string DefiningParametersHash { get; set; }
         public Guid Id { get; set; }
         public bool IsObsolete { get; set; }
         public string SchemeCode { get; set; }

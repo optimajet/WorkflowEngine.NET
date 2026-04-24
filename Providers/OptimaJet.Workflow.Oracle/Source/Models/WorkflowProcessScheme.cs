@@ -15,8 +15,6 @@ namespace OptimaJet.Workflow.Oracle
             DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Id), IsKey = true, Type = OracleDbType.Raw},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParameters)},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParametersHash)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.IsObsolete), Type = OracleDbType.Byte},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.SchemeCode)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Scheme)},
@@ -27,13 +25,11 @@ namespace OptimaJet.Workflow.Oracle
             });
         }
 
-        public async Task<ProcessSchemeEntity[]> SelectAsync(OracleConnection connection, string schemeCode,
-            string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
+        public async Task<ProcessSchemeEntity[]> SelectAsync(OracleConnection connection, string schemeCode,bool? isObsolete, Guid? rootSchemeId)
         {
             string selectText =
                 $"SELECT * FROM {ObjectName} " +
-                $"WHERE {nameof(ProcessSchemeEntity.SchemeCode)} = :schemecode " +
-                $"AND {nameof(ProcessSchemeEntity.DefiningParametersHash)} = :dphash";
+                $"WHERE {nameof(ProcessSchemeEntity.SchemeCode)} = :schemecode";
 
             if (isObsolete.HasValue)
             {
@@ -52,17 +48,13 @@ namespace OptimaJet.Workflow.Oracle
                 selectText += $" AND {nameof(ProcessSchemeEntity.RootSchemeId)} = :rootschemeid";
                 return await SelectAsync(connection, selectText,
                         new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                        new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
-                            ParameterDirection.Input),
                         new OracleParameter("rootschemeid", OracleDbType.Raw, rootSchemeId.Value.ToByteArray(), ParameterDirection.Input))
                     .ConfigureAwait(false);
             }
 
             selectText += $" AND {nameof(ProcessSchemeEntity.RootSchemeId)} IS NULL";
             return await SelectAsync(connection, selectText,
-                    new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                    new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash,
-                        ParameterDirection.Input))
+                    new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input))
                 .ConfigureAwait(false);
         }
 
@@ -75,19 +67,6 @@ namespace OptimaJet.Workflow.Oracle
             
             return await ExecuteCommandNonQueryAsync(connection, command,
                 new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input)).ConfigureAwait(false);
-        }
-
-        public async Task<int> SetObsoleteAsync(OracleConnection connection, string schemeCode, string definingParametersHash)
-        {
-            string command = $"UPDATE {ObjectName} SET " +
-                             $"{nameof(ProcessSchemeEntity.IsObsolete)} = 1 " +
-                             $"WHERE ({nameof(ProcessSchemeEntity.SchemeCode)} = :schemecode " +
-                             $"OR {nameof(ProcessSchemeEntity.RootSchemeCode)} = :schemecode) " +
-                             $"AND DefiningParametersHash = :dphash";
-
-            return await ExecuteCommandNonQueryAsync(connection, command,
-                new OracleParameter("schemecode", OracleDbType.NVarchar2, schemeCode, ParameterDirection.Input),
-                new OracleParameter("dphash", OracleDbType.NVarchar2, definingParametersHash, ParameterDirection.Input)).ConfigureAwait(false);
         }
         
         public static async Task DeleteUnusedAsync(OracleConnection connection)

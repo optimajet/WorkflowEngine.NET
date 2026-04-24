@@ -64,15 +64,74 @@ namespace OptimaJet.Workflow.Oracle
 
         public async Task<int> DeleteByNameAsync(OracleConnection connection, Guid processId, string parameterName)
         {
-            List<OracleParameter> parameters = new List<OracleParameter>();
-            parameters.Add(new OracleParameter("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input));
-            parameters.Add(new OracleParameter("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input));
+            return await DeleteByNameAsync(connection, processId, parameterName, null).ConfigureAwait(false);
+        }
+
+        public async Task<int> DeleteByNameAsync(OracleConnection connection, Guid processId, string parameterName, 
+            OracleTransaction transaction)
+        {
+            var parameters = new List<OracleParameter>
+            {
+                new("processid", OracleDbType.Raw, processId.ToByteArray(), ParameterDirection.Input),
+                new("parameterName", OracleDbType.NVarchar2, parameterName, ParameterDirection.Input)
+            };
 
             return await ExecuteCommandNonQueryAsync(
                 connection,
                 $"DELETE FROM {ObjectName} " + 
-                $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId).ToUpperInvariant()} = :processid",
+                $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                $"AND {nameof(ProcessInstancePersistenceEntity.ParameterName).ToUpperInvariant()} = :parameterName",
+                transaction,
                 parameters.ToArray()).ConfigureAwait(false);
+        }
+
+        public async Task UpsertAsync(OracleConnection connection, ProcessInstancePersistenceEntity entity,
+            bool preferUpdateFirst, OracleTransaction transaction)
+        {
+            // Optimistic approach: choose UPDATE or INSERT first, with fallback
+            if (preferUpdateFirst)
+            {
+                // Try UPDATE first (optimistic: parameter exists in DB)
+                int rowsAffected = await UpdateByNameAsync(connection, entity, transaction).ConfigureAwait(false);
+
+                // Fallback: if UPDATE didn't affect any rows (someone deleted it), do INSERT
+                if (rowsAffected == 0)
+                {
+                    await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                // Try INSERT first (optimistic: parameter doesn't exist in DB)
+                try
+                {
+                    await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+                catch (OracleException oraEx) when (oraEx.Number == 1) // ORA-00001: unique constraint violated
+                {
+                    // Fallback: if INSERT failed due to the duplicate key (already exists), do UPDATE
+                    await UpdateByNameAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+            }
+        }
+        
+        private async Task<int> UpdateByNameAsync(OracleConnection connection, ProcessInstancePersistenceEntity entity,
+            OracleTransaction transaction = null)
+        {
+            var parameters = new List<OracleParameter>
+            {
+                new("processid", OracleDbType.Raw, entity.ProcessId.ToByteArray(), ParameterDirection.Input),
+                new("parameterName", OracleDbType.NVarchar2, entity.ParameterName, ParameterDirection.Input),
+                new("value", OracleDbType.NClob, entity.Value, ParameterDirection.Input)
+            };
+
+            string commandText = $"UPDATE {ObjectName} " +
+                                 $"SET {nameof(ProcessInstancePersistenceEntity.Value).ToUpperInvariant()} = :value " +
+                                 $"WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId).ToUpperInvariant()} = :processid " +
+                                 $"AND {nameof(ProcessInstancePersistenceEntity.ParameterName).ToUpperInvariant()} = :parameterName";
+
+            return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, parameters.ToArray())
+                .ConfigureAwait(false);
         }
     }
 }

@@ -18,7 +18,6 @@ namespace OptimaJet.Workflow.Oracle
             {
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.Id), IsKey = true, Type = OracleDbType.Raw},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.ActivityName)},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), Type = OracleDbType.Byte},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivity)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForDirect)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForReverse)},

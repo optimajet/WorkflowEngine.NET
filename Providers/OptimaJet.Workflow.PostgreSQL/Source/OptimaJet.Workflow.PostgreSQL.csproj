@@ -49,5 +49,7 @@
     </EmbeddedResource>
     <None Remove="Scripts\CreateWorkflowForms.sql" />
     <EmbeddedResource Include="Scripts\CreateWorkflowForms.sql" />
+    <None Remove="Scripts\RemoveConstraintsFromDeterminingParametersColumns.sql" />
+    <EmbeddedResource Include="Scripts\RemoveConstraintsFromDeterminingParametersColumns.sql" />
   </ItemGroup>
 </Project>

@@ -33,6 +33,7 @@ namespace OptimaJet.Workflow.MongoDB
         public const string WorkflowProcessTransitionHistoryCollectionName = "WorkflowProcessTransitionHistory";
         public const string WorkflowSchemeCollectionName = "WorkflowScheme";
         public const string WorkflowProcessTimerCollectionName = "WorkflowProcessTimer";
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public const string WorkflowProcessAssignmentCollectionName = "WorkflowProcessAssignment";
         public const string WorkflowGlobalParameterCollectionName = "WorkflowGlobalParameter";
         public const string WorkflowRuntimeCollectionName = "WorkflowRuntime";
@@ -75,21 +76,22 @@ namespace OptimaJet.Workflow.MongoDB
         {
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
-                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
-                workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition,
-                workflowProcessScheme.DefiningParameters);
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete,
+                workflowProcessScheme.AllowedActivities, workflowProcessScheme.StartingTransition);
         }
 
         #region IPersistenceProvider
 
         #region IAssignmentProvider
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task DeleteAssignmentAsync(Guid assignmentId)
         {
             IMongoCollection<WorkflowProcessAssignment> dbcollAssignment = Store.GetCollection<WorkflowProcessAssignment>(MongoDBConstants.WorkflowProcessAssignmentCollectionName);
             await dbcollAssignment.DeleteOneAsync(x => x.Id == assignmentId).ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task<List<Assignment>> GetAssignmentsAsync(AssignmentFilter filter, List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
             List<WorkflowProcessAssignment> assignments;
@@ -125,6 +127,7 @@ namespace OptimaJet.Workflow.MongoDB
             return assignments.Select(a => a.ConvertToAssignment(_runtime)).ToList();
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task<int> GetAssignmentCountAsync(AssignmentFilter filter)
         {
             IMongoQueryable<WorkflowProcessAssignment> workflowProcessAssignmentQueryable = GetWorkflowProcessAssignmentQueryable(filter);
@@ -132,6 +135,7 @@ namespace OptimaJet.Workflow.MongoDB
             return await workflowProcessAssignmentQueryable.CountAsync().ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task CreateAssignmentAsync(Guid processId, AssignmentCreationForm form)
         {
             IMongoCollection<WorkflowProcessAssignment> dbcoll = 
@@ -158,6 +162,7 @@ namespace OptimaJet.Workflow.MongoDB
             await dbcoll.InsertOneAsync(assignment).ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task<Assignment> GetAssignmentAsync(Guid assignmentId)
         {
             IMongoCollection<WorkflowProcessAssignment> dbcoll = Store.GetCollection<WorkflowProcessAssignment>(MongoDBConstants.WorkflowProcessAssignmentCollectionName);
@@ -171,6 +176,7 @@ namespace OptimaJet.Workflow.MongoDB
             return result.ConvertToAssignment(_runtime);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task UpdateAssignmentAsync(Assignment a)
         {
             IMongoCollection<WorkflowProcessAssignment> dbcoll = Store.GetCollection<Models.WorkflowProcessAssignment>(MongoDBConstants.WorkflowProcessAssignmentCollectionName);
@@ -318,7 +324,6 @@ namespace OptimaJet.Workflow.MongoDB
                 {
                     ActivityName = processInstance.ActivityName,
                     Id = processInstance.Id,
-                    IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged,
                     PreviousActivity = processInstance.PreviousActivity,
                     PreviousActivityForDirect = processInstance.PreviousActivityForDirect,
                     PreviousActivityForReverse = processInstance.PreviousActivityForReverse,
@@ -487,12 +492,6 @@ namespace OptimaJet.Workflow.MongoDB
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
         {
-            await BindProcessToNewSchemeAsync(processInstance, false).ConfigureAwait(false);
-        }
-
-        [Obsolete("Use BindProcessToNewSchemeAsync(ProcessInstance processInstance) instead.")]
-        public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
-        {
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
             WorkflowProcessInstance oldProcess = await (await dbcoll.FindAsync(x => x.Id == processInstance.ProcessId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
             if (oldProcess == null)
@@ -501,10 +500,6 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             oldProcess.SchemeId = processInstance.SchemeId;
-            if (resetIsDeterminingParametersChanged)
-            {
-                oldProcess.IsDeterminingParametersChanged = false;
-            }
 
             await SaveAsync(dbcoll, oldProcess, doc => doc.Id == oldProcess.Id).ConfigureAwait(false);
         }
@@ -539,13 +534,15 @@ namespace OptimaJet.Workflow.MongoDB
             processInstance.AddParameters(await GetSystemProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme).ConfigureAwait(false));
         }
 
-        public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
+        private async Task SaveParameterBatchAsync(PersistenceParametersBatch batch)
         {
-            var parametersToPersistList = processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                                                                         .Select(ptp => ParameterDefinitionWithValueToDynamic(ptp)).ToList();
+            if (batch.IsEmpty)
+            {
+                return;
+            }
 
             IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
-            WorkflowProcessInstance process = await (await dbcoll.FindAsync(x => x.Id == processInstance.ProcessId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
+            WorkflowProcessInstance process = await (await dbcoll.FindAsync(x => x.Id == batch.ProcessId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
             
             if (process != null)
             {
@@ -553,68 +550,57 @@ namespace OptimaJet.Workflow.MongoDB
                 {
                     process.Persistence = new List<WorkflowProcessInstancePersistence>();
                 }
-                
-                var persistedParameters = process.Persistence.ToList();
 
-                foreach (dynamic parameterDefinitionWithValue in parametersToPersistList)
+                foreach (SerializedParameter serializedParameter in batch.Parameters)
                 {
-                    WorkflowProcessInstancePersistence persistence = persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
+                    WorkflowProcessInstancePersistence persistence = process.Persistence.SingleOrDefault(pp => pp.ParameterName == serializedParameter.Name);
 
-                    InsertOrUpdateParameter(parameterDefinitionWithValue, process, persistence);
+                    if (serializedParameter.Operation == SerializedParameter.PersistenceOperation.Delete)
+                    {
+                        // Delete parameter
+                        if (persistence != null)
+                        {
+                            process.Persistence.Remove(persistence);
+                        }
+                    }
+                    else
+                    {
+                        // Insert or update parameter
+                        if (persistence == null)
+                        {
+                            persistence = new WorkflowProcessInstancePersistence
+                            {
+                                ParameterName = serializedParameter.Name,
+                                Value = serializedParameter.SerializedValue
+                            };
+                            process.Persistence.Add(persistence);
+                        }
+                        else
+                        {
+                            persistence.Value = serializedParameter.SerializedValue;
+                        }
+                    }
                 }
 
                 await SaveAsync(dbcoll, process, doc => doc.Id == process.Id).ConfigureAwait(false);
+                batch.CommitFlags();
             }
+        }
+
+        public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
+        {
+            var batch = PersistenceParametersBatch.CreateFromProcessInstance(processInstance);
+            await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
         
         public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-            dynamic parameter = ParameterDefinitionWithValueToDynamic(processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
-            IMongoCollection<WorkflowProcessInstance> dbcoll = Store.GetCollection<WorkflowProcessInstance>(MongoDBConstants.WorkflowProcessInstanceCollectionName);
-            WorkflowProcessInstance process = await (await dbcoll.FindAsync(x => x.Id == processInstance.ProcessId).ConfigureAwait(false)).FirstOrDefaultAsync().ConfigureAwait(false);
-            if (process != null)
+            var batch = PersistenceParametersBatch.CreateForSingleParameter(processInstance, parameterName);
+            if (batch.IsEmpty)
             {
-                if (process.Persistence == null)
-                {
-                    process.Persistence = new List<WorkflowProcessInstancePersistence>();
-                }
-                
-                WorkflowProcessInstancePersistence persistence = process.Persistence.SingleOrDefault(pp => pp.ParameterName == parameter.Parameter.Name);
-                InsertOrUpdateParameter(parameter, process, persistence);
-                await SaveAsync(dbcoll, process, doc => doc.Id == process.Id).ConfigureAwait(false);
+                throw new InvalidOperationException("Cannot save parameter for empty batch");
             }
-
-        }
-        private dynamic ParameterDefinitionWithValueToDynamic(ParameterDefinitionWithValue ptp)
-        {
-            string serializedValue = ptp.Type == typeof(UnknownParameterType) ? (string)ptp.Value : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
-            return new { Parameter = ptp, SerializedValue = serializedValue };
-        }
-        private void InsertOrUpdateParameter(dynamic parameter, WorkflowProcessInstance process, WorkflowProcessInstancePersistence workflowProcessInstancePersistence)
-        {
-            if (workflowProcessInstancePersistence == null)
-            {
-                if (parameter.SerializedValue != null)
-                {
-                    workflowProcessInstancePersistence = new WorkflowProcessInstancePersistence
-                    {
-                        ParameterName = parameter.Parameter.Name,
-                        Value = parameter.SerializedValue
-                    };
-                    process.Persistence.Add(workflowProcessInstancePersistence);
-                }
-            }
-            else
-            {
-                if (parameter.SerializedValue != null)
-                {
-                    workflowProcessInstancePersistence.Value = parameter.SerializedValue;
-                }
-                else
-                {
-                    process.Persistence.Remove(workflowProcessInstancePersistence);
-                }
-            }
+            await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
         public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
         {
@@ -1104,13 +1090,19 @@ namespace OptimaJet.Workflow.MongoDB
         private ParameterDefinitionWithValue WorkflowProcessInstancePersistenceToParameterDefinitionWithValue(List<ParameterDefinition> persistenceParameters, WorkflowProcessInstancePersistence persistedParameter)
         {
             ParameterDefinition parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+
+            ParameterDefinitionWithValue result;
             if (parameterDefinition == null)
             {
                 parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType), ParameterPurpose.Persistence);
-                return ParameterDefinition.Create(parameterDefinition, persistedParameter.Value);
+                result = ParameterDefinition.CreateFromPersistence(parameterDefinition, persistedParameter.Value);
+            }
+            else
+            {
+                result = ParameterDefinition.CreateFromPersistence(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
             }
 
-            return ParameterDefinition.Create(parameterDefinition, ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
+            return result;
         }
         
         private async Task<WorkflowProcessInstance> GetProcessInstanceAsync(Guid processId)
@@ -1572,7 +1564,6 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             SchemeDefinition<XElement> schemeDefinition = await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
-            schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
             return schemeDefinition;
         }
 
@@ -1590,61 +1581,33 @@ namespace OptimaJet.Workflow.MongoDB
             return ConvertToSchemeDefinition(processScheme);
         }
 
-
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            return await GetProcessSchemeWithParametersAsync(schemeCode, "{}", rootSchemeId, ignoreObsolete).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Obsolete("Use GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete) instead.")]
-        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, string definingParameters, Guid? rootSchemeId, bool ignoreObsolete)
-        {
-            string hash = HashHelper.GenerateStringHash(definingParameters);
-
             IMongoCollection<WorkflowProcessScheme> dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
             IEnumerable<WorkflowProcessScheme> processSchemes = ignoreObsolete
                 ? await (await dbcoll.FindAsync(
                         pss =>
-                            pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
+                            pss.SchemeCode == schemeCode &&
                             pss.RootSchemeId == rootSchemeId &&
                             !pss.IsObsolete).ConfigureAwait(false))
                     .ToListAsync().ConfigureAwait(false)
                 : await (await dbcoll.FindAsync(
                         pss =>
-                            pss.SchemeCode == schemeCode && pss.DefiningParametersHash == hash &&
+                            pss.SchemeCode == schemeCode &&
                             pss.RootSchemeId == rootSchemeId).ConfigureAwait(false))
                     .ToListAsync().ConfigureAwait(false);
 
-            if (!processSchemes.Any())
-            {
-                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
-            }
-
-            if (processSchemes.Count() == 1)
-            {
-                WorkflowProcessScheme scheme = processSchemes.First();
-                return ConvertToSchemeDefinition(scheme);
-            }
-
-            foreach (WorkflowProcessScheme processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
-            {
-                return ConvertToSchemeDefinition(processScheme);
-            }
-
-            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
+            return processSchemes.Any()
+                ? ConvertToSchemeDefinition(processSchemes.First())
+                : throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme);
         }
 
         [Obsolete("Use SetSchemeIsObsoleteAsync(string schemeCode) instead.")]
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
         {
-            string definingParameters = DefiningParametersSerializer.Serialize(parameters);
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-
             IMongoCollection<WorkflowProcessScheme> dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
             await dbcoll.UpdateManyAsync(
-                item => (item.SchemeCode == schemeCode || item.RootSchemeCode == schemeCode) && item.DefiningParametersHash == definingParametersHash,
+                item => (item.SchemeCode == schemeCode || item.RootSchemeCode == schemeCode),
                 Builders<WorkflowProcessScheme>.Update.Set(c => c.IsObsolete, true)).ConfigureAwait(false);
         }
 
@@ -1658,20 +1621,17 @@ namespace OptimaJet.Workflow.MongoDB
 
         public virtual async Task<SchemeDefinition<XElement>> SaveSchemeAsync(SchemeDefinition<XElement> scheme)
         {
-            string definingParameters = scheme.DefiningParameters;
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-
             IMongoCollection<WorkflowProcessScheme> dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
 
             List<WorkflowProcessScheme> oldSchemes =
                 await (await dbcoll.FindAsync(
-                        wps => wps.DefiningParametersHash == definingParametersHash && wps.SchemeCode == scheme.SchemeCode &&
+                        wps => wps.SchemeCode == scheme.SchemeCode &&
                                wps.IsObsolete == scheme.IsObsolete).ConfigureAwait(false))
                     .ToListAsync().ConfigureAwait(false);
 
             if (oldSchemes.Any())
             {
-                WorkflowProcessScheme existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                WorkflowProcessScheme existing = oldSchemes.FirstOrDefault();
 
                 if (existing != null)
                 {
@@ -1682,8 +1642,6 @@ namespace OptimaJet.Workflow.MongoDB
             var newProcessScheme = new WorkflowProcessScheme
             {
                 Id = scheme.Id,
-                DefiningParameters = definingParameters,
-                DefiningParametersHash = definingParametersHash,
                 Scheme = scheme.Scheme.ToString(),
                 SchemeCode = scheme.SchemeCode,
                 RootSchemeCode = scheme.RootSchemeCode,
@@ -1701,16 +1659,12 @@ namespace OptimaJet.Workflow.MongoDB
         public virtual async Task UpsertSchemeAsync(SchemeDefinition<XElement> scheme)
         {
             IMongoCollection<WorkflowProcessScheme> dbcoll = Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
-            string definingParameters = scheme.DefiningParameters;
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
 
             var filter = Builders<WorkflowProcessScheme>.Filter
                 .Eq(scheme => scheme.Id, scheme.Id);
 
             var update = Builders<WorkflowProcessScheme>.Update
                 .Set(scheme => scheme.Id, scheme.Id)
-                .Set(scheme => scheme.DefiningParameters, definingParameters)
-                .Set(scheme => scheme.DefiningParametersHash, definingParametersHash)
                 .Set(scheme => scheme.Scheme, scheme.Scheme.ToString())
                 .Set(scheme => scheme.SchemeCode, scheme.SchemeCode)
                 .Set(scheme => scheme.RootSchemeCode, scheme.RootSchemeCode)
@@ -1883,16 +1837,6 @@ namespace OptimaJet.Workflow.MongoDB
             }
 
             return XElement.Parse(scheme.Scheme);
-        }
-
-        [Obsolete("Use GenerateAsync(string schemeCode) instead.")]
-        public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
-        {
-            if (parameters.Count > 0)
-            {
-                throw new InvalidOperationException("Parameters not supported");
-            }
-            return await GenerateAsync(schemeCode).ConfigureAwait(false);
         }
 
         // ReSharper disable once UnusedMember.Global

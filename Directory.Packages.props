@@ -7,21 +7,21 @@
     <PackageVersion Include="Castle.Core" Version="5.1.1" />
     <PackageVersion Include="ConfigureAwait.Fody" Version="3.3.1" />
     <PackageVersion Include="Fody" Version="6.6.3" />
-    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="9.0.5" />
+    <PackageVersion Include="Microsoft.Bcl.AsyncInterfaces" Version="10.0.5" />
     <PackageVersion Include="NUnit" Version="3.14.0" />
     <PackageVersion Include="NUnit3TestAdapter" Version="4.6.0" />
-    <PackageVersion Include="System.Formats.Asn1" Version="8.0.2" />
+    <PackageVersion Include="System.Formats.Asn1" Version="9.0.14" />
     <PackageVersion Include="System.IdentityModel.Tokens.Jwt" Version="8.10.0" />
     <PackageVersion Include="System.Net.Security" Version="4.3.2" />
-    <PackageVersion Include="System.Runtime.Caching" Version="8.0.1" />
-    <PackageVersion Include="System.Text.Encodings.Web" Version="8.0.0" />
-    <PackageVersion Include="System.Text.Json" Version="8.0.5" />
+    <PackageVersion Include="System.Runtime.Caching" Version="10.0.5" />
+    <PackageVersion Include="System.Text.Encodings.Web" Version="10.0.5" />
+    <PackageVersion Include="System.Text.Json" Version="10.0.5" />
     <PackageVersion Include="System.Text.RegularExpressions" Version="4.3.1" />
-    <PackageVersion Include="Microsoft.Identity.Client" Version="4.72.1" />
+    <PackageVersion Include="Microsoft.Identity.Client" Version="4.83.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.10.0" />
-    <PackageVersion Include="Azure.Identity" Version="1.14.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="20.0.9" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="20.0.9" />
+    <PackageVersion Include="Azure.Identity" Version="1.19.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="21.0.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="21.0.0" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>
@@ -32,14 +32,6 @@
     <PackageVersion Include="FluentFTP" Version="32.4.3" />
     <PackageVersion Include="SharpZipLib" Version="1.4.2" />
     <PackageVersion Include="SSH.NET" Version="2020.0.2" />
-    <!-- NexmoPlugin -->
-    <PackageVersion Include="Nexmo.Csharp.Client" Version="5.1.0" />
-    <!-- SlackPlugin -->
-    <PackageVersion Include="SlackAPI" Version="1.1.13" />
-    <!-- TelegramPlugin -->
-    <PackageVersion Include="TLSharp" Version="0.1.0.555" />
-    <!-- TwilioPlugin -->
-    <PackageVersion Include="Twilio" Version="5.45.1" />
   </ItemGroup>
   <!-- Core -->
   <ItemGroup>
@@ -56,7 +48,7 @@
   <ItemGroup>
     <PackageVersion Include="FluentMigrator" Version="5.2.0" />
     <PackageVersion Include="FluentMigrator.Runner" Version="5.2.0" />
-    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="8.0.0" />
+    <PackageVersion Include="Microsoft.Extensions.DependencyInjection" Version="10.0.5" />
     <PackageVersion Include="Microsoft.Data.SqlClient" Version="5.2.0" />
     <PackageVersion Include="FluentMigrator.Runner.MySql" Version="5.2.0" />
     <PackageVersion Include="FluentMigrator.Runner.Oracle" Version="5.2.0" />
@@ -69,14 +61,14 @@
   </ItemGroup>
   <!-- EFSchema -->
   <ItemGroup>
-    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="4.5.0" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="8.0.5" />
-    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="8.0.5" />
-    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="8.0.4" />
-    <PackageVersion Include="Oracle.EntityFrameworkCore" Version="8.23.40" />
-    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="8.0.2" />
+    <PackageVersion Include="Microsoft.CodeAnalysis.Common" Version="5.3.0" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore" Version="9.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Sqlite" Version="9.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.SqlServer" Version="9.0.15" />
+    <PackageVersion Include="Microsoft.EntityFrameworkCore.Tools" Version="9.0.15" />
+    <PackageVersion Include="Npgsql.EntityFrameworkCore.PostgreSQL" Version="9.0.4" />
+    <PackageVersion Include="Oracle.EntityFrameworkCore" Version="9.23.26100" />
+    <PackageVersion Include="Pomelo.EntityFrameworkCore.MySql" Version="9.0.0" />
   </ItemGroup>
   <!-- Benchmark -->
   <ItemGroup>

@@ -18,7 +18,6 @@ namespace OptimaJet.Workflow.DbPersistence
             {
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.Id), IsKey = true, Type = SqlDbType.UniqueIdentifier},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.ActivityName)},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), Type = SqlDbType.Bit},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivity)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForDirect)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForReverse)},
@@ -50,7 +49,6 @@ namespace OptimaJet.Workflow.DbPersistence
             var dt = new DataTable();
             dt.Columns.Add(nameof(ProcessInstanceEntity.Id), typeof(Guid));
             dt.Columns.Add(nameof(ProcessInstanceEntity.ActivityName), typeof(string));
-            dt.Columns.Add(nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), typeof(bool));
             dt.Columns.Add(nameof(ProcessInstanceEntity.PreviousActivity), typeof(string));
             dt.Columns.Add(nameof(ProcessInstanceEntity.PreviousActivityForDirect), typeof(string));
             dt.Columns.Add(nameof(ProcessInstanceEntity.PreviousActivityForReverse), typeof(string));

@@ -9,7 +9,6 @@ namespace OptimaJet.Workflow.MongoDB
       
         public string ActivityName { get; set; }
         public Guid Id { get; set; }
-        public bool IsDeterminingParametersChanged { get; set; }
         public string PreviousActivity { get; set; }
         public string PreviousActivityForDirect { get; set; }
         public string PreviousActivityForReverse { get; set; }

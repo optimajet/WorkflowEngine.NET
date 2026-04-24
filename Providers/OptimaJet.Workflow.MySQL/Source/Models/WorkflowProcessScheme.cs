@@ -14,8 +14,6 @@ namespace OptimaJet.Workflow.MySQL
             DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Id), IsKey = true, Type = MySqlDbType.Binary},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParameters)},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParametersHash)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.IsObsolete), Type = MySqlDbType.Bit},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.SchemeCode)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Scheme)},
@@ -26,16 +24,13 @@ namespace OptimaJet.Workflow.MySQL
             });
         }
 
-        public async Task<ProcessSchemeEntity[]> SelectAsync(MySqlConnection connection, string schemeCode, string definingParametersHash,
-            bool? isObsolete, Guid? rootSchemeId)
+        public async Task<ProcessSchemeEntity[]> SelectAsync(MySqlConnection connection, string schemeCode, bool? isObsolete,
+            Guid? rootSchemeId)
         {
             string selectText = $"SELECT * FROM {DbTableName} " +
-                                $"WHERE `{nameof(ProcessSchemeEntity.SchemeCode)}` = @schemecode " +
-                                $"AND `{nameof(ProcessSchemeEntity.DefiningParametersHash)}` = @dphash";
+                                $"WHERE `{nameof(ProcessSchemeEntity.SchemeCode)}` = @schemecode ";
 
             var pSchemeCode = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
-
-            var pHash = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
 
             if (isObsolete.HasValue)
             {
@@ -54,11 +49,11 @@ namespace OptimaJet.Workflow.MySQL
                 selectText += $" AND `{nameof(ProcessSchemeEntity.RootSchemeId)}` = @drootschemeid";
                 var pRootSchemeId = new MySqlParameter("drootschemeid", MySqlDbType.Binary) {Value = rootSchemeId.Value.ToByteArray()};
 
-                return await SelectAsync(connection, selectText, pSchemeCode, pHash, pRootSchemeId).ConfigureAwait(false);
+                return await SelectAsync(connection, selectText, pSchemeCode, pRootSchemeId).ConfigureAwait(false);
             }
 
             selectText += $" AND `{nameof(ProcessSchemeEntity.RootSchemeId)}` IS NULL";
-            return await SelectAsync(connection, selectText, pSchemeCode, pHash).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, pSchemeCode).ConfigureAwait(false);
         }
 
         public async Task<int> SetObsoleteAsync(MySqlConnection connection, string schemeCode)
@@ -70,21 +65,6 @@ namespace OptimaJet.Workflow.MySQL
             var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
 
             return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
-        }
-
-        public async Task<int> SetObsoleteAsync(MySqlConnection connection, string schemeCode, string definingParametersHash)
-        {
-            string command =
-                $"UPDATE {DbTableName} SET `{nameof(ProcessSchemeEntity.IsObsolete)}` = 1 " +
-                $"WHERE (`{nameof(ProcessSchemeEntity.SchemeCode)}` = @schemecode " +
-                $"OR `{nameof(ProcessSchemeEntity.RootSchemeCode)}` = @schemecode) " +
-                $"AND `{nameof(ProcessSchemeEntity.DefiningParametersHash)}` = @dphash";
-
-            var p = new MySqlParameter("schemecode", MySqlDbType.VarString) {Value = schemeCode};
-
-            var p2 = new MySqlParameter("dphash", MySqlDbType.VarString) {Value = definingParametersHash};
-
-            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
 
         public static async Task DeleteUnusedAsync(MySqlConnection connection)

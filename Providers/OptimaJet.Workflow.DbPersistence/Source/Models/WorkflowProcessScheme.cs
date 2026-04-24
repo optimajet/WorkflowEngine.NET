@@ -15,8 +15,6 @@ namespace OptimaJet.Workflow.DbPersistence
             DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Id), IsKey = true, Type = SqlDbType.UniqueIdentifier},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParameters)},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParametersHash)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.IsObsolete), Type = SqlDbType.Bit},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.SchemeCode)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Scheme), Type = SqlDbType.NVarChar, Size = -1},
@@ -27,16 +25,13 @@ namespace OptimaJet.Workflow.DbPersistence
             });
         }
 
-        public async Task<ProcessSchemeEntity[]> SelectAsync(SqlConnection connection, string schemeCode, string definingParametersHash,
+        public async Task<ProcessSchemeEntity[]> SelectAsync(SqlConnection connection, string schemeCode,
             bool? isObsolete, Guid? rootSchemeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
-                                $"WHERE [{nameof(ProcessSchemeEntity.SchemeCode)}] = @schemecode " +
-                                $"AND [{nameof(ProcessSchemeEntity.DefiningParametersHash)}] = @dphash";
+                                $"WHERE [{nameof(ProcessSchemeEntity.SchemeCode)}] = @schemecode ";
 
             var pSchemeCode = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
-
-            var pHash = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
 
             if (isObsolete.HasValue)
             {
@@ -55,11 +50,11 @@ namespace OptimaJet.Workflow.DbPersistence
                 selectText += $" AND [{nameof(ProcessSchemeEntity.RootSchemeId)}] = @drootschemeid";
                 var pRootSchemeId = new SqlParameter("drootschemeid", SqlDbType.UniqueIdentifier) {Value = rootSchemeId.Value};
 
-                return await SelectAsync(connection, selectText, pSchemeCode, pHash, pRootSchemeId).ConfigureAwait(false);
+                return await SelectAsync(connection, selectText, pSchemeCode, pRootSchemeId).ConfigureAwait(false);
             }
 
             selectText += $" AND [{nameof(ProcessSchemeEntity.RootSchemeId)}] IS NULL";
-            return await SelectAsync(connection, selectText, pSchemeCode, pHash).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, pSchemeCode).ConfigureAwait(false);
         }
 
         public async Task<int> SetObsoleteAsync(SqlConnection connection, string schemeCode)
@@ -71,20 +66,6 @@ namespace OptimaJet.Workflow.DbPersistence
             var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
 
             return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
-        }
-
-        public async Task<int> SetObsoleteAsync(SqlConnection connection, string schemeCode, string definingParametersHash)
-        {
-            string command = $"UPDATE {ObjectName} SET [{nameof(ProcessSchemeEntity.IsObsolete)}] = 1 " +
-                             $"WHERE ([{nameof(ProcessSchemeEntity.SchemeCode)}] = @schemecode " +
-                             $"OR [{nameof(ProcessSchemeEntity.RootSchemeCode)}] = @schemecode) " +
-                             $"AND [{nameof(ProcessSchemeEntity.DefiningParametersHash)}] = @dphash";
-
-            var p = new SqlParameter("schemecode", SqlDbType.NVarChar) {Value = schemeCode};
-
-            var p2 = new SqlParameter("dphash", SqlDbType.NVarChar) {Value = definingParametersHash};
-
-            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
 
         public static async Task DeleteUnusedAsync(SqlConnection connection)

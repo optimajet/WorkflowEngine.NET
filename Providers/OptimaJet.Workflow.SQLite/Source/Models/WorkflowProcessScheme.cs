@@ -12,8 +12,6 @@ namespace OptimaJet.Workflow.SQLite
             DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Id), IsKey = true, Type = DbType.Guid},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParameters)},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParametersHash)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.IsObsolete), Type = DbType.Boolean},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.SchemeCode)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Scheme)},
@@ -24,11 +22,10 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
-        public async Task<ProcessSchemeEntity[]> SelectAsync(SqliteConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
+        public async Task<ProcessSchemeEntity[]> SelectAsync(SqliteConnection connection, string schemeCode, bool? isObsolete, Guid? rootSchemeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " + 
-                                $"WHERE {nameof(ProcessSchemeEntity.SchemeCode)} = @schemecode " + 
-                                $"AND {nameof(ProcessSchemeEntity.DefiningParametersHash)} = @dphash";
+                                $"WHERE {nameof(ProcessSchemeEntity.SchemeCode)} = @schemecode ";
 
             if (isObsolete.HasValue)
             {
@@ -44,18 +41,16 @@ namespace OptimaJet.Workflow.SQLite
 
             var pSchemecode = new SqliteParameter("schemecode", DbType.String) {Value = schemeCode};
 
-            var pDphash = new SqliteParameter("dphash", DbType.String) {Value = definingParametersHash};
-
             if (rootSchemeId.HasValue)
             {
                 selectText += $" AND {nameof(ProcessSchemeEntity.RootSchemeId)} = @rootschemeid";
                 var pRootSchemeId = new SqliteParameter("rootschemeid", DbType.String) {Value = ToDbValue(rootSchemeId.Value, DbType.Guid)};
 
-                return await SelectAsync(connection, selectText, pSchemecode, pDphash, pRootSchemeId).ConfigureAwait(false);
+                return await SelectAsync(connection, selectText, pSchemecode, pRootSchemeId).ConfigureAwait(false);
             }
 
             selectText += $" AND {nameof(ProcessSchemeEntity.RootSchemeId)} IS NULL";
-            return await SelectAsync(connection, selectText, pSchemecode, pDphash).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, pSchemecode).ConfigureAwait(false);
         }
 
         public async Task<int> SetObsoleteAsync(SqliteConnection connection, string schemeCode)
@@ -69,20 +64,6 @@ namespace OptimaJet.Workflow.SQLite
             return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
         }
 
-        public async Task<int> SetObsoleteAsync(SqliteConnection connection, string schemeCode, string definingParametersHash)
-        {
-            string command =
-                $"UPDATE {ObjectName} SET {nameof(ProcessSchemeEntity.IsObsolete)} = TRUE " + 
-                $"WHERE ({nameof(ProcessSchemeEntity.SchemeCode)} = @schemecode " + 
-                $"OR {nameof(ProcessSchemeEntity.RootSchemeCode)} = @schemecode) " + 
-                $"AND {nameof(ProcessSchemeEntity.DefiningParametersHash)} = @dphash";
-
-            var p = new SqliteParameter("schemecode", DbType.String) {Value = schemeCode};
-            var p2 = new SqliteParameter("dphash", DbType.String) {Value = definingParametersHash};
-
-            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
-        }
-        
         public async Task DeleteUnusedAsync(SqliteConnection connection)
         {
             if (connection.State != ConnectionState.Open)

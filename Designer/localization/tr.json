@@ -494,8 +494,7 @@
 		"Value": "Değer"
 	},
 	"ProcessInfoFormLabel": {
-		"CalendarPlaceholder": "Takvimi bulmak için bir ad yazmaya başlayın",
-		"DefiningParameters": "Parametrelerin tanımlanması",
+		"CalendarPlaceholder": "Takvim bulmak için bir ad yazmaya başlayın",
 		"GeneralTabLabel": "Genel",
 		"HistoryTabActorIdLabel": "Oyuncu Kimliği",
 		"HistoryTabActorLabel": "Aktör",

@@ -15,8 +15,6 @@ namespace OptimaJet.Workflow.PostgreSQL
             DBColumns.AddRange(new[]
             {
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Id), IsKey = true, Type = NpgsqlDbType.Uuid},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParameters)},
-                new ColumnInfo {Name = nameof(ProcessSchemeEntity.DefiningParametersHash)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.IsObsolete), Type = NpgsqlDbType.Boolean},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.SchemeCode)},
                 new ColumnInfo {Name = nameof(ProcessSchemeEntity.Scheme)},
@@ -27,11 +25,10 @@ namespace OptimaJet.Workflow.PostgreSQL
             });
         }
 
-        public async Task<ProcessSchemeEntity[]> SelectAsync(NpgsqlConnection connection, string schemeCode, string definingParametersHash, bool? isObsolete, Guid? rootSchemeId)
+        public async Task<ProcessSchemeEntity[]> SelectAsync(NpgsqlConnection connection, string schemeCode, bool? isObsolete, Guid? rootSchemeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " + 
-                                $"WHERE \"{nameof(ProcessSchemeEntity.SchemeCode)}\" = @schemecode " + 
-                                $"AND \"{nameof(ProcessSchemeEntity.DefiningParametersHash)}\" = @dphash";
+                                $"WHERE \"{nameof(ProcessSchemeEntity.SchemeCode)}\" = @schemecode";
 
             if (isObsolete.HasValue)
             {
@@ -47,18 +44,16 @@ namespace OptimaJet.Workflow.PostgreSQL
 
             var pSchemecode = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
 
-            var pDphash = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
-
             if (rootSchemeId.HasValue)
             {
                 selectText += $" AND \"{nameof(ProcessSchemeEntity.RootSchemeId)}\" = @rootschemeid";
                 var pRootSchemeId = new NpgsqlParameter("rootschemeid", NpgsqlDbType.Uuid) {Value = rootSchemeId.Value};
 
-                return await SelectAsync(connection, selectText, pSchemecode, pDphash, pRootSchemeId).ConfigureAwait(false);
+                return await SelectAsync(connection, selectText, pSchemecode, pRootSchemeId).ConfigureAwait(false);
             }
 
             selectText += $" AND \"{nameof(ProcessSchemeEntity.RootSchemeId)}\" IS NULL";
-            return await SelectAsync(connection, selectText, pSchemecode, pDphash).ConfigureAwait(false);
+            return await SelectAsync(connection, selectText, pSchemecode).ConfigureAwait(false);
         }
 
         public async Task<int> SetObsoleteAsync(NpgsqlConnection connection, string schemeCode)
@@ -70,20 +65,6 @@ namespace OptimaJet.Workflow.PostgreSQL
             var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
 
             return await ExecuteCommandNonQueryAsync(connection, command, p).ConfigureAwait(false);
-        }
-
-        public async Task<int> SetObsoleteAsync(NpgsqlConnection connection, string schemeCode, string definingParametersHash)
-        {
-            string command =
-                $"UPDATE {ObjectName} SET \"{nameof(ProcessSchemeEntity.IsObsolete)}\" = TRUE " + 
-                $"WHERE (\"{nameof(ProcessSchemeEntity.SchemeCode)}\" = @schemecode " + 
-                $"OR \"{nameof(ProcessSchemeEntity.RootSchemeCode)}\" = @schemecode) " + 
-                $"AND \"{nameof(ProcessSchemeEntity.DefiningParametersHash)}\" = @dphash";
-
-            var p = new NpgsqlParameter("schemecode", NpgsqlDbType.Varchar) {Value = schemeCode};
-            var p2 = new NpgsqlParameter("dphash", NpgsqlDbType.Varchar) {Value = definingParametersHash};
-
-            return await ExecuteCommandNonQueryAsync(connection, command, p, p2).ConfigureAwait(false);
         }
         
         public static async Task DeleteUnusedAsync(NpgsqlConnection connection)

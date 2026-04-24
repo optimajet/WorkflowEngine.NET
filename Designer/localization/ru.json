@@ -495,7 +495,6 @@
 	},
 	"ProcessInfoFormLabel": {
 		"CalendarPlaceholder": "Начните вводить название, чтобы найти календарь",
-		"DefiningParameters": "Определение параметров",
 		"GeneralTabLabel": "Общие",
 		"HistoryTabActorIdLabel": "Идентификатор актера",
 		"HistoryTabActorLabel": "Актер",

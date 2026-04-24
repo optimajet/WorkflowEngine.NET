@@ -1,3 +1,5 @@
+#pragma warning disable CS0618
+using System.Data;
 using System.Globalization;
 using System.Reflection;
 using System.Xml.Linq;
@@ -91,12 +93,14 @@ namespace OptimaJet.Workflow.SQLite
 
         #region IAssignmentProvider
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task DeleteAssignmentAsync(Guid assignmentId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessAssignment.DeleteAsync(connection, assignmentId).ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task<List<Assignment>> GetAssignmentsAsync(AssignmentFilter filter,
             List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
@@ -111,12 +115,14 @@ namespace OptimaJet.Workflow.SQLite
             return assignments.Select(a => WorkflowProcessAssignment.ConvertToAssignment(a)).ToList();
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task<int> GetAssignmentCountAsync(AssignmentFilter filter)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowProcessAssignment.GetAssignmentCountAsync(connection, filter.Parameters).ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task CreateAssignmentAsync(Guid processId, AssignmentCreationForm form)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -146,6 +152,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessAssignment.InsertAsync(connection, assignment).ConfigureAwait(false);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public virtual async Task<Assignment> GetAssignmentAsync(Guid assignmentId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -154,6 +161,7 @@ namespace OptimaJet.Workflow.SQLite
             return WorkflowProcessAssignment.ConvertToAssignment(assignment);
         }
 
+        [Obsolete("Do not use Assignment Plugin or related API. It will be removed soon.")]
         public async Task UpdateAssignmentAsync(Assignment a)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -235,9 +243,6 @@ namespace OptimaJet.Workflow.SQLite
             {
                 ActivityName = pi.ActivityName,
                 Id = pi.Id,
-#pragma warning disable CS0618 // Type or member is obsolete
-                IsDeterminingParametersChanged = pi.IsDeterminingParametersChanged,
-#pragma warning restore CS0618 // Type or member is obsolete
                 PreviousActivity = pi.PreviousActivity,
                 PreviousActivityForDirect = pi.PreviousActivityForDirect,
                 PreviousActivityForReverse = pi.PreviousActivityForReverse,
@@ -356,14 +361,6 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            await BindProcessToNewSchemeAsync(processInstance, false).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Obsolete("Use BindProcessToNewSchemeAsync(ProcessInstance processInstance) instead.")]
-        public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance, bool resetIsDeterminingParametersChanged)
-        {
             using var connection = new SqliteConnection(Options.ConnectionString);
             var oldProcess = await WorkflowProcessInstance.SelectByKeyAsync(connection, processInstance.ProcessId)
                 .ConfigureAwait(false);
@@ -375,13 +372,6 @@ namespace OptimaJet.Workflow.SQLite
 
             oldProcess.SchemeId = processInstance.SchemeId;
             oldProcess.StartingTransition = processInstance.ProcessScheme.StartingTransition;
-
-            if (resetIsDeterminingParametersChanged)
-            {
-#pragma warning disable CS0618 // Type or member is obsolete
-                oldProcess.IsDeterminingParametersChanged = false;
-#pragma warning restore CS0618 // Type or member is obsolete
-            }
 
             await WorkflowProcessInstance.UpdateAsync(connection, oldProcess).ConfigureAwait(false);
         }
@@ -419,81 +409,79 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false));
         }
 
+        private async Task SaveParameterBatchAsync(PersistenceParametersBatch batch)
+        {
+            if (batch.IsEmpty)
+            {
+                return;
+            }
+
+            await using var connection = new SqliteConnection(Options.ConnectionString);
+            if (connection.State != ConnectionState.Open)
+            {
+                await connection.OpenAsync().ConfigureAwait(false);
+            }
+
+            await using SqliteTransaction transaction = connection.BeginTransaction();
+
+            try
+            {
+                foreach (SerializedParameter serializedParameter in batch.Parameters)
+                {
+                    switch (serializedParameter.Operation)
+                    {
+                        case SerializedParameter.PersistenceOperation.Delete:
+                            await WorkflowProcessInstancePersistence
+                                .DeleteByNameAsync(connection, batch.ProcessId, serializedParameter.Name, transaction)
+                                .ConfigureAwait(false);
+                            break;
+                        case SerializedParameter.PersistenceOperation.Insert:
+                        case SerializedParameter.PersistenceOperation.Update:
+                        {
+                            bool preferUpdateFirst = serializedParameter.Operation == SerializedParameter.PersistenceOperation.Update;
+                            var persistence = new ProcessInstancePersistenceEntity
+                            {
+                                Id = Guid.NewGuid(),
+                                ProcessId = batch.ProcessId,
+                                ParameterName = serializedParameter.Name,
+                                Value = serializedParameter.SerializedValue
+                            };
+
+                            await WorkflowProcessInstancePersistence
+                                .UpsertAsync(connection, persistence, preferUpdateFirst, transaction)
+                                .ConfigureAwait(false);
+                            break;
+                        }
+                        default:
+                            throw new ArgumentOutOfRangeException(nameof(serializedParameter.Operation), serializedParameter.Operation,
+                                "Unknown parameter persistence operation.");
+                    }
+                }
+
+                transaction.Commit();
+                batch.CommitFlags();
+            }
+            catch
+            {
+                try { transaction.Rollback(); } catch { /* ignore rollback errors */ }
+                throw;
+            }
+        }
+
         public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
         {
-            var parametersToPersistList = processInstance.ProcessParameters.Where(ptp => ptp.Purpose == ParameterPurpose.Persistence)
-                .Select(ptp => ParameterDefinitionWithValueToDynamic(ptp)).ToList();
-
-            using var connection = new SqliteConnection(Options.ConnectionString);
-
-            var persistedParameters = (await WorkflowProcessInstancePersistence
-                .SelectByProcessIdAsync(connection, processInstance.ProcessId).ConfigureAwait(false)).ToList();
-
-            foreach (dynamic parameterDefinitionWithValue in parametersToPersistList)
-            {
-                var persistence =
-                    persistedParameters.SingleOrDefault(pp => pp.ParameterName == parameterDefinitionWithValue.Parameter.Name);
-
-                await InsertOrUpdateParameterAsync(connection, processInstance, parameterDefinitionWithValue, persistence)
-                    .ConfigureAwait(false);
-            }
+            var batch = PersistenceParametersBatch.CreateFromProcessInstance(processInstance);
+            await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
 
         public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
         {
-            dynamic parameter = ParameterDefinitionWithValueToDynamic(
-                processInstance.ProcessParameters.Single(ptp => ptp.Purpose == ParameterPurpose.Persistence && ptp.Name == parameterName));
-
-            using var connection = new SqliteConnection(Options.ConnectionString);
-
-            var persistedParameter = await WorkflowProcessInstancePersistence
-                .SelectByNameAsync(
-                    connection,
-                    processInstance.ProcessId,
-                    parameterName)
-                .ConfigureAwait(false);
-
-            await InsertOrUpdateParameterAsync(connection, processInstance, parameter, persistedParameter).ConfigureAwait(false);
-        }
-
-        private dynamic ParameterDefinitionWithValueToDynamic(ParameterDefinitionWithValue ptp)
-        {
-            string serializedValue = ptp.Type == typeof(UnknownParameterType)
-                ? (string)ptp.Value
-                : ParametersSerializer.Serialize(ptp.Value, ptp.Type);
-            return new {Parameter = ptp, SerializedValue = serializedValue};
-        }
-
-        private async Task InsertOrUpdateParameterAsync(SqliteConnection connection, ProcessInstance processInstance, dynamic parameter,
-            ProcessInstancePersistenceEntity persistence)
-        {
-            if (persistence == null)
+            var batch = PersistenceParametersBatch.CreateForSingleParameter(processInstance, parameterName);
+            if (batch.IsEmpty)
             {
-                if (parameter.SerializedValue != null)
-                {
-                    persistence = new ProcessInstancePersistenceEntity
-                    {
-                        Id = Guid.NewGuid(),
-                        ProcessId = processInstance.ProcessId,
-                        ParameterName = parameter.Parameter.Name,
-                        Value = parameter.SerializedValue
-                    };
-
-                    await WorkflowProcessInstancePersistence.InsertAsync(connection, persistence).ConfigureAwait(false);
-                }
+                throw new InvalidOperationException("Cannot save parameter for empty batch");
             }
-            else
-            {
-                if (parameter.SerializedValue != null)
-                {
-                    persistence.Value = parameter.SerializedValue;
-                    await WorkflowProcessInstancePersistence.UpdateAsync(connection, persistence).ConfigureAwait(false);
-                }
-                else
-                {
-                    await WorkflowProcessInstancePersistence.DeleteAsync(connection, persistence.Id).ConfigureAwait(false);
-                }
-            }
+            await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
 
         public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
@@ -906,15 +894,21 @@ namespace OptimaJet.Workflow.SQLite
             ProcessInstancePersistenceEntity persistedParameter)
         {
             ParameterDefinition parameterDefinition = persistenceParameters.FirstOrDefault(p => p.Name == persistedParameter.ParameterName);
+
+            ParameterDefinitionWithValue result;
             if (parameterDefinition == null)
             {
                 parameterDefinition = ParameterDefinition.Create(persistedParameter.ParameterName, typeof(UnknownParameterType),
                     ParameterPurpose.Persistence);
-                return ParameterDefinition.Create(parameterDefinition, persistedParameter.Value);
+                result = ParameterDefinition.CreateFromPersistence(parameterDefinition, persistedParameter.Value);
+            }
+            else
+            {
+                result = ParameterDefinition.CreateFromPersistence(parameterDefinition,
+                    ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
             }
 
-            return ParameterDefinition.Create(parameterDefinition,
-                ParametersSerializer.Deserialize(persistedParameter.Value, parameterDefinition.Type));
+            return result;
         }
 
         private async Task<ProcessInstanceEntity> GetProcessInstanceAsync(Guid processId)
@@ -1275,9 +1269,6 @@ namespace OptimaJet.Workflow.SQLite
 
             SchemeDefinition<XElement> schemeDefinition =
                 await GetProcessSchemeBySchemeIdAsync(processInstance.SchemeId.Value).ConfigureAwait(false);
-#pragma warning disable CS0618 // Type or member is obsolete
-            schemeDefinition.IsDeterminingParametersChanged = processInstance.IsDeterminingParametersChanged;
-#pragma warning restore CS0618 // Type or member is obsolete
             return schemeDefinition;
         }
 
@@ -1297,26 +1288,12 @@ namespace OptimaJet.Workflow.SQLite
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId,
             bool ignoreObsolete)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            return await GetProcessSchemeWithParametersAsync(schemeCode, "{}", rootSchemeId, ignoreObsolete).ConfigureAwait(false);
-#pragma warning restore CS0618 // Type or member is obsolete
-        }
-
-        [Obsolete("Use GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId, bool ignoreObsolete) instead.")]
-        public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode,
-            string definingParameters,
-            Guid? rootSchemeId, bool ignoreObsolete)
-        {
             IEnumerable<ProcessSchemeEntity> processSchemes;
-#pragma warning disable CS0618 // Type or member is obsolete
-            string hash = HashHelper.GenerateStringHash(definingParameters);
-#pragma warning restore CS0618 // Type or member is obsolete
 
             using var connection = new SqliteConnection(Options.ConnectionString);
             {
                 processSchemes = await WorkflowProcessScheme.SelectAsync(connection,
                         schemeCode,
-                        hash,
                         ignoreObsolete
                             ? false
                             : (bool?)null,
@@ -1324,35 +1301,9 @@ namespace OptimaJet.Workflow.SQLite
                     .ConfigureAwait(false);
             }
 
-            if (!processSchemes.Any())
-            {
-                throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
-            }
-
-            if (processSchemes.Count() == 1)
-            {
-                var scheme = processSchemes.First();
-                return ConvertToSchemeDefinition(scheme);
-            }
-
-            foreach (var processScheme in processSchemes.Where(processScheme => processScheme.DefiningParameters == definingParameters))
-            {
-                return ConvertToSchemeDefinition(processScheme);
-            }
-
-            throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme, definingParameters);
-        }
-
-        [Obsolete("Use SetSchemeIsObsoleteAsync(string schemeCode) instead.")]
-        public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, IDictionary<string, object> parameters)
-        {
-#pragma warning disable CS0618 // Type or member is obsolete
-            string definingParameters = DefiningParametersSerializer.Serialize(parameters);
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-#pragma warning restore CS0618 // Type or member is obsolete
-
-            using var connection = new SqliteConnection(Options.ConnectionString);
-            await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, definingParametersHash).ConfigureAwait(false);
+            return processSchemes.Any()
+                ? ConvertToSchemeDefinition(processSchemes.First())
+                : throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme);
         }
 
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode)
@@ -1363,16 +1314,10 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task<SchemeDefinition<XElement>> SaveSchemeAsync(SchemeDefinition<XElement> scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            string definingParameters = scheme.DefiningParameters;
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-#pragma warning restore CS0618 // Type or member is obsolete
-
             using var connection = new SqliteConnection(Options.ConnectionString);
 #pragma warning disable CS0618 // Type or member is obsolete
             var oldSchemes = await WorkflowProcessScheme.SelectAsync(connection,
                     scheme.SchemeCode,
-                    definingParametersHash,
                     scheme.IsObsolete,
                     scheme.RootSchemeId)
                 .ConfigureAwait(false);
@@ -1380,7 +1325,7 @@ namespace OptimaJet.Workflow.SQLite
 
             if (oldSchemes.Any())
             {
-                var existing = oldSchemes.FirstOrDefault(oldScheme => oldScheme.DefiningParameters == definingParameters);
+                var existing = oldSchemes.FirstOrDefault();
 
                 if (existing != null)
                 {
@@ -1391,8 +1336,6 @@ namespace OptimaJet.Workflow.SQLite
             var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
-                DefiningParameters = definingParameters,
-                DefiningParametersHash = definingParametersHash,
                 Scheme = scheme.Scheme.ToString(),
                 SchemeCode = scheme.SchemeCode,
                 RootSchemeCode = scheme.RootSchemeCode,
@@ -1409,16 +1352,9 @@ namespace OptimaJet.Workflow.SQLite
 
         public virtual async Task UpsertSchemeAsync(SchemeDefinition<XElement> scheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
-            string definingParameters = scheme.DefiningParameters;
-            string definingParametersHash = HashHelper.GenerateStringHash(definingParameters);
-#pragma warning restore CS0618 // Type or member is obsolete
-
             var newProcessScheme = new ProcessSchemeEntity
             {
                 Id = scheme.Id,
-                DefiningParameters = definingParameters,
-                DefiningParametersHash = definingParametersHash,
                 Scheme = scheme.Scheme.ToString(),
                 SchemeCode = scheme.SchemeCode,
                 RootSchemeCode = scheme.RootSchemeCode,
@@ -1528,17 +1464,6 @@ namespace OptimaJet.Workflow.SQLite
             return await GetSchemeAsync(schemeCode).ConfigureAwait(false);
         }
 
-        [Obsolete("Use GenerateAsync(string schemeCode) instead.")]
-        public virtual async Task<XElement> GenerateAsync(string schemeCode, Guid schemeId, IDictionary<string, object> parameters)
-        {
-            if (parameters.Count > 0)
-            {
-                throw new InvalidOperationException("Parameters not supported");
-            }
-
-            return await GenerateAsync(schemeCode).ConfigureAwait(false);
-        }
-
         #endregion
 
         #region Bulk methods
@@ -1564,14 +1489,11 @@ namespace OptimaJet.Workflow.SQLite
 
         private SchemeDefinition<XElement> ConvertToSchemeDefinition(ProcessSchemeEntity workflowProcessScheme)
         {
-#pragma warning disable CS0618 // Type or member is obsolete
             return new SchemeDefinition<XElement>(workflowProcessScheme.Id, workflowProcessScheme.RootSchemeId,
                 workflowProcessScheme.SchemeCode, workflowProcessScheme.RootSchemeCode,
-                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete, false,
+                XElement.Parse(workflowProcessScheme.Scheme), workflowProcessScheme.IsObsolete,
                 Newtonsoft.Json.JsonConvert.DeserializeObject<List<string>>(workflowProcessScheme.AllowedActivities ?? "null"),
-                workflowProcessScheme.StartingTransition,
-                workflowProcessScheme.DefiningParameters);
-#pragma warning restore CS0618 // Type or member is obsolete
+                workflowProcessScheme.StartingTransition);
         }
 
         private async Task<Tuple<int, WorkflowRuntimeModel>> UpdateWorkflowRuntimeAsync(WorkflowRuntimeModel runtime,
@@ -1829,3 +1751,4 @@ namespace OptimaJet.Workflow.SQLite
         #endregion
     }
 }
+#pragma warning restore CS0618

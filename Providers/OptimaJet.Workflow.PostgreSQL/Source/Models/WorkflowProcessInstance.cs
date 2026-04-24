@@ -17,7 +17,6 @@ namespace OptimaJet.Workflow.PostgreSQL
             {
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.Id), IsKey = true, Type = NpgsqlDbType.Uuid},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.ActivityName)},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), Type = NpgsqlDbType.Boolean},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivity)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForDirect)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForReverse)},

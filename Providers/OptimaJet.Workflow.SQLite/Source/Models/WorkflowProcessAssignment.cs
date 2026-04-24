@@ -1,4 +1,5 @@
-﻿using System.Collections;
+﻿#pragma warning disable CS0618
+using System.Collections;
 using System.Data;
 using Microsoft.Data.Sqlite;
 using OptimaJet.Workflow.Core.Entities;
@@ -239,3 +240,4 @@ namespace OptimaJet.Workflow.SQLite
         }
     }
 }
+#pragma warning restore CS0618

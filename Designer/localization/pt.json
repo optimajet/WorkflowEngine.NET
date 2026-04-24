@@ -494,9 +494,8 @@
 		"Value": "Valor"
 	},
 	"ProcessInfoFormLabel": {
-		"CalendarPlaceholder": "Comece a escrever um nome para encontrar um calendário",
-		"DefiningParameters": "Definindo parâmetros",
-		"GeneralTabLabel": "Geral",
+		"CalendarPlaceholder": "Comece a digitar um nome para encontrar um calendário",
+		"GeneralTabLabel": "Em geral",
 		"HistoryTabActorIdLabel": "ID Do Ator",
 		"HistoryTabActorLabel": "Actor",
 		"HistoryTabDurationLabel": "Duração (ms)",

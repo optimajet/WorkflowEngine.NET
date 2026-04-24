@@ -61,15 +61,65 @@ namespace OptimaJet.Workflow.MySQL
         {
             var parameters = new List<MySqlParameter>
             {
-                new MySqlParameter("processid", MySqlDbType.Binary) {Value = processId.ToByteArray()},
-                new MySqlParameter("parameterName", MySqlDbType.VarChar) {Value = parameterName}
+                new("processid", MySqlDbType.Binary) {Value = processId.ToByteArray()},
+                new("parameterName", MySqlDbType.VarChar) {Value = parameterName}
             };
 
             return await ExecuteCommandNonQueryAsync(connection,
                     $"DELETE FROM {DbTableName} " +
-                    $"WHERE `{nameof(ProcessInstancePersistenceEntity.ProcessId)}` = @processid",
+                    $"WHERE `{nameof(ProcessInstancePersistenceEntity.ProcessId)}` = @processid " +
+                    $"AND `{nameof(ProcessInstancePersistenceEntity.ParameterName)}` = @parameterName",
                     transaction,
                     parameters.ToArray())
+                .ConfigureAwait(false);
+        }
+
+        public async Task UpsertAsync(MySqlConnection connection, ProcessInstancePersistenceEntity entity,
+            bool preferUpdateFirst, MySqlTransaction transaction)
+        {
+            // Optimistic approach: choose UPDATE or INSERT first, with fallback
+            if (preferUpdateFirst)
+            {
+                // Try UPDATE first (optimistic: parameter exists in DB)
+                int rowsAffected = await UpdateByNameAsync(connection, entity, transaction).ConfigureAwait(false);
+
+                // Fallback: if UPDATE didn't affect any rows (someone deleted it), do INSERT
+                if (rowsAffected == 0)
+                {
+                    await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+            }
+            else
+            {
+                // Try INSERT first (optimistic: parameter doesn't exist in DB)
+                try
+                {
+                    await InsertAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+                catch (MySqlException mysqlEx) when (mysqlEx.ErrorCode == MySqlErrorCode.DuplicateKeyEntry)
+                {
+                    // Fallback: if INSERT failed due to the duplicate key, do UPDATE
+                    await UpdateByNameAsync(connection, entity, transaction).ConfigureAwait(false);
+                }
+            }
+        }
+        
+        private async Task<int> UpdateByNameAsync(MySqlConnection connection, ProcessInstancePersistenceEntity entity,
+            MySqlTransaction transaction = null)
+        {
+            var parameters = new List<MySqlParameter>
+            {
+                new("processid", MySqlDbType.Binary) {Value = entity.ProcessId.ToByteArray()},
+                new("parameterName", MySqlDbType.VarChar) {Value = entity.ParameterName},
+                new("value", MySqlDbType.LongText) {Value = entity.Value}
+            };
+
+            string commandText = $"UPDATE {DbTableName} " +
+                                 $"SET `{nameof(ProcessInstancePersistenceEntity.Value)}` = @value " +
+                                 $"WHERE `{nameof(ProcessInstancePersistenceEntity.ProcessId)}` = @processid " +
+                                 $"AND `{nameof(ProcessInstancePersistenceEntity.ParameterName)}` = @parameterName";
+
+            return await ExecuteCommandNonQueryAsync(connection, commandText, transaction, parameters.ToArray())
                 .ConfigureAwait(false);
         }
     }

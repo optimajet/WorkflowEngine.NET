@@ -16,7 +16,6 @@ namespace OptimaJet.Workflow.MySQL
             {
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.Id), IsKey = true, Type = MySqlDbType.Binary},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.ActivityName)},
-                new ColumnInfo {Name = nameof(ProcessInstanceEntity.IsDeterminingParametersChanged), Type = MySqlDbType.Bit},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivity)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForDirect)},
                 new ColumnInfo {Name = nameof(ProcessInstanceEntity.PreviousActivityForReverse)},

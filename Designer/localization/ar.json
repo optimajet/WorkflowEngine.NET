@@ -495,10 +495,9 @@
 		"Value": "القيمة"
 	},
 	"ProcessInfoFormLabel": {
-		"CalendarPlaceholder": "ابدأ بكتابة اسم للعثور على تقويم",
-		"DefiningParameters": "تحديد المعلمات",
-		"GeneralTabLabel": "معلومات عامة",
-		"HistoryTabActorIdLabel": "معرف الممثل",
+		"CalendarPlaceholder": "ابدأ بكتابة اسم للعثور على التقويم",
+		"GeneralTabLabel": "عام",
+		"HistoryTabActorIdLabel": "معرّف الممثل",
 		"HistoryTabActorLabel": "الممثل",
 		"HistoryTabDurationLabel": "المدة (مللي ثانية)",
 		"HistoryTabExecutorIdLabel": "معرف المنفذ",

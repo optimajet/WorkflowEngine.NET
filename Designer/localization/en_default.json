@@ -324,7 +324,6 @@
   "ProcessInfoFormLabel": {
     "Title": "Process Info",
     "IsObsolete": "IsObsolete",
-    "DefiningParameters": "Defining parameters",
     "ProcessParameters": "Process parameters",
     "SystemParametersTabName": "System Parameters",
     "ProcessParametersTabName": "Process Parameters",
