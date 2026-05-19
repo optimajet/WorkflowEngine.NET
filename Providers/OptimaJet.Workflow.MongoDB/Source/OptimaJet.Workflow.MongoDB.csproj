@@ -26,6 +26,8 @@
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="MongoDB.Driver" />
+    <PackageReference Include="SharpCompress" />
+    <PackageReference Include="Snappier" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="WorkflowEngine.NETCore-Core" />

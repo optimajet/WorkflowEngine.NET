@@ -39,8 +39,8 @@
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="21.0.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="21.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="21.1.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="21.1.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
     <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.16" />
