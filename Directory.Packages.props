@@ -22,8 +22,8 @@
     <PackageVersion Include="Microsoft.Identity.Client" Version="4.83.1" />
     <PackageVersion Include="Microsoft.IdentityModel.JsonWebTokens" Version="8.10.0" />
     <PackageVersion Include="Azure.Identity" Version="1.19.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="21.1.0" />
-    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="21.1.0" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Core" Version="21.1.1" />
+    <PackageVersion Include="WorkflowEngine.NETCore-Migrator" Version="21.1.1" />
   </ItemGroup>
   <!-- Plugins -->
   <ItemGroup>

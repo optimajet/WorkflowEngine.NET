@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.PostgreSQL/21.1.0": {
+      "OptimaJet.Workflow.PostgreSQL/21.1.1": {
         "dependencies": {
           "FluentMigrator.Runner.Postgres": "5.2.0",
           "Npgsql": "8.0.3",
-          "WorkflowEngine.NETCore-Core": "21.1.0",
-          "WorkflowEngine.NETCore-Migrator": "21.1.0",
+          "WorkflowEngine.NETCore-Core": "21.1.1",
+          "WorkflowEngine.NETCore-Migrator": "21.1.1",
           "OptimaJet.Workflow.Core": "21.1.0.0",
           "OptimaJet.Workflow.Migrator": "21.1.0.0"
         },
@@ -1467,7 +1467,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/21.1.0": {
+      "WorkflowEngine.NETCore-Core/21.1.1": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "10.0.5",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
@@ -1488,7 +1488,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Migrator/21.1.0": {
+      "WorkflowEngine.NETCore-Migrator/21.1.1": {
         "dependencies": {
           "Azure.Identity": "1.19.0",
           "FluentMigrator": "5.2.0",
@@ -1498,7 +1498,7 @@
           "Microsoft.IdentityModel.JsonWebTokens": "8.10.0",
           "System.IdentityModel.Tokens.Jwt": "8.10.0",
           "System.Runtime.Caching": "10.0.5",
-          "WorkflowEngine.NETCore-Core": "21.1.0"
+          "WorkflowEngine.NETCore-Core": "21.1.1"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {
@@ -1526,7 +1526,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.PostgreSQL/21.1.0": {
+    "OptimaJet.Workflow.PostgreSQL/21.1.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -2371,12 +2371,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/21.1.0": {
+    "WorkflowEngine.NETCore-Core/21.1.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/21.1.0": {
+    "WorkflowEngine.NETCore-Migrator/21.1.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
