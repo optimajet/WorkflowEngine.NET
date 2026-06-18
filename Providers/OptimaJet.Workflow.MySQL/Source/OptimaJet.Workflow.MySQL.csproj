@@ -114,5 +114,7 @@
     <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParameters.sql" />
     <None Remove="Scripts\AlterColumn_WorkflowProcessInstance_IsDeterminingParametersChanged.sql" />
     <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessInstance_IsDeterminingParametersChanged.sql" />
+    <None Remove="Scripts\AlterColumn_WorkflowProcessInstance_CalendarName.sql" />
+    <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessInstance_CalendarName.sql" />
   </ItemGroup>
 </Project>

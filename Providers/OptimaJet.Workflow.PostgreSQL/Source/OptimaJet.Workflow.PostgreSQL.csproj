@@ -51,5 +51,7 @@
     <EmbeddedResource Include="Scripts\CreateWorkflowForms.sql" />
     <None Remove="Scripts\RemoveConstraintsFromDeterminingParametersColumns.sql" />
     <EmbeddedResource Include="Scripts\RemoveConstraintsFromDeterminingParametersColumns.sql" />
+    <None Remove="Scripts\CreateCalendarNameColumn.sql" />
+    <EmbeddedResource Include="Scripts\CreateCalendarNameColumn.sql" />
   </ItemGroup>
 </Project>

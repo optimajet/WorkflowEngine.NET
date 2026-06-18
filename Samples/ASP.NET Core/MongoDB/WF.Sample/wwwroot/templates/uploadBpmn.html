@@ -20,8 +20,8 @@
     return {
         readonly: false,
         overwriteExisting: false,
-        mainSchemeCode: designer?.data?.Name ?? '',
-        resultLog: data.labels.UploadHint,
+        mainSchemeCode: me.graph.designer?.data?.Name ?? '',
+        resultLog: WorkflowDesignerConstants.UploadBpmnLabel.UploadHint,
         uploaded: false,
         redrawAfterClose: false
       }

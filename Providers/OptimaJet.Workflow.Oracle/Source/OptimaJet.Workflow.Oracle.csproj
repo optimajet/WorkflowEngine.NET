@@ -125,5 +125,7 @@
     <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParametersHash.sql" />
     <None Remove="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParameters.sql" />
     <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessScheme_DefiningParameters.sql" />
+    <None Remove="Scripts\CreateCalendarNameColumn.sql" />
+    <EmbeddedResource Include="Scripts\CreateCalendarNameColumn.sql" />
   </ItemGroup>
 </Project>
