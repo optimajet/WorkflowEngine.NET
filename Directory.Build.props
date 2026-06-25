@@ -1,7 +1,7 @@
 <Project>
   <!-- Version -->
   <PropertyGroup>
-    <Version>21.1.2</Version>
+    <Version>21.1.3</Version>
     <AssemblyVersion>21.1.0</AssemblyVersion>
     <FileVersion>21.1.0</FileVersion>
   </PropertyGroup>
@@ -11,6 +11,7 @@
     <GeneratePackageOnBuild>true</GeneratePackageOnBuild>
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
+    <NoWarn>NU1903</NoWarn>
   </PropertyGroup>
   <!-- Nuget -->
   <PropertyGroup>

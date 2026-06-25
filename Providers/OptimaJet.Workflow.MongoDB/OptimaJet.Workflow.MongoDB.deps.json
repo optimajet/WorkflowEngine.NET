@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MongoDB/21.1.2": {
+      "OptimaJet.Workflow.MongoDB/21.1.3": {
         "dependencies": {
           "MongoDB.Driver": "2.30.0",
           "SharpCompress": "0.48.0",
           "Snappier": "1.3.1",
-          "WorkflowEngine.NETCore-Core": "21.1.2",
+          "WorkflowEngine.NETCore-Core": "21.1.3",
           "OptimaJet.Workflow.Core": "21.1.0.0"
         },
         "runtime": {
@@ -21,7 +21,7 @@
       },
       "AWSSDK.Core/3.7.100.14": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "10.0.5"
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.9"
         },
         "runtime": {
           "lib/netstandard2.0/AWSSDK.Core.dll": {
@@ -53,14 +53,14 @@
           }
         }
       },
-      "Microsoft.Bcl.AsyncInterfaces/10.0.5": {
+      "Microsoft.Bcl.AsyncInterfaces/10.0.9": {
         "dependencies": {
           "System.Threading.Tasks.Extensions": "4.6.3"
         },
         "runtime": {
           "lib/netstandard2.0/Microsoft.Bcl.AsyncInterfaces.dll": {
-            "assemblyVersion": "10.0.0.5",
-            "fileVersion": "10.0.526.15411"
+            "assemblyVersion": "10.0.0.9",
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
@@ -430,7 +430,7 @@
       "runtime.ubuntu.16.10-x64.runtime.native.System.Security.Cryptography.OpenSsl/4.3.0": {},
       "SharpCompress/0.48.0": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "10.0.5",
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.9",
           "System.Text.Encoding.CodePages": "8.0.0"
         },
         "runtime": {
@@ -540,7 +540,7 @@
           }
         }
       },
-      "System.IO.Pipelines/10.0.5": {
+      "System.IO.Pipelines/10.0.9": {
         "dependencies": {
           "System.Buffers": "4.6.1",
           "System.Memory": "4.6.3",
@@ -549,7 +549,7 @@
         "runtime": {
           "lib/netstandard2.0/System.IO.Pipelines.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
@@ -747,7 +747,7 @@
           }
         }
       },
-      "System.Text.Encodings.Web/10.0.5": {
+      "System.Text.Encodings.Web/10.0.9": {
         "dependencies": {
           "System.Buffers": "4.6.1",
           "System.Memory": "4.6.3",
@@ -756,24 +756,24 @@
         "runtime": {
           "lib/netstandard2.0/System.Text.Encodings.Web.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
-      "System.Text.Json/10.0.5": {
+      "System.Text.Json/10.0.9": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "10.0.5",
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.9",
           "System.Buffers": "4.6.1",
-          "System.IO.Pipelines": "10.0.5",
+          "System.IO.Pipelines": "10.0.9",
           "System.Memory": "4.6.3",
           "System.Runtime.CompilerServices.Unsafe": "6.1.2",
-          "System.Text.Encodings.Web": "10.0.5",
+          "System.Text.Encodings.Web": "10.0.9",
           "System.Threading.Tasks.Extensions": "4.6.3"
         },
         "runtime": {
           "lib/netstandard2.0/System.Text.Json.dll": {
             "assemblyVersion": "10.0.0.0",
-            "fileVersion": "10.0.526.15411"
+            "fileVersion": "10.0.926.27113"
           }
         }
       },
@@ -842,7 +842,7 @@
       },
       "ZstdSharp.Port/0.7.3": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "10.0.5",
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.9",
           "System.Memory": "4.6.3"
         },
         "runtime": {
@@ -852,16 +852,16 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/21.1.2": {
+      "WorkflowEngine.NETCore-Core/21.1.3": {
         "dependencies": {
-          "Microsoft.Bcl.AsyncInterfaces": "10.0.5",
+          "Microsoft.Bcl.AsyncInterfaces": "10.0.9",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
           "Microsoft.CodeAnalysis.CSharp.Scripting": "4.1.0",
           "Microsoft.Extensions.DependencyModel": "1.1.1",
           "Newtonsoft.Json": "13.0.3",
           "System.Collections.Specialized": "4.3.0",
           "System.Security.Cryptography.Csp": "4.3.0",
-          "System.Text.Json": "10.0.5",
+          "System.Text.Json": "10.0.9",
           "System.Text.RegularExpressions": "4.3.1",
           "System.Xml.XmlDocument": "4.3.0",
           "ThomasLevesque.WeakEvent": "4.1.0"
@@ -884,7 +884,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MongoDB/21.1.2": {
+    "OptimaJet.Workflow.MongoDB/21.1.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -910,12 +910,12 @@
       "path": "dnsclient/1.6.1",
       "hashPath": "dnsclient.1.6.1.nupkg.sha512"
     },
-    "Microsoft.Bcl.AsyncInterfaces/10.0.5": {
+    "Microsoft.Bcl.AsyncInterfaces/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-hQB3Hq1LlF0NkGVNyZIvwIQIY3LM7Cw1oYjNiTvdNqmzzipVAWEK1c5sj2H5aFX0udnjgPLxSYKq2fupueS8ow==",
-      "path": "microsoft.bcl.asyncinterfaces/10.0.5",
-      "hashPath": "microsoft.bcl.asyncinterfaces.10.0.5.nupkg.sha512"
+      "sha512": "sha512-Aq7M8lG6BrHeatqKqncVm9m55ec34k6nnfPRLe/PvGg+b/pAsRM2ejofeKmCLjTXMa+5NGXm382f8CG/D5WDow==",
+      "path": "microsoft.bcl.asyncinterfaces/10.0.9",
+      "hashPath": "microsoft.bcl.asyncinterfaces.10.0.9.nupkg.sha512"
     },
     "Microsoft.CodeAnalysis.Common/4.1.0": {
       "type": "package",
@@ -1183,12 +1183,12 @@
       "path": "system.io.filesystem.primitives/4.3.0",
       "hashPath": "system.io.filesystem.primitives.4.3.0.nupkg.sha512"
     },
-    "System.IO.Pipelines/10.0.5": {
+    "System.IO.Pipelines/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-8/ZHN/j2y1t+7McdCf1wXku2/c7wtrGLz3WQabIoPuLAn3bHDWT6YOJYreJq8sCMPSo6c8iVYXUdLlFGX5PEqw==",
-      "path": "system.io.pipelines/10.0.5",
-      "hashPath": "system.io.pipelines.10.0.5.nupkg.sha512"
+      "sha512": "sha512-raEAXJHu1ERuQnLhfaMUhK19A+i/CLHH5tFWi+azKxq2O4kzgvdeNuZTzMzyT7pyM1+zE2Pqb2g/DXJsuPp/LQ==",
+      "path": "system.io.pipelines/10.0.9",
+      "hashPath": "system.io.pipelines.10.0.9.nupkg.sha512"
     },
     "System.Linq/4.3.0": {
       "type": "package",
@@ -1330,19 +1330,19 @@
       "path": "system.text.encoding.codepages/8.0.0",
       "hashPath": "system.text.encoding.codepages.8.0.0.nupkg.sha512"
     },
-    "System.Text.Encodings.Web/10.0.5": {
+    "System.Text.Encodings.Web/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-opvD/nKTzGKA7GVntZ9L823kN6IxgHQfuxY+VI9gv8VE1Y7CSKoi/QS1EYDQiA63MqtZsD7X6zkISd2ZQJohTQ==",
-      "path": "system.text.encodings.web/10.0.5",
-      "hashPath": "system.text.encodings.web.10.0.5.nupkg.sha512"
+      "sha512": "sha512-65bbI+LWcVgq1mzPtv6bJF+ZXeeIawld/puK9ixD1l3gJGM2IU4gkYbZoKLVjsXJXbrZqSRf86RlKf1TcCTY1Q==",
+      "path": "system.text.encodings.web/10.0.9",
+      "hashPath": "system.text.encodings.web.10.0.9.nupkg.sha512"
     },
-    "System.Text.Json/10.0.5": {
+    "System.Text.Json/10.0.9": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-vW2zhkWziyfhoSXNf42mTWyilw+vfwBGOsODDsHSFtOIY6LCgfRVUyaAilLEL4Kc1fzhaxcep5pS0VWYPSDW0w==",
-      "path": "system.text.json/10.0.5",
-      "hashPath": "system.text.json.10.0.5.nupkg.sha512"
+      "sha512": "sha512-mD4f7hUvjXEbLAnROibQswbYguGnfzN17gtkuqAHU1a0gJsqe7LXtV+0tItJsYrCBBpPYHiHFlLtjzG2ZEt5uQ==",
+      "path": "system.text.json/10.0.9",
+      "hashPath": "system.text.json.10.0.9.nupkg.sha512"
     },
     "System.Text.RegularExpressions/4.3.1": {
       "type": "package",
@@ -1393,7 +1393,7 @@
       "path": "zstdsharp.port/0.7.3",
       "hashPath": "zstdsharp.port.0.7.3.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/21.1.2": {
+    "WorkflowEngine.NETCore-Core/21.1.3": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
