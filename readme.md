@@ -170,7 +170,7 @@ Next: [Create Your First Workflow](https://docs.workflowengine.io/get-started/cr
 | Temporal .NET SDK | Open-source SDK and server, self-hosted or Temporal Cloud | No authoring designer; a web UI for inspection | The Temporal Service and its own persistence store |
 | Windows Workflow Foundation | Ships with .NET Framework; the CoreWF port is MIT, targets .NET 6, out of support since November 2024 | Visual Studio designer, .NET Framework only | SqlWorkflowInstanceStore on .NET Framework |
 
-Facts as of October 1, 2026. The [full comparison][comparison] covers nine engines and compares support, learning curve and suitable use cases. NuGet versions checked on October 9, 2026: Elsa Workflows 3.9.0, Workflow Core 3.21.0 and Temporal .NET SDK 1.20.0.
+The [full comparison][comparison] covers nine engines and compares support, learning curve and suitable use cases. NuGet versions checked on October 9, 2026: Elsa Workflows 3.9.0, Workflow Core 3.21.0 and Temporal .NET SDK 1.20.0.
 
 Choose something else when:
 
