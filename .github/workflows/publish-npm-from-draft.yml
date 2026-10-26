@@ -1,0 +1,142 @@
+name: Publish npm from draft release
+
+on:
+  workflow_dispatch:
+    inputs:
+      version:
+        description: Release version / draft tag (NpmVersion)
+        required: true
+        type: string
+      npm_tag:
+        description: npm dist-tag
+        required: false
+        default: latest
+        type: string
+
+permissions:
+  contents: write
+  id-token: write
+
+concurrency:
+  group: npm-publish-from-draft-${{ inputs.version }}
+  cancel-in-progress: false
+
+jobs:
+  publish:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Setup Node
+        uses: actions/setup-node@v4
+        with:
+          node-version: "24"
+          # Do not set registry-url / NODE_AUTH_TOKEN — that disables OIDC trusted publishing.
+
+      - name: Ensure npm supports trusted publishing
+        run: |
+          npm install -g npm@11
+          npm --version
+
+      - name: Download draft npm archives and publish
+        env:
+          GH_TOKEN: ${{ github.token }}
+          VERSION: ${{ inputs.version }}
+          NPM_PUBLISH_TAG: ${{ inputs.npm_tag }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+        run: |
+          set -euo pipefail
+          VERSION="${VERSION:?}"
+          REPO="${GITHUB_REPOSITORY:?}"
+          TAG="${NPM_PUBLISH_TAG:-latest}"
+          ARCHIVES_DIR=".archives"
+
+          mkdir -p "${ARCHIVES_DIR}"
+
+          echo "==> Download draft npm archives for ${VERSION} from ${REPO}"
+          gh release download "${VERSION}" \
+            --repo "${REPO}" \
+            --pattern "optimajet-workflow-*-${VERSION}.tgz" \
+            --dir "${ARCHIVES_DIR}" \
+            --clobber
+
+          # Must match BuildScripts/upload-npm-draft-release-workflowengine.net.ps1
+          expected_archives=(
+            "optimajet-workflow-designer-${VERSION}.tgz"
+            "optimajet-workflow-designer-react-${VERSION}.tgz"
+            "optimajet-workflow-designer-angular-${VERSION}.tgz"
+            "optimajet-workflow-forms-manager-${VERSION}.tgz"
+            "optimajet-workflow-forms-viewer-${VERSION}.tgz"
+          )
+          expected_names=(
+            "@optimajet/workflow-designer"
+            "@optimajet/workflow-designer-react"
+            "@optimajet/workflow-designer-angular"
+            "@optimajet/workflow-forms-manager"
+            "@optimajet/workflow-forms-viewer"
+          )
+
+          shopt -s nullglob
+          archives=("${ARCHIVES_DIR}"/optimajet-workflow-*-"${VERSION}".tgz)
+
+          if [[ ${#archives[@]} -ne ${#expected_archives[@]} ]]; then
+            echo "Expected ${#expected_archives[@]} npm tarballs for ${VERSION}, found ${#archives[@]}:" >&2
+            printf '  %s\n' "${archives[@]:-}" >&2
+            exit 1
+          fi
+
+          for expected in "${expected_archives[@]}"; do
+            if [[ ! -f "${ARCHIVES_DIR}/${expected}" ]]; then
+              echo "Missing required tarball: ${expected}" >&2
+              exit 1
+            fi
+          done
+
+          echo "==> Found ${#archives[@]} required tarball(s) to publish"
+          declare -A seen_names=()
+          for tarball in "${archives[@]}"; do
+            name_version="$(
+              tar -xOf "${tarball}" package/package.json | VERSION="${VERSION}" node -e '
+                let d = "";
+                process.stdin.on("data", c => d += c);
+                process.stdin.on("end", () => {
+                  const j = JSON.parse(d);
+                  const expected = process.env.VERSION;
+                  if (j.version !== expected) {
+                    console.error(
+                      `Tarball version mismatch: package.json has ${j.name}@${j.version}, expected ${expected}`
+                    );
+                    process.exit(1);
+                  }
+                  if (typeof j.name !== "string" || !j.name.startsWith("@optimajet/")) {
+                    console.error(`Unexpected package name in tarball: ${j.name}`);
+                    process.exit(1);
+                  }
+                  console.log(`${j.name}@${j.version}`);
+                });
+              '
+            )"
+            pkg_name="${name_version%@*}"
+            seen_names["${pkg_name}"]=1
+            if npm view "${name_version}" version >/dev/null 2>&1; then
+              tag_points_here="$(
+                npm view "${pkg_name}" "dist-tags.${TAG}" 2>/dev/null || true
+              )"
+              if [[ "${tag_points_here}" == "${VERSION}" ]]; then
+                echo "Already published ${name_version} with tag ${TAG} — skipping"
+              else
+                echo "Already published ${name_version}; ensuring dist-tag ${TAG}"
+                npm dist-tag add "${name_version}" "${TAG}"
+              fi
+              continue
+            fi
+            echo "==> Publishing ${name_version} from $(basename "${tarball}") (tag=${TAG})"
+            npm publish "${tarball}" --access public --tag "${TAG}"
+          done
+
+          for expected_name in "${expected_names[@]}"; do
+            if [[ -z "${seen_names[${expected_name}]+x}" ]]; then
+              echo "Draft assets did not include required package: ${expected_name}" >&2
+              exit 1
+            fi
+          done
+
+          echo "==> npm publish from draft complete"
