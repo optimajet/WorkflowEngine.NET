@@ -9,8 +9,16 @@ using OptimaJet.Workflow.Core.Persistence;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow scheme storage, querying, and tag management operations.
+    /// </summary>
     public class WorkflowScheme : DbObject<SchemeEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowScheme"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowScheme(string schemaName, int commandTimeout) : base(schemaName, "WorkflowScheme", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -25,6 +33,13 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Selects a scheme by code, preferring the tenant-specific scheme over the shared one if both exist.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="code">The scheme code.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes only.</param>
+        /// <returns>The matching scheme entity, or <c>null</c> if not found.</returns>
         public async Task<SchemeEntity> SelectByCodeAsync(SqliteConnection connection, string code, string tenantId)
         {
             if (tenantId == null)
@@ -52,6 +67,13 @@ namespace OptimaJet.Workflow.SQLite
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Selects a scheme by code in the exact tenant scope without fallback to shared schemes.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="code">The scheme code.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes only.</param>
+        /// <returns>The matching scheme entity, or <c>null</c> if not found.</returns>
         public async Task<SchemeEntity> SelectByCodeExactAsync(SqliteConnection connection, string code, string tenantId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -76,6 +98,13 @@ namespace OptimaJet.Workflow.SQLite
                 .FirstOrDefault();
         }
 
+        /// <summary>
+        /// Inserts or updates a scheme entity using an update-then-insert strategy within a transaction.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="entity">The scheme entity to upsert.</param>
+        /// <param name="transaction">An optional transaction. If <c>null</c>, an internal transaction is created.</param>
+        /// <returns>The number of rows affected.</returns>
         public override async Task<int> UpsertAsync(SqliteConnection connection, SchemeEntity entity,
             SqliteTransaction transaction = null)
         {
@@ -146,12 +175,25 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects all workflow schemes with optional sorting and paging.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="orderParameters">The sorting parameters.</param>
+        /// <param name="paging">The paging settings, or <c>null</c> to return all schemes.</param>
+        /// <returns>An array of scheme entities.</returns>
         public async Task<SchemeEntity[]> SelectAllWorkflowSchemesWithPagingAsync(SqliteConnection connection,
             List<(string parameterName, SortDirection sortDirection)> orderParameters, Paging paging)
         {
             return await SelectAllWithPagingAsync(connection, orderParameters, paging).ConfigureAwait(false);
         }
         
+        /// <summary>
+        /// Returns the distinct codes of schemes that can be inlined into other schemes.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <returns>A list of inlinable scheme codes.</returns>
         public async Task<List<string>> GetInlinedSchemeCodesAsync(SqliteConnection connection, string tenantId = null)
         {
             string selectText = $"SELECT DISTINCT {nameof(SchemeEntity.Code)} FROM {ObjectName} " +
@@ -175,6 +217,13 @@ namespace OptimaJet.Workflow.SQLite
                 .ToList();
         }
         
+        /// <summary>
+        /// Returns the codes of schemes that have the specified scheme inlined into them.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code to search for in inlined scheme references.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <returns>A list of related scheme codes.</returns>
         public async Task<List<string>> GetRelatedSchemeCodesAsync(SqliteConnection connection, string schemeCode, string tenantId = null)
         {
             string selectText =  $"SELECT * FROM {ObjectName} " + 
@@ -194,6 +243,13 @@ namespace OptimaJet.Workflow.SQLite
             return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).Select(sch=>sch.Code).Distinct().ToList();
         }
 
+        /// <summary>
+        /// Returns the codes of schemes matching any of the specified tags within the tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <param name="tags">The tags to match.</param>
+        /// <returns>A list of matching scheme codes.</returns>
         public async Task<List<string>> GetSchemeCodesByTagsAsync(SqliteConnection connection, string tenantId, IEnumerable<string> tags)
         {
             IEnumerable<string> tagsList = tags?.ToList();
@@ -237,12 +293,30 @@ namespace OptimaJet.Workflow.SQLite
                 .ToList();
         }
 
+        /// <summary>
+        /// Adds tags to a scheme and updates the scheme definition via the builder.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <param name="tags">The tags to add.</param>
+        /// <param name="builder">The workflow builder for updating tag references in the scheme definition.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task AddSchemeTagsAsync(SqliteConnection connection, string schemeCode, string tenantId,
             IEnumerable<string> tags, IWorkflowBuilder builder)
         {
             await UpdateSchemeTagsAsync(connection, schemeCode, tenantId, schemeTags => schemeTags.Concat(tags).ToList(), builder).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Removes tags from a scheme and updates the scheme definition via the builder.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <param name="tags">The tags to remove.</param>
+        /// <param name="builder">The workflow builder for updating tag references in the scheme definition.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public  async Task RemoveSchemeTagsAsync(SqliteConnection connection, string schemeCode,
             string tenantId, IEnumerable<string> tags, IWorkflowBuilder builder)
         {
@@ -250,6 +324,15 @@ namespace OptimaJet.Workflow.SQLite
                 builder).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Sets the tags on a scheme, replacing all existing tags, and updates the scheme definition via the builder.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <param name="tags">The new tags to set.</param>
+        /// <param name="builder">The workflow builder for updating tag references in the scheme definition.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task SetSchemeTagsAsync(SqliteConnection connection,
             string schemeCode,
             string tenantId,

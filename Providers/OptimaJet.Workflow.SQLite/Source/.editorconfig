@@ -1,0 +1,119 @@
+root = false
+
+[*.cs]
+
+###############################
+# StyleCop — disable all by default, enable documentation rules only
+###############################
+dotnet_diagnostic.SA0001.severity = none
+dotnet_diagnostic.SA1000.severity = none
+dotnet_diagnostic.SA1001.severity = none      # Commas should be followed by whitespace
+dotnet_diagnostic.SA1003.severity = none
+dotnet_diagnostic.SA1004.severity = none      # Documentation line should begin with a space
+dotnet_diagnostic.SA1005.severity = none
+dotnet_diagnostic.SA1009.severity = none
+dotnet_diagnostic.SA1010.severity = none
+dotnet_diagnostic.SA1011.severity = none
+dotnet_diagnostic.SA1012.severity = none
+dotnet_diagnostic.SA1013.severity = none
+dotnet_diagnostic.SA1024.severity = none
+dotnet_diagnostic.SA1025.severity = none
+dotnet_diagnostic.SA1028.severity = none
+dotnet_diagnostic.SA1100.severity = none
+dotnet_diagnostic.SA1101.severity = none      # Prefix local calls with this (project convention: no this.)
+dotnet_diagnostic.SA1102.severity = none
+dotnet_diagnostic.SA1106.severity = none
+dotnet_diagnostic.SA1107.severity = none
+dotnet_diagnostic.SA1108.severity = none
+dotnet_diagnostic.SA1110.severity = none
+dotnet_diagnostic.SA1111.severity = none
+dotnet_diagnostic.SA1113.severity = none
+dotnet_diagnostic.SA1114.severity = none
+dotnet_diagnostic.SA1116.severity = none
+dotnet_diagnostic.SA1117.severity = none
+dotnet_diagnostic.SA1118.severity = none
+dotnet_diagnostic.SA1119.severity = none
+dotnet_diagnostic.SA1120.severity = none
+dotnet_diagnostic.SA1121.severity = none
+dotnet_diagnostic.SA1122.severity = none
+dotnet_diagnostic.SA1124.severity = none
+dotnet_diagnostic.SA1127.severity = none
+dotnet_diagnostic.SA1128.severity = none
+dotnet_diagnostic.SA1131.severity = none
+dotnet_diagnostic.SA1132.severity = none
+dotnet_diagnostic.SA1133.severity = none
+dotnet_diagnostic.SA1134.severity = none
+dotnet_diagnostic.SA1136.severity = none
+dotnet_diagnostic.SA1137.severity = none
+dotnet_diagnostic.SA1139.severity = none
+dotnet_diagnostic.SA1200.severity = none      # Using directives should be placed within namespace
+dotnet_diagnostic.SA1201.severity = none
+dotnet_diagnostic.SA1202.severity = none
+dotnet_diagnostic.SA1203.severity = none
+dotnet_diagnostic.SA1204.severity = none
+dotnet_diagnostic.SA1208.severity = none
+dotnet_diagnostic.SA1209.severity = none
+dotnet_diagnostic.SA1210.severity = none
+dotnet_diagnostic.SA1211.severity = none
+dotnet_diagnostic.SA1214.severity = none
+dotnet_diagnostic.SA1300.severity = none
+dotnet_diagnostic.SA1306.severity = none
+dotnet_diagnostic.SA1307.severity = none
+dotnet_diagnostic.SA1308.severity = none
+dotnet_diagnostic.SA1309.severity = none
+dotnet_diagnostic.SA1310.severity = none
+dotnet_diagnostic.SA1311.severity = none
+dotnet_diagnostic.SA1312.severity = none
+dotnet_diagnostic.SA1313.severity = none
+dotnet_diagnostic.SA1314.severity = none
+dotnet_diagnostic.SA1400.severity = none
+dotnet_diagnostic.SA1401.severity = none
+dotnet_diagnostic.SA1402.severity = none
+dotnet_diagnostic.SA1404.severity = none
+dotnet_diagnostic.SA1407.severity = none
+dotnet_diagnostic.SA1408.severity = none
+dotnet_diagnostic.SA1410.severity = none
+dotnet_diagnostic.SA1411.severity = none
+dotnet_diagnostic.SA1413.severity = none
+dotnet_diagnostic.SA1500.severity = none
+dotnet_diagnostic.SA1501.severity = none
+dotnet_diagnostic.SA1502.severity = none
+dotnet_diagnostic.SA1503.severity = none
+dotnet_diagnostic.SA1505.severity = none
+dotnet_diagnostic.SA1506.severity = none
+dotnet_diagnostic.SA1507.severity = none
+dotnet_diagnostic.SA1508.severity = none
+dotnet_diagnostic.SA1509.severity = none
+dotnet_diagnostic.SA1510.severity = none
+dotnet_diagnostic.SA1511.severity = none
+dotnet_diagnostic.SA1512.severity = none
+dotnet_diagnostic.SA1513.severity = none
+dotnet_diagnostic.SA1514.severity = none
+dotnet_diagnostic.SA1515.severity = none
+dotnet_diagnostic.SA1516.severity = none
+dotnet_diagnostic.SA1517.severity = none
+dotnet_diagnostic.SA1518.severity = none
+dotnet_diagnostic.SA1519.severity = none
+dotnet_diagnostic.SA1520.severity = none
+dotnet_diagnostic.SA1642.severity = none
+dotnet_diagnostic.SA1649.severity = none      # File name should match first type name
+
+# Documentation rules — enabled
+dotnet_diagnostic.SA1600.severity = error   # Elements should be documented
+dotnet_diagnostic.SA1601.severity = error   # Partial elements should be documented
+dotnet_diagnostic.SA1602.severity = error   # Enumeration items should be documented
+dotnet_diagnostic.SA1604.severity = error   # Element documentation should have summary
+dotnet_diagnostic.SA1606.severity = error   # Element documentation should have summary text
+dotnet_diagnostic.SA1611.severity = error   # Element parameters should be documented
+dotnet_diagnostic.SA1612.severity = error   # Element parameter documentation should match element parameters
+dotnet_diagnostic.SA1614.severity = error   # Element parameter documentation should have text
+dotnet_diagnostic.SA1615.severity = error   # Element return value should be documented
+dotnet_diagnostic.SA1616.severity = error   # Element return value documentation should have text
+dotnet_diagnostic.SA1629.severity = error   # Documentation text should end with a period
+dotnet_diagnostic.SA1633.severity = none    # File should have header (disabled)
+
+###############################
+# CommentSense                #
+###############################
+dotnet_diagnostic.CSENSE012.severity = warning   # Exception thrown but not documented
+dotnet_diagnostic.CSENSE026.severity = warning   # inheritdoc with no resolvable documented target

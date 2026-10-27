@@ -286,6 +286,7 @@
     "Title": "Actors",
     "Name": "Name",
     "Rule": "Rule",
+    "Expression": "Expression",
     "Value": "Value",
     "ShowPredefinedActors": "Show predefined actors"
   },

@@ -12,4 +12,4 @@ BEGIN
         SUBSTR(hexStr, 17, 4), '-',
         SUBSTR(hexStr, 21)
     ));
-    END
+    END;

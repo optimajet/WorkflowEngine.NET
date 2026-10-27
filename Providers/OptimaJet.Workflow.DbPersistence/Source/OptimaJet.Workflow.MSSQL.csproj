@@ -3,17 +3,10 @@
     <TargetFramework>netstandard2.0</TargetFramework>
     <RootNamespace>OptimaJet.Workflow.MSSQL</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MSSQL</AssemblyName>
-    <Description>
-      Contains dlls for MSSQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with DbPersistenceProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
     <PackageId>WorkflowEngine.NETCore-ProviderForMSSQL</PackageId>
-    <PackageTags>workflow engine, ms sql, for sql</PackageTags>
+    <Description>SQL Server and Azure SQL persistence provider for Workflow Engine by Optimajet. Stores workflow schemes, process instances, parameters, timers, and history, and applies the required database migrations.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp sql-server azure-sql persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerformssql&amp;utm_content=project-website</PackageProjectUrl>
   </PropertyGroup>
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
     <DefineConstants>TRACE;DEBUG</DefineConstants>

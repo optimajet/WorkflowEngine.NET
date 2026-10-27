@@ -1,0 +1,1 @@
+CREATE INDEX `ix_workflowprocessassignment_processid_executor` ON `workflowprocessassignment` (`ProcessId`,`Executor`);

@@ -1,17 +1,10 @@
 <Project Sdk="Microsoft.NET.Sdk">
   <PropertyGroup>
-    <TargetFramework>netstandard2.0</TargetFramework>
+    <TargetFrameworks>netstandard2.1;net472</TargetFrameworks>
     <PackageId>WorkflowEngine.NETCore-ProviderForMongoDB</PackageId>
-    <Description>
-      Contains dlls for MongoDB Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with DbPersistenceProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageTags>workflow engine, mongo, mongodb, for mongodb, for mongo</PackageTags>
+    <Description>MongoDB persistence provider for Workflow Engine by Optimajet. Stores workflow schemes, process instances, parameters, timers, and history and creates its collections and indexes at runtime.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp mongodb cosmos-db persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerformongodb&amp;utm_content=project-website</PackageProjectUrl>
     <RootNamespace>OptimaJet.Workflow.MongoDB</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MongoDB</AssemblyName>
   </PropertyGroup>

@@ -1,0 +1,61 @@
+BEGIN
+    DELETE FROM WORKFLOWPROCESSINSTANCEP
+    WHERE PROCESSID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWPROCESSTRANSITIONH
+    WHERE PROCESSID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWPROCESSTIMER
+    WHERE PROCESSID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWINBOX
+    WHERE PROCESSID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWAPPROVALHISTORY
+    WHERE PROCESSID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWPROCESSINSTANCES
+    WHERE ID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWPROCESSINSTANCE
+    WHERE ID = HEXTORAW('805A2DF0F4A24F468098C349CE2AEA7A');
+
+    DELETE FROM WORKFLOWPROCESSSCHEME
+    WHERE ID = HEXTORAW('A1AFF77BD5AF2D48B0905A9CE449EB97')
+       OR SCHEMECODE = 'OptimaJet.Workflow.Plugins.AssigmentPlugin.CheckDeadlines'
+       OR ROOTSCHEMECODE = 'OptimaJet.Workflow.Plugins.AssigmentPlugin.CheckDeadlines';
+END;
+
+DECLARE
+    v_table_exists PLS_INTEGER;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_table_exists
+    FROM ALL_TABLES
+    WHERE OWNER = SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA')
+      AND TABLE_NAME = 'VERSIONINFO';
+
+    IF v_table_exists > 0 THEN
+        EXECUTE IMMEDIATE q'[
+        MERGE INTO VersionInfo target
+        USING (
+            SELECT
+                710 AS Version,
+                SYSDATE AS AppliedOn,
+                'Migration710RemoveAssignmentCheckDeadlinesSystemProcess' AS Description
+            FROM DUAL
+        ) source
+        ON (target.Version = source.Version)
+        WHEN NOT MATCHED THEN
+            INSERT (Version, AppliedOn, Description)
+            VALUES (
+                       source.Version,
+                       source.AppliedOn,
+                       source.Description
+                   )
+        ]';
+    END IF;
+END;
+/
+
+COMMIT;

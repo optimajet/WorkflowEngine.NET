@@ -4,8 +4,16 @@ using OptimaJet.Workflow.Core.Entities;
 
 namespace OptimaJet.Workflow.SQLite.Models
 {
+    /// <summary>
+    /// Database object for workflow synchronization lock operations.
+    /// </summary>
     public class WorkflowSync : DbObject<SyncEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowSync"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowSync(string schemaName, int commandTimeout) : base(schemaName, "WorkflowSync", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -15,6 +23,12 @@ namespace OptimaJet.Workflow.SQLite.Models
             });
         }
 
+        /// <summary>
+        /// Gets a synchronization lock entity by its name.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="name">The lock name.</param>
+        /// <returns>The sync entity, or <c>null</c> if not found.</returns>
         public async Task<SyncEntity> GetByNameAsync(SqliteConnection connection, string name)
         {
             string selectText = $"SELECT * FROM {ObjectName} " + 
@@ -25,6 +39,15 @@ namespace OptimaJet.Workflow.SQLite.Models
             return locks.FirstOrDefault();
         }
 
+        /// <summary>
+        /// Updates the synchronization lock value using optimistic concurrency.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="name">The lock name.</param>
+        /// <param name="oldLock">The current lock value.</param>
+        /// <param name="newLock">The new lock value to set.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected (0 if the lock was changed by another process).</returns>
         public async Task<int> UpdateLockAsync(SqliteConnection connection, string name, Guid oldLock, Guid newLock, SqliteTransaction transaction = null)
         {
             string command = $"UPDATE {ObjectName} SET Lock = @newlock " + 

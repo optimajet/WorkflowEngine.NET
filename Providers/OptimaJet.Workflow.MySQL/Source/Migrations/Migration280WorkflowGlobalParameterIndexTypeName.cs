@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(280)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateIndex_WorkflowGlobalParameter_TypeName_2.sql")]
+[ProductVersion("WorkflowEngine", "14.0.0")]
 public class Migration280WorkflowGlobalParameterIndexTypeName : Migration
 {
     public override void Up()

@@ -19,4 +19,4 @@ FROM `workflowprocessinstance`
 WHERE `workflowprocessscheme`.`Id` IS NULL;
 
 RETURN st;
-END
+END;

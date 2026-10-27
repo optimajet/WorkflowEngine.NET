@@ -5,8 +5,16 @@ using OptimaJet.Workflow.Core.Entities;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow process timer operations.
+    /// </summary>
     public class WorkflowProcessTimer : DbObject<ProcessTimerEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowProcessTimer"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowProcessTimer(string schemaName, int commandTimeout) : base(schemaName, "WorkflowProcessTimer", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -21,6 +29,13 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Deletes all inactive (ignored) timers for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteInactiveByProcessIdAsync(SqliteConnection connection, Guid processId, SqliteTransaction transaction = null)
         {
             var pProcessId = new SqliteParameter("processid", DbType.String) {Value = ToDbValue(processId, DbType.Guid)};
@@ -34,6 +49,14 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Deletes timers for the specified process, excluding those in the ignore list.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="timersIgnoreList">Timer names to exclude from deletion, or <c>null</c> to delete all.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByProcessIdAsync(SqliteConnection connection, Guid processId, List<string> timersIgnoreList = null, SqliteTransaction transaction = null)
         {
             var pProcessId = new SqliteParameter("processid", DbType.String) {Value = ToDbValue(processId, DbType.Guid)};
@@ -66,6 +89,13 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects a timer by process identifier and timer name.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="name">The timer name.</param>
+        /// <returns>The matching timer entity, or <c>null</c> if not found.</returns>
         public async Task<ProcessTimerEntity> SelectByProcessIdAndNameAsync(SqliteConnection connection, Guid processId, string name)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -76,6 +106,12 @@ namespace OptimaJet.Workflow.SQLite
             return (await SelectAsync(connection, selectText, p1, p2).ConfigureAwait(false)).FirstOrDefault();
         }
 
+        /// <summary>
+        /// Selects all timers for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <returns>An enumerable of timer entities.</returns>
         public async Task<IEnumerable<ProcessTimerEntity>> SelectByProcessIdAsync(SqliteConnection connection, Guid processId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -86,6 +122,12 @@ namespace OptimaJet.Workflow.SQLite
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects all active (non-ignored) timers for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <returns>An enumerable of active timer entities.</returns>
         public async Task<IEnumerable<ProcessTimerEntity>> SelectActiveByProcessIdAsync(SqliteConnection connection, Guid processId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -97,6 +139,12 @@ namespace OptimaJet.Workflow.SQLite
             return await SelectAsync(connection, selectText, p1).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Marks a timer as ignored (inactive) by its identifier.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="timerId">The timer identifier.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> SetTimerIgnoreAsync(SqliteConnection connection, Guid timerId)
         {
             string command = $"UPDATE {ObjectName} SET " +
@@ -107,6 +155,13 @@ namespace OptimaJet.Workflow.SQLite
             return await ExecuteCommandNonQueryAsync(connection, command, p1).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects the top timers that are due for execution (next execution time is at or before the specified time).
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="top">The maximum number of timers to return.</param>
+        /// <param name="now">The current time to compare against.</param>
+        /// <returns>An array of timer entities ready for execution.</returns>
         public async Task<ProcessTimerEntity[]> GetTopTimersToExecuteAsync(SqliteConnection connection, int top, DateTime now)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +

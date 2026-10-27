@@ -1,0 +1,47 @@
+CREATE TABLE IF NOT EXISTS `workflowprocesstransitionhistory` (
+    `Id` binary(16) NOT NULL,
+    `ProcessId` binary(16) NOT NULL,
+    `ExecutorIdentityId` varchar(256) default NULL,
+    `ActorIdentityId` varchar(256) default NULL,
+    `ExecutorName` varchar(256) default NULL,
+    `ActorName` varchar(256) default NULL,
+    `FromActivityName` varchar(256) NOT NULL,
+    `ToActivityName` varchar(256) NOT NULL,
+    `ToStateName` varchar(256) default NULL,
+    `TransitionTime` datetime NOT NULL,
+    `TransitionClassifier` varchar(256) NOT NULL,
+    `FromStateName` varchar(256) default NULL,
+    `TriggerName` varchar(256) default NULL,
+    `IsFinalised` bit(1) NOT NULL,
+    `StartTransitionTime`  datetime,
+    `TransitionDuration` bigint,
+    PRIMARY KEY  (`Id`),
+    KEY `ProcessId` (`ProcessId`),
+    KEY `ExecutorIdentityId` (`ExecutorIdentityId`),
+    KEY `ActorIdentityId` (`ActorIdentityId`)
+);
+
+-- DbScriptPublisher: mark migration as applied
+SET @sql = (
+    SELECT IF(
+               EXISTS (
+                   SELECT 1
+                   FROM information_schema.tables
+                   WHERE table_schema = DATABASE()
+                     AND table_name = 'VersionInfo'
+                     AND table_type = 'BASE TABLE'
+               ),
+               'INSERT INTO `VersionInfo` (`Version`, `AppliedOn`, `Description`)
+                SELECT 150, CURRENT_TIMESTAMP, ''Migration150CreateTable_WorkflowProcessTransitionHistory''
+                WHERE NOT EXISTS (
+                    SELECT 1
+                    FROM `VersionInfo`
+                    WHERE `Version` = 150
+                )',
+               'DO 0'
+           )
+);
+
+PREPARE stmt FROM @sql;
+EXECUTE stmt;
+DEALLOCATE PREPARE stmt;

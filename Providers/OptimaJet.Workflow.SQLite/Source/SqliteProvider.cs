@@ -23,43 +23,115 @@ using WorkflowSync = OptimaJet.Workflow.SQLite.Models.WorkflowSync;
 
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// SQLite-based implementation of <see cref="IWorkflowProvider"/> and <see cref="IMigratable"/>
+    /// that provides persistence for workflow processes, schemes, timers, approval history, and forms.
+    /// </summary>
     public class SqliteProvider : IWorkflowProvider, IMigratable
     {
         private WorkflowRuntime _runtime;
 
+        /// <inheritdoc/>
         public string Id => PersistenceProviderId.Sqlite;
-        
+
         private PersistenceProviderOptions Options { get; }
 
+        /// <inheritdoc/>
         public string ConnectionString => Options.ConnectionString;
 
-        //Entity Providers (DbObject<TEntity>)
+        /// <summary>
+        /// Gets the database object for workflow process instances.
+        /// </summary>
         public WorkflowProcessInstance WorkflowProcessInstance { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow process instance statuses.
+        /// </summary>
         public WorkflowProcessInstanceStatus WorkflowProcessInstanceStatus { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow process instance persistence parameters.
+        /// </summary>
         public WorkflowProcessInstancePersistence WorkflowProcessInstancePersistence { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow process transition history.
+        /// </summary>
         public WorkflowProcessTransitionHistory WorkflowProcessTransitionHistory { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow process timers.
+        /// </summary>
         public WorkflowProcessTimer WorkflowProcessTimer { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow inbox items.
+        /// </summary>
         public WorkflowInbox WorkflowInbox { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow approval history.
+        /// </summary>
         public WorkflowApprovalHistory WorkflowApprovalHistory { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow global parameters.
+        /// </summary>
         public WorkflowGlobalParameter WorkflowGlobalParameter { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow process schemes.
+        /// </summary>
         public WorkflowProcessScheme WorkflowProcessScheme { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow runtimes.
+        /// </summary>
         public SQLite.Models.WorkflowRuntime WorkflowRuntime { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow schemes.
+        /// </summary>
         public WorkflowScheme WorkflowScheme { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow synchronization locks.
+        /// </summary>
         public WorkflowSync WorkflowSync { get; }
+
+        /// <summary>
+        /// Gets the database object for process instance tree items.
+        /// </summary>
         public ProcessInstanceTree ProcessInstanceTree { get; }
+
+        /// <summary>
+        /// Gets the database object for workflow forms.
+        /// </summary>
         public Models.WorkflowForm WorkflowForm { get; }
 
+        /// <inheritdoc/>
         public virtual void Init(WorkflowRuntime runtime)
         {
             _runtime = runtime;
         }
 
+        /// <summary>
+        /// Initializes a new instance of <see cref="SqliteProvider"/> with the specified connection string.
+        /// </summary>
+        /// <param name="connectionString">The SQLite connection string.</param>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="writeToHistory">Whether to write transition history.</param>
+        /// <param name="writeSubProcessToRoot">Whether to write subprocess data to the root process.</param>
         public SqliteProvider(string connectionString, string schemaName = "main", bool writeToHistory = true,
             bool writeSubProcessToRoot = false) : this(new PersistenceProviderOptions(connectionString)
         {
             SchemaName = schemaName, WriteToHistory = writeToHistory, WriteSubProcessToRoot = writeSubProcessToRoot
         }) {}
-        
+
+        /// <summary>
+        /// Initializes a new instance of <see cref="SqliteProvider"/> with the specified options.
+        /// </summary>
+        /// <param name="options">The persistence provider options.</param>
         public SqliteProvider(PersistenceProviderOptions options)
         {
             if (options == null)
@@ -89,18 +161,21 @@ namespace OptimaJet.Workflow.SQLite
 
         #region IPersistenceProvider
 
+        /// <inheritdoc/>
         public virtual async Task DeleteInactiveTimersByProcessIdAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessTimer.DeleteInactiveByProcessIdAsync(connection, processId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteTimerAsync(Guid timerId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessTimer.DeleteAsync(connection, timerId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<Guid>> GetRunningProcessesAsync(string runtimeId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -108,6 +183,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<WorkflowRuntimeModel> CreateWorkflowRuntimeAsync(string runtimeId, RuntimeStatus status)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -118,18 +194,21 @@ namespace OptimaJet.Workflow.SQLite
             return new WorkflowRuntimeModel {Lock = runtime.Lock, RuntimeId = runtimeId, Status = status};
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteWorkflowRuntimeAsync(string name)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowRuntime.DeleteAsync(connection, name).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task DropUnusedWorkflowProcessSchemeAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessScheme.DeleteUnusedAsync(connection).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<ProcessInstanceItem>> GetProcessInstancesAsync(
             List<(string parameterName, SortDirection sortDirection)> orderParameters = null, Paging paging = null)
         {
@@ -165,6 +244,7 @@ namespace OptimaJet.Workflow.SQLite
             }).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetProcessInstancesCountAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -172,6 +252,7 @@ namespace OptimaJet.Workflow.SQLite
             return await WorkflowProcessInstance.GetCountAsync(connection).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<SchemeItem>> GetSchemesAsync(
             List<(string parameterName, SortDirection sortDirection)> orderParameters = null,
             Paging paging = null)
@@ -190,6 +271,7 @@ namespace OptimaJet.Workflow.SQLite
             }).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetSchemesCountAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -197,6 +279,7 @@ namespace OptimaJet.Workflow.SQLite
             return await WorkflowScheme.GetCountAsync(connection).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<WorkflowRuntimeModel> UpdateWorkflowRuntimeStatusAsync(WorkflowRuntimeModel runtime, RuntimeStatus status)
         {
             Tuple<int, WorkflowRuntimeModel> res =
@@ -211,6 +294,7 @@ namespace OptimaJet.Workflow.SQLite
             return res.Item2;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<(bool Success, WorkflowRuntimeModel UpdatedModel)> UpdateWorkflowRuntimeRestorerAsync(
             WorkflowRuntimeModel runtime,
             string restorerId)
@@ -222,18 +306,21 @@ namespace OptimaJet.Workflow.SQLite
             return (res.Item1 == 1, res.Item2);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> MultiServerRuntimesExistAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowRuntime.MultiServerRuntimesExistAsync(connection).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> ActiveMultiServerRuntimesCountAsync(string currentRuntimeId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowRuntime.GetActiveMultiServerRuntimesCountAsync(connection, currentRuntimeId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task InitializeProcessAsync(ProcessInstance processInstance)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -262,6 +349,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessInstance.InsertAsync(connection, newProcess).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task BindProcessToNewSchemeAsync(ProcessInstance processInstance)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -279,18 +367,21 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessInstance.UpdateAsync(connection, oldProcess).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task FillProcessParametersAsync(ProcessInstance processInstance)
         {
             processInstance.AddParameters(await GetProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
                 .ConfigureAwait(false));
         }
 
+        /// <inheritdoc/>
         public virtual async Task FillPersistedProcessParametersAsync(ProcessInstance processInstance)
         {
             processInstance.AddParameters(await GetPersistedProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
                 .ConfigureAwait(false));
         }
 
+        /// <inheritdoc/>
         public virtual async Task FillPersistedProcessParameterAsync(ProcessInstance processInstance, string parameterName)
         {
             var persistedProcessParameter = await GetPersistedProcessParameterAsync(processInstance.ProcessId,
@@ -306,6 +397,7 @@ namespace OptimaJet.Workflow.SQLite
             processInstance.AddParameter(persistedProcessParameter);
         }
 
+        /// <inheritdoc/>
         public virtual async Task FillSystemProcessParametersAsync(ProcessInstance processInstance)
         {
             processInstance.AddParameters(await GetSystemProcessParametersAsync(processInstance.ProcessId, processInstance.ProcessScheme)
@@ -372,12 +464,14 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public virtual async Task SavePersistenceParametersAsync(ProcessInstance processInstance)
         {
             var batch = PersistenceParametersBatch.CreateFromProcessInstance(processInstance);
             await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SavePersistenceParameterAsync(ProcessInstance processInstance, string parameterName)
         {
             var batch = PersistenceParametersBatch.CreateForSingleParameter(processInstance, parameterName);
@@ -388,6 +482,7 @@ namespace OptimaJet.Workflow.SQLite
             await SaveParameterBatchAsync(batch).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task RemoveParameterAsync(ProcessInstance processInstance, string parameterName)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -395,6 +490,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetProcessStatusAsync(Guid processId, ProcessStatus newStatus)
         {
             if (newStatus == ProcessStatus.Running)
@@ -407,32 +503,38 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetWorkflowInitializedAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Initialized, true, processInstance.TenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetWorkflowIdledAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Idled, false, processInstance.TenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetWorkflowRunningAsync(ProcessInstance processInstance)
         {
             Guid processId = processInstance.ProcessId;
             await SetRunningStatusAsync(processId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetWorkflowFinalizedAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Finalized, false, processInstance.TenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetWorkflowTerminatedAsync(ProcessInstance processInstance)
         {
             await SetCustomStatusAsync(processInstance.ProcessId, ProcessStatus.Terminated, false, processInstance.TenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task WriteInitialRecordToHistoryAsync(ProcessInstance processInstance)
         {
             if (!Options.WriteToHistory) { return; }
@@ -460,6 +562,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task UpdatePersistenceStateAsync(ProcessInstance processInstance, TransitionDefinition transition)
         {
             DateTime startTransitionTime = processInstance.StartTransitionTime ?? _runtime.RuntimeDateTimeNow;
@@ -564,18 +667,21 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessTransitionHistory.InsertAsync(connection, history).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> IsProcessExistsAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowProcessInstance.SelectByKeyAsync(connection, processId).ConfigureAwait(false) != null;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<bool> IsProcessExistsAsync(Guid processId, string tenantId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowProcessInstance.IsProcessExistsAsync(connection, processId, tenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<ProcessStatus> GetInstanceStatusAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -838,6 +944,7 @@ namespace OptimaJet.Workflow.SQLite
             return processInstance;
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteProcessAsync(Guid[] processIds)
         {
             foreach (Guid processId in processIds)
@@ -846,6 +953,7 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public virtual async Task DeleteProcessAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -863,6 +971,7 @@ namespace OptimaJet.Workflow.SQLite
             transaction.Commit();
         }
 
+        /// <inheritdoc/>
         public virtual async Task RegisterTimerAsync(Guid processId, Guid rootProcessId, string name, DateTime nextExecutionDateTime,
             string tenantId, bool notOverrideIfExists)
         {
@@ -891,18 +1000,21 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public virtual async Task ClearTimersAsync(Guid processId, List<string> timersIgnoreList)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessTimer.DeleteByProcessIdAsync(connection, processId, timersIgnoreList).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> SetTimerIgnoreAsync(Guid timerId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowProcessTimer.SetTimerIgnoreAsync(connection, timerId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<Core.Model.WorkflowTimer>> GetTopTimersToExecuteAsync(int top)
         {
             if (top <= 0)
@@ -930,11 +1042,13 @@ namespace OptimaJet.Workflow.SQLite
             }).ToList();
         }
 
+        /// <inheritdoc/>
         public virtual Task SaveGlobalParameterAsync<T>(string type, string name, T value)
         {
             return SaveGlobalParameterAsync(new TenantGlobalParameterKey { Type = type, TenantId = null, Name = name }, value);
         }
 
+        /// <inheritdoc/>
         public virtual Task SaveTenantGlobalParameterAsync<T>(TenantGlobalParameterKey key, T value)
         {
             return SaveGlobalParameterAsync(key, value);
@@ -964,11 +1078,13 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public virtual Task<T> LoadGlobalParameterAsync<T>(string type, string name)
         {
             return LoadGlobalParameterAsync<T>(new TenantGlobalParameterKey { Type = type, TenantId = null, Name = name });
         }
 
+        /// <inheritdoc/>
         public virtual Task<T> LoadTenantGlobalParameterAsync<T>(TenantGlobalParameterKey key)
         {
             return LoadGlobalParameterAsync<T>(key);
@@ -986,11 +1102,13 @@ namespace OptimaJet.Workflow.SQLite
                     : Newtonsoft.Json.JsonConvert.DeserializeObject<T>(parameter.Value);
         }
 
+        /// <inheritdoc/>
         public Task<Dictionary<string, T>> LoadGlobalParametersWithNamesAsync<T>(string type, Sorting sort = null)
         {
             return LoadGlobalParametersWithNamesAsync<T>(new TenantGlobalParameterScope { Type = type, TenantId = null }, sort);
         }
 
+        /// <inheritdoc/>
         public Task<Dictionary<string, T>> LoadTenantGlobalParametersWithNamesAsync<T>(TenantGlobalParameterScope scope, Sorting sort = null)
         {
             return LoadGlobalParametersWithNamesAsync<T>(scope, sort);
@@ -1010,11 +1128,13 @@ namespace OptimaJet.Workflow.SQLite
             return dict;
         }
 
+        /// <inheritdoc/>
         public virtual Task<List<T>> LoadGlobalParametersAsync<T>(string type, Sorting sort = null)
         {
             return LoadGlobalParametersAsync<T>(new TenantGlobalParameterScope { Type = type, TenantId = null }, sort);
         }
 
+        /// <inheritdoc/>
         public virtual Task<List<T>> LoadTenantGlobalParametersAsync<T>(TenantGlobalParameterScope scope, Sorting sort = null)
         {
             return LoadGlobalParametersAsync<T>(scope, sort);
@@ -1029,12 +1149,14 @@ namespace OptimaJet.Workflow.SQLite
             return parameters.Select(p => Newtonsoft.Json.JsonConvert.DeserializeObject<T>(p.Value)).ToList();
         }
 
+        /// <inheritdoc/>
         public virtual Task<PagedResponse<T>> LoadGlobalParametersWithPagingAsync<T>(string type, Paging paging,
             string name = null, Sorting sort = null)
         {
             return LoadGlobalParametersWithPagingAsync<T>(new TenantGlobalParameterScope { Type = type, TenantId = null }, paging, name, sort);
         }
 
+        /// <inheritdoc/>
         public virtual Task<PagedResponse<T>> LoadTenantGlobalParametersWithPagingAsync<T>(TenantGlobalParameterScope scope, Paging paging,
             Sorting sort = null)
         {
@@ -1057,16 +1179,19 @@ namespace OptimaJet.Workflow.SQLite
             };
         }
 
+        /// <inheritdoc/>
         public virtual Task DeleteGlobalParametersAsync(string type, string name = null)
         {
             return DeleteGlobalParametersAsync(new TenantGlobalParameterScope { Type = type, TenantId = null }, name);
         }
 
+        /// <inheritdoc/>
         public virtual Task DeleteTenantGlobalParametersAsync(TenantGlobalParameterScope scope)
         {
             return DeleteGlobalParametersAsync(scope, null);
         }
 
+        /// <inheritdoc/>
         public virtual Task DeleteTenantGlobalParameterAsync(TenantGlobalParameterKey key)
         {
             return DeleteGlobalParametersAsync(new TenantGlobalParameterScope { Type = key.Type, TenantId = key.TenantId }, key.Name);
@@ -1078,6 +1203,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowGlobalParameter.DeleteByTypeAndNameAsync(connection, scope.Type, name, scope.TenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<ProcessHistoryItem>> GetProcessHistoryAsync(Guid processId, Paging paging = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1103,6 +1229,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetProcessHistoryCountAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1110,6 +1237,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<ProcessTimer>> GetTimersForProcessAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1117,12 +1245,14 @@ namespace OptimaJet.Workflow.SQLite
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<IProcessInstanceTreeItem>> GetProcessInstanceTreeAsync(Guid rootProcessId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await ProcessInstanceTree.GetProcessTreeItemsByRootProcessId(connection, rootProcessId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<ProcessTimer>> GetActiveTimersForProcessAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1130,12 +1260,14 @@ namespace OptimaJet.Workflow.SQLite
             return timers.Select(t => new ProcessTimer(t.Id, t.Name, t.NextExecutionDateTime)).ToList();
         }
 
+        /// <inheritdoc/>
         public virtual async Task<WorkflowRuntimeModel> GetWorkflowRuntimeModelAsync(string runtimeId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowRuntime.GetWorkflowRuntimeStatusAsync(connection, runtimeId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<int> SendRuntimeLastAliveSignalAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1143,6 +1275,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<DateTime?> GetNextTimerDateAsync(TimerCategory timerCategory, int timerInterval)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1193,6 +1326,7 @@ namespace OptimaJet.Workflow.SQLite
             return result;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<WorkflowRuntimeModel>> GetWorkflowRuntimesAsync()
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1233,6 +1367,7 @@ namespace OptimaJet.Workflow.SQLite
 
         #region ISchemePersistenceProvider
 
+        /// <inheritdoc/>
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeByProcessIdAsync(Guid processId)
 
         {
@@ -1254,6 +1389,7 @@ namespace OptimaJet.Workflow.SQLite
             return schemeDefinition;
         }
 
+        /// <inheritdoc/>
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeBySchemeIdAsync(Guid schemeId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1267,6 +1403,7 @@ namespace OptimaJet.Workflow.SQLite
             return ConvertToSchemeDefinition(processScheme);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<SchemeDefinition<XElement>> GetProcessSchemeWithParametersAsync(string schemeCode, Guid? rootSchemeId,
             bool ignoreObsolete, string tenantId = null)
         {
@@ -1289,12 +1426,14 @@ namespace OptimaJet.Workflow.SQLite
                 : throw SchemeNotFoundException.Create(schemeCode, SchemeLocation.WorkflowProcessScheme);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetSchemeIsObsoleteAsync(string schemeCode, string tenantId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowProcessScheme.SetObsoleteAsync(connection, schemeCode, tenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<SchemeDefinition<XElement>> SaveSchemeAsync(SchemeDefinition<XElement> scheme)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1335,6 +1474,7 @@ namespace OptimaJet.Workflow.SQLite
             return ConvertToSchemeDefinition(newProcessScheme);
         }
 
+        /// <inheritdoc/>
         public virtual async Task UpsertSchemeAsync(SchemeDefinition<XElement> scheme)
         {
             var newProcessScheme = new ProcessSchemeEntity
@@ -1355,6 +1495,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowProcessScheme.UpsertAsync(connection, newProcessScheme).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SaveSchemeAsync(string schemaCode, bool canBeInlined, List<string> inlinedSchemes, string scheme,
             List<string> tags, string tenantId = null)
         {
@@ -1373,6 +1514,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowScheme.UpsertAsync(connection, wfScheme).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<XElement> GetSchemeAsync(string code, string tenantId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1386,97 +1528,115 @@ namespace OptimaJet.Workflow.SQLite
             return XElement.Parse(scheme.Scheme);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> GetInlinedSchemeCodesAsync(string tenantId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowScheme.GetInlinedSchemeCodesAsync(connection, tenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> GetRelatedByInliningSchemeCodesAsync(string schemeCode, string tenantId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowScheme.GetRelatedSchemeCodesAsync(connection, schemeCode, tenantId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> SearchSchemesByTagsAsync(params string[] tags)
         {
             return await SearchSchemesByTagsAsync(tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> SearchSchemesByTagsAsync(IEnumerable<string> tags)
         {
             return await SearchSchemesByTagsAsync(null, tags).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> SearchSchemesByTagsAsync(string tenantId, IEnumerable<string> tags)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             return await WorkflowScheme.GetSchemeCodesByTagsAsync(connection, tenantId, tags).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task<List<string>> SearchSchemesByTagsInTenantAsync(string tenantId, params string[] tags)
         {
             return await SearchSchemesByTagsAsync(tenantId, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task AddSchemeTagsAsync(string schemeCode, params string[] tags)
         {
             await AddSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task AddSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             await AddSchemeTagsAsync(schemeCode, null, tags).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task AddSchemeTagsAsync(string schemeCode, string tenantId, IEnumerable<string> tags)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowScheme.AddSchemeTagsAsync(connection, schemeCode, tenantId, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task AddSchemeTagsInTenantAsync(string schemeCode, string tenantId, params string[] tags)
         {
             await AddSchemeTagsAsync(schemeCode, tenantId, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task RemoveSchemeTagsAsync(string schemeCode, params string[] tags)
         {
             await RemoveSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task RemoveSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             await RemoveSchemeTagsAsync(schemeCode, null, tags).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task RemoveSchemeTagsAsync(string schemeCode, string tenantId, IEnumerable<string> tags)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowScheme.RemoveSchemeTagsAsync(connection, schemeCode, tenantId, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task RemoveSchemeTagsInTenantAsync(string schemeCode, string tenantId, params string[] tags)
         {
             await RemoveSchemeTagsAsync(schemeCode, tenantId, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetSchemeTagsAsync(string schemeCode, params string[] tags)
         {
             await SetSchemeTagsAsync(schemeCode, tags?.AsEnumerable()).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetSchemeTagsAsync(string schemeCode, IEnumerable<string> tags)
         {
             await SetSchemeTagsAsync(schemeCode, null, tags).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetSchemeTagsAsync(string schemeCode, string tenantId, IEnumerable<string> tags)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowScheme.SetSchemeTagsAsync(connection, schemeCode, tenantId, tags, _runtime.Builder).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task SetSchemeTagsInTenantAsync(string schemeCode, string tenantId, params string[] tags)
         {
             await SetSchemeTagsAsync(schemeCode, tenantId, tags?.AsEnumerable()).ConfigureAwait(false);
@@ -1486,6 +1646,7 @@ namespace OptimaJet.Workflow.SQLite
 
         #region IWorkflowGenerator
 
+        /// <inheritdoc/>
         public virtual async Task<XElement> GenerateAsync(string schemeCode, string tenantId = null)
         {
             return await GetSchemeAsync(schemeCode, tenantId).ConfigureAwait(false);
@@ -1495,9 +1656,11 @@ namespace OptimaJet.Workflow.SQLite
 
         #region Bulk methods
 
+        /// <inheritdoc/>
         public bool IsBulkOperationsSupported => false;
 
 #pragma warning disable 1998
+        /// <inheritdoc/>
         public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, ProcessStatus status, CancellationToken token)
 #pragma warning restore 1998
         {
@@ -1505,6 +1668,7 @@ namespace OptimaJet.Workflow.SQLite
         }
 
 #pragma warning disable 1998
+        /// <inheritdoc/>
         public virtual async Task BulkInitProcessesAsync(List<ProcessInstance> instances, List<TimerToRegister> timers,
             ProcessStatus status, CancellationToken token)
 #pragma warning restore 1998
@@ -1544,12 +1708,14 @@ namespace OptimaJet.Workflow.SQLite
 
         #region IApprovalProvider
 
+        /// <inheritdoc/>
         public virtual async Task DropWorkflowInboxAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
             await WorkflowInbox.DeleteByProcessIdAsync(connection, processId).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task InsertInboxAsync(List<InboxItem> newActors)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1557,6 +1723,7 @@ namespace OptimaJet.Workflow.SQLite
             await WorkflowInbox.InsertAllAsync(connection, inboxItems).ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetInboxCountByProcessIdAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1564,6 +1731,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetInboxCountByIdentityIdAsync(string identityId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1571,6 +1739,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging = null, CultureInfo culture = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1584,6 +1753,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<InboxItem>> GetInboxByIdentityIdAsync(string identityId, Paging paging = null, CultureInfo culture = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1597,6 +1767,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task FillApprovalHistoryAsync(ApprovalHistoryItem approvalHistoryItem)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1624,6 +1795,7 @@ namespace OptimaJet.Workflow.SQLite
         }
 
 
+        /// <inheritdoc/>
         public async Task DropApprovalHistoryByProcessIdAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1631,6 +1803,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task DropApprovalHistoryByIdentityIdAsync(string identityId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1638,6 +1811,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public virtual async Task DropEmptyApprovalHistoryAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1651,6 +1825,7 @@ namespace OptimaJet.Workflow.SQLite
             }
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetApprovalHistoryCountByProcessIdAsync(Guid processId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1658,6 +1833,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetApprovalHistoryCountByIdentityIdAsync(string identityId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1665,6 +1841,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByProcessIdAsync(Guid processId, Paging paging = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1675,6 +1852,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<List<ApprovalHistoryItem>> GetApprovalHistoryByIdentityIdAsync(string identityId, Paging paging = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1686,6 +1864,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false)).Select(WorkflowApprovalHistory.FromDB).ToList();
         }
 
+        /// <inheritdoc/>
         public async Task<int> GetOutboxCountByIdentityIdAsync(string identityId)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1693,6 +1872,7 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <inheritdoc/>
         public async Task<List<OutboxItem>> GetOutboxByIdentityIdAsync(string identityId, Paging paging = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);
@@ -1704,6 +1884,7 @@ namespace OptimaJet.Workflow.SQLite
         
         #region IFormDataProvider
 
+        /// <inheritdoc/>
         public async Task<WorkflowForm> GetFormAsync(string name, int? version = null, string tenantId = null)
         {
             using var connection = new SqliteConnection(Options.ConnectionString);

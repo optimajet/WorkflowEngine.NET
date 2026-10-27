@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(310)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateIndex_WorkflowProcessScheme_SchemeCodeIsObsolete.sql")]
+[ProductVersion("WorkflowEngine", "21.0.0")]
 public class Migration310CreateIndexWorkflowProcessSchemeSchemeCodeIsObsolete : Migration
 {
     public override void Up()

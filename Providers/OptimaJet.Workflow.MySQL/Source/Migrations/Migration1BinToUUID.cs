@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(1)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateFunction_BinToUUID.sql")]
+[ProductVersion("WorkflowEngine", "17.3.0")]
 public class Migration1BinToUUID : Migration
 {
     public override void Up()

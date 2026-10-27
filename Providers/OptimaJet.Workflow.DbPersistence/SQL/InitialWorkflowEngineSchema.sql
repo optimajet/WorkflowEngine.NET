@@ -268,6 +268,38 @@ BEGIN
 	PRINT 'WorkflowProcessTimer CREATE TABLE'
 END
 
+IF NOT EXISTS (
+        SELECT 1
+        FROM [INFORMATION_SCHEMA].[TABLES]
+        WHERE [TABLE_NAME] = N'WorkflowProcessAssignment'
+    )
+BEGIN
+CREATE TABLE WorkflowProcessAssignment (
+    [Id] UNIQUEIDENTIFIER NOT NULL CONSTRAINT PK_WorkflowProcessAssignment PRIMARY KEY NONCLUSTERED
+    ,[AssignmentCode] NVARCHAR(2048) NOT NULL
+    ,[ProcessId] UNIQUEIDENTIFIER NOT NULL
+            ,[Name] NVARCHAR(max) NOT NULL
+            ,[Description] NVARCHAR(max)
+            ,[StatusState] NVARCHAR(max) NOT NULL
+            ,[DateCreation] DATETIME NOT NULL
+            ,[DateStart] DATETIME
+            ,[DateFinish] DATETIME
+            ,[DeadlineToStart] DATETIME
+            ,[DeadlineToComplete] DATETIME
+            ,[Executor] NVARCHAR(256) NOT NULL
+            ,[Observers] NVARCHAR(max)
+            ,[Tags] NVARCHAR(max)
+            ,[IsActive] BIT NOT NULL
+            ,[IsDeleted] BIT NOT NULL
+        )
+
+CREATE INDEX IX_Assignment_ProcessId ON WorkflowProcessAssignment (ProcessId)
+CREATE INDEX IX_Assignment_AssignmentCode ON WorkflowProcessAssignment (AssignmentCode)
+CREATE INDEX IX_Assignment_Executor ON WorkflowProcessAssignment (Executor)
+CREATE INDEX IX_Assignment_ProcessId_Executor ON WorkflowProcessAssignment (ProcessId, Executor)
+
+    PRINT 'WorkflowProcessAssignment CREATE TABLE'
+END
 
 IF NOT EXISTS (
 		SELECT 1

@@ -9,6 +9,9 @@
     <Nullable>disable</Nullable>
     <TreatWarningsAsErrors>true</TreatWarningsAsErrors>
     <NoWarn>1701;1702;8002;NU1903</NoWarn>
+    <GenerateDocumentationFile>true</GenerateDocumentationFile>
+    <WarningsAsErrors>$(WarningsAsErrors);CS1570;CS1571;CS1572;CS1573;CS1574;CS1580;CS1581;CS1582;CS1583;CS1584;CS1591</WarningsAsErrors>
+    <WarningsNotAsErrors>$(WarningsNotAsErrors);CSENSE012;CSENSE026</WarningsNotAsErrors>
   </PropertyGroup>
   <!-- Targets -->
   <PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Debug|AnyCPU'">
@@ -25,43 +28,41 @@
   <!-- Nuget -->
   <PropertyGroup>
     <PackageId>WorkflowEngine.NETCore-ProviderForSQLite</PackageId>
-    <PackageLicenseFile>License.txt</PackageLicenseFile>
-    <Description>
-      Contains dlls for SQLite Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with SQLiteProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageTags>workflow engine, SQLite, sqlite, provider for SQLite</PackageTags>
-    <PackageIcon>icon.png</PackageIcon>
+    <Description>SQLite persistence provider for evaluating Workflow Engine by Optimajet in self-contained .NET 8 and .NET 10 applications. It stores workflow data locally and applies the required database migrations.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp sqlite evaluation persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerforsqlite&amp;utm_content=project-website</PackageProjectUrl>
   </PropertyGroup>
   <!-- Dependencies -->
   <ItemGroup>
-    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="22.0.0" />
-    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="22.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Core" Version="23.0.0" />
+    <PackageReference Include="WorkflowEngine.NETCore-Migrator" Version="23.0.0" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net8.0' ">
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.16" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.26" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="8.0.32" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="8.0.32" />
   </ItemGroup>
   <ItemGroup Condition=" '$(TargetFramework)' == 'net10.0' ">
-    <PackageReference Include="Microsoft.Data.Sqlite" Version="10.0.9" />
-    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="10.0.9" />
+    <PackageReference Include="Microsoft.Data.Sqlite" Version="9.0.21" />
+    <PackageReference Include="Microsoft.EntityFrameworkCore.Sqlite.Core" Version="9.0.21" />
   </ItemGroup>
   <ItemGroup>
     <PackageReference Include="FluentMigrator.Runner.SQLite" Version="5.2.0" />
+  </ItemGroup>
+  <ItemGroup>
+    <PackageReference Include="CommentSense" Version="1.0.1">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
+    <PackageReference Include="StyleCop.Analyzers" Version="1.1.118">
+      <PrivateAssets>all</PrivateAssets>
+      <IncludeAssets>runtime; build; native; contentfiles; analyzers; buildtransitive</IncludeAssets>
+    </PackageReference>
   </ItemGroup>
   <ItemGroup>
     <InternalsVisibleTo Include="OptimaJet.Workflow.SingleServer.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
     <InternalsVisibleTo Include="OptimaJet.Workflow.Test, PublicKey=002400000480000094000000060200000024000052534131000400000100010065d40ec9673e8069ae5e05ccba45efe141a95751a82e90dd8c6db1a29e8c87884bb1d2c2672b7fe8ca6ce5091ddc3301f6092f7a1f36f88de1531613924a35f2c8213aa9c261f071db2f537c7109659ac6b46b5a4b28611c4de18c37f0fbcc7844a739a07386248558b54bf41bc616a988fabfdab6ea0f9a710a3fd55b3495bf" />
   </ItemGroup>
   <!-- Includes -->
-  <ItemGroup>
-    <None Include="license.txt" Pack="true" PackagePath="$(PackageLicenseFile)" />
-    <None Include="icon.png" Pack="true" PackagePath="" />
-  </ItemGroup>
   <PropertyGroup>
     <SuppressTfmSupportBuildWarnings>true</SuppressTfmSupportBuildWarnings>
   </PropertyGroup>

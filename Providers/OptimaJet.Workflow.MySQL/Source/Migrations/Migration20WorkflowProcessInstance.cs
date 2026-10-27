@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(20)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateTable_WorkflowProcessInstance.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration20WorkflowProcessInstance : Migration
 {
     public override void Up()

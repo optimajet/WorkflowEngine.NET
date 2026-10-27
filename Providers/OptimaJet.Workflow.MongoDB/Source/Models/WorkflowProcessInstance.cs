@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 
@@ -8,6 +10,7 @@ namespace OptimaJet.Workflow.MongoDB
     {
       
         public string ActivityName { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Id { get; set; }
         public string PreviousActivity { get; set; }
         public string PreviousActivityForDirect { get; set; }
@@ -15,10 +18,13 @@ namespace OptimaJet.Workflow.MongoDB
         public string PreviousState { get; set; }
         public string PreviousStateForDirect { get; set; }
         public string PreviousStateForReverse { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid? SchemeId { get; set; }
         public string StateName { get; set; }
         public List<WorkflowProcessInstancePersistence> Persistence { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid? ParentProcessId { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid RootProcessId { get; set; }
         public string TenantId { get; set; }
         

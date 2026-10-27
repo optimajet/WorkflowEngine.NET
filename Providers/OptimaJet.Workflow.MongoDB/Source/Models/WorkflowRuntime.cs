@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using OptimaJet.Workflow.Core.Model;
 
@@ -6,6 +8,7 @@ namespace OptimaJet.Workflow.MongoDB.Models
     public class WorkflowRuntime : DynamicEntity
     {
         public string RuntimeId { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Lock { get; set; }
         public RuntimeStatus Status { get; set; }
         public string RestorerId { get; set; }

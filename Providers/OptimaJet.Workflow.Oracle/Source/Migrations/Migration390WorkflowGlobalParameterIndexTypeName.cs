@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(390)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowGlobalParameter_TypeName_2.sql")]
+[ProductVersion("WorkflowEngine", "14.0.0")]
 public class Migration390WorkflowGlobalParameterIndexTypeName : Migration
 {
     public override void Up()

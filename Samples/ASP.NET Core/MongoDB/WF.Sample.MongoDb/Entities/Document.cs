@@ -2,6 +2,8 @@
 using System.Collections.Generic;
 using System.Linq;
 using System.Web;
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 
 namespace WF.Sample.MongoDb.Entities
 {
@@ -22,6 +24,7 @@ namespace WF.Sample.MongoDb.Entities
 
         public string ManagerName { get; set; }
 
+        [BsonRepresentation(BsonType.String)]
         public decimal Sum { get; set; }
 
         public string StateName { get; set; }

@@ -104,6 +104,32 @@ CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Name_idx" ON "WorkflowProcessTi
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_NextExecutionDateTime_idx" ON "WorkflowProcessTimer" ("NextExecutionDateTime");
 CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Ignore_idx" ON "WorkflowProcessTimer" ("Ignore");
 
+CREATE TABLE IF NOT EXISTS "WorkflowProcessAssignment"
+(
+    "Id"                 TEXT    NOT NULL,
+    "AssignmentCode"     TEXT    NOT NULL,
+    "ProcessId"          TEXT    NOT NULL,
+    "Name"               TEXT    NOT NULL,
+    "Description"        TEXT    NULL,
+    "StatusState"        TEXT    NOT NULL,
+    "DateCreation"       INTEGER NOT NULL,
+    "DateStart"          INTEGER NULL,
+    "DateFinish"         INTEGER NULL,
+    "DeadlineToStart"    INTEGER NULL,
+    "DeadlineToComplete" INTEGER NULL,
+    "Executor"           TEXT    NOT NULL,
+    "Observers"          TEXT    NULL,
+    "Tags"               TEXT    NULL,
+    "IsActive"           INTEGER NOT NULL,
+    "IsDeleted"          INTEGER NOT NULL,
+    CONSTRAINT "WorkflowProcessAssignment_pkey" PRIMARY KEY ("Id")
+    );
+
+CREATE INDEX IF NOT EXISTS "WorkflowProcessAssignment_ProcessId_idx" ON "WorkflowProcessAssignment" ("ProcessId");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_AssignmentCode_idx" ON "WorkflowProcessAssignment" ("AssignmentCode");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_Executor_idx" ON "WorkflowProcessAssignment" ("Executor");
+CREATE INDEX IF NOT EXISTS "WorkflowProcessTimer_ProcessId_Executor_idx" ON "WorkflowProcessAssignment" ("ProcessId", "Executor");
+
 CREATE TABLE IF NOT EXISTS "WorkflowProcessTransitionHistory"
 (
     "Id"                   TEXT    NOT NULL,

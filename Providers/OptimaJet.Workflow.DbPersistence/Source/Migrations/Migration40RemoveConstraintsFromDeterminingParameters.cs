@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MSSQL.Migrations;
 
 [Migration(40)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MSSQL.Scripts.RemoveConstraintsFromDeterminingParametersColumns.sql")]
+[ProductVersion("WorkflowEngine", "21.0.0")]
 public class Migration40RemoveConstraintsFromDeterminingParameters : Migration
 {
     public override void Up()

@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(110)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateTable_WorkflowProcessTimer.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration110WorkflowProcessTimer : Migration
 {
     public override void Up()

@@ -5,8 +5,16 @@ using OptimaJet.Workflow.Core.Entities;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow process instance status operations.
+    /// </summary>
     public class WorkflowProcessInstanceStatus : DbObject<ProcessInstanceStatusEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowProcessInstanceStatus"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowProcessInstanceStatus(string schemaName, int commandTimeout) 
             : base(schemaName, "WorkflowProcessInstanceStatus", commandTimeout)
         {
@@ -21,6 +29,13 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Returns identifiers of processes with the specified status, optionally filtered by runtime.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="status">The process status byte value.</param>
+        /// <param name="runtimeId">The runtime identifier to filter by, or <c>null</c> for all runtimes.</param>
+        /// <returns>A list of process identifiers.</returns>
         public async Task<List<Guid>> GetProcessesByStatusAsync(SqliteConnection connection, byte status, string runtimeId = null)
         {
             string command = $"SELECT {nameof(ProcessInstanceStatusEntity.Id)} " + 
@@ -38,6 +53,13 @@ namespace OptimaJet.Workflow.SQLite
             return (await SelectAsync(connection, command, p.ToArray()).ConfigureAwait(false)).Select(s => s.Id).ToList();
         }
 
+        /// <summary>
+        /// Changes the status of a process instance using optimistic locking.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="status">The status entity with the new status values.</param>
+        /// <param name="oldLock">The current lock value for optimistic concurrency.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> ChangeStatusAsync(SqliteConnection connection, ProcessInstanceStatusEntity status, Guid oldLock)
         {
             string command = $"UPDATE {ObjectName} SET " + 

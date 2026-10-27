@@ -9,8 +9,16 @@ using OptimaJet.Workflow.Core.Entities;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow process instance operations.
+    /// </summary>
     public class WorkflowProcessInstance : DbObject<ProcessInstanceEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowProcessInstance"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowProcessInstance(string schemaName, int commandTimeout) : base(schemaName, "WorkflowProcessInstance", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -36,12 +44,25 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Selects process instances by a collection of identifiers.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="ids">The process identifiers to select.</param>
+        /// <returns>An array of matching process instance entities.</returns>
         public async Task<ProcessInstanceEntity[]> GetInstancesAsync(SqliteConnection connection, IEnumerable<Guid> ids)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE Id IN ({String.Join(",", ids.Select(x => $"'{x}'"))})";
             return await SelectAsync(connection, selectText).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Checks whether a process with the specified identifier exists in the given tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared processes.</param>
+        /// <returns><c>true</c> if the process exists; otherwise, <c>false</c>.</returns>
         public async Task<bool> IsProcessExistsAsync(SqliteConnection connection, Guid processId, string tenantId)
         {
             string commandText =

@@ -6,8 +6,16 @@ using OptimaJet.Workflow.Core.Fault;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow process instance persistence parameter operations.
+    /// </summary>
     public class WorkflowProcessInstancePersistence : DbObject<ProcessInstancePersistenceEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowProcessInstancePersistence"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowProcessInstancePersistence(string schemaName, int commandTimeout) 
             : base(schemaName, "WorkflowProcessInstancePersistence", commandTimeout)
         {
@@ -21,6 +29,12 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Selects all persistence parameter entities for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <returns>An array of persistence parameter entities.</returns>
         public async Task<ProcessInstancePersistenceEntity[]> SelectByProcessIdAsync(SqliteConnection connection, Guid processId)
         {
             string selectText = $"SELECT * FROM {ObjectName} WHERE {nameof(ProcessInstancePersistenceEntity.ProcessId)} = @processid";
@@ -28,6 +42,13 @@ namespace OptimaJet.Workflow.SQLite
             return await SelectAsync(connection, selectText, p).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects a single persistence parameter entity by process identifier and parameter name.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <returns>The matching entity, or <c>null</c> if not found.</returns>
         public async Task<ProcessInstancePersistenceEntity> SelectByNameAsync(SqliteConnection connection, Guid processId,  string parameterName)
         {
             string selectText = $"SELECT * FROM {ObjectName} " + 
@@ -42,6 +63,13 @@ namespace OptimaJet.Workflow.SQLite
             return (await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false)).SingleOrDefault();
         }
 
+        /// <summary>
+        /// Deletes all persistence parameters for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByProcessIdAsync(SqliteConnection connection, Guid processId, SqliteTransaction transaction = null)
         {
             var p = new SqliteParameter("processid", DbType.String) { Value = ToDbValue(processId, DbType.Guid) };
@@ -54,6 +82,14 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Deletes a single persistence parameter by process identifier and parameter name.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="parameterName">The parameter name.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByNameAsync(SqliteConnection connection, Guid processId, string parameterName, SqliteTransaction transaction = null)
         {
             var parameters = new List<SqliteParameter>
@@ -71,6 +107,16 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Inserts or updates a persistence parameter, choosing the operation order based on <paramref name="preferUpdateFirst"/>.
+        /// When <paramref name="preferUpdateFirst"/> is <c>true</c>, attempts UPDATE first with INSERT fallback.
+        /// Otherwise, attempts INSERT first with UPDATE fallback on duplicate key.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="entity">The persistence parameter entity to upsert.</param>
+        /// <param name="preferUpdateFirst">Whether to attempt UPDATE before INSERT.</param>
+        /// <param name="transaction">The transaction to execute within.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
        public async Task UpsertAsync(SqliteConnection connection, ProcessInstancePersistenceEntity entity,
             bool preferUpdateFirst, SqliteTransaction transaction)
         {

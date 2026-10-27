@@ -9,8 +9,16 @@ using OptimaJet.Workflow.SQLite.Models;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow global parameter operations.
+    /// </summary>
     public class WorkflowGlobalParameter : DbObject<GlobalParameterEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowGlobalParameter"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowGlobalParameter(string schemaName, int commandTimeout) : base(schemaName, "WorkflowGlobalParameter", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -23,6 +31,15 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Selects global parameters by type with optional name filter, sorting, and tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">The exact parameter name to filter by, or <c>null</c> for all names.</param>
+        /// <param name="sort">The sorting settings, or <c>null</c> for default order.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared parameters.</param>
+        /// <returns>An array of matching global parameter entities.</returns>
         public async Task<GlobalParameterEntity[]> SelectByTypeAndNameAsync(SqliteConnection connection, string type,
             string name = null, Sorting sort = null, string tenantId = null)
         {
@@ -64,6 +81,16 @@ namespace OptimaJet.Workflow.SQLite
             return new QueryDefinition() {Parameters = parameters, Query = selectText};
         }
 
+        /// <summary>
+        /// Searches global parameters by type with a partial name match, paging, and tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">A partial name to search for, or <c>null</c> for all names.</param>
+        /// <param name="paging">The paging settings, or <c>null</c> to return all results.</param>
+        /// <param name="sort">The sorting settings, or <c>null</c> for default order.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared parameters.</param>
+        /// <returns>An array of matching global parameter entities.</returns>
         public async Task<GlobalParameterEntity[]> SearchByTypeAndNameWithPagingAsync(SqliteConnection connection, string type,
             string name = null, Paging paging = null, Sorting sort = null, string tenantId = null)
         {
@@ -85,6 +112,14 @@ namespace OptimaJet.Workflow.SQLite
             return await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Returns the count of global parameters matching the specified type, optional name, and tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">A partial name to filter by, or <c>null</c> for all names.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared parameters.</param>
+        /// <returns>The number of matching parameters.</returns>
         public async Task<int> GetCountByTypeAndNameAsync(SqliteConnection connection, string type, string name = null, string tenantId = null)
         {
             var queryDefinition = GetBasicSearchQuery(type, name, tenantId);
@@ -96,6 +131,14 @@ namespace OptimaJet.Workflow.SQLite
             return Convert.ToInt32(count);
         }
 
+        /// <summary>
+        /// Deletes global parameters matching the specified type, optional name, and tenant scope.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="type">The parameter type.</param>
+        /// <param name="name">The exact parameter name to filter by, or <c>null</c> for all names.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared parameters.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByTypeAndNameAsync(SqliteConnection connection, string type, string name = null, string tenantId = null)
         {
             string selectText = $"DELETE FROM {ObjectName}  WHERE {nameof(GlobalParameterEntity.Type)} = @type";

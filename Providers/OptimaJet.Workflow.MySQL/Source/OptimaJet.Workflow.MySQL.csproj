@@ -2,16 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>WorkflowEngine.NETCore-ProviderForMySQL</PackageId>
-    <Description>
-      Contains dlls for MySQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with MySQLProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageTags>workflow engine, MySQL, provider for MySQL</PackageTags>
+    <Description>MySQL persistence provider for Workflow Engine by Optimajet. Stores workflow schemes, process instances, parameters, timers, and history, and applies the required database migrations.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp mysql persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerformysql&amp;utm_content=project-website</PackageProjectUrl>
     <RootNamespace>OptimaJet.Workflow.MySQL</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.MySQL</AssemblyName>
   </PropertyGroup>
@@ -168,5 +161,9 @@
     <EmbeddedResource Include="Scripts\DropEmptyWorkflowProcessAssignmentTable.sql" />
     <None Remove="Scripts\AlterColumn_WorkflowProcessInstance_CalendarName.sql" />
     <EmbeddedResource Include="Scripts\AlterColumn_WorkflowProcessInstance_CalendarName.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
   </ItemGroup>
 </Project>

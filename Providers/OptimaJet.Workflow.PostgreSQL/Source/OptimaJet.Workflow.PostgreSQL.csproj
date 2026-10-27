@@ -2,16 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.0</TargetFramework>
     <PackageId>WorkflowEngine.NETCore-ProviderForPostgreSQL</PackageId>
-    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <Description>
-      Contains dlls for PostgreSQL Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with PostgreSQLProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageTags>workflow engine, PostgreSQL, postgres, provider for postgreSQL</PackageTags>
+    <Description>PostgreSQL persistence provider for Workflow Engine by Optimajet. Stores workflow schemes, process instances, parameters, timers, and history, and applies the required database migrations.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp postgresql postgres persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerforpostgresql&amp;utm_content=project-website</PackageProjectUrl>
     <AssemblyName>OptimaJet.Workflow.PostgreSQL</AssemblyName>
     <RootNamespace>OptimaJet.Workflow.PostgreSQL</RootNamespace>
   </PropertyGroup>

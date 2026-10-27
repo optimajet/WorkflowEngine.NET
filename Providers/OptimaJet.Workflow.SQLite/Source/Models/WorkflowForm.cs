@@ -5,11 +5,19 @@ using OptimaJet.Workflow.Core.Fault;
 
 namespace OptimaJet.Workflow.SQLite.Models;
 
+/// <summary>
+/// Database object for workflow form storage and versioning operations.
+/// </summary>
 public class WorkflowForm : DbObject<WorkflowFormEntity>
 {
     private const int CreateNewFormVersionMaxAttempts = 3;
     private const int CreateNewFormVersionRetryDelayMilliseconds = 50;
 
+    /// <summary>
+    /// Initializes a new instance of <see cref="WorkflowForm"/>.
+    /// </summary>
+    /// <param name="schemaName">The database schema name.</param>
+    /// <param name="commandTimeout">The command timeout in seconds.</param>
     public WorkflowForm(string schemaName, int commandTimeout) : base(schemaName, nameof(WorkflowForm), commandTimeout)
     {
         DBColumns.AddRange([
@@ -24,6 +32,12 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         ]);
     }
 
+    /// <summary>
+    /// Gets the distinct list of form names accessible in the specified tenant scope.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms only.</param>
+    /// <returns>A list of form names.</returns>
     public async Task<List<string>> GetFormNamesAsync(SqliteConnection connection, string tenantId = null)
     {
         string query = $"""
@@ -37,12 +51,27 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         return forms.Select(f => f.Name).ToList();
     }
 
+    /// <summary>
+    /// Gets a form entity by name and optional version within the specified tenant scope.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="version">The form version, or <c>null</c> to get the latest version.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>The form entity if found; otherwise, <c>null</c>.</returns>
     public async Task<WorkflowFormEntity> GetFormAsync(SqliteConnection connection, string name, int? version = null,
         string tenantId = null)
     {
         return await GetPreferredFormAsync(connection, transaction: null, name, version, tenantId).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Gets the list of distinct form versions for the specified form name within the tenant scope.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>A list of version numbers.</returns>
     public async Task<List<int>> GetFormVersionsAsync(SqliteConnection connection, string name, string tenantId = null)
     {
         string query = $"""
@@ -63,6 +92,17 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         return forms.Select(f => f.Version).ToList();
     }
 
+    /// <summary>
+    /// Creates a new version of the form. If <paramref name="version"/> is specified, copies the definition from that version;
+    /// otherwise copies from the latest version. Falls back to the shared form if the tenant-scoped form is not found.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="creationDate">The creation date for the new version.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="defaultDefinition">The default definition to use if no source version is found.</param>
+    /// <param name="version">The source version to copy from, or <c>null</c> to copy from the latest.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>The newly created form entity, or <c>null</c> if the specified source version was not found.</returns>
     public async Task<WorkflowFormEntity> CreateNewFormVersionAsync(SqliteConnection connection, DateTime creationDate, string name,
         string defaultDefinition, int? version = null, string tenantId = null)
     {
@@ -136,6 +176,16 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         throw new Exception("Unable to create a new form version.");
     }
 
+    /// <summary>
+    /// Creates a new form with version 0 if a form with the specified name does not already exist in the given tenant scope.
+    /// Falls back to the shared form definition if the tenant-scoped form is not found.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="creationDate">The creation date for the new form.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="defaultDefinition">The default definition to use if no shared form exists.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>The existing or newly created form entity.</returns>
     public async Task<WorkflowFormEntity> CreateNewFormIfNotExistsAsync(SqliteConnection connection, DateTime creationDate, string name,
         string defaultDefinition, string tenantId = null)
     {
@@ -191,6 +241,18 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         return form ?? throw new Exception("Unable to create a new form.");
     }
 
+    /// <summary>
+    /// Updates the form definition with optimistic locking.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="version">The form version to update.</param>
+    /// <param name="oldLock">The current lock value for optimistic concurrency.</param>
+    /// <param name="newLock">The new lock value to set.</param>
+    /// <param name="definition">The new form definition.</param>
+    /// <param name="updatedDate">The update timestamp.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>The new lock value if the update succeeded.</returns>
     public async Task<int> UpdateFormAsync(SqliteConnection connection, string name, int version, long oldLock, long newLock,
         string definition, DateTime updatedDate, string tenantId = null)
     {
@@ -220,6 +282,14 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         return await ExecuteCommandNonQueryAsync(connection, query, parameters.ToArray()).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Deletes a specific version of the form within the specified tenant scope.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="version">The version to delete.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DeleteFormVersionAsync(SqliteConnection connection, string name, int version, string tenantId = null)
     {
         string query = $"""
@@ -240,6 +310,13 @@ public class WorkflowForm : DbObject<WorkflowFormEntity>
         await ExecuteCommandNonQueryAsync(connection, query, parameters.ToArray()).ConfigureAwait(false);
     }
 
+    /// <summary>
+    /// Deletes all versions of the form within the specified tenant scope.
+    /// </summary>
+    /// <param name="connection">The SQLite connection.</param>
+    /// <param name="name">The form name.</param>
+    /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared forms.</param>
+    /// <returns>A task that represents the asynchronous operation.</returns>
     public async Task DeleteFormAsync(SqliteConnection connection, string name, string tenantId = null)
     {
         string query = $"""

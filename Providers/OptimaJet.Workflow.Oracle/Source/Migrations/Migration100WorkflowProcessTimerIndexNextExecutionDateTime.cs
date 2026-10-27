@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(100)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowProcessTimer_NextExecutionDateTime.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration100WorkflowProcessTimerIndexNextExecutionDateTime : Migration
 {
     public override void Up()

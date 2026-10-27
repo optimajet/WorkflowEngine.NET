@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.MySQL.Migrations;
 
 [Migration(70)]
 [WorkflowEngineMigration("OptimaJet.Workflow.MySQL.Scripts.CreateIndex_WorkflowProcessInstanceStatus_Status.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration70WorkflowProcessInstanceStatusIndexStatus : Migration
 {
     public override void Up()

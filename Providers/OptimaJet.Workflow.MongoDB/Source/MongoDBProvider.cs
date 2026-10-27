@@ -146,14 +146,14 @@ namespace OptimaJet.Workflow.MongoDB
             
             if(String.IsNullOrEmpty(runtimeId))
             {
-                return (await (await dbcoll.FindAsync(filter,options).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false)).Select(x => x.GetValue("_id").AsGuid).ToList();
+                return (await (await dbcoll.FindAsync(filter,options).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false)).Select(x => x.GetValue("_id").AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)).ToList();
             }
 
             var filters = new List<FilterDefinition<WorkflowProcessInstance>> {filter, Builders<WorkflowProcessInstance>.Filter.Eq(n => n.Status.RuntimeId, runtimeId)};
 
             FilterDefinition<WorkflowProcessInstance> combinedFilter = Builders<WorkflowProcessInstance>.Filter.And(filters);
             
-            return (await (await dbcoll.FindAsync(combinedFilter,options).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false)).Select(x => x.GetValue("_id").AsGuid).ToList();
+            return (await (await dbcoll.FindAsync(combinedFilter,options).ConfigureAwait(false)).ToListAsync().ConfigureAwait(false)).Select(x => x.GetValue("_id").AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)).ToList();
 
             //return (await dbcoll.FindAsync(x => x.Status.Status == ProcessStatus.Running.Id && x.Status.RuntimeId == runtimeId).ConfigureAwait(false)).ToList().Select(x => x.Id).ToList();
         }
@@ -239,7 +239,7 @@ namespace OptimaJet.Workflow.MongoDB
             return processInstances.Join(
                 schemes,
                 processInstance => processInstance.SchemeId,
-                scheme => scheme["_id"].AsGuid,
+                scheme => scheme["_id"].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
                 (processInstance, scheme) => new ProcessInstanceItem
                 {
                     ActivityName = processInstance.ActivityName,
@@ -1319,7 +1319,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowProcessTransitionHistory> dbcoll = Store.GetCollection<WorkflowProcessTransitionHistory>(MongoDBConstants.WorkflowProcessTransitionHistoryCollectionName);
             
-            IMongoQueryable<WorkflowProcessTransitionHistory> query = dbcoll.AsQueryable()
+            IQueryable<WorkflowProcessTransitionHistory> query = dbcoll.AsQueryable()
                 .Where(x => x.ProcessId == processId)
                 .OrderBy(x => x.TransitionTime);
             
@@ -1384,7 +1384,7 @@ namespace OptimaJet.Workflow.MongoDB
 
             List<BsonDocument> instances = await (await workflowProcessInstanceCollection.FindAsync(workflowProcessInstanceFilter, workflowProcessInstanceOptions)
                 .ConfigureAwait(false)).ToListAsync().ConfigureAwait(false);
-            var schemeIds = instances.Select(i => i[nameof(WorkflowProcessInstance.SchemeId)].AsGuid).Distinct().ToList();
+            var schemeIds = instances.Select(i => i[nameof(WorkflowProcessInstance.SchemeId)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)).Distinct().ToList();
 
             IMongoCollection<WorkflowProcessScheme> workflowProcessSchemeCollection =
                 Store.GetCollection<WorkflowProcessScheme>(MongoDBConstants.WorkflowProcessSchemeCollectionName);
@@ -2008,7 +2008,7 @@ namespace OptimaJet.Workflow.MongoDB
         public async Task<List<InboxItem>> GetInboxByProcessIdAsync(Guid processId, Paging paging = null, CultureInfo culture = null)
         {
             IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
-            IMongoQueryable<WorkflowInbox> query = dCollection.AsQueryable()
+            IQueryable<WorkflowInbox> query = dCollection.AsQueryable()
                 .Where(x => x.ProcessId == processId)
                 .OrderByDescending(x => x.AddingDate);
             
@@ -2028,7 +2028,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowInbox> dCollection = Store.GetCollection<WorkflowInbox>(MongoDBConstants.WorkflowInboxCollectionName);
 
-            IMongoQueryable<WorkflowInbox> query = dCollection.AsQueryable()
+            IQueryable<WorkflowInbox> query = dCollection.AsQueryable()
                 .Where(x => x.IdentityId == identityId)
                 .OrderByDescending(x => x.AddingDate);
             
@@ -2107,7 +2107,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
             
-            IMongoQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
+            IQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
                 .Where(x => x.ProcessId == processId)
                 .OrderBy(x => x.Sort);
             
@@ -2126,7 +2126,7 @@ namespace OptimaJet.Workflow.MongoDB
         {
             IMongoCollection<WorkflowApprovalHistory> dCollection = Store.GetCollection<WorkflowApprovalHistory>(MongoDBConstants.WorkflowApprovalHistoryCollectionName);
 
-            IMongoQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
+            IQueryable<WorkflowApprovalHistory> query = dCollection.AsQueryable()
                 .Where(x => x.IdentityId == identityId)
                 .OrderBy(x => x.Sort);
             

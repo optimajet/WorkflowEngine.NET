@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 
@@ -6,10 +8,12 @@ namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowProcessScheme : DynamicEntity
     {
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Id { get; set; }
         public bool IsObsolete { get; set; }
         public string SchemeCode { get; set; }
         public string Scheme { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid? RootSchemeId { get; set; }
         public string RootSchemeCode { get; set; }
         public List<string> AllowedActivities { get; set; }

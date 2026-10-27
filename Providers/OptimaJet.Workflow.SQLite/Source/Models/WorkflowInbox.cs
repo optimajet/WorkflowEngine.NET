@@ -10,8 +10,16 @@ using OptimaJet.Workflow.Core.Runtime;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow inbox operations.
+    /// </summary>
     public class WorkflowInbox : DbObject<InboxEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowInbox"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowInbox(string schemaName, int commandTimeout) : base(schemaName, "WorkflowInbox", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -25,6 +33,11 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Converts an <see cref="InboxItem"/> to a database entity.
+        /// </summary>
+        /// <param name="inboxItem">The inbox item to convert.</param>
+        /// <returns>A new <see cref="InboxEntity"/> populated from the item.</returns>
         public static InboxEntity ToDB(InboxItem inboxItem)
         {
             return new InboxEntity()
@@ -38,6 +51,13 @@ namespace OptimaJet.Workflow.SQLite
             };
         }
 
+        /// <summary>
+        /// Converts an array of database entities to <see cref="InboxItem"/> objects, resolving available commands with localization.
+        /// </summary>
+        /// <param name="runtime">The workflow runtime used to resolve process instances.</param>
+        /// <param name="inboxItems">The inbox entities to convert.</param>
+        /// <param name="culture">The culture for command name localization.</param>
+        /// <returns>A list of inbox items.</returns>
         public static async Task<List<InboxItem>> FromDB(WorkflowRuntime runtime, InboxEntity[] inboxItems, CultureInfo culture)
         {
             var result = new List<InboxItem>();
@@ -80,6 +100,13 @@ namespace OptimaJet.Workflow.SQLite
             return result;
         }
 
+        /// <summary>
+        /// Deletes all inbox records for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByProcessIdAsync(SqliteConnection connection, Guid processId,
             SqliteTransaction transaction = null)
         {
@@ -87,6 +114,12 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects all inbox entities for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <returns>An array of inbox entities.</returns>
         public async Task<InboxEntity[]> SelectByProcessIdAsync(SqliteConnection connection, Guid processId)
         {
             return await SelectByAsync(connection, x => x.ProcessId, processId)

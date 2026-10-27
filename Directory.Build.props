@@ -1,9 +1,9 @@
 <Project>
   <!-- Version -->
   <PropertyGroup>
-    <Version>22.0.0</Version>
-    <AssemblyVersion>22.0.0</AssemblyVersion>
-    <FileVersion>22.0.0</FileVersion>
+    <Version>23.0.0</Version>
+    <AssemblyVersion>23.0.0</AssemblyVersion>
+    <FileVersion>23.0.0</FileVersion>
   </PropertyGroup>
   <!-- Build -->
   <PropertyGroup>
@@ -12,6 +12,7 @@
     <SignAssembly>True</SignAssembly>
     <AssemblyOriginatorKeyFile>Workflow.snk</AssemblyOriginatorKeyFile>
     <NoWarn>NU1903</NoWarn>
+    <WarningsAsErrors>$(WarningsAsErrors);NU5048;NU5125</WarningsAsErrors>
   </PropertyGroup>
   <!-- Nuget -->
   <PropertyGroup>
@@ -20,12 +21,15 @@
     <Authors>Optimajet Limited</Authors>
     <Copyright>OptimaJet Workflow Engine 2026</Copyright>
     <PackageProjectUrl>https://workflowengine.io</PackageProjectUrl>
-    <PackageReleaseNotes>https://workflowengine.io/documentation/release-notes/workflow-engine/</PackageReleaseNotes>
+    <PackageReleaseNotes>https://docs.workflowengine.io/release-notes/</PackageReleaseNotes>
     <PackageRequireLicenseAcceptance>True</PackageRequireLicenseAcceptance>
-    <PackageIconUrl>https://workflowengine.io/images/favicons/favicon.ico</PackageIconUrl>
+    <PackageLicenseFile>LICENSE.md</PackageLicenseFile>
+    <PackageIcon>icon.png</PackageIcon>
     <RepositoryUrl>https://github.com/optimajet/WorkflowEngine.NET</RepositoryUrl>
+    <RepositoryType>git</RepositoryType>
   </PropertyGroup>
   <ItemGroup>
-    <NuGetAuditSuppress Include="https://github.com/advisories/GHSA-2m69-gcr7-jv3q" />
+    <None Include="$(MSBuildThisFileDirectory)LICENSE.md" Pack="true" PackagePath="$(PackageLicenseFile)" />
+    <None Include="$(MSBuildThisFileDirectory)icon.png" Pack="true" PackagePath="$(PackageIcon)" />
   </ItemGroup>
 </Project>

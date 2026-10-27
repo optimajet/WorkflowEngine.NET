@@ -11,6 +11,7 @@
       <th></th>
       <th>{{ labels.Name }}</th>
       <th>{{ labels.Rule }}</th>
+      <th>{{ labels.Expression }}</th>
       <th>{{ labels.Value }}</th>
     </tr>
     <template v-for="(item, index) in items" :key="index">
@@ -42,14 +43,24 @@
           </el-select>
         </td>
         <td>
-          <el-autocomplete v-model="item.Value" :fetch-suggestions="querySearch" :readonly="readonly || item.IsPredefined === true"
+          <el-checkbox
+            v-model="item.IsValueExpression"
+            :disabled="readonly || item.IsPredefined === true"
+            @change="onExpressionChange(item)"></el-checkbox>
+        </td>
+        <td>
+          <el-autocomplete v-if="!isExpressionEnabled(item)" v-model="item.Value" :fetch-suggestions="querySearch" :readonly="readonly || item.IsPredefined === true"
                            @focus="setCurrentItem(item)"></el-autocomplete>
+          <el-input v-if="isExpressionEnabled(item)"
+                    v-model="item.Value"
+                    :readonly="readonly || item.IsPredefined === true">
+          </el-input>
         </td>
         <td v-if="!readonly" class="WorkflowDesignerTableEditButtons Double">
           <el-button-group>
             <el-button v-if="item.IsPredefined != true"
                        :class="'WorkflowDesignerTableCodeActionsButton ' + (editItem == item ? 'is-active' : '')"
-                       @click="showjson('Value', item)"></el-button>
+                       @click="showValueEditor(item)"></el-button>
             <el-button v-if="item.IsPredefined != true" class="WorkflowDesignerTableDeleteButton" @click="remove(index)"></el-button>
           </el-button-group>
         </td>
@@ -101,11 +112,14 @@
     methods.onUpdate = function () {
       data.conditions = me.graph.getActorRules();
       data.items = WorkflowDesignerCommon.clone(me.graph.data.Actors);
+      data.items.forEach(function (item) {
+        item.IsValueExpression = item.IsValueExpression === true || item.IsValueExpression === 'true';
+      });
       data.readonly = me.graph.Settings.readonly;
     };
 
     methods.add = function () {
-      data.items.push({Name: '', Rule: '', Value: ''});
+      data.items.push({Name: '', Rule: '', IsValueExpression: false, Value: ''});
 
       setTimeout(function () {
         var objDiv = document.getElementById('WorkflowDesignerActorsList');
@@ -138,6 +152,38 @@
         type: ['RuleCheck', 'RuleGet']
       };
       data.jsonform = me.showjson(item[name], params, onSuccess, onClose);
+    };
+
+    methods.showValueEditor = function (item) {
+      if (!methods.isExpressionEnabled(item)) {
+        methods.showjson('Value', item);
+        return;
+      }
+
+      data.editItem = item;
+      me.editItem = item;
+
+      var onSuccess = function (value) {
+        if (me.editItem) {
+          me.editItem.Value = value;
+          data.editItem = undefined;
+          delete me.editItem;
+        }
+      };
+
+      var onClose = function () {
+        data.editItem = undefined;
+      };
+
+      data.jsonform = me.showjson(item.Value, {expression: true, expressiontype: 'object'}, onSuccess, onClose);
+    };
+
+    methods.onExpressionChange = function (item) {
+      item.Value = '';
+    };
+
+    methods.isExpressionEnabled = function (item) {
+      return item.IsValueExpression === true;
     };
 
     methods.validateField = function (name, item) {
@@ -187,7 +233,7 @@
       if (!WorkflowDesignerCommon.compareArray(
         me.graph.data.Actors,
         data.items,
-        ['Name', 'Rule', 'Value'])) {
+        ['Name', 'Rule', 'Value', 'IsValueExpression'])) {
 
         me.showConfirm();
         return false;

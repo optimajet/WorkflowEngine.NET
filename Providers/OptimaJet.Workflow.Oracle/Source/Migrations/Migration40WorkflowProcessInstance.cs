@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(40)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateTable_WorkflowProcessInstance.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration40WorkflowProcessInstance : Migration
 {
     public override void Up()

@@ -8,8 +8,16 @@ using OptimaJet.Workflow.Core.Persistence;
 
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for querying the process instance tree hierarchy.
+    /// </summary>
     public class ProcessInstanceTree : DbObject<ProcessInstanceTreeItem>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="ProcessInstanceTree"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public ProcessInstanceTree(string schemaName, int commandTimeout) : base(schemaName, "virtual", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -22,6 +30,12 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Retrieves all process instance tree items for the specified root process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="rootProcessId">The root process identifier.</param>
+        /// <returns>A list of process instance tree items.</returns>
         public async Task<List<IProcessInstanceTreeItem>> GetProcessTreeItemsByRootProcessId(SqliteConnection connection,
             Guid rootProcessId)
         {

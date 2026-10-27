@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(450)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.Precheck_WorkflowTenantIdAndTypeLength.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration450WorkflowTenantPrecheck : Migration
 {
     public override void Up()
@@ -19,6 +20,7 @@ public class Migration450WorkflowTenantPrecheck : Migration
 
 [Migration(460)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AlterColumn_WorkflowGlobalParameter_Type.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration460AlterColumnWorkflowGlobalParameterType : Migration
 {
     public override void Up()
@@ -33,6 +35,7 @@ public class Migration460AlterColumnWorkflowGlobalParameterType : Migration
 
 [Migration(470)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowGlobalParameter_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration470WorkflowGlobalParameterTenantId : Migration
 {
     public override void Up()
@@ -47,6 +50,7 @@ public class Migration470WorkflowGlobalParameterTenantId : Migration
 
 [Migration(480)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.DropIndex_WorkflowGlobalParameter_TypeName_BeforeTenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration480DropIndexWorkflowGlobalParameterTypeName : Migration
 {
     public override void Up()
@@ -64,6 +68,7 @@ public class Migration480DropIndexWorkflowGlobalParameterTypeName : Migration
 
 [Migration(490)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowGlobalParameter_TypeNameTenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration490CreateIndexWorkflowGlobalParameterTypeNameTenantId : Migration
 {
     public override void Up()
@@ -81,6 +86,7 @@ public class Migration490CreateIndexWorkflowGlobalParameterTypeNameTenantId : Mi
 
 [Migration(500)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowScheme_Id.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration500WorkflowSchemeId : Migration
 {
     public override void Up()
@@ -95,6 +101,7 @@ public class Migration500WorkflowSchemeId : Migration
 
 [Migration(510)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.Update_WorkflowScheme_Id.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration510UpdateWorkflowSchemeId : Migration
 {
     public override void Up()
@@ -109,6 +116,7 @@ public class Migration510UpdateWorkflowSchemeId : Migration
 
 [Migration(520)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AlterColumn_WorkflowScheme_Id.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration520AlterColumnWorkflowSchemeId : Migration
 {
     public override void Up()
@@ -123,6 +131,7 @@ public class Migration520AlterColumnWorkflowSchemeId : Migration
 
 [Migration(530)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.DropConstraint_WorkflowScheme_PrimaryKey.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration530DropConstraintWorkflowSchemePrimaryKey : Migration
 {
     public override void Up()
@@ -137,6 +146,7 @@ public class Migration530DropConstraintWorkflowSchemePrimaryKey : Migration
 
 [Migration(540)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateConstraint_WorkflowScheme_PrimaryKey_Id.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration540CreateConstraintWorkflowSchemePrimaryKeyId : Migration
 {
     public override void Up()
@@ -151,6 +161,7 @@ public class Migration540CreateConstraintWorkflowSchemePrimaryKeyId : Migration
 
 [Migration(550)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowScheme_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration550WorkflowSchemeTenantId : Migration
 {
     public override void Up()
@@ -165,6 +176,7 @@ public class Migration550WorkflowSchemeTenantId : Migration
 
 [Migration(560)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowScheme_CodeTenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration560CreateIndexWorkflowSchemeCodeTenantId : Migration
 {
     public override void Up()
@@ -182,6 +194,7 @@ public class Migration560CreateIndexWorkflowSchemeCodeTenantId : Migration
 
 [Migration(570)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowForm_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration570WorkflowFormTenantId : Migration
 {
     public override void Up()
@@ -196,6 +209,7 @@ public class Migration570WorkflowFormTenantId : Migration
 
 [Migration(580)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.DropConstraint_WorkflowForm_NameVersion.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration580DropConstraintWorkflowFormNameVersion : Migration
 {
     public override void Up()
@@ -213,6 +227,7 @@ public class Migration580DropConstraintWorkflowFormNameVersion : Migration
 
 [Migration(590)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowForm_NameVersionTenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration590CreateIndexWorkflowFormNameVersionTenantId : Migration
 {
     public override void Up()
@@ -230,6 +245,7 @@ public class Migration590CreateIndexWorkflowFormNameVersionTenantId : Migration
 
 [Migration(600)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowProcessScheme_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration600WorkflowProcessSchemeTenantId : Migration
 {
     public override void Up()
@@ -244,6 +260,7 @@ public class Migration600WorkflowProcessSchemeTenantId : Migration
 
 [Migration(610)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowApprovalHistory_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration610WorkflowApprovalHistoryTenantId : Migration
 {
     public override void Up()
@@ -258,6 +275,7 @@ public class Migration610WorkflowApprovalHistoryTenantId : Migration
 
 [Migration(620)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowInbox_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration620WorkflowInboxTenantId : Migration
 {
     public override void Up()
@@ -272,6 +290,7 @@ public class Migration620WorkflowInboxTenantId : Migration
 
 [Migration(630)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AlterColumn_WorkflowProcessInstance_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration630AlterColumnWorkflowProcessInstanceTenantId : Migration
 {
     public override void Up()
@@ -286,6 +305,7 @@ public class Migration630AlterColumnWorkflowProcessInstanceTenantId : Migration
 
 [Migration(640)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowProcessInstanceP_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration640WorkflowProcessInstancePTenantId : Migration
 {
     public override void Up()
@@ -300,6 +320,7 @@ public class Migration640WorkflowProcessInstancePTenantId : Migration
 
 [Migration(650)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowProcessInstances_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration650WorkflowProcessInstancesTenantId : Migration
 {
     public override void Up()
@@ -314,6 +335,7 @@ public class Migration650WorkflowProcessInstancesTenantId : Migration
 
 [Migration(660)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowProcessTimer_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration660WorkflowProcessTimerTenantId : Migration
 {
     public override void Up()
@@ -328,6 +350,7 @@ public class Migration660WorkflowProcessTimerTenantId : Migration
 
 [Migration(670)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.AddColumn_WorkflowProcessTransition_TenantId.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration670WorkflowProcessTransitionTenantId : Migration
 {
     public override void Up()
@@ -342,6 +365,7 @@ public class Migration670WorkflowProcessTransitionTenantId : Migration
 
 [Migration(680)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.Update_TenantId_Synchronization.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration680SynchronizeWorkflowTenantIds : Migration
 {
     public override void Up()
@@ -356,6 +380,7 @@ public class Migration680SynchronizeWorkflowTenantIds : Migration
 
 [Migration(690)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.DropIndex_WorkflowProcessScheme_SchemeCodeHashIsObsolete.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration690DropIndexWorkflowProcessSchemeSchemeCodeIsObsolete : Migration
 {
     public override void Up()
@@ -373,6 +398,7 @@ public class Migration690DropIndexWorkflowProcessSchemeSchemeCodeIsObsolete : Mi
 
 [Migration(700)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowProcessScheme_SchemeTenantRootIsObsolete.sql")]
+[ProductVersion("WorkflowEngine", "22.0.0")]
 public class Migration700CreateIndexWorkflowProcessSchemeSchemeTenantRootIsObsolete : Migration
 {
     public override void Up()

@@ -5,8 +5,16 @@ using OptimaJet.Workflow.Core.Model;
 
 namespace OptimaJet.Workflow.SQLite.Models
 {
+    /// <summary>
+    /// Database object for workflow runtime status and multi-server coordination operations.
+    /// </summary>
     public class WorkflowRuntime : DbObject<RuntimeEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowRuntime"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowRuntime(string schemaName, int commandTimeout) : base(schemaName, "WorkflowRuntime", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -21,6 +29,13 @@ namespace OptimaJet.Workflow.SQLite.Models
             });
         }
 
+        /// <summary>
+        /// Updates the runtime status using optimistic locking.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="status">The runtime model with the new status.</param>
+        /// <param name="oldLock">The current lock value for optimistic concurrency.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> UpdateStatusAsync(SqliteConnection connection, WorkflowRuntimeModel status, Guid oldLock)
         {
             string command = $"UPDATE {ObjectName} SET " +
@@ -37,6 +52,13 @@ namespace OptimaJet.Workflow.SQLite.Models
             return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Updates the runtime restorer identifier using optimistic locking.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="status">The runtime model with the new restorer.</param>
+        /// <param name="oldLock">The current lock value for optimistic concurrency.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> UpdateRestorerAsync(SqliteConnection connection, WorkflowRuntimeModel status, Guid oldLock)
         {
             string command = $"UPDATE {ObjectName} SET " +
@@ -53,6 +75,11 @@ namespace OptimaJet.Workflow.SQLite.Models
             return await ExecuteCommandNonQueryAsync(connection, command, p1, p2, p3, p4).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Checks whether multiple active workflow runtimes exist in the database.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <returns><c>true</c> if more than one active runtime exists; otherwise, <c>false</c>.</returns>
         public async Task<bool> MultiServerRuntimesExistAsync(SqliteConnection connection)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -67,6 +94,12 @@ namespace OptimaJet.Workflow.SQLite.Models
             return runtimes.Length > 0;
         }
 
+        /// <summary>
+        /// Returns the count of active runtimes excluding the current one.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="currentRuntimeId">The current runtime identifier to exclude.</param>
+        /// <returns>The number of other active runtimes.</returns>
         public async Task<int> GetActiveMultiServerRuntimesCountAsync(SqliteConnection connection, string currentRuntimeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -83,6 +116,12 @@ namespace OptimaJet.Workflow.SQLite.Models
             return runtimes.Length;
         }
 
+        /// <summary>
+        /// Gets the runtime status model for the specified runtime identifier.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="runtimeId">The runtime identifier.</param>
+        /// <returns>The runtime model, or <c>null</c> if not found.</returns>
         public async Task<WorkflowRuntimeModel> GetWorkflowRuntimeStatusAsync(SqliteConnection connection, string runtimeId)
         {
             string selectText = $"SELECT * FROM {ObjectName} " +
@@ -110,6 +149,13 @@ namespace OptimaJet.Workflow.SQLite.Models
             };
         }
 
+        /// <summary>
+        /// Updates the last alive signal timestamp for the specified runtime.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="runtimeId">The runtime identifier.</param>
+        /// <param name="time">The timestamp of the alive signal.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> SendRuntimeLastAliveSignalAsync(SqliteConnection connection, string runtimeId, DateTime time)
         {
             string command = $"UPDATE {ObjectName} SET {nameof(RuntimeEntity.LastAliveSignal)} = @time " +
@@ -124,6 +170,15 @@ namespace OptimaJet.Workflow.SQLite.Models
             return await ExecuteCommandNonQueryAsync(connection, command, p1, p2).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Updates the next timer time column for the specified runtime.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="runtimeId">The runtime identifier.</param>
+        /// <param name="nextTimeColumnName">The name of the next time column to update.</param>
+        /// <param name="time">The new next time value.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> UpdateNextTimeAsync(SqliteConnection connection, string runtimeId, string nextTimeColumnName, DateTime time,
             SqliteTransaction transaction = null)
         {
@@ -137,6 +192,13 @@ namespace OptimaJet.Workflow.SQLite.Models
             return await ExecuteCommandNonQueryAsync(connection, command, transaction, p1, p2).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Gets the maximum next timer time across all other active runtimes.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="runtimeId">The current runtime identifier to exclude.</param>
+        /// <param name="nextTimeColumnName">The name of the next time column to query.</param>
+        /// <returns>The maximum next time, or <c>null</c> if no other active runtimes exist.</returns>
         public async Task<DateTime?> GetMaxNextTimeAsync(SqliteConnection connection, string runtimeId, string nextTimeColumnName)
         {
             string commandText = $"SELECT MAX({nextTimeColumnName}) FROM {ObjectName} " +

@@ -2,16 +2,9 @@
   <PropertyGroup>
     <TargetFramework>netstandard2.1</TargetFramework>
     <PackageId>WorkflowEngine.NETCore-ProviderForOracle</PackageId>
-    <Description>
-      Contains dlls for Oracle Server Persistence Provider: DbPersistenceProvider which implements interface IPersistenceProvider,
-      DbSchemePersistenceProvider which implements interface ISchemePersistenceProvider,
-      DbXmlWorkflowGenerator which implements interface IWorkflowGenerator.
-
-      Steps for workflow runtime configuration with OracleProvider: https://workflowengine.io/documentation/workflow-server/how-to-launch/#customdb in
-      Create WorkflowRuntime section.
-    </Description>
-    <PackageLicenseUrl>https://workflowengine.io/agreements/eula/</PackageLicenseUrl>
-    <PackageTags>workflow engine, oracle, ora, provider for oracle</PackageTags>
+    <Description>Oracle Database persistence provider for Workflow Engine by Optimajet. Stores workflow schemes, process instances, parameters, timers, and history, and applies the required database migrations.</Description>
+    <PackageTags>workflow-engine workflow dotnet csharp oracle-database persistence optimajet</PackageTags>
+    <PackageProjectUrl>https://workflowengine.io/products/dotnet-workflow-engine/?utm_source=nuget&amp;utm_medium=referral&amp;utm_campaign=workflowengine.netcore-providerfororacle&amp;utm_content=project-website</PackageProjectUrl>
     <RootNamespace>OptimaJet.Workflow.Oracle</RootNamespace>
     <AssemblyName>OptimaJet.Workflow.Oracle</AssemblyName>
   </PropertyGroup>
@@ -171,5 +164,15 @@
     <EmbeddedResource Include="Scripts\DropEmptyWorkflowProcessAssignmentTable.sql" />
     <None Remove="Scripts\CreateCalendarNameColumn.sql" />
     <EmbeddedResource Include="Scripts\CreateCalendarNameColumn.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_AssignmentCode.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_Executor.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_Executor.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessId.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessId.sql" />
+    <None Remove="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <EmbeddedResource Include="Scripts\CreateIndex_WorkflowProcessAssignment_ProcessIdExecutor.sql" />
+    <None Remove="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
+    <EmbeddedResource Include="Scripts\CreateTable_WorkflowProcessAssignment.sql" />
   </ItemGroup>
 </Project>

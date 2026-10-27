@@ -1,0 +1,55 @@
+BEGIN
+EXECUTE IMMEDIATE 'CREATE TABLE WORKFLOWPROCESSTRANSITIONH (
+  ID RAW(16),
+  PROCESSID RAW(16) NOT NULL,
+  EXECUTORIDENTITYID NVARCHAR2(256),
+  ACTORIDENTITYID NVARCHAR2(256),
+  EXECUTORNAME NVARCHAR2(256),
+  ACTORNAME NVARCHAR2(256),
+  FROMACTIVITYNAME NVARCHAR2(256) NULL,
+  TOACTIVITYNAME NVARCHAR2(256) NOT NULL,
+  TOSTATENAME NVARCHAR2(256),
+  TRANSITIONTIME DATE NOT NULL,
+  TRANSITIONCLASSIFIER NVARCHAR2(256) NOT NULL,
+  ISFINALISED CHAR(1 BYTE) NOT NULL,
+  FROMSTATENAME NVARCHAR2(256),
+  TRIGGERNAME NVARCHAR2(256),
+  STARTTRANSITIONTIME TIMESTAMP,
+  TRANSITIONDURATION Number(10,0),
+  CONSTRAINT PK_WORKFLOWPROCESSTRANSITIONH PRIMARY KEY (ID) USING INDEX STORAGE ( INITIAL 64K NEXT 1M MAXEXTENTS UNLIMITED ))
+LOGGING';
+END;
+
+DECLARE
+    v_table_exists PLS_INTEGER;
+BEGIN
+    SELECT COUNT(*)
+    INTO v_table_exists
+    FROM ALL_TABLES
+    WHERE OWNER = SYS_CONTEXT('USERENV', 'CURRENT_SCHEMA')
+      AND TABLE_NAME = 'VERSIONINFO';
+
+    IF v_table_exists > 0 THEN
+        EXECUTE IMMEDIATE q'[
+        MERGE INTO VersionInfo target
+        USING (
+            SELECT
+                170 AS Version,
+                SYSDATE AS AppliedOn,
+                'Migration170CreateTable_WorkflowProcessTransition' AS Description
+            FROM DUAL
+        ) source
+        ON (target.Version = source.Version)
+        WHEN NOT MATCHED THEN
+            INSERT (Version, AppliedOn, Description)
+            VALUES (
+                       source.Version,
+                       source.AppliedOn,
+                       source.Description
+                   )
+        ]';
+    END IF;
+END;
+/
+
+COMMIT;

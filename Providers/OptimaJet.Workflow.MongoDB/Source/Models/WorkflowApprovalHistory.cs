@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using OptimaJet.Workflow.Core.Helpers;
 using OptimaJet.Workflow.Core.Persistence;
@@ -7,7 +9,9 @@ namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowApprovalHistory : DynamicEntity
     {
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Id { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid ProcessId { get; set; }
         public string TenantId { get; set; }
         public string IdentityId { get; set; }

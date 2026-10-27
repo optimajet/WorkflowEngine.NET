@@ -1,1 +1,1 @@
-# See the release notes at https://workflowengine.io/documentation/release-notes/workflow-engine/
+# See the release notes at https://docs.workflowengine.io/release-notes/

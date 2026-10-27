@@ -7,8 +7,16 @@ using OptimaJet.Workflow.Core.Persistence;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow approval history operations.
+    /// </summary>
     public class WorkflowApprovalHistory : DbObject<ApprovalHistoryEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowApprovalHistory"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowApprovalHistory(string schemaName, int commandTimeout) : base(schemaName, "WorkflowApprovalHistory", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -27,6 +35,11 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Converts an <see cref="ApprovalHistoryItem"/> to a database entity.
+        /// </summary>
+        /// <param name="historyItem">The approval history item to convert.</param>
+        /// <returns>A new <see cref="ApprovalHistoryEntity"/> populated from the item.</returns>
         public static ApprovalHistoryEntity ToDB(ApprovalHistoryItem historyItem)
         {
             return new ApprovalHistoryEntity()
@@ -45,6 +58,11 @@ namespace OptimaJet.Workflow.SQLite
             };
         }
 
+        /// <summary>
+        /// Converts a database entity to an <see cref="ApprovalHistoryItem"/>.
+        /// </summary>
+        /// <param name="historyEntity">The approval history entity to convert.</param>
+        /// <returns>A new <see cref="ApprovalHistoryItem"/> populated from the entity.</returns>
         public static ApprovalHistoryItem FromDB(ApprovalHistoryEntity historyEntity)
         {
             return new ApprovalHistoryItem()
@@ -63,6 +81,13 @@ namespace OptimaJet.Workflow.SQLite
             };
         }
 
+        /// <summary>
+        /// Selects outbox items for the specified identity with optional paging.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="identityId">The identity identifier.</param>
+        /// <param name="paging">The paging settings, or <c>null</c> to return all items.</param>
+        /// <returns>A list of outbox items.</returns>
         public async Task<List<OutboxItem>> SelectOutboxByIdentityIdAsync(SqliteConnection connection, string identityId,
             Paging paging = null)
         {
@@ -95,6 +120,12 @@ namespace OptimaJet.Workflow.SQLite
                 .Select(OutboxItemFromDictionary).ToList();
         }
 
+        /// <summary>
+        /// Returns the number of outbox processes for the specified identity.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="identityId">The identity identifier.</param>
+        /// <returns>The count of outbox processes.</returns>
         public async Task<int> GetOutboxCountByIdentityIdAsync(SqliteConnection connection, string identityId)
         {
             string paramName = "_" + nameof(identityId);
@@ -141,6 +172,13 @@ namespace OptimaJet.Workflow.SQLite
             return item;
         }
 
+        /// <summary>
+        /// Deletes all approval history records for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <param name="transaction">An optional transaction.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> DeleteByProcessIdAsync(SqliteConnection connection, Guid processId,
             SqliteTransaction transaction = null)
         {
@@ -148,6 +186,12 @@ namespace OptimaJet.Workflow.SQLite
                 .ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Selects all approval history entities for the specified process.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="processId">The process identifier.</param>
+        /// <returns>A list of approval history entities.</returns>
         public async Task<List<ApprovalHistoryEntity>> SelectByProcessIdAsync(SqliteConnection connection, Guid processId)
         {
             return (await SelectByAsync(connection, x => x.ProcessId, processId)

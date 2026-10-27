@@ -25,7 +25,7 @@
 - [Licensing and Workflow Engine Free](#licensing-and-workflow-engine-free)
 - [What is in this repository](#what-is-in-this-repository)
 - [FAQ](#faq)
-- [For AI assistants and coding agents](#for-ai-assistants-and-coding-agents)
+- [Machine-readable documentation](#machine-readable-documentation)
 - [Support and contact](#support-and-contact)
 
 ## Workflow engine or a hand-written state machine?
@@ -44,12 +44,13 @@ If your process has a few states, one user and nothing to keep between restarts,
 
 ## Add a workflow engine to an existing .NET app
 
-Both paths run on Workflow Engine Free with no license key. They were built and run against version 22.1.0 on .NET 8.
+The examples use .NET 10. Both run on Workflow Engine Free without a license key.
 
 ### A console app or worker service, in one file
 
 ```bash
-dotnet new console -n WorkflowQuickstart && cd WorkflowQuickstart
+dotnet new console -n WorkflowQuickstart --framework net10.0
+cd WorkflowQuickstart
 dotnet add package WorkflowEngine.NETCore-Core
 dotnet add package WorkflowEngine.NETCore-ProviderForSQLite
 ```
@@ -66,33 +67,40 @@ using OptimaJet.Workflow.Core.Runtime;
 using OptimaJet.Workflow.Migrator;
 using OptimaJet.Workflow.SQLite;
 
-// 1. One Workflow Runtime per application, with SQLite as its database
+// Configure a Workflow Runtime with SQLite as its database
 var provider = new SqliteProvider("Data Source=workflow.db");
 var runtime = new WorkflowRuntime()
     .WithBuilder(new WorkflowBuilder<XElement>(provider, new XmlWorkflowParser(), provider).WithDefaultCache())
     .WithPersistenceProvider(provider)
-    .RunMigrations()   // creates the tables on first start
+    .RunMigrations()
     .Start();
 
-// 2. A scheme in C#: Draft -> Review -> Approved, moved by two commands
-var scheme = ProcessDefinitionBuilder.Create("Approval");
-scheme.CreateActivity("Draft").Initial().Ref(out ActivityDefinition draft);
-scheme.CreateActivity("Review").Ref(out ActivityDefinition review);
-scheme.CreateActivity("Approved").Final().Ref(out ActivityDefinition approved);
-scheme.CreateCommand("Submit").Ref(out CommandDefinition submit);
-scheme.CreateCommand("Approve").Ref(out CommandDefinition approve);
-scheme.CreateTransition("Submit", draft, review).TriggeredByCommand(submit);
-scheme.CreateTransition("Approve", review, approved).TriggeredByCommand(approve);
-await runtime.Builder.SaveProcessSchemeAsync("Approval", scheme.ProcessDefinition);
-
-// 3. Start a process and move it with the commands a user may run
-var processId = Guid.NewGuid();
-await runtime.CreateInstanceAsync("Approval", processId);
-foreach (var name in new[] { "Submit", "Approve" })
+try
 {
-    var commands = await runtime.GetAvailableCommandsAsync(processId, "alice");
-    await runtime.ExecuteCommandAsync(commands.First(c => c.CommandName == name), "alice", "alice");
-    Console.WriteLine($"{name} -> {await runtime.GetCurrentActivityNameAsync(processId)}");
+    // A scheme in C#: Draft -> Review -> Approved, moved by two commands
+    var scheme = ProcessDefinitionBuilder.Create("Approval");
+    scheme.CreateActivity("Draft").Initial().Ref(out ActivityDefinition draft);
+    scheme.CreateActivity("Review").Ref(out ActivityDefinition review);
+    scheme.CreateActivity("Approved").Final().Ref(out ActivityDefinition approved);
+    scheme.CreateCommand("Submit").Ref(out CommandDefinition submit);
+    scheme.CreateCommand("Approve").Ref(out CommandDefinition approve);
+    scheme.CreateTransition("Submit", draft, review).TriggeredByCommand(submit);
+    scheme.CreateTransition("Approve", review, approved).TriggeredByCommand(approve);
+    await runtime.Builder.SaveProcessSchemeAsync("Approval", scheme.ProcessDefinition);
+
+    // Start a process and move it with the commands available to a user
+    var processId = Guid.NewGuid();
+    await runtime.CreateInstanceAsync("Approval", processId);
+    foreach (var name in new[] { "Submit", "Approve" })
+    {
+        var commands = await runtime.GetAvailableCommandsAsync(processId, "alice");
+        await runtime.ExecuteCommandAsync(commands.First(c => c.CommandName == name), "alice", "alice");
+        Console.WriteLine($"{name} -> {await runtime.GetCurrentActivityNameAsync(processId)}");
+    }
+}
+finally
+{
+    await runtime.ShutdownAsync();
 }
 ```
 
@@ -108,7 +116,8 @@ The same steps work in a worker service or any other .NET host ([Framework-Agnos
 ### An ASP.NET Core app with Workflow Designer
 
 ```bash
-dotnet new web -n WorkflowWeb && cd WorkflowWeb
+dotnet new web -n WorkflowWeb --framework net10.0
+cd WorkflowWeb
 dotnet add package OptimaJet.Workflow.Api
 dotnet add package OptimaJet.Workflow.Api.Sqlite
 ```
@@ -122,21 +131,28 @@ using OptimaJet.Workflow.Api.Sqlite;
 using OptimaJet.Workflow.Core.Runtime;
 
 var builder = WebApplication.CreateBuilder(args);
-builder.Services.AddControllers().AddJsonOptions(o => o.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddControllers()
+    .AddJsonOptions(options =>
+        options.JsonSerializerOptions.Converters.Add(new JsonStringEnumConverter()));
+builder.Services.AddWorkflowApiCore(options =>
+{
+    // options.LicenseKey = builder.Configuration["WorkflowApi:LicenseKey"];
+});
 builder.Services.AddWorkflowApiSqlite();
-builder.Services.AddWorkflowApiCore(options => { /* options.LicenseKey = "..."; */ });
 builder.Services.AddWorkflowRuntime(options =>
 {
     options.ConnectionString = "Data Source=workflow.db";
     options.WorkflowRuntimeCreationOptions.ConfigureWorkflowRuntime = runtime => runtime.AsSingleServer();
 });
-// Development only: in production, name the origins that host the designer
-builder.Services.AddCors(o => o.AddDefaultPolicy(p => p.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
+// Development only: restrict the allowed origins in production.
+builder.Services.AddCors(options =>
+    options.AddDefaultPolicy(policy =>
+        policy.AllowAnyOrigin().AllowAnyMethod().AllowAnyHeader()));
 
 var app = builder.Build();
 app.UseRouting();
 app.UseCors();
-app.MapWorkflowApi();   // the designer endpoint is /workflow-api/designer
+app.MapWorkflowApi();
 app.Run();
 ```
 
@@ -170,9 +186,10 @@ Next: [Create Your First Workflow](https://docs.workflowengine.io/get-started/cr
 | Temporal .NET SDK | Open-source SDK and server, self-hosted or Temporal Cloud | No authoring designer; a web UI for inspection | The Temporal Service and its own persistence store |
 | Windows Workflow Foundation | Ships with .NET Framework; the CoreWF port is MIT, targets .NET 6, out of support since November 2024 | Visual Studio designer, .NET Framework only | SqlWorkflowInstanceStore on .NET Framework |
 
-Facts as of October 1, 2026. The [full comparison][comparison] covers nine engines and compares support, learning curve and suitable use cases. NuGet versions checked on October 9, 2026: Elsa Workflows 3.9.0, Workflow Core 3.21.0 and Temporal .NET SDK 1.20.0.
+For a broader review of .NET workflow engines, see the [full comparison][comparison]. It covers support, learning curve and
+suitable use cases.
 
-Choose something else when:
+When another option may fit better:
 
 - **You need an MIT license.** Elsa Workflows and Workflow Core are MIT. Workflow Engine is commercial software, with a free product and commercial support plans with an SLA.
 - **You orchestrate events, integrations and background jobs with no people in the loop.** Elsa fits that shape; Workflow Engine fits processes built around business state, decisions, forms and tenants. A worked comparison on one approval process: [Elsa Workflows vs Workflow Engine NEO][elsa].
@@ -232,12 +249,12 @@ See [Compare products][compare] for edition boundaries and [Features][features] 
 
 | | |
 |---|---|
-| Supported runtimes | .NET 8, .NET 10 and .NET Framework 4.6.2. `WorkflowEngine.NETCore-Core` targets .NET Standard 2.0 |
+| Supported runtimes | .NET 8, .NET 10 and .NET Framework 4.7.2. `WorkflowEngine.NETCore-Core` targets .NET Standard 2.0 |
 | Packages with their own targets | The SQLite provider, the Real-Time Tracking Plugin and the HTTP API packages: .NET 8 and .NET 10. The Oracle provider: .NET Core 3.0 or later, not .NET Framework |
 | Hosts | ASP.NET Core, console apps, worker services and any other .NET host |
 | Databases | SQL Server, PostgreSQL, MySQL, Oracle, MongoDB, SQLite |
 | API | Asynchronous since the 21.x line; the synchronous methods were removed |
-| Latest release | 22.1.0, August 18, 2026 |
+| Latest release | [View the latest GitHub release][latest-release] |
 
 ## Key terms
 
@@ -291,13 +308,13 @@ Workflow Engine Free runs without a license key. It covers personal use and inte
 Yes, inside your organization, with attribution. The exact terms are in the [EULA][eula-free].
 
 **Which .NET versions and app types does it support?**
-.NET 8, .NET 10 and .NET Framework 4.6.2, in ASP.NET Core, console apps, worker services and other .NET hosts. Some packages have their own targets: see [Requirements and compatibility](#requirements-and-compatibility).
+.NET 8, .NET 10 and .NET Framework 4.7.2, in ASP.NET Core, console apps, worker services and other .NET hosts. Some packages have their own targets: see [Requirements and compatibility](#requirements-and-compatibility).
 
 **Do I need a separate server or cluster?**
 No. The engine runs inside your application and keeps its state in your database. To run several instances of your app, clustering coordinates them through the same database; it is available on the Complete edition and in Workflow Engine NEO.
 
 **Is Windows Workflow Foundation dead, and what should I use instead?**
-Windows Workflow Foundation ships only with .NET Framework, and its community port CoreWF has been out of support since November 2024. Workflow Engine runs on .NET Framework 4.6.2 and on .NET 8 and .NET 10. A team can move its processes before, during or after its move to modern .NET. The processes are modeled again as schemes, in Workflow Designer or in C#. Other options: [Best .NET workflow engines in 2026][comparison].
+Windows Workflow Foundation ships only with .NET Framework, and its community port CoreWF has been out of support since November 2024. Workflow Engine runs on .NET Framework 4.7.2 and on .NET 8 and .NET 10. A team can move its processes before, during or after its move to modern .NET. The processes are modeled again as schemes, in Workflow Designer or in C#. Other options: [Best .NET workflow engines in 2026][comparison].
 
 **How is it different from Elsa Workflows?**
 Elsa is MIT-licensed and targets technical orchestration around events and integrations. Workflow Engine is commercial, with a free product and an SLA option, and targets processes built around business state, human decisions, forms and tenants. Full comparison: [Elsa Workflows vs Workflow Engine NEO][elsa].
@@ -309,9 +326,9 @@ Yes. You embed Workflow Designer in your application and decide who may open it 
 Pre-Execution and the Offline API show which route a process would take and which commands are available, without changing the stored process. Schemes built in C# are checked at compile time, and a SQLite file keeps a test run self-contained, as in the quick start.
 
 **Who maintains it, and how often is it released?**
-Optimajet, since 2014. The latest release is 22.1.0, released August 18, 2026. Every release is listed in the [release notes][release-notes].
+Optimajet, since 2014. See the [latest GitHub release][latest-release] and the [release notes][release-notes].
 
-## For AI assistants and coding agents
+## Machine-readable documentation
 
 Machine-readable references, updated with the site and the documentation:
 
@@ -350,6 +367,7 @@ Machine-readable references, updated with the site and the documentation:
 [comparison]: https://workflowengine.io/blog/best-net-workflow-engines/?utm_source=github&utm_medium=referral&utm_campaign=workflowengine.net&utm_content=alternatives
 [elsa]: https://workflowengine.io/blog/elsa-vs-workflow-engine/?utm_source=github&utm_medium=referral&utm_campaign=workflowengine.net&utm_content=alternatives
 [eula-free]: https://workflowengine.io/agreements/eula/?utm_source=github&utm_medium=referral&utm_campaign=workflowengine.net&utm_content=licensing#workflow-engine-free
+[latest-release]: https://github.com/optimajet/WorkflowEngine.NET/releases/latest
 [release-notes]: https://docs.workflowengine.io/release-notes/
 [llms]: https://docs.workflowengine.io/llms.txt
 [llms-full]: https://docs.workflowengine.io/llms-full.txt

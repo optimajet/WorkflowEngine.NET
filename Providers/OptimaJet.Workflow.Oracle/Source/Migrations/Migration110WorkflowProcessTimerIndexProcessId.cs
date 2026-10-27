@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(110)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowProcessTimer_ProcessId.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration110WorkflowProcessTimerIndexProcessId : Migration
 {
     public override void Up()

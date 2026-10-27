@@ -7,6 +7,8 @@ using System.Threading.Tasks;
 using System.Xml.Linq;
 using Microsoft.Extensions.Configuration;
 using MongoDB.Bson;
+using MongoDB.Bson.Serialization;
+using MongoDB.Bson.Serialization.Serializers;
 using MongoDB.Driver;
 using OptimaJet.Workflow.Core.Generator;
 using OptimaJet.Workflow.Core.Persistence;
@@ -19,6 +21,12 @@ namespace WF.Sample.MongoDb.Implementation
     public class PersistenceProviderContainer : IPersistenceProviderContainer
     {
         private readonly MongoDBProvider _provider;
+
+        static PersistenceProviderContainer()
+        {
+            // Preserve the GUID representation used by the sample's existing documents.
+            BsonSerializer.RegisterSerializer(new GuidSerializer(GuidRepresentation.CSharpLegacy));
+        }
 
         public PersistenceProviderContainer(IConfiguration config)
         {

@@ -1,3 +1,5 @@
+using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
 using System;
 using System.Collections.Generic;
 using System.Globalization;
@@ -12,7 +14,9 @@ namespace OptimaJet.Workflow.MongoDB
 {
     public class WorkflowInbox : DynamicEntity
     {
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Id { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid ProcessId { get; set; }
         public string TenantId { get; set; }
         public string IdentityId { get; set; }

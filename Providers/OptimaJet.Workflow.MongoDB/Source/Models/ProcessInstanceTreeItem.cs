@@ -21,13 +21,13 @@ namespace OptimaJet.Workflow.MongoDB
         {
             var result = instances.Join(
                 schemes,
-                i => i[nameof(WorkflowProcessInstance.SchemeId)].AsGuid,
-                s => s["_id"].AsGuid,
+                i => i[nameof(WorkflowProcessInstance.SchemeId)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
+                s => s["_id"].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
                 (i, s) => new ProcessInstanceTreeItem()
                 {
-                    Id = i["_id"].AsGuid,
-                    ParentProcessId = i[nameof(WorkflowProcessInstance.ParentProcessId)].AsNullableGuid,
-                    RootProcessId = i[nameof(WorkflowProcessInstance.RootProcessId)].AsGuid,
+                    Id = i["_id"].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
+                    ParentProcessId = i[nameof(WorkflowProcessInstance.ParentProcessId)].IsBsonNull ? (Guid?)null : i[nameof(WorkflowProcessInstance.ParentProcessId)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
+                    RootProcessId = i[nameof(WorkflowProcessInstance.RootProcessId)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy),
                     SubprocessName = i[nameof(WorkflowProcessInstance.SubprocessName)] == BsonNull.Value ? null : i[nameof(WorkflowProcessInstance.SubprocessName)].AsString,
                     StartingTransition = s[nameof(WorkflowProcessScheme.StartingTransition)] == BsonNull.Value ? null : s[nameof(WorkflowProcessScheme.StartingTransition)].AsString
                 } as IProcessInstanceTreeItem).ToList();
@@ -39,8 +39,8 @@ namespace OptimaJet.Workflow.MongoDB
 
             var mappedProcessIds = result.Select(p => p.Id).ToList();
 
-            var unmappedDocumentIds = instances.Where(i => !mappedProcessIds.Contains(i[nameof(WorkflowProcessInstance.Id)].AsGuid))
-                .Select(i => i[nameof(WorkflowProcessInstance.Id)].AsGuid).ToList();
+            var unmappedDocumentIds = instances.Where(i => !mappedProcessIds.Contains(i[nameof(WorkflowProcessInstance.Id)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)))
+                .Select(i => i[nameof(WorkflowProcessInstance.Id)].AsBsonBinaryData.ToGuid(GuidRepresentation.CSharpLegacy)).ToList();
             
             throw new Exception($"Can't create process instance tree. Unable to find schemes with the following id: {String.Join(",", unmappedDocumentIds)} ");
         }

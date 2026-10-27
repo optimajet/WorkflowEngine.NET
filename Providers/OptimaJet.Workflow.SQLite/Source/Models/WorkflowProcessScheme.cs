@@ -6,8 +6,16 @@ using OptimaJet.Workflow.Core.Entities;
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.SQLite
 {
+    /// <summary>
+    /// Database object for workflow process scheme operations.
+    /// </summary>
     public class WorkflowProcessScheme : DbObject<ProcessSchemeEntity>
     {
+        /// <summary>
+        /// Initializes a new instance of <see cref="WorkflowProcessScheme"/>.
+        /// </summary>
+        /// <param name="schemaName">The database schema name.</param>
+        /// <param name="commandTimeout">The command timeout in seconds.</param>
         public WorkflowProcessScheme(string schemaName, int commandTimeout) : base(schemaName, "WorkflowProcessScheme", commandTimeout)
         {
             DBColumns.AddRange(new[]
@@ -24,6 +32,15 @@ namespace OptimaJet.Workflow.SQLite
             });
         }
 
+        /// <summary>
+        /// Selects process scheme entities by scheme code with optional filters for tenant, obsolete status, and root scheme.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code to search for.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <param name="isObsolete">Filter by obsolete status, or <c>null</c> to include all.</param>
+        /// <param name="rootSchemeId">The root scheme identifier, or <c>null</c> for schemes without a root.</param>
+        /// <returns>An array of matching process scheme entities.</returns>
         public async Task<ProcessSchemeEntity[]> SelectAsync(SqliteConnection connection, string schemeCode, string tenantId,
             bool? isObsolete, Guid? rootSchemeId)
         {
@@ -70,6 +87,13 @@ namespace OptimaJet.Workflow.SQLite
             return await SelectAsync(connection, selectText, parameters.ToArray()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Marks all schemes matching the specified scheme code (and optionally tenant) as obsolete.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <param name="schemeCode">The scheme code to mark as obsolete.</param>
+        /// <param name="tenantId">The tenant identifier, or <c>null</c> for shared schemes.</param>
+        /// <returns>The number of rows affected.</returns>
         public async Task<int> SetObsoleteAsync(SqliteConnection connection, string schemeCode, string tenantId)
         {
             string command = $"UPDATE {ObjectName} SET " + 
@@ -91,6 +115,12 @@ namespace OptimaJet.Workflow.SQLite
             return await ExecuteCommandNonQueryAsync(connection, command, parameters.ToArray()).ConfigureAwait(false);
         }
 
+        /// <summary>
+        /// Deletes obsolete process schemes that are not referenced by any process instance.
+        /// Rolls back and throws if orphaned scheme records are detected.
+        /// </summary>
+        /// <param name="connection">The SQLite connection.</param>
+        /// <returns>A task that represents the asynchronous operation.</returns>
         public async Task DeleteUnusedAsync(SqliteConnection connection)
         {
             if (connection.State != ConnectionState.Open)

@@ -5,6 +5,7 @@ namespace OptimaJet.Workflow.Oracle.Migrations;
 
 [Migration(330)]
 [WorkflowEngineMigration("OptimaJet.Workflow.Oracle.Scripts.CreateIndex_WorkflowApprovalHistory_IdentityId.sql")]
+[ProductVersion("WorkflowEngine", "13.0.0")]
 public class Migration330WorkflowApprovalHistoryIndexIdentityId : Migration
 {
     public override void Up()

@@ -1,9 +1,12 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 namespace OptimaJet.Workflow.MongoDB.Models;
 
 public class WorkflowForm : DynamicEntity
 {
+    [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
     public Guid Id { get; set; }
     public string Name { get; set; }
     public int Version { get; set; }

@@ -1,4 +1,6 @@
-﻿using System;
+﻿using MongoDB.Bson;
+using MongoDB.Bson.Serialization.Attributes;
+using System;
 
 // ReSharper disable once CheckNamespace
 namespace OptimaJet.Workflow.MongoDB
@@ -11,8 +13,10 @@ namespace OptimaJet.Workflow.MongoDB
         public string ExecutorName { get; set; }
         public string FromActivityName { get; set; }
         public string FromStateName { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid Id { get; set; }
         public bool IsFinalised { get; set; }
+        [BsonGuidRepresentation(GuidRepresentation.CSharpLegacy)]
         public Guid ProcessId { get; set; }
         public string TenantId { get; set; }
         public string ToActivityName { get; set; }
