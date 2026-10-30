@@ -1,7 +1,7 @@
 <Project>
   <!-- Version -->
   <PropertyGroup>
-    <Version>23.0.0</Version>
+    <Version>23.0.1</Version>
     <AssemblyVersion>23.0.0</AssemblyVersion>
     <FileVersion>23.0.0</FileVersion>
   </PropertyGroup>

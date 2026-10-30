@@ -7,12 +7,12 @@
   "targets": {
     ".NETStandard,Version=v2.0": {},
     ".NETStandard,Version=v2.0/": {
-      "OptimaJet.Workflow.MySQL/23.0.0": {
+      "OptimaJet.Workflow.MySQL/23.0.1": {
         "dependencies": {
           "FluentMigrator.Runner.MySql": "5.2.0",
-          "MySqlConnector": "2.4.0",
-          "WorkflowEngine.NETCore-Core": "23.0.0",
-          "WorkflowEngine.NETCore-Migrator": "23.0.0",
+          "MySqlConnector": "2.6.2",
+          "WorkflowEngine.NETCore-Core": "23.0.1",
+          "WorkflowEngine.NETCore-Migrator": "23.0.1",
           "OptimaJet.Workflow.Core": "23.0.0.0",
           "OptimaJet.Workflow.Migrator": "23.0.0.0"
         },
@@ -869,7 +869,7 @@
           }
         }
       },
-      "MySqlConnector/2.4.0": {
+      "MySqlConnector/2.6.2": {
         "dependencies": {
           "Microsoft.Extensions.DependencyInjection.Abstractions": "10.0.5",
           "Microsoft.Extensions.Logging.Abstractions": "10.0.3",
@@ -879,7 +879,7 @@
         "runtime": {
           "lib/netstandard2.0/MySqlConnector.dll": {
             "assemblyVersion": "2.0.0.0",
-            "fileVersion": "2.4.0.0"
+            "fileVersion": "2.6.2.0"
           }
         }
       },
@@ -1444,7 +1444,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Core/23.0.0": {
+      "WorkflowEngine.NETCore-Core/23.0.1": {
         "dependencies": {
           "Microsoft.Bcl.AsyncInterfaces": "10.0.9",
           "Microsoft.CodeAnalysis.CSharp": "4.1.0",
@@ -1465,7 +1465,7 @@
           }
         }
       },
-      "WorkflowEngine.NETCore-Migrator/23.0.0": {
+      "WorkflowEngine.NETCore-Migrator/23.0.1": {
         "dependencies": {
           "Azure.Identity": "1.19.0",
           "FluentMigrator": "5.2.0",
@@ -1475,7 +1475,7 @@
           "Microsoft.IdentityModel.JsonWebTokens": "8.10.0",
           "System.IdentityModel.Tokens.Jwt": "8.10.0",
           "System.Runtime.Caching": "10.0.9",
-          "WorkflowEngine.NETCore-Core": "23.0.0"
+          "WorkflowEngine.NETCore-Core": "23.0.1"
         },
         "runtime": {
           "OptimaJet.Workflow.Migrator.dll": {
@@ -1503,7 +1503,7 @@
     }
   },
   "libraries": {
-    "OptimaJet.Workflow.MySQL/23.0.0": {
+    "OptimaJet.Workflow.MySQL/23.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
@@ -1879,12 +1879,12 @@
       "path": "microsoft.win32.registry/5.0.0",
       "hashPath": "microsoft.win32.registry.5.0.0.nupkg.sha512"
     },
-    "MySqlConnector/2.4.0": {
+    "MySqlConnector/2.6.2": {
       "type": "package",
       "serviceable": true,
-      "sha512": "sha512-78M+gVOjbdZEDIyXQqcA7EYlCGS3tpbUELHvn6638A2w0pkPI625ixnzsa5staAd3N9/xFmPJtkKDYwsXpFi/w==",
-      "path": "mysqlconnector/2.4.0",
-      "hashPath": "mysqlconnector.2.4.0.nupkg.sha512"
+      "sha512": "sha512-dlTc/tsBa42szdvpj4nrHvQVUb0gsMwR9HT6J0Zz2OSqfP0CdYlGw+qQPqCpbnO97idfvclSjKYtM6y5QaBQaQ==",
+      "path": "mysqlconnector/2.6.2",
+      "hashPath": "mysqlconnector.2.6.2.nupkg.sha512"
     },
     "Newtonsoft.Json/13.0.3": {
       "type": "package",
@@ -2334,12 +2334,12 @@
       "path": "thomaslevesque.weakevent/4.1.0",
       "hashPath": "thomaslevesque.weakevent.4.1.0.nupkg.sha512"
     },
-    "WorkflowEngine.NETCore-Core/23.0.0": {
+    "WorkflowEngine.NETCore-Core/23.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
     },
-    "WorkflowEngine.NETCore-Migrator/23.0.0": {
+    "WorkflowEngine.NETCore-Migrator/23.0.1": {
       "type": "project",
       "serviceable": false,
       "sha512": ""
